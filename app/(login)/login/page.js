@@ -25,7 +25,7 @@ export default function LoginPage() {
     const password = formData.get("password");
   
     try {
-      const response = await fetch(`api/login`, {
+      const response = await fetch(`http://51.20.81.212:8000/`, {
         method: "POST",
         headers: { "Content-Type": "application/json",
            "Cache-Control": "no-cache"
