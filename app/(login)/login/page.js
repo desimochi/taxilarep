@@ -25,8 +25,9 @@ export default function LoginPage() {
     const password = formData.get("password");
   
     try {
-      const response = await fetch(`${API_BASE_URL}login`, {
+      const response = await fetch(`${API_BASE_URL}/login`, {
         method: "POST",
+        mode:"cors",
         headers: { "Content-Type": "application/json",
            "Cache-Control": "no-cache"
          },
