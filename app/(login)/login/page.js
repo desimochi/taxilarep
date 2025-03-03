@@ -25,11 +25,12 @@ export default function LoginPage() {
     const password = formData.get("password");
   
     try {
-      const response = await fetch(`http://51.20.81.212:8000/`, {
+      const response = await fetch(`${API_BASE_URL}login`, {
         method: "POST",
         headers: { "Content-Type": "application/json",
            "Cache-Control": "no-cache"
          },
+        credentials: "include", // Important for cookies
         body: JSON.stringify({ username, password }),
       });
   
