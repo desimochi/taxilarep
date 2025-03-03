@@ -27,7 +27,6 @@ export default function LoginPage() {
     try {
       const response = await fetch(`${API_BASE_URL}login`, {
         method: "POST",
-        mode:"no-cors",
         headers: { "Content-Type": "application/json",
            "Cache-Control": "no-cache"
          },
