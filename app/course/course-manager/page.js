@@ -37,7 +37,7 @@ export default function Page () {
       }
 
       try {
-        const response = await authFetch(`course-viewset`, {
+        const response = await authFetch(`/course-viewset`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -89,7 +89,7 @@ export default function Page () {
     }
   
     try {
-      const response = await authFetch(`course-viewset/${id}`, {
+      const response = await authFetch(`/course-viewset/${id}`, {
         method: "PUT", // Use PATCH for partial update; PUT if sending full object
         headers: {
           "Content-Type": "application/json",
@@ -133,7 +133,7 @@ export default function Page () {
     };
   
     try {
-      const response = await authFetch(`course-viewset`, {
+      const response = await authFetch(`/course-viewset`, {
         method: "POST",
         mode: "cors",
         headers: {
@@ -170,7 +170,7 @@ export default function Page () {
     if (!deleteCourseId) return;
     
     try {
-      const response = await authFetch(`course-viewset/${deleteCourseId}`, {
+      const response = await authFetch(`/course-viewset/${deleteCourseId}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
