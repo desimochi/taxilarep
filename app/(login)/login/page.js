@@ -29,9 +29,7 @@ export default function LoginPage() {
         method: "POST",
         mode:"cors",
         headers: { "Content-Type": "application/json",
-           "Cache-Control": "no-cache"
          },
-        credentials: "include", // Important for cookies
         body: JSON.stringify({ username, password }),
       });
   
