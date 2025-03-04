@@ -1,4 +1,5 @@
 "use client"
+import CreateComponents from "@/components/CreateComponent";
 import CreateComponent from "@/components/CreateComponent";
 import Table from "@/components/Table";
 import { useState } from "react";
@@ -34,7 +35,7 @@ export default function Page() {
       {/* Tab Content */}
       <div className="p-5">
         {activeTab === "assignComponent" && <Table student={false}/>}
-        {activeTab === "createcomponent" && <CreateComponent />}
+        {activeTab === "createcomponent" && <CreateComponents />}
       </div>
     </div>
   );

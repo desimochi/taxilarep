@@ -179,7 +179,7 @@ export default function RootLayout({ children }) {
             {/* Logout */}
             <li className="flex items-center p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer">
                 <LogOut className="text-gray-500 dark:text-gray-400 w-5 h-5" />
-                <span className="text-gray-700 dark:text-gray-300 ml-2" onClick={handleLogout}>Logout</span>
+                <button className="text-gray-700 dark:text-gray-300 ml-2" onClick={handleLogout}>Logout</button>
             </li>
         </div>
             </div>
