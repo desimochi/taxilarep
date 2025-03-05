@@ -1,11 +1,15 @@
 "use client";
-import { useState, useEffect } from "react";
+import { GlobalProvider, GlobalContext } from "@/components/GlobalContext";
+import { useState, useEffect, useContext } from "react";
 import { Roboto, Roboto_Mono } from "next/font/google";
+import userImage from "@/public/userimage.jpg";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import { User, CreditCard, Users, LogOut, FileUp, Moon, Settings2Icon } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
+import logo from "@/public/logo.png";
+import Image from "next/image";
 
 const roboto = Roboto({
   variable: "--font-roboto",
@@ -19,24 +23,28 @@ const robotoMono = Roboto_Mono({
   weight: ["400", "700"], // Optional: specify weights
 });
 
-
-
 export default function RootLayout({ children }) {
+  return (
+    <GlobalProvider>
+      <InnerLayout>{children}</InnerLayout>
+    </GlobalProvider>
+  );
+}
+
+
+function InnerLayout({ children }) {
 
   const pathname = usePathname()
   const router = useRouter()
-  
+  const { state, updateState } = useContext(GlobalContext);
   const [isOpen, setIsOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [openMenus, setOpenMenus] = useState({});
   const [collapsed, setCollapsed] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(null);
 
-
-  function handleLogout() {
-    localStorage.removeItem("accessToken");
-    router.push("/login"); // Redirect to login page
-  }
+  console.log(state) 
+ 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
 
@@ -46,20 +54,6 @@ export default function RootLayout({ children }) {
       setIsAuthenticated(true)
     }
   }, [router]);
-  const noLayoutRoutes = ["/login", "/student"]
-  const isStudentLayout = pathname.includes("student"); // Check if URL contains "student"
-
-  if (isAuthenticated === null) {
-    if (noLayoutRoutes.includes(pathname) || isStudentLayout) {
-      return <html> <body>{children}</body></html>;
-    } else {
-      return <html><body></body></html>;
-    }
-  }
-  
-  if(noLayoutRoutes.includes(pathname)){
-    return <html> <body>{children}</body></html>
-  }
 
   const toggleMenu = (menu) => {
     setOpenMenus((prev) => ({
@@ -77,6 +71,25 @@ export default function RootLayout({ children }) {
   }
   function leavemouse(){
     setIsHovered(false)
+  }
+  
+  function handleLogout() {
+    localStorage.removeItem("accessToken");
+    router.push("/login"); // Redirect to login page
+  }
+  const noLayoutRoutes = ["/login", "/student"]
+  const isStudentLayout = pathname.includes("student"); // Check if URL contains "student"
+
+  if (isAuthenticated === null) {
+    if (noLayoutRoutes.includes(pathname) || isStudentLayout) {
+      return <GlobalProvider><html> <body>{children}</body></html></GlobalProvider>;
+    } else {
+      return <html><body></body></html>;
+    }
+  }
+  
+  if(noLayoutRoutes.includes(pathname)){
+    return <GlobalProvider><html> <body>{children}</body></html></GlobalProvider>
   }
   return (
     <html lang="en">
@@ -139,14 +152,11 @@ export default function RootLayout({ children }) {
                   <div className="w-64 bg-white shadow-xl rounded-xl p-4 space-y-2 dark:bg-gray-900">
             {/* Profile Section */}
             <div className="flex items-center space-x-3 p-3 border-b dark:border-gray-700">
-                <img 
-                    src="https://via.placeholder.com/50" 
-                    alt="User Avatar"  
-                    className="w-12 h-12 rounded-full"
-                />
+                
+                 <Image src={userImage} height={40} width={40} alt="user image" />
                 <div>
-                    <h3 className="font-semibold text-gray-900 dark:text-white">Kishore Sharma</h3>
-                    <p className="text-gray-500 text-sm">k@taxila.in</p>
+                    <h3 className="font-semibold text-gray-900 dark:text-white">{state.name? `${state.name}`:"user"}</h3>
+                    <p className="text-gray-500 text-sm">{state.email? `${state.email}`:"useremail"}</p>
                 </div>
             </div>
 
@@ -177,9 +187,9 @@ export default function RootLayout({ children }) {
             </div>
 
             {/* Logout */}
-            <li className="flex items-center p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer">
+            <li onClick={handleLogout} className="flex items-center p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer">
                 <LogOut className="text-gray-500 dark:text-gray-400 w-5 h-5" />
-                <button className="text-gray-700 dark:text-gray-300 ml-2" onClick={handleLogout}>Logout</button>
+                <button className="text-gray-700 dark:text-gray-300 ml-2" >Logout</button>
             </li>
         </div>
             </div>

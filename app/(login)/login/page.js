@@ -3,11 +3,13 @@ import Image from "next/image";
 import logo from "@/public/logo.png";
 import campus from "@/public/campus.jpeg";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { saveTokens } from "@/app/lib/auth";
+import { GlobalContext } from "@/components/GlobalContext";
 
 export default function LoginPage() {
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+  const { state, updateState } = useContext(GlobalContext);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(false)
@@ -41,6 +43,8 @@ export default function LoginPage() {
           return;
         }
         saveTokens(data.data.access_token, data.data.refresh_token);
+        updateState(data.data.user);
+        console.log(updateState, state)
         router.push("/dashboard");
       } else {
         console.error("Login failed:", data);

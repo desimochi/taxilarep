@@ -23,6 +23,28 @@ const Sidebar = ({collapsed, toggleSidebar, toggleMenu, openMenus  }) => {
   const menuItems = [
     { label: "Dashboard", icon: <HomeIcon className="h-5 w-5" />, path: "/admin" },
     {
+      label: "Course",
+      icon: <BookCheckIcon className="h-5 w-5" />,
+      subMenu: [
+        {label : "Specialization Manager", hasSubMenu: true, subMenu :[
+          { label: "Specialization", path: "/course/specialization" },
+          { label: "Create Specialization", path: "/course/specialization/create-specialization" },
+        ]},
+        { label: "Course Manager", path: "/course/course-manager" },
+        { label: "Batch Manager", path: "/course/batch-manager" },
+        { label: "Subject Manager", path: "/course/subject-manager" },
+        { label: "Class Schedule", path: "/course/course-schedule" },
+        {label : "Terms Manager", hasSubMenu: true, subMenu :[
+          { label: "Terms", path: "/terms" },
+          { label: "Create Terms", path: "/terms/create-terms" },
+        ]},
+        {label : "Mentorship Manager", hasSubMenu: true, subMenu :[
+          { label: "Assign Student", path: "/mentorship/assign-student" },
+          { label: "Assigned Students", path: "/mentorship/assigned-students" },
+        ]},
+      ],
+    },
+    {
       label: "Examination",
       icon: <PenSquareIcon className="h-5 w-5" />,
       subMenu: [
@@ -60,28 +82,7 @@ const Sidebar = ({collapsed, toggleSidebar, toggleMenu, openMenus  }) => {
         { label: "Question Paper", path: "/question-paper" },
       ],
     },
-    {
-      label: "Course",
-      icon: <BookCheckIcon className="h-5 w-5" />,
-      subMenu: [
-        {label : "Specialization Manager", hasSubMenu: true, subMenu :[
-          { label: "Specialization", path: "/course/specialization" },
-          { label: "Create Specialization", path: "/course/specialization/create-specialization" },
-        ]},
-        { label: "Course Manager", path: "/course/course-manager" },
-        { label: "Batch Manager", path: "/course/batch-manager" },
-        { label: "Subject Manager", path: "/course/subject-manager" },
-        { label: "Class Schedule", path: "/course/course-schedule" },
-        {label : "Terms Manager", hasSubMenu: true, subMenu :[
-          { label: "Terms", path: "/terms" },
-          { label: "Create Terms", path: "/terms/create-terms" },
-        ]},
-        {label : "Mentorship Manager", hasSubMenu: true, subMenu :[
-          { label: "Assign Student", path: "/mentorship/assign-student" },
-          { label: "Assigned Students", path: "/mentorship/assigned-students" },
-        ]},
-      ],
-    },
+   
     {
       label: "Imp. News & Notice",
       icon: <NewspaperIcon className="h-5 w-5" />,

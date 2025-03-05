@@ -1,4 +1,5 @@
 "use client"
+import ExamCreate from "@/components/ExamCreate";
 import Table from "@/components/Table";
 import TableExam from "@/components/TableExam";
 import { Trash2Icon, PlusIcon, SaveIcon,  } from "lucide-react";
@@ -98,124 +99,7 @@ const NavigationTabs = () => {
                 </div>
                 
             </div> <TableExam/></>}
-        {activeTab === "addmainexam" && <div className="w-full  rounded-sm py-12">
-            <div className="border border-gray-300 shadow-sm hover:shadow-md rounded-md">
-                <h4 className="px-6 py-4 bg-gradient-to-bl font-bold from-gray-700 to-stone-900 text-white">Add Main Exam Schedule</h4>
-                <form className="py-5 px-5">
-                    <label className="font-bold">Course</label>
-                    <select id="course"  className="bg-white border border-gray-300 mb-3 text-gray-700 text-sm rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-  <option value="" disabled selected>Select a Course</option>
-    <option value="2024-25">PGDM+Business Analytics</option>
-    <option value="t-28">PGPM</option>
-    <option value="t-27">EPGDM</option>
-  </select>
-  <div className="flex gap-2 justify-between">
-        <div className="w-1/2">
-        <label className="font-bold ">Batch</label>
-                    <select id="course"  className="bg-white border border-gray-300 mb-3 text-gray-700 text-sm rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-  <option value="" disabled selected>Select a Batch</option>
-    <option value="T-29">T-29</option>
-    <option value="t-28">T-28</option>
-    <option value="t-27">T-27</option>
-  </select>
-        </div>
-        <div className="w-1/2">
-        <label className="font-bold">Term</label>
-                    <select id="course"  className="bg-white border border-gray-300 mb-3 text-gray-700 text-sm rounded-sm focus:ring-red-600 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-  <option value="" disabled selected>Select a Term</option>
-    <option value="Term 1">Term 1</option>
-    <option value="Term 2">Term 2</option>
-    <option value="Term 3">Term 3</option>
-    <option value="Term 4">Term 4</option>
-    <option value="Term 5">Term 5</option>
-  </select>
-        </div>
-  </div>
-  {fields.map((field, index) => (
-        <div key={index} className="flex gap-2 justify-between mb-4 mt-2">
-          <div className="w-1/4">
-            <label className="font-bold">Subject</label>
-            <select
-              name="subject"
-              value={field.subject}
-              onChange={(event) => handleChange(index, event)}
-              className="bg-white border border-gray-300 text-gray-700 text-sm rounded-sm p-2.5 block w-full"
-            >
-              <option value="" disabled>Select a Subject</option>
-              <option value="Python">Python</option>
-              <option value="SQL">SQL</option>
-              <option value="Marketing">Marketing</option>
-            </select>
-          </div>
-
-          <div className="w-1/4">
-            <label className="font-bold">Component</label>
-            <select
-              name="component"
-              value={field.component}
-              onChange={(event) => handleChange(index, event)}
-              className="bg-white border border-gray-300 text-gray-700 text-sm rounded-sm p-2.5 block w-full"
-            >
-              <option value="" disabled>Select a Component</option>
-              <option value="Theory">Theory</option>
-              <option value="Practical">Practical</option>
-              <option value="Viva">Viva</option>
-            </select>
-          </div>
-
-          <div className="w-1/4">
-            <label className="font-bold">Exam Date</label>
-            <input
-              type="date"
-              name="examDate"
-              value={field.examDate}
-              onChange={(event) => handleChange(index, event)}
-              className="bg-white border border-gray-300 text-gray-700 text-sm rounded-sm p-2.5 block w-full"
-            />
-          </div>
-
-          <div className="w-1/4 flex gap-4 justify-between items-center">
-            <div className="w-4/5">
-              <label className="font-bold">Exam Time</label>
-              <input
-                type="text"
-                name="examTime"
-                placeholder="10AM to 10:30AM"
-                value={field.examTime}
-                onChange={(event) => handleChange(index, event)}
-                className="bg-white border border-gray-300 text-gray-700 text-sm rounded-sm p-2.5 block w-full"
-              />
-            </div>
-
-            <div className="w-1/5 flex items-center mt-6">
-              {index === 0 ? (
-                <button
-                  type="button"
-                  onClick={addFields}
-                  className="bg-red-600 hover:bg-red-700 p-2 rounded text-white font-bold cursor-pointer shadow-sm hover:shadow-lg transition-shadow"
-                >
-                  <PlusIcon className="h-5 w-5" />
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => removeFields(index)}
-                  className="bg-black hover:bg-gray-700 p-2 rounded text-white font-bold cursor-pointer shadow-sm hover:shadow-lg transition-shadow"
-                >
-                  <Trash2Icon className="h-5 w-5" />
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      ))}
-  <div className="flex justify-center mt-6">
-  <button className="w-40 bg-red-700 py-2 text-white rounded-sm flex items-center justify-center gap-1"><SaveIcon className="h-4 w-4" />Submit</button>  
-  </div>
-              
-                </form>
-            </div>
-</div>}
+        {activeTab === "addmainexam" && <ExamCreate />}
       </div>
     </div>
   );

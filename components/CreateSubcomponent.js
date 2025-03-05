@@ -5,9 +5,10 @@ import { useEffect, useState } from "react";
 
 export default function CreateSubComponent() {
     const [components, setComponents] = useState([]);
+    const [marks, setMarks] = useState(0)
     const [selectedComponentId, setSelectedComponentId] = useState(null);
     const [formSections, setFormSections] = useState([
-        { name: "", max_marks:0, description: "" }
+        { name: "", max_marks:"", description: "" }
     ]);
     const router = useRouter();
     const [result, setResult] = useState([])
@@ -51,14 +52,52 @@ export default function CreateSubComponent() {
         fetchSubjects();
     }, [token]);
     const handleComponentSelect = (e) => {
-        setSelectedComponentId(e.target.value);
+        const selectedId = Number(e.target.value); // Convert to number
+        setSelectedComponentId(selectedId);
+    
+        // Find the selected component
+        const selectedComponent = components.find(component => component.id === selectedId);
+    
+        // Set marks based on the selected component
+        if (selectedComponent) {
+            setMarks(selectedComponent.max_marks);
+        } else {
+            setMarks(null); // Reset if no component is found
+        }
     };
+    
     const handleChange = (index, e) => {
         const { name, value } = e.target;
         const updatedSections = [...formSections];
-        updatedSections[index][name] = value;
+    
+        if (name === "max_marks") {
+            const newMarks = parseInt(value) || 0; // Ensure it's a number
+            const totalMarks = updatedSections.reduce((sum, sec, i) => sum + (i === index ? newMarks : sec.max_marks), 0);
+    
+            // Validation: Ensure sum of all sub-component marks does not exceed available marks
+            if (totalMarks > marks) {
+                setError(true)
+                return;
+            }else{
+                setError(false)
+            }
+            // Validation: Each sub-component should not exceed available marks
+            if (newMarks > marks) {
+                setError(true)
+                return;
+            }else{
+                setError(false)
+            }
+    
+            updatedSections[index][name] = newMarks;
+        } else {
+           
+            updatedSections[index][name] = value;
+        }
+    
         setFormSections(updatedSections);
     };
+    
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -77,7 +116,7 @@ export default function CreateSubComponent() {
             const response = await authFetch(`sub-component/${selectedComponentId}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({payload})
+                body: JSON.stringify(payload)
             });
 
             if (!response.ok) {
@@ -107,7 +146,11 @@ export default function CreateSubComponent() {
             <div className="border border-gray-300 shadow-sm hover:shadow-md rounded-sm">
                 <h4 className="px-60 py-4 bg-gradient-to-bl font-bold from-gray-700 to-stone-900 text-white">Create Sub Component</h4>
                 <form className="py-5 px-5" onSubmit={handleSubmit}>
+                <div className="flex justify-between">
                 <label className="font-bold">Subject</label>
+                <p className="font-bold">Available Marks - {marks}</p>
+                </div>
+                
                             <select
                                 name="component"
                                 onChange={handleComponentSelect}
@@ -151,7 +194,11 @@ export default function CreateSubComponent() {
                             />
                         </div>
                         <div className="w-1/2">
-                            <label className="font-bold">Maximum Marks</label>
+                            <div className="flex justify-between">
+                            <label className="font-bold">Marks</label>
+                            <p className="text-sm text-red-500">{error && `Mark Should Be Less Than ${marks}`}</p>
+                            </div>
+                            
                             <input
                                 type="number"
                                 name="max_marks"

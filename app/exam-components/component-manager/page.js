@@ -1,6 +1,8 @@
 "use client"
 import CreateComponents from "@/components/CreateComponent";
 import CreateComponent from "@/components/CreateComponent";
+import CreateSubComponent from "@/components/CreateSubcomponent";
+import ShowComponents from "@/components/ShowComponents";
 import Table from "@/components/Table";
 import { useState } from "react";
 
@@ -13,8 +15,9 @@ export default function Page() {
       <div className="border-b border-gray-200 dark:border-gray-700 px-5">
         <ul className="flex flex-wrap -mb-px text-sm font-medium text-center text-gray-500 dark:text-gray-400">
           {[
-            { id: "assignComponent", label: "Assign Component" },
+            { id: "assignComponent", label: "Components" },
             { id: "createcomponent", label: "Create Component" },
+            { id: "createsubcomponent", label: "Create Sub Component" },
           ].map((tab) => (
             <li key={tab.id} className="me-2">
               <button
@@ -34,8 +37,9 @@ export default function Page() {
      
       {/* Tab Content */}
       <div className="p-5">
-        {activeTab === "assignComponent" && <Table student={false}/>}
+        {activeTab === "assignComponent" && <ShowComponents/>}
         {activeTab === "createcomponent" && <CreateComponents />}
+        {activeTab === "createsubcomponent" && <CreateSubComponent />}
       </div>
     </div>
   );
