@@ -2,25 +2,29 @@
 import { authFetch } from "@/app/lib/fetchWithAuth";
 import { SaveIcon, PencilIcon } from "lucide-react";
 import { Trash2Icon } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useState } from "react";
+import Loader from "./Loaader";
+import FullWidthLoader from "./Loaader";
 
 export default function AssignedSubject(){
     const[isDel, setIsDel] = useState(false)
     const [loading, setLoading] = useState(false)
     const[error, setError] = useState(false)
+    const [editingRow, setEditingRow] = useState(null);
     const[assignedSub, setAssignedSub] = useState([])
     const [search, setSearch] = useState("");
     const token = localStorage.getItem("accessToken");
     useEffect(() => {
     const fetchCourses = async () => {
       console.log(token)
-
+      
       if (!token) {
         setError("No token found. Please log in.");
         setLoading(false);
         return;
       }
-
+      setLoading(true)
       try {
         const response = await authFetch(`subject-mapping-viewset`, {
           method: "GET",
@@ -48,10 +52,11 @@ export default function AssignedSubject(){
 
 
   const filteredSubjects = Array.isArray(assignedSub) 
-  ? assignedSub.filter(term =>
-      term.name.toLowerCase().includes(search.toLowerCase())
+  ? assignedSub.filter(item =>
+      item.subject?.name?.toLowerCase().includes(search.toLowerCase())
     )
   : [];
+
     return(
         <>
         <div className="py-4 px-5">
@@ -68,14 +73,15 @@ export default function AssignedSubject(){
                 </div>
                 
             </div>
-             <table className="w-full rounded-xl text-sm text-left rtl:text-right text-gray-800 dark:text-gray-400 mt-4 mb-2">
+          {loading? <FullWidthLoader/> :   <table className="w-full rounded-xl text-sm text-left rtl:text-right text-gray-800 dark:text-gray-400 mt-4 mb-2">
         <thead className="text-xs text-white uppercase bg-black dark:bg-gray-700 dark:text-white-400 w-full">
             <tr>
                 <th scope="col" className="px-6 py-3">S.No.</th>
                 <th scope="col" className="px-6 py-3">Course Name</th>
                 <th scope="col" className="px-6 py-3">Batch Name</th>
-                <th scope="col" className="px-6 py-3">Course Term</th>
+                <th scope="col" className="px-6 py-3">Term</th>
                 <th scope="col" className="px-6 py-3">Assigned Subject</th>
+                <th scope="col" className="px-6 py-3">Assigned Faculty</th>
                 <th scope="col" className="px-6 py-3">Action</th>
             </tr>
         </thead>
@@ -83,43 +89,34 @@ export default function AssignedSubject(){
         {filteredSubjects? filteredSubjects.map((course, index) => (
     <tr key={course.id} className="bg-white border-b hover:bg-gray-50 text-black">
         <td className="px-6 py-4">{index+1}</td>
-      <td className="px-6 py-4">
-        {editingRow === course.id ? (
-          <input
-            type="text"
-            value={course.name}
-            onChange={(e) => handleChange(e, course.id, "name")}
-            className="border rounded px-2 py-1"
-          />
-        ) : (
-          course.name
-        )}
-      </td>
+        <td className="px-6 py-4">
+  {course.course.map((cor) => (
+    <span key={cor.id}>{cor.name}</span>
+  ))}
+</td>
+
     
       <td className="px-6 py-4">
-        {editingRow === course.id ? (
-          <input
-            type="text"
-            value={course.description}
-            onChange={(e) => handleChange(e, course.id, "description")}
-            className="border rounded px-2 py-1"
-          />
-        ) : (
-          course.description
-        )}
+       {course.batch.name}
+      </td>
+      <td className="px-6 py-4">
+       {course.term.name}
+      </td>
+      <td className="px-6 py-4">
+       {course.subject.name}
+      </td>
+      <td className="px-6 py-4">
+       {course.faculty.first_name +" " + course.faculty.last_name}
       </td>
       <td className="px-6 py-4 flex gap-4">
-        <button onClick={() => (editingRow === course.id ? handleSaveClick(course.id) : handleEditClick(course.id))}>
-          {editingRow === course.id ? <SaveIcon className="h-5 w-5 text-green-600" /> : <PencilIcon className="h-5 w-5 text-blue-600" />}
-        </button>
-        <button onClick={() => handleDeleteClick(course.id)}>
-          <Trash2Icon className="h-5 w-5 text-red-600" />
-        </button>
+       <Link href={`subject-manager/edit-assignedSub?subjectId=${course.id}`}>
+        <PencilIcon className="h-5 w-5" />
+       </Link>
       </td>
     </tr>
   )) : <p>No Courses Found</p>}
         </tbody>
-    </table>
+    </table>}
         </div>
         {isDel && (
             <div

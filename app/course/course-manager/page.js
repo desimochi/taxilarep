@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { PencilIcon, PlusCircleIcon, SaveIcon, Trash2Icon } from "lucide-react";
 import { authFetch } from "@/app/lib/fetchWithAuth";
-import { useRouter } from "next/navigation";
 
 export default function Page () {
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;

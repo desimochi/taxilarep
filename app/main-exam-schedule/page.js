@@ -42,8 +42,8 @@ const NavigationTabs = () => {
       <div className="border-b border-gray-200 dark:border-gray-700 px-5">
         <ul className="flex flex-wrap -mb-px text-sm font-medium text-center text-gray-500 dark:text-gray-400">
           {[
-            { id: "mainexam", label: "Main Exam Schedule" },
-            { id: "addmainexam", label: `+ Add Main Exam Schedule` },
+            { id: "mainexam", label: "Main Exam Details" },
+            { id: "addmainexam", label: `+ Add Main Exam ` },
           ].map((tab) => (
             <li key={tab.id} className="me-2">
               <button

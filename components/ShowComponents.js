@@ -1,6 +1,7 @@
 import { authFetch } from "@/app/lib/fetchWithAuth";
 import { useEffect, useState } from "react";
 import { SaveIcon, PencilIcon } from "lucide-react";
+import Link from "next/link";
 
 export default function ShowComponents(){
     const[components, setComponents] = useState([])
@@ -133,75 +134,28 @@ export default function ShowComponents(){
         {filteredComponents? filteredComponents.map((course, index) => (
     <tr key={course.id} className="bg-white border-b hover:bg-gray-50 text-black">
         <td className="px-6 py-4">{index+1}</td>
-      <td className="px-6 py-4">
-        {editingRow === course.id ? (
-          <input
-            type="text"
-            value={course.name}
-            onChange={(e) => handleChange(e, course.id, "name")}
-            className="border rounded px-2 py-1"
-          />
-        ) : (
-          course.name
-        )}
-      </td>
+      <td className="px-6 py-4"> {course.name}</td>
     
       <td className="px-6 py-4">
-        {editingRow === course.id ? (
-          <input
-            type="text"
-            value={course.max_marks}
-            onChange={(e) => handleChange(e, course.id, "max_marks")}
-            className="border rounded px-2 py-1"
-          />
-        ) : (
-          course.max_marks
-        )}
+      
+          {course.max_marks}
       </td>
       <td className="px-6 py-4">
-        {editingRow === course.id ? (
-          <select
-            value={course.has_subcomponents ? "true" : "false"}
-            onChange={(e) => handleChange(e, course.id, "has_subcomponents")}
-            className="border rounded px-2 py-1"
-          >
-            <option value="true">Yes</option>
-            <option value="false">No</option>
-          </select>
-        ) : (
-          course.has_subcomponents ? "See Sub Component" : "No"
-        )}
+      
+          {course.has_subcomponents ? "See Sub Component" : "No"}
       </td>
       <td className="px-6 py-4">
-        {editingRow === course.id ? (
-          <select
-            value={course.type ? "EXTERNAL" : "INTERNAL"}
-            onChange={(e) => handleChange(e, course.id, "is_active")}
-            className="border rounded px-2 py-1"
-          >
-            <option value="EXTERNAL">External</option>
-            <option value="INTERNAL">Internal</option>
-          </select>
-        ) : (
-          course.type ? "Active" : "Inactive"
-        )}
+       
+          {course.type ? "Active" : "Inactive"}
       </td>
       <td className="px-6 py-4">
-        {editingRow === course.id ? (
-          <input
-            type="text"
-            value={course.description}
-            onChange={(e) => handleChange(e, course.id, "description")}
-            className="border rounded px-2 py-1"
-          />
-        ) : (
-          course.description
-        )}
+     
+          {course.description}
       </td>
       <td className="px-6 py-4 flex gap-4">
-        <button onClick={() => (editingRow === course.id ? handleSaveClick(course.id) : handleEditClick(course.id))}>
-          {editingRow === course.id ? <SaveIcon className="h-5 w-5 text-green-600" /> : <PencilIcon className="h-5 w-5 text-blue-600" />}
-        </button>
+        <Link href={`/exam-components/edit-component?componentID=${course.id}`} >
+           <PencilIcon className="h-5 w-5 text-blue-600" />
+        </Link>
       </td>
     </tr>
   )) : <p>No Courses Found</p>}
