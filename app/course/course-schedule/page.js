@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { PencilIcon, PlusCircleIcon, SaveIcon, Trash2Icon } from "lucide-react";
+import ClassShed from "@/components/ClassShed";
 
 const UserTable = () => {
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
     const [editingRow, setEditingRow] = useState(null); // Track which row is being edited
+    const [loading, setLoading] = useState(false)
     const [courses, setCourses] = useState([])
     const [isOpen, setIsOpen] = useState(false);
     const [isDel, setIsDel] = useState(false)
@@ -83,10 +85,7 @@ const UserTable = () => {
     const toggleModal = () => {
         setIsOpen(!isOpen);
       };
-      function handleSubmit (e){ 
-        e.preventDefault()
-        console.log("submitted")
-    }
+      
     return (
         <>
         {isOpen && (
@@ -100,7 +99,7 @@ const UserTable = () => {
               {/* Modal header */}
               <div className="flex items-center justify-between p-6 md:p-5 border-b rounded-t dark:border-gray-600 border-gray-200">
                 <h3 className="text-lg font-semibold text-gray-700 dark:text-white">
-                 Add Course Schedule
+                 Add Class Schedule
                 </h3>
                 <button
                   onClick={toggleModal}
@@ -123,294 +122,9 @@ const UserTable = () => {
                   <span className="sr-only">Close modal</span>
                 </button>
               </div>
-
+              <ClassShed/>
               {/* Modal body */}
-              <form className="p-6 md:p-5" onSubmit={handleSubmit}>
-                <div className="grid gap-4 mb-4 grid-cols-4">
-                 
-                  <div className="col-span-1 ">
-                    <label
-                      htmlFor="coursename"
-                      className="block mb-2 text-sm font-bold text-gray-700 dark:text-white"
-                    >
-                      Course Name
-                    </label>
-                    <select
-                      id="coursename"
-                      className="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                    >
-                      <option value="" disabled selected>Select Status</option>
-                      <option value="PGDM+Business Analytics">PGDM+Business Analytics</option>
-                      <option value="EPGDM">EPGDM</option>
-                    </select>
-                  </div>
-                  <div className="col-span-1 ">
-                    <label
-                      htmlFor="batch"
-                      className="block mb-2 text-sm font-bold text-gray-700 dark:text-white"
-                    >
-                      Batch
-                    </label>
-                    <select
-                      id="batch"
-                      className="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                    >
-                      <option value="" disabled selected>Select Batch</option>
-                      <option value="t29">T-29</option>
-                      <option value="t28">T-28</option>
-                    </select>
-                  </div>
-                  <div className="col-span-1 ">
-                    <label
-                      htmlFor="term"
-                      className="block mb-2 text-sm font-bold text-gray-700 dark:text-white"
-                    >
-                      Term
-                    </label>
-                    <select
-                      id="term"
-                      className="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                    >
-                      <option value="" disabled selected>Select Term</option>
-                      <option value="term5">Term 5</option>
-                      <option value="term4">Term 4</option>
-                    </select>
-                  </div>
-                  <div className="col-span-1 ">
-                    <label
-                      htmlFor="subject"
-                      className="block mb-2 text-sm font-bold text-gray-700 dark:text-white"
-                    >
-                      Subejct
-                    </label>
-                    <select
-                      id="subject"
-                      className="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                    >
-                      <option value="" disabled selected>Select Subject</option>
-                      <option value="Pyhton">Python</option>
-                      <option value="marketing">Marketing</option>
-                    </select>
-                  </div>
-                  
-                </div>
-                <div className="flex gap-4">
-               
-                  <div className="w-1/2">
-                  <label
-                      className="block mb-2 text-sm font-bold text-gray-700 dark:text-white"
-                    >
-                      Monday - Start time
-                    </label>
-                    <input
-                      type="time"
-                      name="mondaystarttime"
-                      id="mondaystarttime"
-                      className="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                      placeholder="Type Batch Code"
-                      required
-                    />
-                  </div>
-                  <div className="w-1/2">
-                  <label
-                      className="block mb-2 text-sm font-bold text-gray-700 dark:text-white"
-                    >
-                      End time
-                    </label>
-                    <input
-                      type="time"
-                      name="mondayendtime"
-                      id="mondayendtime"
-                      className="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                      placeholder="Type Batch Code"
-                      required
-                    />
-                  </div>
-                </div>
-                <div className="flex gap-4">
-               
-                  <div className="w-1/2">
-                  <label
-                      className="block mb-2 text-sm font-semibold text-gray-700 dark:text-white"
-                    >
-                      Tuesday - Start time
-                    </label>
-                    <input
-                      type="time"
-                      name="tuesdaystarttime"
-                      id="tuesdaystarttime"
-                      className="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                      placeholder="Type Batch Code"
-                      required
-                    />
-                  </div>
-                  <div className="w-1/2">
-                  <label
-                      className="block mb-2 text-sm font-bold text-gray-700 dark:text-white"
-                    >
-                      End time
-                    </label>
-                    <input
-                      type="time"
-                      name="tuesdayendtime"
-                      id="tuesdayendtime"
-                      className="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                      placeholder="Type Batch Code"
-                      required
-                    />
-                  </div>
-                </div>
-                <div className="flex gap-4">
-               
-                  <div className="w-1/2">
-                  <label
-                      className="block mb-2 text-sm font-bold text-gray-700 dark:text-white"
-                    >
-                      Wednesday - Start time
-                    </label>
-                    <input
-                      type="time"
-                      name="wednesdaystarttime"
-                      id="wednesdaystarttime"
-                      className="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                      placeholder="Type Batch Code"
-                      required
-                    />
-                  </div>
-                  <div className="w-1/2">
-                  <label
-                      className="block mb-2 text-sm font-bold text-gray-700 dark:text-white"
-                    >
-                      End time
-                    </label>
-                    <input
-                      type="time"
-                      name="wednesdayendtime"
-                      id="wednesdayendtime"
-                      className="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                      placeholder="Type Batch Code"
-                      required
-                    />
-                  </div>
-                </div>
-                <div className="flex gap-4">
-               
-                  <div className="w-1/2">
-                  <label
-                      className="block mb-2 text-sm font-bold text-gray-700 dark:text-white"
-                    >
-                      Thursday - Start time
-                    </label>
-                    <input
-                      type="time"
-                      name="thursdaystarttime"
-                      id="thursdaystarttime"
-                      className="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                      placeholder="Type Batch Code"
-                      required
-                    />
-                  </div>
-                  <div className="w-1/2">
-                  <label
-                      className="block mb-2 text-sm font-bold text-gray-700 dark:text-white"
-                    >
-                      End time
-                    </label>
-                    <input
-                      type="time"
-                      name="thursdayendtime"
-                      id="thursdayendtime"
-                      className="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                      placeholder="Type Batch Code"
-                      required
-                    />
-                  </div>
-                </div>
-                <div className="flex gap-4">
-               
-                  <div className="w-1/2">
-                  <label
-                      className="block mb-2 text-sm font-bold text-gray-700 dark:text-white"
-                    >
-                      Friday - Start time
-                    </label>
-                    <input
-                      type="time"
-                      name="fridaystarttime"
-                      id="fridaystarttime"
-                      className="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                      placeholder="Type Batch Code"
-                      required
-                    />
-                  </div>
-                  <div className="w-1/2">
-                  <label
-                      className="block mb-2 text-sm font-bold text-gray-700 dark:text-white"
-                    >
-                      End time
-                    </label>
-                    <input
-                      type="time"
-                      name="fridayendtime"
-                      id="firdayendtime"
-                      className="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                      placeholder="Type Batch Code"
-                      required
-                    />
-                  </div>
-                </div>
-                <div className="flex gap-4">
-               
-                  <div className="w-1/2">
-                  <label
-                      className="block mb-2 text-sm font-bold text-gray-700 dark:text-white"
-                    >
-                      Saturday - Start time
-                    </label>
-                    <input
-                      type="time"
-                      name="saturdaystarttime"
-                      id="saturdaystarttime"
-                      className="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                      placeholder="Type Batch Code"
-                      required
-                    />
-                  </div>
-                  <div className="w-1/2">
-                  <label
-                      className="block mb-2 text-sm font-bold text-gray-700 dark:text-white"
-                    >
-                      End time
-                    </label>
-                    <input
-                      type="time"
-                      name="saturdayendtime"
-                      id="saturdayendtime"
-                      className="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                      placeholder="Type Batch Code"
-                      required
-                    />
-                  </div>
-                </div>
-                <button
-                  type="submit"
-                  className="text-white mt-6 inline-flex justify-center w-full bg-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                >
-                  <svg
-                    className="me-1 -ms-1 w-5 h-5"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
-                      clipRule="evenodd"
-                    ></path>
-                  </svg>
-                  Add Schedule
-                </button>
-              </form>
+              
             </div>
           </div>
         </div>

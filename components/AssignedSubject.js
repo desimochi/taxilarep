@@ -17,7 +17,6 @@ export default function AssignedSubject(){
     const token = localStorage.getItem("accessToken");
     useEffect(() => {
     const fetchCourses = async () => {
-      console.log(token)
       
       if (!token) {
         setError("No token found. Please log in.");
