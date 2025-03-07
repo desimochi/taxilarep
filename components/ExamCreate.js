@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 export default function ExamCreate(){
     const [subjects, setSubjects] = useState([]);
     const[components, setComponents] = useState([])
+    const [filteredSubjects, setFilteredSubjects] = useState([]);
     const [filteredComponents, setFilteredComponents] = useState([]);
     const[enable, setenable] = useState(true)
     const router = useRouter();
@@ -86,29 +87,78 @@ export default function ExamCreate(){
     }, [token]);
     function handleChange(e) {
         const { name, value } = e.target;
+        const selectedItem = filteredSubjects.find(item => item.subject.id.toString() === value);
+    const selectedId = selectedItem ? selectedItem.id : null;
         setSelectedValues(prev => ({
             ...prev,
             [name]: value
         }));
+        setSubjectMappingId(selectedId)
     }
     useEffect(() => {
-        const { course, batch, term, subject } = selectedValues;
-        if (course && batch && term && subject) {
-            const matchingSubject = subjects.find(
-                (item) =>
-                    item.course.some(c => c.id === parseInt(course)) &&
-                    item.batch.id === parseInt(batch) &&
-                    item.term.id === parseInt(term) &&
-                    item.subject.id === parseInt(subject)
-            );
-            setSubjectMappingId(matchingSubject ? matchingSubject.id : null);
-            setenable(false)
+        const { course, batch, term } = selectedValues;
+      
+        if (course && batch && term) {
+          const fetchSubjects = async () => {
+            setLoading(true);
+            setError(null);
+            try {
+              const response = await authFetch(
+                `subject-mapping-list?course=${course}&batch=${batch}&term=${term}`
+              );
+      
+              if (!response.ok) {
+                throw new Error('Failed to fetch subjects');
+              }
+      
+              const data = await response.json();
+              setFilteredSubjects(data.data);   
+            } catch (err) {
+              setError(err.message);
+            } finally {
+              setLoading(false);
+            }
+          };
+      
+          fetchSubjects();
+        } else {
+          setFilteredSubjects([]);
         }
-    }, [selectedValues, subjects]);
+      }, [selectedValues]);
+    useEffect(() => {
+        const { course, batch, term, subject } = selectedValues;
+      
+        if (course && batch && term && subject) {
+          const fetchSubjects = async () => {
+            setLoading(true);
+            setError(null);
+            try {
+              const response = await authFetch(
+                `subject-mapping-list?course=${course}&batch=${batch}&term=${term}&subject=${subject}`
+              );
+      
+              if (!response.ok) {
+                throw new Error('Failed to fetch subjects');
+              }
+      
+              const data = await response.json();
+              setFilteredSubjects(data.data);  
+            } catch (err) {
+              setError(err.message);
+            } finally {
+              setLoading(false);
+            }
+          };
+      
+          fetchSubjects();
+        } else {
+          setFilteredSubjects([]);
+        }
+      }, [selectedValues]);
     useEffect(() => {
         if (subjectMappingId) {
             const filtered = components.filter(
-                (component) => component.id === subjectMappingId
+                (component) => component.subject_mapping === subjectMappingId
             );
             setFilteredComponents(filtered);
         } else {
@@ -158,9 +208,7 @@ export default function ExamCreate(){
                         <label className="font-bold">Course</label>
                         <select name="course" onChange={handleChange} className="bg-white border border-gray-300 mb-3 text-gray-700 text-sm rounded-sm focus:ring-red-600 focus:border-blue-500 block w-full p-2.5">
     <option value="">---- Select Course ----</option>
-    {Array.from(new Map(
-        subjects.flatMap(item => item.course.map(course => [course.id, course]))
-    ).values())
+    {[...new Map(subjects.flatMap(item => item.course.map(course => [course.id, course]))).values()]
     .map((course) => (
         <option key={course.id} value={course.id}>{course.name}</option>
     ))}
@@ -170,29 +218,31 @@ export default function ExamCreate(){
                         <label className="font-bold">Batch</label>
                     <select name="batch" onChange={handleChange}  className="bg-white border border-gray-300 mb-3 text-gray-700 text-sm rounded-sm focus:ring-red-600 focus:border-blue-500 block w-full p-2.5">
                         <option value="">---- Select Batch ----</option>
-                        {Array.from(new Map(subjects.map(item => [item.batch.id, item.batch])).values())
-  .map((batch) => (
-    <option key={batch.id} value={batch.id}>{batch.name}</option>
-))}
+                        {[...new Map(subjects.map(item => [item.batch.id, item.batch])).values()]
+    .map((batch) => (
+        <option key={batch.id} value={batch.id}>{batch.name}</option>
+    ))}
                     </select>
                         </div>
                         <div className="w-1/4">
                         <label className="font-bold">Term</label>
                     <select name="term"  onChange={handleChange} className="bg-white border border-gray-300 mb-3 text-gray-700 text-sm rounded-sm focus:ring-red-600 focus:border-blue-500 block w-full p-2.5">
                         <option value="">---- Select Term ----</option>
-                        {Array.from(new Map(subjects.map(item => [item.term.id, item.term])).values())
-  .map((term) => (
-    <option key={term.id} value={term.id}>{term.name}</option>
-))}
+                        {[...new Map(subjects.map(item => [item.term.id, item.term])).values()]
+    .map((term) => (
+        <option key={term.id} value={term.id}>{term.name}</option>
+    ))}
                     </select>
                         </div>
                         <div className="w-1/4">
                         <label className="font-bold">Subject</label>
                     <select name="subject" onChange={handleChange}  className="bg-white border border-gray-300 mb-3 text-gray-700 text-sm rounded-sm focus:ring-red-600 focus:border-blue-500 block w-full p-2.5">
                         <option value="">---- Select Subject ----</option>
-                        {Array.isArray(subjects) && subjects.map((item) => (
-    <option key={item.id} value={item.id}>{item.subject.name}</option>
-))}
+                        {filteredSubjects.map((item) => (
+              <option key={item.id} value={item.subject.id}>
+                {item.subject.name}
+              </option>
+            ))}
                     </select>
                         </div>
                     </div>

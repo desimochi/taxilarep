@@ -5,14 +5,25 @@ import { useEffect, useState } from "react";
 export default function ClassShed() {
   const [subjects, setSubjects] = useState([]);
   const [filteredSubjects, setFilteredSubjects] = useState([]);
+  const [error, setError] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [selectedSubjectId, setSelectedSubjectId] = useState(null);
   const [selectedValues, setSelectedValues] = useState({
     course: "",
     batch: "",
     term: "",
     subject: "",
   });
+  const [schedule, setSchedule] = useState({
+    date: "",
+    start_time: "",
+    end_time: "",
+  });
 
-  useEffect(() => {
+  const handleValChange = (e) => {
+    setSchedule({ ...schedule, [e.target.name]: e.target.value });
+  };
+  useEffect(() => { 
     const fetchSubjects = async () => {
       try {
         const response = await authFetch(`subject-mapping-viewset`, {
@@ -40,33 +51,115 @@ export default function ClassShed() {
   // Function to handle select changes
   function handleChange(e) {
     const { name, value } = e.target;
+    const selectedItem = filteredSubjects.find(item => item.subject.id.toString() === value);
+    const selectedId = selectedItem ? selectedItem.id : null;
     setSelectedValues((prev) => ({
       ...prev,
       [name]: value,
     }));
+    setSelectedSubjectId(selectedId); // Save item.id in a separate state
+
   }
 
-  // Filtering subjects whenever course, batch, or term is changed
   useEffect(() => {
     const { course, batch, term } = selectedValues;
-
+  
     if (course && batch && term) {
-      const filtered = subjects.filter(
-        (item) =>
-          item.course.some((c) => c.id.toString() === course) &&
-          item.batch.id.toString() === batch &&
-          item.term.id.toString() === term
-      );
-
-      setFilteredSubjects(filtered);
+      const fetchSubjects = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+          const response = await authFetch(
+            `subject-mapping-list?course=${course}&batch=${batch}&term=${term}`
+          );
+  
+          if (!response.ok) {
+            throw new Error('Failed to fetch subjects');
+          }
+  
+          const data = await response.json();
+          setFilteredSubjects(data.data);   
+        } catch (err) {
+          setError(err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+  
+      fetchSubjects();
     } else {
       setFilteredSubjects([]);
     }
-  }, [selectedValues, subjects]);
+  }, [selectedValues]);
+  
+  
+  useEffect(() => {
+    const { course, batch, term, subject } = selectedValues;
+  
+    if (course && batch && term && subject) {
+      const fetchSubjects = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+          const response = await authFetch(
+            `subject-mapping-list?course=${course}&batch=${batch}&term=${term}&subject=${subject}`
+          );
+  
+          if (!response.ok) {
+            throw new Error('Failed to fetch subjects');
+          }
+  
+          const data = await response.json();
+          setFilteredSubjects(data.data);   
+        } catch (err) {
+          setError(err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+  
+      fetchSubjects();
+    } else {
+      setFilteredSubjects([]);
+    }
+  }, [selectedValues]);
+  
 
-  function handleSubmit(e) {
-    e.preventDefault();
-    console.log("Submitted data:", selectedValues);
+  async function handleSubmit(e) {
+    e.preventDefault(); // Prevent the default form submission
+  
+    if (!selectedSubjectId) {
+      console.error("No subject selected");
+      return;
+    }
+  
+    const newData = {
+      mapping: selectedSubjectId,
+      date: schedule.date,
+      start_time: schedule.start_time,
+      end_time: schedule.end_time,
+    };
+  
+    try {
+      const response = await authFetch(`class-schedule-viewset`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newData),
+      });
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+        console.log("Schedule added successfully:", data);
+    
+      } else {
+        console.error("Schedule creation failed:", data);
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
   }
 
   return (
@@ -128,31 +221,49 @@ export default function ClassShed() {
 
       {/* Start and End Time Inputs */}
       <div className="flex gap-4">
-        <div className="w-1/2">
-          <label className="block mb-2 text-sm font-bold text-gray-700 dark:text-white">
-            Start time
-          </label>
-          <input
-            type="time"
-            name="mondaystarttime"
-            id="mondaystarttime"
-            className="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
-            required
-          />
-        </div>
-        <div className="w-1/2">
-          <label className="block mb-2 text-sm font-bold text-gray-700 dark:text-white">
-            End time
-          </label>
-          <input
-            type="time"
-            name="mondayendtime"
-            id="mondayendtime"
-            className="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
-            required
-          />
-        </div>
+      <div className="w-1/3">
+        <label className="block mb-2 text-sm font-bold text-gray-700 dark:text-white">
+          Date
+        </label>
+        <input
+          type="date"
+          name="date"
+          id="date"
+          value={schedule.date}
+          onChange={handleValChange}
+          className="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
+          required
+        />
       </div>
+      <div className="w-1/3">
+        <label className="block mb-2 text-sm font-bold text-gray-700 dark:text-white">
+          Start time
+        </label>
+        <input
+          type="time"
+          name="start_time"
+          id="start_time"
+          value={schedule.start_time}
+          onChange={handleValChange}
+          className="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
+          required
+        />
+      </div>
+      <div className="w-1/3">
+        <label className="block mb-2 text-sm font-bold text-gray-700 dark:text-white">
+          End time
+        </label>
+        <input
+          type="time"
+          name="end_time"
+          id="end_time"
+          value={schedule.end_time}
+          onChange={handleValChange}
+          className="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
+          required
+        />
+      </div>
+    </div>
 
       {/* Submit Button */}
       <button
