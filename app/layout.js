@@ -75,6 +75,8 @@ function InnerLayout({ children }) {
   
   function handleLogout() {
     localStorage.removeItem("accessToken");
+    localStorage.removeItem("userState");
+    Cookies.remove("user");
     router.push("/login"); // Redirect to login page
   }
   const noLayoutRoutes = ["/login", "/student"]
@@ -97,7 +99,7 @@ function InnerLayout({ children }) {
         className={`${roboto.variable} ${robotoMono.variable} antialiased`}
       >
         <main className="flex">
-        <Sidebar collapsed={collapsed} toggleSidebar={toggleSidebar} toggleMenu={toggleMenu} openMenus={openMenus} />
+        <Sidebar collapsed={collapsed} toggleSidebar={toggleSidebar} toggleMenu={toggleMenu} openMenus={openMenus} role={state.role_name} type={state.employee_type} />
         
         <aside className={`${collapsed ? "w-full" : "w-full"} bg-white `}>
         <div className="w-full h-[87px] p-8 flex items-center justify-between bg-white">
@@ -140,7 +142,7 @@ function InnerLayout({ children }) {
                     </div>
     <div>
     <button className="bg-black text-white py-2 px-8 rounded-md hover:bg-gray-800" onMouseEnter={()=>entermouse()} onMouseLeave={()=>leavemouse()}>
-      Admin
+      {state.name}
     </button>
     <div
                 className={`absolute z-50  right-0 transform -translate-x-10 mt-2 w-64 text-sm text-gray-500 bg-white border border-gray-200 rounded-lg shadow-md dark:text-gray-400 dark:border-gray-600 dark:bg-gray-800 transition-all duration-300 ${

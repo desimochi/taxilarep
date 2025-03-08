@@ -40,6 +40,7 @@ export default function ClassShed() {
         const data = await response.json();
         console.log("Fetched subjects:", data);
         setSubjects(data.data);
+        
       } catch (err) {
         console.error(err.message);
       }
@@ -70,7 +71,7 @@ export default function ClassShed() {
         setError(null);
         try {
           const response = await authFetch(
-            `subject-mapping-list?course=${course}&batch=${batch}&term=${term}`
+            `subject-mapping-filter?course=${course}&batch=${batch}&term=${term}`
           );
   
           if (!response.ok) {

@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+import Cookies from "js-cookie";
 import logo from "@/public/logo.png";
 import campus from "@/public/campus.jpeg";
 import { useRouter } from "next/navigation";
@@ -44,8 +45,12 @@ export default function LoginPage() {
         }
         saveTokens(data.data.access_token, data.data.refresh_token);
         updateState(data.data.user);
-        console.log(updateState, state)
-        router.push("/dashboard");
+        Cookies.set("user", JSON.stringify(data.data.user), { expires: 1 });
+        if(data.data.user.employee_type==="Teaching" ){
+          router.replace("/faculty");
+        } else {
+          router.push("/admin");
+        }
       } else {
         console.error("Login failed:", data);
       }

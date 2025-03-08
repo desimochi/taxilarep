@@ -104,7 +104,7 @@ export default function ExamCreate(){
             setError(null);
             try {
               const response = await authFetch(
-                `subject-mapping-list?course=${course}&batch=${batch}&term=${term}`
+                `subject-mapping-filter?course=${course}&batch=${batch}&term=${term}`
               );
       
               if (!response.ok) {

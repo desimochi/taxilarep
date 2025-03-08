@@ -3,85 +3,17 @@
 import { useEffect, useState } from "react";
 import { PencilIcon, PlusCircleIcon, SaveIcon, Trash2Icon } from "lucide-react";
 import ClassShed from "@/components/ClassShed";
-
-const UserTable = () => {
+import { authFetch } from "@/app/lib/fetchWithAuth";
+import ClassShedDis from "@/components/ClassShedDis";
+export default function Page() {
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
     const [editingRow, setEditingRow] = useState(null); // Track which row is being edited
     const [loading, setLoading] = useState(false)
     const [courses, setCourses] = useState([])
     const [isOpen, setIsOpen] = useState(false);
     const [isDel, setIsDel] = useState(false)
-    const [users, setUsers] = useState([{
-        subject: "Marketing Management",
-        monday:"10:00-12:00",
-        tuesday:"-",
-        wednesday:"11:00-12:30",
-        thursday:"02:00-04:00",
-        friday:"-",
-        saturday:"-",
-    },
-    {
-      subject: "Python",
-      monday:"-",
-      tuesday:"10:0012:00",
-      wednesday:"-",
-      thursday:"02:00-04:00",
-      friday:"-",
-      saturday:"11:00-12:30",
-  },
-]); 
- const token = localStorage.getItem("accessToken");
-  useEffect(() => {
-    const fetchCourses = async () => {
-      console.log(token)
-
-      if (!token) {
-        setError("No token found. Please log in.");
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const response = await fetch("http://101.53.148.75:8007/course-viewset", {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`Error: ${response.status} - ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        console.log(data)
-        setCourses(data.data); // Handle different API structures
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCourses();
-  }, [token]);
 
 
-    const handleEditClick = (index) => {
-        setEditingRow(index); // Set the clicked row as editable
-    };
-
-    const handleSaveClick = () => {
-        setEditingRow(null); // Disable editing when save is clicked
-    };
-
-    const handleChange = (e, index) => {
-        const { name, value } = e.target;
-        const updatedUsers = [...users];
-        updatedUsers[index][name] = value;
-        setUsers(updatedUsers);
-    };
     const toggleModal = () => {
         setIsOpen(!isOpen);
       };
@@ -140,149 +72,14 @@ const UserTable = () => {
                     <input type="text" name="name" placeholder="Search Schedule..." className="bg-white border border-gray-300 text-gray-700 text-sm rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
                 </div>
                 <div className="w-1/5">
-                    <button onClick={toggleModal} className="w-full bg-black py-2.5 flex justify-center gap-1"><PlusCircleIcon className="h-5 w-5"/>Add a New Class schedule</button>
+                    <button onClick={toggleModal} className="w-full bg-black py-2.5 flex justify-center gap-1"><PlusCircleIcon className="h-5 w-5"/>Add Class schedule</button>
                 </div>
                 
                 </div>
                 
             </div>
           <div className="border border-gray-300 rounded-sm mt-5 ">
-            <h4 className="text-center pt-5 font-bold">T-29 (Term 5)</h4>
-        <table className="w-full text-sm text-left text-gray-700 dark:text-gray-400 mt-4 ">
-            <thead className="text-xs text-white uppercase bg-black dark:bg-gray-700 dark:text-white-400 w-full">
-                <tr >
-                    <th className="px-6 py-3">S.No.</th>
-                    <th className="px-6 py-3">Subject</th>
-                    <th className="px-6 py-3">Monday</th>
-                    <th className="px-6 py-3">Tuesday</th>
-                    <th className="px-6 py-3">Wednesday</th>
-                    <th className="px-6 py-3">Thrusday</th>
-                    <th className="px-6 py-3">Friday</th>
-                    <th className="px-6 py-3">Saturday</th>
-                    <th className="px-6 py-3">Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {users.map((user, index) => (
-                    <tr
-                        key={index}
-                        className="bg-white border-b dark:bg-gray-800 overflow-x-hidden dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
-                    >
-                      <td className="px-6 py-4">
-                        {index+1}
-                      </td>
-                        <td className="px-6 py-4">
-                            {editingRow === index ? (
-                                <input
-                                    type="text"
-                                    name="coursename"
-                                    value={user.subject}
-                                    onChange={(e) => handleChange(e, index)}
-                                    className="border p-1 rounded"
-                                />
-                            ) : (
-                                user.subject
-                            )}
-                        </td>
-                        <td className="px-6 py-4">
-                            {editingRow === index ? (
-                                <input
-                                    type="text"
-                                    name="duration"
-                                    value={user.monday}
-                                    onChange={(e) => handleChange(e, index)}
-                                    className="border p-1 rounded"
-                                />
-                            ) : (
-                                user.monday
-                            )}
-                        </td>
-                        <td className="px-6 py-4">
-                            {editingRow === index ? (
-                                <input
-                                    type="text"
-                                    name="status"
-                                    value={user.tuesday}
-                                    onChange={(e) => handleChange(e, index)}
-                                    className="border p-1 rounded"
-                                />
-                            ) : (
-                                user.tuesday
-                            )}
-                        </td>
-                        <td className="px-6 py-4">
-                            {editingRow === index ? (
-                                <input
-                                    type="text"
-                                    name="status"
-                                    value={user.wednesday}
-                                    onChange={(e) => handleChange(e, index)}
-                                    className="border p-1 rounded"
-                                />
-                            ) : (
-                                user.wednesday
-                            )}
-                        </td>
-                        <td className="px-6 py-4">
-                            {editingRow === index ? (
-                                <input
-                                    type="text"
-                                    name="status"
-                                    value={user.thursday}
-                                    onChange={(e) => handleChange(e, index)}
-                                    className="border p-1 rounded"
-                                />
-                            ) : (
-                                user.thursday
-                            )}
-                        </td>
-                        <td className="px-6 py-4">
-                            {editingRow === index ? (
-                                <input
-                                    type="text"
-                                    name="status"
-                                    value={user.friday}
-                                    onChange={(e) => handleChange(e, index)}
-                                    className="border p-1 rounded"
-                                />
-                            ) : (
-                                user.friday
-                            )}
-                        </td>
-                        <td className="px-6 py-4">
-                            {editingRow === index ? (
-                                <input
-                                    type="text"
-                                    name="status"
-                                    value={user.saturday}
-                                    onChange={(e) => handleChange(e, index)}
-                                    className="border p-1 rounded"
-                                />
-                            ) : (
-                                user.saturday
-                            )}
-                        </td>
-                        <td className="px-6 py-4 flex justify-start gap-4">
-                            <span
-                                onClick={() =>
-                                    editingRow === index ? handleSaveClick() : handleEditClick(index)
-                                }
-                                className="cursor-pointer"
-                            >
-                                {editingRow === index ? (
-                                    <SaveIcon className="h-5 w-5 text-green-600" />
-                                ) : (
-                                    <PencilIcon className="h-5 w-5 text-blue-600" />
-                                )}
-                            </span>
-                            <span className="cursor-pointer">
-                                <Trash2Icon className="h-5 w-5 text-red-600" onClick={()=>setIsDel(true)}/>
-                            </span>
-                        </td>
-                    </tr>
-                ))}
-            </tbody>
-        </table>
+            <ClassShedDis/>
         </div>
         </div>
         {isDel && (
@@ -316,5 +113,4 @@ const UserTable = () => {
     );
 };
 
-export default UserTable;
 
