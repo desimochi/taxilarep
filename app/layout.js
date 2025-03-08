@@ -3,6 +3,8 @@ import { GlobalProvider, GlobalContext } from "@/components/GlobalContext";
 import { useState, useEffect, useContext } from "react";
 import { Roboto, Roboto_Mono } from "next/font/google";
 import userImage from "@/public/userimage.jpg";
+import Cookies from "js-cookie";
+
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import { User, CreditCard, Users, LogOut, FileUp, Moon, Settings2Icon } from "lucide-react";
