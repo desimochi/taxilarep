@@ -12,6 +12,7 @@ export default function LoginPage() {
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   const { state, updateState } = useContext(GlobalContext);
   const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false)
   const [password, setPassword] = useState("");
   const [error, setError] = useState(false)
   const router = useRouter();
@@ -26,13 +27,12 @@ export default function LoginPage() {
     const formData = new FormData(e.target);
     const username = formData.get("username");
     const password = formData.get("password");
-  
+    setLoading(true)
     try {
       const response = await fetch(`${API_BASE_URL}login`, {
         method: "POST",
-        mode:"cors",
-        headers: { "Content-Type": "application/json",
-         },
+        mode: "cors",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       });
   
@@ -43,14 +43,25 @@ export default function LoginPage() {
           setError(true);
           return;
         }
+  
+        // Save tokens
         saveTokens(data.data.access_token, data.data.refresh_token);
-        updateState(data.data.user);
-        Cookies.set("user", JSON.stringify(data.data.user), { expires: 1 });
-        if(data.data.user.employee_type==="Teaching" ){
-          router.replace("/faculty");
-        } else {
-          router.push("/admin");
-        }
+  
+        // Save user data in cookies and global state
+        Cookies.set("user", JSON.stringify(data.data.user), { expires: 1, path: "/" });
+  
+        updateState(data.data.user); // Ensure context updates before redirecting
+  
+        // ✅ **Delay navigation until state updates properly**
+        setTimeout(() => {
+          if (data.data.user.employee_type === "Teaching") {
+            router.replace("/faculty");
+            setLoading(false)
+          } else {
+            router.push("/admin");
+          }
+        }, 100); // Small delay to allow state update
+  
       } else {
         console.error("Login failed:", data);
       }
@@ -58,6 +69,7 @@ export default function LoginPage() {
       console.error("Error:", error);
     }
   }
+  
   
 
   return (
@@ -132,7 +144,7 @@ export default function LoginPage() {
                   type="submit"
                   className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                 >
-                  Sign in
+                  {loading? "Signing In...." : "Sign in"}
                 </button>
               </div>
             </form>
