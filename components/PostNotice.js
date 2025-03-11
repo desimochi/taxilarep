@@ -69,15 +69,15 @@ export default function PostNotice(){
     const file = event.target.files[0];
     if (!file) return;
   
-    const filePath = URL.createObjectURL(file); // Get local file path
+    const filePath = `file:///${file.name}`; // Get local file path
     const fileEntry = { name: file.name, url: filePath, type };
-  
+    
     setUploadedFiles((prev) => [...prev, fileEntry]);
   
     // Insert file preview into the editor
     if (type === "image") {
       editor.chain().focus().insertContent(
-        `<img src="${filePath}" class="h-[300px] w-[300px]"/>`
+        `<img src="${file.name}" class="h-[300px] w-[300px]"/>`
       ).run();
     } else {
       editor.chain().focus().insertContent(
