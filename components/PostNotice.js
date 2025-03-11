@@ -76,7 +76,7 @@ export default function PostNotice(){
 
     // Insert a styled file link or image anchor text into the editor
     editor.chain().focus().insertContent(
-      `<a href="${fileUrl}" target="_blank" class="text-blue-600 font-semibold hover:underline">${file.name}</a>`
+      `<img src="${fileUrl}" target="_blank" class="h-[300px] w-[300px]"/>`
     ).run();
   };
 
