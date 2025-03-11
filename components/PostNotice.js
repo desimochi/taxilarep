@@ -65,19 +65,25 @@ export default function PostNotice(){
     }
   };
 
-  const handleFileUpload = async (event, type) => {
+  const handleFileUpload = (event, type) => {
     const file = event.target.files[0];
     if (!file) return;
-
-    const fileUrl = URL.createObjectURL(file);
-    const fileEntry = { name: file.name, url: fileUrl, type };
-
+  
+    const filePath = URL.createObjectURL(file); // Get local file path
+    const fileEntry = { name: file.name, url: filePath, type };
+  
     setUploadedFiles((prev) => [...prev, fileEntry]);
-
-    // Insert a styled file link or image anchor text into the editor
-    editor.chain().focus().insertContent(
-      `<img src="${fileUrl}" target="_blank" class="h-[300px] w-[300px]"/>`
-    ).run();
+  
+    // Insert file preview into the editor
+    if (type === "image") {
+      editor.chain().focus().insertContent(
+        `<img src="${filePath}" class="h-[300px] w-[300px]"/>`
+      ).run();
+    } else {
+      editor.chain().focus().insertContent(
+        `<a href="${filePath}" target="_blank">${file.name}</a>`
+      ).run();
+    }
   };
 
   const handleDelete = (fileUrl) => {
