@@ -25,7 +25,7 @@ export default function Page () {
       try {
         const [classRes, subRes] = await Promise.all([
           authFetch("employee-list"),
-          authFetch("student-list"),
+          authFetch("students/no-mentor"),
         ]);
 
         if (!classRes.ok || !subRes.ok) {
@@ -104,7 +104,7 @@ const handleSubmit = async () => {
 
     const payload = {
       user: parseInt(selectedfaculty),
-      student: Array.from(selectedStudents),
+      students: Array.from(selectedStudents),
     };
 
     try {
