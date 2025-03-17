@@ -88,7 +88,7 @@ export const menuItems = [
         { label: "Add New Student", path: "/add-student" },
         { label: "Add Bulk Student", path: "/add-bulk-student" },
         { label: "All Students", path: "/students" },
-        { label: "Batch Assign", path: "/batch-assign" },
+        { label: "Assign Students", path: "/assign-students" },
       ],
     },
     {
@@ -160,7 +160,16 @@ export const menuItems = [
           { label: "Question Paper", path: "/question-paper" },
         ],
       },
-    { label: "Noticeboard", icon: <NewspaperIcon className="h-5 w-5" />, path: "/see-notice" },
+      {
+        label: "Imp. News & Notice",
+        icon: <NewspaperIcon className="h-5 w-5" />,
+        subMenu: [
+          { label: "Noticeboard", path: "/notice/noticeboard" },
+          { label: "News Manager", path: "/notice/news-manager" },
+          { label: "Upload Document", path: "/notice/upload-document" },
+          { label: "Uploaded Document", path: "/notice/uploaded-document" },
+        ],
+      },
     { label: "Mentorship Student", icon: <NewspaperIcon className="h-5 w-5" />, path: "faculty/mentorship-assign-student" },
     {label : "Faculty Report",  icon: <BookCheckIcon className="h-5 w-5" />, hasSubMenu: true, subMenu :[
           { label: "Faculty Activity", path: "/faculty-report/faculty-activity" },

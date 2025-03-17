@@ -16,6 +16,9 @@ import { GlobalContext } from "./GlobalContext";
 export default function PostNotice(){
     const { state } = useContext(GlobalContext);
     const [showToast, setShowToast] = useState(false);
+    const [fileUrl, setFileUrl] = useState("");
+    const [fileId, setFileId] = useState(null);
+    const isUploaded = useRef(false);
     const [message, setmessage] = useState("")
     const fileInputRef = useRef(null);
     const[id, setId] = useState()
@@ -27,6 +30,25 @@ export default function PostNotice(){
     valid_date: "",// Assuming this is static for now
   });
   const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    const handleUnload = async () => {
+      for (const file of uploadedFiles) {
+        try {
+          await fetch(`/api/delete-file?fileId=${encodeURIComponent(file.id)}`, {
+            method: "DELETE",
+          });
+        } catch (error) {
+          console.error("Failed to delete file:", error);
+        }
+      }
+    };
+  
+    window.addEventListener("beforeunload", handleUnload);
+  
+    return () => {
+      window.removeEventListener("beforeunload", handleUnload);
+    };
+  }, [uploadedFiles]);
   
   useEffect(() => {
     setMounted(true);
@@ -64,40 +86,72 @@ export default function PostNotice(){
       editor.chain().focus().setLink({ href: url }).run();
     }
   };
-
-  const handleFileUpload = (event, type) => {
+  
+  const handleFileUpload = async (event, type) => {
     const file = event.target.files[0];
     if (!file) return;
   
-    const filePath = `file:///${file.name}`; // Get local file path
-    const fileEntry = { name: file.name, url: filePath, type };
-    
-    setUploadedFiles((prev) => [...prev, fileEntry]);
+    const formData = new FormData();
+    formData.append("file", file);
   
-    // Insert file preview into the editor
-    if (type === "image") {
-      editor.chain().focus().insertContent(
-        `<img src="${file.name}" class="h-[300px] w-[300px]"/>`
-      ).run();
-    } else {
-      editor.chain().focus().insertContent(
-        `<a href="${filePath}" target="_blank">${file.name}</a>`
-      ).run();
+    try {
+      const response = await fetch("/api/upload-file", {
+        method: "POST",
+        body: formData,
+      });
+  
+      if (response.ok) {
+        const data = await response.json();
+        setUploadedFiles((prev) => [
+          ...prev,
+          { url: data.fileUrl, name: file.name, id: data.fileId },
+        ]);
+  
+        if (type === "image") {
+          editor.commands.insertContent(
+            `<img src="${data.fileUrl}" class="h-[300px] w-[300px]"/>`
+          );
+        } else {
+          editor.commands.insertContent(
+            `<a href="${data.fileUrl}" target="_blank">${file.name}</a>`
+          );
+        }
+      }
+    } catch (error) {
+      console.error("Upload failed:", error);
     }
   };
-
-  const handleDelete = (fileUrl) => {
-    // Remove from uploaded files list
-    setUploadedFiles((prev) => prev.filter((file) => file.url !== fileUrl));
-
-    // Remove from the text editor content
-    editor.commands.setContent(
-      editor.getHTML().replace(
-        new RegExp(`<a[^>]+href=["']${fileUrl}["'][^>]*>.*?</a>`, "g"),
+  
+  const deleteFile = async (fileIdToDelete) => {
+    if (!fileIdToDelete) return;
+  
+    try {
+      // Decode fileId before sending
+      const decodedFileId = decodeURIComponent(fileIdToDelete);
+  
+      await fetch(`/api/delete-file?fileId=${decodedFileId}`, {
+        method: "DELETE",
+      });
+  
+      // Update the uploaded files list
+      setUploadedFiles((prev) =>
+        prev.filter((file) => file.id !== fileIdToDelete)
+      );
+  
+      // Remove the file from the editor content
+      editor.commands.setContent(editor.getHTML().replace(
+        new RegExp(`<img[^>]+src=["'][^"']*${decodedFileId}["'][^>]*>|<a[^>]+href=["'][^"']*${decodedFileId}["'][^>]*>.*?</a>`, "g"),
         ""
-      )
-    );
+      ));
+  
+    } catch (error) {
+      console.error("Delete failed:", error);
+    }
   };
+  
+  
+  
+
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -139,6 +193,7 @@ export default function PostNotice(){
       setTimeout(() => setShowToast(false), 3000);
     }
   };
+  
     return(
         <div className="border border-gray-300 mt-4 mx-80 md:mt-12 md:mx-40 rounded-md shadow-md hover:shadow-xl transition-shadow">
         {showToast && <Toast message={message} />}
@@ -241,27 +296,33 @@ export default function PostNotice(){
 
       {/* Uploaded Files & Images */}
       {uploadedFiles.length > 0 && (
-        <div className="mt-2 p-2 bg-gray-100 rounded dark:bg-gray-700">
-          <h3 className="text-sm font-semibold text-gray-700 dark:text-white">Uploaded Files & Images:</h3>
-          <ul className="mt-1 space-y-2">
-            {uploadedFiles.map((file, index) => (
-              <li key={index} className="flex items-center space-x-2">
-                <a
-                  href={file.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-block px-3 py-1 text-sm font-semibold text-white bg-blue-600 rounded hover:bg-blue-700"
-                >
-                  {file.name}
-                </a>
-                <button onClick={() => handleDelete(file.url)} className="p-1 bg-red-500 text-white rounded hover:bg-red-600">
-                  <TrashIcon className="w-4 h-4" />
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+  <div className="mt-2 p-2 bg-gray-100 rounded dark:bg-gray-700">
+    <h3 className="text-sm font-semibold text-gray-700 dark:text-white">
+      Uploaded Files & Images:
+    </h3>
+    <ul className="mt-1 space-y-2">
+      {uploadedFiles.map((file, index) => (
+        <li key={index} className="flex items-center space-x-2">
+          <a
+            href={file.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block px-3 py-1 text-sm font-semibold text-white bg-blue-600 rounded hover:bg-blue-700"
+          >
+            {file.name}
+          </a>
+          <button
+            onClick={() => deleteFile(file.url)} // ✅ Pass file ID
+            className="p-1 bg-red-500 text-white rounded hover:bg-red-600"
+          >
+            <TrashIcon className="w-4 h-4" />
+          </button>
+        </li>
+      ))}
+    </ul>
+  </div>
+)}
+
     </div>
                      </div>
                 <div className="px-6 pb-6">
