@@ -89,22 +89,30 @@ export default function Page () {
     });
   };
 const handleSubmit = async () => {
-    if (selectedStudents.size === 0) {
-      setMessage("Please select at least one student.");
-      setShowToast(true);
-      setIsShaking(true);
-      return;
-    }
-    if (!selectedfaculty) {
-        setMessage("Please select Faculty");
-        setShowToast(true);
-        setIsShaking(true);
-        return;
-      }
+  let errorMessage = "";
 
+  if (!selectedCourse || !selectedBatch) {
+    errorMessage = "Please Select A Course and Batch";
+  } else if (selectedStudents.size === 0) {
+    errorMessage = "Please select at least one student.";
+  } else if (!selectedfaculty) {
+    errorMessage = "Please select Faculty";
+  }
+  if (errorMessage) {
+    setMessage(errorMessage);
+    setShowToast(true);
+    
+    // Reset shaking before setting it to true
+    setIsShaking(false);
+    setTimeout(() => setIsShaking(true), 10); // Small timeout to force state change
+
+    return;
+  }
     const payload = {
-      user: parseInt(selectedfaculty),
-      students: Array.from(selectedStudents),
+      course: selectedCourse ? parseInt(selectedCourse) : null,
+  batch: selectedBatch ? parseInt(selectedBatch) : null,
+  user: parseInt(selectedfaculty),
+  students: Array.from(selectedStudents),
     };
 
     try {
@@ -113,13 +121,13 @@ const handleSubmit = async () => {
         method: "POST",
         body: JSON.stringify(payload),
       });
-
+      const res = await response.json()
       if (response.ok) {
         setMessage("Mentor assigned successfully!");
         setShowToast(true);
         setSelectedStudents(new Set()); // Reset selection after success
       } else {
-        throw new Error("Failed to assign students");
+        throw new Error(res.message);
       }
     } catch (error) {
       setMessage(error.message || "Something went wrong.");
