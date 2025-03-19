@@ -170,7 +170,7 @@ export const menuItems = [
           { label: "Uploaded Document", path: "/notice/uploaded-document" },
         ],
       },
-    { label: "Mentorship Student", icon: <NewspaperIcon className="h-5 w-5" />, path: "faculty/mentorship-assign-student" },
+    { label: "Mentorship Student", icon: <NewspaperIcon className="h-5 w-5" />, path: "/faculty/mentorship-assign-student" },
     {label : "Faculty Report",  icon: <BookCheckIcon className="h-5 w-5" />, hasSubMenu: true, subMenu :[
           { label: "Faculty Activity", path: "/faculty-report/faculty-activity" },
           { label: "Faculty Syllabus", path: "/faculty-report/faculty-syllabus" },

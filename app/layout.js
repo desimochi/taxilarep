@@ -12,6 +12,7 @@ import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
 import logo from "@/public/logo.png";
 import Image from "next/image";
+import Link from "next/link";
 
 const roboto = Roboto({
   variable: "--font-roboto",
@@ -166,14 +167,13 @@ function InnerLayout({ children }) {
 
             {/* Menu Items */}
             <ul className="space-y-2">
+            <Link href={`/profile/employee/${state.user_id}`} passHref>
                 <li className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer">
-                    <div className="flex items-center space-x-2">
-                        <User className="text-gray-500 dark:text-gray-400 w-5 h-5" />
-                        <span className="text-gray-700 dark:text-gray-300">Profile</span>
-                    </div>
-                    <span className="text-xs text-gray-400">⌘P</span>
+                 
+                  Profile
+                    
                 </li>
-
+                </Link>
                 <li className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer">
                     <div className="flex items-center space-x-2">
                         <Settings2Icon className="text-gray-500 dark:text-gray-400 w-5 h-5" />
