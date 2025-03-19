@@ -123,7 +123,7 @@ export default function Page() {
         {showToast && <Toast message={message} className="z-50"/>}
         {showlist && <>
             <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-25">
-            <div className="bg-white p-6 rounded-lg shadow-lg w-1/2">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-1/2 ">
                         <div className="flex justify-between items-center border-b pb-2">
                             <h2 className="text-xl font-bold">Assign Mentor</h2>
                             <button 
@@ -133,6 +133,7 @@ export default function Page() {
                                 ✖
                             </button>
                         </div>
+                        <div className="max-h-80 overflow-y-auto">
                         <table className="w-full rounded-xl text-sm text-left rtl:text-right text-gray-800 dark:text-gray-400 mt-4">
                         <thead className="text-xs text-white uppercase bg-black dark:bg-gray-700 dark:text-white-400 w-full">
                             <tr>
@@ -161,6 +162,7 @@ export default function Page() {
                                 ))}
                         </tbody>
                         </table>
+                        </div>
                         <div className="flex justify-start mt-6">
                             <button className="bg-red-600 rounded p-2 px-12 text-white" onClick={handleSubmit}>Update</button>
                         </div>

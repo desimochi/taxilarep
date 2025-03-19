@@ -94,7 +94,7 @@ export default function Page(){
                                     {stu?.course?.name || "N/A"}
                                 </td>
                                 <td className="px-6 py-4">
-                                   <Link href={`/faculty/mentorship-student/${stu.id}`} ><button className="bg-blue-500 text-white px-3 py-1 rounded">
+                                   <Link href={`/students/details/${stu.id}`} ><button className="bg-blue-500 text-white px-3 py-1 rounded">
                                         Details
                                     </button> </Link>
                                 </td>

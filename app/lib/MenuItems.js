@@ -133,7 +133,7 @@ export const menuItems = [
             {label:"Upload Syllabus", path:"/faculty/upload-syllabus"},
             { label: "Uploaded Syllabus", path: "/faculty/uploaded-syllabus" },
           ]},
-          { label: "Student Attendance", path: "faculty/see-attendance" },
+          { label: "Student Attendance", path: "/attendance/class-attendance" },
       ],
     },
    

@@ -17,9 +17,7 @@ export default function ClassShedDis() {
       const [classRes, subRes] = await Promise.all([
         authFetch("class-schedule-viewset"),
         authFetch("subject-mapping-viewset"),
-        fetch("http://101.53.148.75:8007/course-viewset", {
-          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-        }),
+        authFetch("course-viewset"),
       ]);
 
       const classData = await classRes.json();
