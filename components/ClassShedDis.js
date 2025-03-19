@@ -5,27 +5,18 @@ import { authFetch } from "@/app/lib/fetchWithAuth";
 export default function ClassShedDis() {
     const [loading, setLoading] = useState(false)
     const [classSchedule, setClassSchedule] = useState([]);
-    const [subjectMapping, setSubjectMapping] = useState([]);
-    const [courses, setCourses] = useState([])
     const [isOpen, setIsOpen] = useState(false);
 
- const token = localStorage.getItem("accessToken");
  useEffect(() => {
   const fetchAllData = async () => {
     setLoading(true);
     try {
-      const [classRes, subRes] = await Promise.all([
-        authFetch("class-schedule-viewset"),
-        authFetch("subject-mapping-viewset"),
-        authFetch("course-viewset"),
-      ]);
+      const classRes= await authFetch("class-schedule-viewset")
 
       const classData = await classRes.json();
-      const subData = await subRes.json();
 
       // Only update state if the data is different
       setClassSchedule((prev) => (JSON.stringify(prev) !== JSON.stringify(classData.data) ? classData.data : prev));
-      setSubjectMapping((prev) => (JSON.stringify(prev) !== JSON.stringify(subData.data) ? subData.data : prev));
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -34,27 +25,8 @@ export default function ClassShedDis() {
   };
 
   fetchAllData();
-}, [token]);
+}, []);
 
-  console.log(classSchedule)
-  // Merge data
-  const mergedData = classSchedule
-    .map((cls) => {
-      const subjectMap = subjectMapping.find((sub) => sub.id === cls.mapping);
-      if (!subjectMap) return null;
-
-      return {
-        id:subjectMap.id,
-        term: subjectMap.term.name,
-        batch: subjectMap.batch.name,
-        subject: subjectMap.subject.name,
-        faculty: `${subjectMap.faculty.first_name} ${subjectMap.faculty.last_name}`,
-        date: cls.date,
-        start_time: cls.start_time,
-        end_time: cls.end_time,
-      };
-    })
-    .filter(Boolean);
 
     const toggleModal = () => {
         setIsOpen(!isOpen);
@@ -79,14 +51,14 @@ export default function ClassShedDis() {
             </tr>
           </thead>
           <tbody>
-            {mergedData.length > 0 ? (
-              mergedData.map((row, index) => (
+            {classSchedule.length > 0 ? (
+              classSchedule.map((row, index) => (
                 <tr key={index} className="text-center border">
                 <td className="border px-4 py-2">{index+1}</td>
-                  <td className="border px-4 py-2">{row.term}</td>
-                  <td className="border px-4 py-2">{row.batch}</td>
-                  <td className="border px-4 py-2">{row.subject}</td>
-                  <td className="border px-4 py-2">{row.faculty}</td>
+                  <td className="border px-4 py-2">{row.mapping.term.name}</td>
+                  <td className="border px-4 py-2">{row.mapping.batch.name}</td>
+                  <td className="border px-4 py-2">{row.mapping.subject.name}</td>
+                  <td className="border px-4 py-2">{row.mapping.faculty.first_name+ " " +row.mapping.faculty.last_name}</td>
                   <td className="border px-4 py-2">{row.date}</td>
                   <td className="border px-4 py-2">{row.start_time}</td>
                   <td className="border px-4 py-2">{row.end_time}</td>

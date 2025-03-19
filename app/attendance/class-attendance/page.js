@@ -4,7 +4,6 @@ import { useState, useContext, useEffect } from "react";
 import { GlobalContext } from "@/components/GlobalContext";
 import FullWidthLoader from "@/components/Loaader";
 import Link from "next/link";
-import { PencilIcon } from "lucide-react";
 
 export default function ClassSchedule() {
   const [sclass, setsclass] = useState([]);
@@ -23,7 +22,7 @@ export default function ClassSchedule() {
 
         const data = await response.json();
         const filteredClasses = data.data.filter(
-            (cls) => !cls.is_complete && !cls.is_cancel && cls.mapping
+            (cls) => !cls.is_cancel && cls.mapping
           );
   
           setsclass(filteredClasses);

@@ -153,7 +153,7 @@ export default function ClassShed() {
       const data = await response.json();
   
       if (response.ok) {
-        console.log("Schedule added successfully:", data);
+        alert("Schedule added successfully:", data);
     
       } else {
         console.error("Schedule creation failed:", data);
