@@ -109,7 +109,7 @@ export default function PostNotice(){
   
         if (type === "image") {
           editor.commands.insertContent(
-            `<img src="${data.fileUrl}" class="h-[300px] w-[300px]"/>`
+            `<img src="${data.fileUrl}" class="h-30 w-30"/>`
           );
         } else {
           editor.commands.insertContent(
@@ -122,32 +122,35 @@ export default function PostNotice(){
     }
   };
   
-  const deleteFile = async (fileIdToDelete) => {
-    if (!fileIdToDelete) return;
+  const deleteFile = async (fileUrlToDelete) => {
+    if (!fileUrlToDelete) return;
   
     try {
-      // Decode fileId before sending
-      const decodedFileId = decodeURIComponent(fileIdToDelete);
-  
-      await fetch(`/api/delete-file?fileId=${decodedFileId}`, {
+      await fetch(`/api/delete-file?fileId=${encodeURIComponent(fileUrlToDelete)}`, {
         method: "DELETE",
       });
   
-      // Update the uploaded files list
+      // ✅ Remove from the state using file URL
       setUploadedFiles((prev) =>
-        prev.filter((file) => file.id !== fileIdToDelete)
+        prev.filter((file) => file.url !== fileUrlToDelete)
       );
   
-      // Remove the file from the editor content
-      editor.commands.setContent(editor.getHTML().replace(
-        new RegExp(`<img[^>]+src=["'][^"']*${decodedFileId}["'][^>]*>|<a[^>]+href=["'][^"']*${decodedFileId}["'][^>]*>.*?</a>`, "g"),
-        ""
-      ));
-  
+      // ✅ Remove from editor content
+      const safeFileUrl = fileUrlToDelete.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // Escape special characters in the URL
+      editor.commands.setContent(
+        editor.getHTML().replace(
+          new RegExp(
+            `<img[^>]+src=["']${safeFileUrl}["'][^>]*>|<a[^>]+href=["']${safeFileUrl}["'][^>]*>.*?</a>`,
+            "g"
+          ),
+          ""
+        )
+      );
     } catch (error) {
       console.error("Delete failed:", error);
     }
   };
+  
   
   
   
@@ -290,9 +293,23 @@ export default function PostNotice(){
       </div>
 
       {/* Editor */}
-      <div className="mt-2 border border-gray-300 rounded-lg p-2 bg-white dark:bg-gray-600">
-        <EditorContent editor={editor} className="prose dark:prose-invert focus:outline-none" />
-      </div>
+      <div className="mt-2 border border-gray-300 rounded-lg p-2 bg-white dark:bg-gray-600 overflow-y-auto">
+  <EditorContent
+    editor={editor}
+    className="prose min-h-[200px] dark:prose-invert focus:outline-none"
+  />
+</div>
+
+<style jsx>{`
+  .ProseMirror img {
+    width: auto;
+    height: 300px; // ✅ Fixed height for preview
+    object-fit: contain; // ✅ Maintain aspect ratio without cropping
+    display: block; // ✅ Center and prevent inline display issues
+    margin: 0 auto;
+  }
+`}</style>
+
 
       {/* Uploaded Files & Images */}
       {uploadedFiles.length > 0 && (

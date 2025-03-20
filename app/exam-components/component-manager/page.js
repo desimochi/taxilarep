@@ -1,46 +1,24 @@
 "use client"
-import CreateComponents from "@/components/CreateComponent";
-import CreateComponent from "@/components/CreateComponent";
-import CreateSubComponent from "@/components/CreateSubcomponent";
 import ShowComponents from "@/components/ShowComponents";
 import Table from "@/components/Table";
+import Link from "next/link";
 import { useState } from "react";
 
 export default function Page() {
-  const [activeTab, setActiveTab] = useState("assignComponent");
 
   return (
-    <div>
-      {/* Tab Navigation */}
-      <div className="border-b border-gray-200 dark:border-gray-700 px-5">
-        <ul className="flex flex-wrap -mb-px text-sm font-medium text-center text-gray-500 dark:text-gray-400">
-          {[
-            { id: "assignComponent", label: "Components" },
-            { id: "createcomponent", label: "Create Component" },
-            { id: "createsubcomponent", label: "Create Sub Component" },
-          ].map((tab) => (
-            <li key={tab.id} className="me-2">
-              <button
-                onClick={() => setActiveTab(tab.id)}
-                className={`inline-flex items-center justify-center p-4 border-b-2 rounded-t-lg group ${
-                  activeTab === tab.id
-                    ? "text-black border-black dark:text-blue-500 dark:border-blue-500"
-                    : "border-transparent hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300"
-                }`}
-              >
-                {tab.label}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </div>
-     
-      {/* Tab Content */}
+ 
       <div className="p-5">
-        {activeTab === "assignComponent" && <ShowComponents/>}
-        {activeTab === "createcomponent" && <CreateComponents />}
-        {activeTab === "createsubcomponent" && <CreateSubComponent />}
+        <div className="border border-gray-300 rounded-xl mt-4 bg-gradient-to-bl from-gray-700 to-stone-900 text-white p-8 mb-8">
+          <div className="flex justify-between items-center">
+            <h5 className="text-2xl font-bold">Component Manager</h5>
+           
+            <div className="flex gap-2">
+            <Link href="/exam-components/component-manager/create-component" className="bg-red-500 py-1.5 px-6 rounded-sm">Create Component</Link>
+            </div>
+          </div>
+        </div>
+        <ShowComponents/>
       </div>
-    </div>
   );
 };
