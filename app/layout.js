@@ -167,7 +167,7 @@ function InnerLayout({ children }) {
 
             {/* Menu Items */}
             <ul className="space-y-2">
-            <Link href={`/profile/employee/${state.user_id}`} passHref>
+            <Link href={`/profile/${state.role_name==="Student"?'student':'employee'}/${state.user_id}`} passHref>
                 <li className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer">
                  
                   Profile

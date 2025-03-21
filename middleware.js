@@ -1,11 +1,20 @@
 import { NextResponse } from "next/server";
+const studentAllowedPaths = [
+  "/student/dashboard",
+  "/student/subject",
+  "/student/attendance",
+  "/student/class-schedule",
+  "/student/exam-schedule",
+  "/notice/noticeboard",
+  "/see/events"
+];
 
 export function middleware(req) {
   const { nextUrl, cookies } = req;
   const userCookie = cookies.get("user");
 
+  // Redirect to login if no user data and not already on login page
   if (!userCookie) {
-    // Prevent redirect loop if already on login page
     if (nextUrl.pathname !== "/login") {
       return NextResponse.redirect(new URL("/login", req.url));
     }
@@ -18,14 +27,16 @@ export function middleware(req) {
     if (userData.employee_type === "Teaching") {
       // Allow access only to "/faculty" and "/login"
       if (nextUrl.pathname !== "/faculty" && nextUrl.pathname !== "/login") {
-        // Prevent redirect loop if already on "/faculty"
-        if (nextUrl.pathname !== "/faculty") {
-          return NextResponse.redirect(new URL("/faculty", req.url));
-        }
+        return NextResponse.redirect(new URL("/faculty", req.url));
+      }
+    } else if (userData.user_type === "STUDENT") {
+      // Students should only access "/student-dashboard" or "/login"
+      if (!studentAllowedPaths.includes(nextUrl.pathname)) {
+        return NextResponse.redirect(new URL("/unauthorized", req.url));
       }
     } else {
-      // Non-teaching employees should not access "/faculty"
-      if (nextUrl.pathname === "/faculty") {
+      // Non-teaching and non-student users (like admin) should go to "/admin"
+      if (nextUrl.pathname === "/faculty" || nextUrl.pathname === "/student-dashboard") {
         return NextResponse.redirect(new URL("/admin", req.url));
       }
     }
@@ -39,5 +50,18 @@ export function middleware(req) {
 
 // Apply middleware only to relevant pages
 export const config = {
-  matcher: ["/faculty", "/admin", "/dashboard", "/settings"],
+  matcher: [
+    "/faculty",
+    "/admin",
+    "/dashboard",
+    "/settings",
+    "/subjects",
+    "/student/dashboard",
+    "/student/subject",
+    "/student/attendance",
+    "/student/class-schedule",
+    "/student/exam-schedule",
+    "/notice/noticeboard",
+    "/see/events",
+  ],
 };

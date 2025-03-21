@@ -100,7 +100,7 @@ export default function Page() {
                             {additionalData.map((comp) => (
                                 <div className="flex justify-between mt-4" key={comp.id}>
                                     <p className="font-bold">{comp.name} - {comp.max_marks} Marks </p>
-                                    <Link href={`/subject/details/component/${comp.id}`} className="text-sm underline text-blue-500">
+                                    <Link href={`/subjects/details/component/${comp.id}`} className="text-sm underline text-blue-500">
                                         See Details
                                     </Link>
                                 </div>

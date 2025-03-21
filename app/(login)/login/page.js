@@ -24,10 +24,12 @@ export default function LoginPage() {
   }, [router]);
   async function handleLogin(e) {
     e.preventDefault();
+    setLoading(true);
+  
     const formData = new FormData(e.target);
     const username = formData.get("username");
     const password = formData.get("password");
-    setLoading(true)
+  
     try {
       const response = await fetch(`${API_BASE_URL}login`, {
         method: "POST",
@@ -41,6 +43,7 @@ export default function LoginPage() {
       if (response.ok) {
         if (data.code === 400) {
           setError(true);
+          setLoading(false);
           return;
         }
   
@@ -50,23 +53,25 @@ export default function LoginPage() {
         // Save user data in cookies and global state
         Cookies.set("user", JSON.stringify(data.data.user), { expires: 1, path: "/" });
   
-        updateState(data.data.user); // Ensure context updates before redirecting
-  
-        // ✅ **Delay navigation until state updates properly**
-        setTimeout(() => {
-          if (data.data.user.employee_type === "Teaching") {
-            router.replace("/faculty");
-            setLoading(false)
-          } else {
-            router.push("/admin");
-          }
-        }, 100); // Small delay to allow state update
-  
+        // ✅ Wait for state to update before reloading
+        await new Promise((resolve) => {
+          updateState(data.data.user);
+          resolve();
+        });
+        if (data.data.user.employee_type === "Teaching") {
+          router.replace("/faculty");
+        } else if (data.data.user.user_type === "STUDENT") {
+          router.replace("/student/dashboard");
+        } else {
+          router.replace("/admin");
+        }
       } else {
         console.error("Login failed:", data);
       }
     } catch (error) {
       console.error("Error:", error);
+    } finally {
+      setLoading(false);
     }
   }
   

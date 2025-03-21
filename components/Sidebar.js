@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import logo from "../public/logo.png";
-import { menuItems } from "@/app/lib/MenuItems";
+import { menuItems, stumenuItems } from "@/app/lib/MenuItems";
 import { FacmenuItems } from "@/app/lib/MenuItems";
 import { ITManager } from "@/app/lib/MenuItems";
 import {
@@ -27,6 +27,8 @@ const Sidebar = ({collapsed, toggleSidebar, toggleMenu, openMenus, role, type  }
             return menuItems;
         case "faculty":
             return FacmenuItems;
+        case "Student":
+              return stumenuItems;
           case "IT Manager":
             if (type === "Teaching") {
               return [...FacmenuItems, ...ITManager]; 

@@ -193,3 +193,13 @@ export const menuItems = [
         ],
       },
   ]
+
+  export const stumenuItems = [
+    { label: "Dashboard", icon: <HomeIcon className="h-5 w-5" />, path: "/student/dashboard" },
+    { label: "Subject", icon: <BookCheckIcon className="h-5 w-5" />, path: "/student/subject" },
+    { label: "Attendance", icon: <PenSquareIcon className="h-5 w-5" />, path: "/student/attendance" },
+    { label: "Class Schedule", icon: <NewspaperIcon className="h-5 w-5" />, path: "/student/class-schedule" },
+    { label: "Exam Schedule", icon: <NewspaperIcon className="h-5 w-5" />, path: "/student/exam-schedule" },
+    { label: "Notice", icon: <NewspaperIcon className="h-5 w-5" />, path: "/notice/noticeboard" },
+    { label: "Events", icon: <CalendarIcon className="h-5 w-5" />, path: "/see/events" },
+  ];
