@@ -100,7 +100,7 @@ export default function ComponentDate({ id, setsetStudents,setEditDetails, subco
           );
         } else {
           editor.commands.insertContent(
-            `<a href="${data.fileUrl}" target="_blank">${file.name}</a>`
+            `<a href={data.fileUrl} target="_blank" rel="noopener noreferrer"> See File ${file.name}</a>`
           );
         }
       }
@@ -142,7 +142,7 @@ export default function ComponentDate({ id, setsetStudents,setEditDetails, subco
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const url = subcomponent? "sub-component" : "component-viewset"
+    const url = subcomponent? "subcomponents-action" : "component-viewset"
     const data = {
       ...formData,
       description: editor.getHTML()
@@ -166,6 +166,7 @@ export default function ComponentDate({ id, setsetStudents,setEditDetails, subco
         setUploadedFiles([]);
         setsetStudents(res.data)
         setEditDetails(false)
+        window.location.reload();
         }, 2000);
         
       } else {

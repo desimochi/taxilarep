@@ -1,6 +1,7 @@
 "use client"
 import { useParams, useRouter } from "next/navigation"
 import { ArrowLeft, EyeClosedIcon, EyeIcon } from "lucide-react"
+import DOMPurify from 'dompurify';
 import { authFetch } from "@/app/lib/fetchWithAuth"
 import Link from "next/link"
 import { GlobalContext } from "@/components/GlobalContext"
@@ -24,7 +25,7 @@ export default function Page(){
         const fetchClassData = async () => {
             try {
                 setLoading(true)
-                const response = await authFetch(`component-viewset/${id}`)
+                const response = await authFetch(`subcomponents-action/${id}`)
                 if (!response.ok) throw new Error("Failed to fetch Subject data")
 
                 const data = await response.json()
@@ -110,7 +111,7 @@ export default function Page(){
                                 id={selectedId} 
                                 setsetStudents={handleSetData} 
                                 setEditDetails={setEditDetails} 
-                                subcomponent={students?.has_subcomponents}
+                                subcomponent={true}
                             />
                           
                         </div>
@@ -129,24 +130,19 @@ export default function Page(){
                             {students?.name || 'N/A'} Component Details
                         </h5>
                         <div className="flex gap-2">
-                            <p className="bg-red-600 px-4 py-1 rounded-sm">
-                                Type - {students?.type || 'N/A'}
-                            </p>
                             <p className="bg-green-600 px-4 py-1 rounded-sm">
                                 Max Marks - {students?.max_marks || 'N/A'}
                             </p>
                         </div>
                     </div>
                 </div>
-                <div className="grid grid-cols-1 gap-4">
+                <div className="grid grid-cols-3 gap-4">
+
+
   <div className="border border-gray-300 p-6 rounded-sm">
     <h3 className="bg-black rounded-sm text-white text-center py-1.5">
       Components Details
     </h3>
-    <div className="flex justify-between mt-4">
-      <p className="font-bold">Subcomponent</p>
-      <p>{students?.has_subcomponents ? "Yes" : "No"}</p>
-    </div>
 
     {!students?.has_subcomponents && (
       <>
@@ -178,12 +174,11 @@ export default function Page(){
       })
     : "NA"}</p>
         </div>
-        <button
-          onClick={() => handleOpenModal(students?.id)}
-          className="text-sm bg-red-600 w-full py-1.5 rounded-sm text-white shadow-sm hover:shadow-xl transition-shadow mt-6"
-        >
-          Add Component Dates & Data
-        </button>
+        <div>
+        <h4 className="text-red-700 font-bold text-xl mt-4">Description</h4>
+        <hr className="w-20 border border-b-2 mt-1 mb-4" />
+        <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(students?.description) }} />
+        </div>
       </>
     )}
 
