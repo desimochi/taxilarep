@@ -96,13 +96,25 @@ const EditComponent = () => {
         setMarks(e.target.value) 
         
       };
-    const handleChange = (e) => {
+      const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
-        setFormData((prevData) => ({
-            ...prevData,
-            [name]: type === "checkbox" ? checked : value,
-        }));
+    
+        setFormData((prevData) => {
+            let updatedData = {
+                ...prevData,
+                [name]: type === "checkbox" ? checked : value,
+            };
+    
+            // If turning off subcomponents, reset related data
+            if (name === "has_subcomponents" && !checked) {
+                setSubcomponent([]);
+                setError(false);
+            }
+    
+            return updatedData;
+        });
     };
+    
     const handleValChange = (index, e) => {
         const { name, value } = e.target;
         const updatedSections = [...subcomponent];
@@ -127,27 +139,15 @@ const EditComponent = () => {
     
     // Handle Form Submission
     const handleSubmit = async (e) => {
-
-
         e.preventDefault();
     
-        // Prepare Main Component Data
-        const mainMaxMarks = parseFloat(formData.max_markss); // Ensure it's a float
-        const hasSubcomponents = formData.has_subcomponents;
-    
-        // Calculate total subcomponent marks
-        const totalSubMarks = subcomponent.reduce((total, sub) => total + parseFloat(sub.max_marks || 0), 0);
-    
-        // If there are subcomponents, ensure their total max marks match the main component
-        if (hasSubcomponents && totalSubMarks !== mainMaxMarks) {
-            setError(true)
-            return; // Stop execution if validation fails
-        }
-    
         try {
-            // Update Main Component
+            const mainMaxMarks = parseFloat(formData.max_markss);
+            const hasSubcomponents = formData.has_subcomponents;
+    
+            // Prepare main component data
             const mainComponentData = {
-                subject_mapping: 1, // Adjust this as per requirement
+                subject_mapping: 1, // Adjust as needed
                 type: formData.type,
                 name: formData.name,
                 max_marks: mainMaxMarks,
@@ -155,6 +155,7 @@ const EditComponent = () => {
                 description: formData.description,
             };
     
+            // **Update main component first**
             const mainResponse = await authFetch(`component-viewset/${componentID}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
@@ -163,34 +164,46 @@ const EditComponent = () => {
     
             if (!mainResponse.ok) throw new Error("Failed to update component");
     
-            // If subcomponents exist and validation passed, send subcomponent data
-            if (hasSubcomponents && subcomponent.length > 0) {
-                const subComponentData = {
-                    subcomponent_data: subcomponent.map((sub) => ({
-                        component: parseInt(componentID),
-                        name: sub.name,
-                        max_marks: parseInt(sub.max_marks),
-                        description: sub.description,
-                    })),
-                };
+            // **If subcomponents are enabled, validate and update them**
+            if (hasSubcomponents) {
+                const totalSubMarks = subcomponent.reduce((total, sub) => total + parseFloat(sub.max_marks || 0), 0);
     
-                const subResponse = await authFetch(`sub-component/${componentID}`, {
-                    method: "POST", // Use "POST" to create or "PUT" to update
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(subComponentData),
-                });
+                // **Validate that subcomponent marks match main marks**
+                if (totalSubMarks !== mainMaxMarks) {
+                    setError(true);
+                    return;
+                }
     
-                if (!subResponse.ok) throw new Error("Failed to update subcomponents");
+                if (subcomponent.length > 0) {
+                    const subComponentData = {
+                        subcomponent_data: subcomponent.map((sub) => ({
+                            component: parseInt(componentID),
+                            name: sub.name,
+                            max_marks: parseInt(sub.max_marks),
+                            description: sub.description,
+                        })),
+                    };
+    
+                    const subResponse = await authFetch(`sub-component/${componentID}`, {
+                        method: "POST", // "POST" to create, "PUT" to update
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(subComponentData),
+                    });
+    
+                    if (!subResponse.ok) throw new Error("Failed to update subcomponents");
+                }
             }
-            setmessage("Component and Sub Component Updated")
-
+    
+            setmessage("Component and Sub Component Updated");
             setShowToast(true);
             setTimeout(() => setShowToast(false), 3000);
-            
+            setError(false);
+    
         } catch (err) {
             alert(err.message);
         }
     };
+    
     
     
 

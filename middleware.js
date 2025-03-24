@@ -61,7 +61,6 @@ export const config = {
     "/student/attendance",
     "/student/class-schedule",
     "/student/exam-schedule",
-    "/notice/noticeboard",
     "/see/events",
   ],
 };

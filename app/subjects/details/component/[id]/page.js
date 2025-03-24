@@ -1,12 +1,14 @@
 "use client"
 import { useParams, useRouter } from "next/navigation"
 import { ArrowLeft, EyeClosedIcon, EyeIcon } from "lucide-react"
+import DOMPurify from 'dompurify';
 import { authFetch } from "@/app/lib/fetchWithAuth"
 import Link from "next/link"
 import { GlobalContext } from "@/components/GlobalContext"
 import { useContext, useEffect, useState } from "react"
 import ComponentDate from "@/components/ComponentDate"
 import { EyeDropperIcon, EyeSlashIcon } from "@heroicons/react/24/outline"
+import StudentAnswerSub from "@/components/StudentAnswerSub";
 
 export default function Page(){
     const {id} = useParams()
@@ -138,7 +140,7 @@ export default function Page(){
                         </div>
                     </div>
                 </div>
-                <div className="grid grid-cols-1 gap-4">
+                {students?.has_subcomponents?<div className="grid grid-cols-1 gap-4">
   <div className="border border-gray-300 p-6 rounded-sm">
     <h3 className="bg-black rounded-sm text-white text-center py-1.5">
       Components Details
@@ -237,14 +239,75 @@ export default function Page(){
               </div>
             ))
           ) : (
-            <p className="text-gray-500">No subcomponents available.</p>
+            <Link href={`/exam-components/create-subcomponent?componentId=${id}`} className="bg-black px-8 py-2 rounded-sm text-white w-fit">Add Sub-Component</Link>
           )}
           
         </div>
       </div>
     )}
   </div>
-</div>
+</div>: <div className="grid grid-cols-[1fr_2fr] gap-4">
+  <div className="border border-gray-300 p-6 rounded-sm">
+    <h3 className="bg-black rounded-sm text-white text-center py-1.5">
+      Components Details
+    </h3>
+
+    {!students?.has_subcomponents && (
+      <>
+        <div className="flex justify-between mt-4">
+          <p className="font-bold">Start Date</p>
+          <p>
+            {students?.start_date
+              ? new Date(students.start_date).toLocaleString("en-IN", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  second: "2-digit",
+                  timeZoneName: "short",
+                })
+              : "NA"}
+          </p>
+        </div>
+        <div className="flex justify-between mt-4">
+          <p className="font-bold">End Date</p>
+          <p>
+            {students?.start_date
+              ? new Date(students.start_date).toLocaleString("en-IN", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  second: "2-digit",
+                  timeZoneName: "short",
+                })
+              : "NA"}
+          </p>
+        </div>
+        <div>
+          <h4 className="text-red-700 font-bold text-xl mt-4">Description</h4>
+          <hr className="w-20 border border-b-2 mt-1 mb-4" />
+          <div
+            dangerouslySetInnerHTML={{
+              __html: DOMPurify.sanitize(students?.description),
+            }}
+          />
+        </div>
+        <button
+          onClick={() => handleOpenModal(students?.id)}
+          className="text-sm bg-red-600 w-full py-1.5 rounded-sm text-white shadow-sm hover:shadow-xl transition-shadow mt-6"
+        >
+          Add Component Dates & Data
+        </button>
+      </>
+    )}
+
+    <div className="border border-b-2 mt-4"></div>
+  </div>
+  {students?.id ? <StudentAnswerSub id={students.id} subcomponent={false} /> : <p>Loading...</p>}
+</div>}
 
         </div>
         

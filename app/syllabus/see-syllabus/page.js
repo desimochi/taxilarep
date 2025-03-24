@@ -5,6 +5,7 @@ import { useContext, useEffect, useState } from "react";
 import { GlobalContext } from "@/components/GlobalContext";
 import FullWidthLoader from "@/components/Loaader";
 import Link from "next/link";
+import { EyeIcon, UploadCloud } from "lucide-react";
 
 export default function ClassOverview() {
   const [sclass, setsclass] = useState([]);
@@ -47,7 +48,7 @@ export default function ClassOverview() {
                 <th scope="col" className="px-6 py-3">Term</th>
                 <th scope="col" className="px-6 py-3">Course</th>
                 <th scope="col" className="px-6 py-3">Specialization</th>
-                <th scope="col" className="px-6 py-3">See Details</th>
+                <th scope="col" className="px-6 py-3">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -66,12 +67,18 @@ export default function ClassOverview() {
                       ? product.specialization.map((s) => s.name).join(", ")
                       : "N/A"}
                   </td>
-                  <td className="px-6 py-4">
-                    <Link
-                      href={`/subjects/details/${product.id}`}
-                      className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                  <td className="px-6 py-4 flex gap-3">
+                  <Link
+                      href={`/syllabus/upload-syllabus?subID=${product.id}`}
+                      className="font-medium text-green-600 dark:text-blue-500 hover:underline"
                     >
-                      See Details
+                      <UploadCloud className="h-5 w-5"/>
+                    </Link>
+                    <Link
+                      href={`/syllabus/see-syllabus/${product.id}`}
+                      className="font-medium text-black dark:text-blue-500 hover:underline"
+                    >
+                      <EyeIcon className="h-5 w-5"/>
                     </Link>
                   </td>
                 </tr>

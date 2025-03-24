@@ -10,6 +10,7 @@ export default function ClassSchedule() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const [search, setSearch] = useState("")
+  const [selectedDate, setSelectedDate] = useState("");
   const { state } = useContext(GlobalContext);
 
   useEffect(() => {
@@ -39,13 +40,15 @@ export default function ClassSchedule() {
     const subject = cls.mapping?.subject?.name?.toLowerCase() || "";
     const batch = cls.mapping?.batch?.name?.toLowerCase() || "";
     const term = cls.mapping?.term?.name?.toLowerCase() || "";
+    const date = cls.date || "";
     const query = search.toLowerCase();
 
-    return (
-      subject.includes(query) ||
-      batch.includes(query) ||
-      term.includes(query)
-    );
+    const matchesSearch =
+      subject.includes(query) || batch.includes(query) || term.includes(query);
+
+    const matchesDate = selectedDate ? date === selectedDate : true;
+
+    return matchesSearch && matchesDate;
   });
   return (
     <div className="shadow-md rounded-lg w-full mt-4">
@@ -55,6 +58,12 @@ export default function ClassSchedule() {
            
             <div className="flex gap-2">
             <input type="text" placeholder="search..."  className="p-2 rounded-sm text-gray-700"  value={search} onChange={(e) => setSearch(e.target.value)}/>
+            <input
+              type="date"
+              className="p-2 rounded-sm text-gray-700"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+            />
             </div>
           </div>
         </div>

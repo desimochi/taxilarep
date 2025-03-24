@@ -124,61 +124,28 @@ export const menuItems = [
   export const FacmenuItems = [
     { label: "Dashboard", icon: <HomeIcon className="h-5 w-5" />, path: "/faculty" },
     {
-      label: "Subject",
+      label: "Academics",
       icon: <PenSquareIcon className="h-5 w-5" />,
       subMenu: [
-        { label: "See Subject", path: "/faculty/assign-subject" },
-        { label: "Internship Report", path: "faculty/internship-report" },
+        { label: "Subject", path: "/faculty/assign-subject" },
+        { label: "Internship Report", path: "/faculty/internship-report" },
         {label : "Syllabus", hasSubMenu:true,  subMenu : [
-            {label:"Upload Syllabus", path:"/faculty/upload-syllabus"},
+            {label:"Upload Syllabus", path:"/syllabus/see-syllabus"},
             { label: "Uploaded Syllabus", path: "/faculty/uploaded-syllabus" },
           ]},
           { label: "Student Attendance", path: "/attendance/class-attendance" },
       ],
     },
    
-    {
-        label: "Exam",
-        icon: <PenSquareIcon className="h-5 w-5" />,
-        subMenu: [
-            {label : "CE Exam Manager", hasSubMenu:true,  subMenu : [
-              {label:"Add Marks", path:"/ceexam/add-marks"},
-              { label: "Upload Excel Sheet", path: "/ceexam/upload-excel" }, 
-              { label: "See Result", path: "/ceexam/result" },
-            ]},
-            {label : "Written Exam Manager", hasSubMenu:true,  subMenu : [
-              {label:"Add Marks", path:"/written/add-marks"},
-              { label: "Upload Excel Sheet", path: "/written/upload-excel" },
-              { label: "See Result", path: "/written/result" },
-            ]},
-            {label : "Re-Sit Exam Manager", hasSubMenu:true,  subMenu : [
-              {label:"Add Marks", path:"/resit/add-marks"},
-              { label: "Upload Excel Sheet", path: "/resit/upload-excel" },
-              { label: "See Result", path: "/resit/result" },
-            ]},
-            {label : "Component Manager", path: "/exam-components/component-manager"},
-          { label: "Question Paper", path: "/question-paper" },
-        ],
-      },
       {
         label: "Imp. News & Notice",
         icon: <NewspaperIcon className="h-5 w-5" />,
         subMenu: [
           { label: "Noticeboard", path: "/notice/noticeboard" },
-          { label: "News Manager", path: "/notice/news-manager" },
-          { label: "Upload Document", path: "/notice/upload-document" },
-          { label: "Uploaded Document", path: "/notice/uploaded-document" },
+          { label: "News Manager", path: "/notice/news-manager" }
         ],
       },
     { label: "Mentorship Student", icon: <NewspaperIcon className="h-5 w-5" />, path: "/faculty/mentorship-assign-student" },
-    {label : "Faculty Report",  icon: <BookCheckIcon className="h-5 w-5" />, hasSubMenu: true, subMenu :[
-          { label: "Faculty Activity", path: "/faculty-report/faculty-activity" },
-          { label: "Faculty Syllabus", path: "/faculty-report/faculty-syllabus" },
-          { label: "Faculty Assignment", path: "/faculty-report/faculty-assignment" },
-          { label: "Faculty Case Study", path: "/faculty-report/faculty-casestudy" },
-          { label: "Faculty Questions", path: "/faculty-report/faculty-questions" },
-          { label: "Add Syllabus", path: "/faculty-report/add-syllabus" },
-        ]},
     { label: "Events", icon: <CalendarIcon className="h-5 w-5" />, path: "/see/events" },
   ];
 
