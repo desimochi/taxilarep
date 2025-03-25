@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation"; 
-import { useEditor, EditorContent } from "@tiptap/react";
+import { useEditor, EditorContent, BubbleMenu } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Underline from "@tiptap/extension-underline";
@@ -17,6 +17,9 @@ import Heading from "@tiptap/extension-heading";
 import ListItem from "@tiptap/extension-list-item";
 import BulletList from "@tiptap/extension-bullet-list";
 import OrderedList from "@tiptap/extension-ordered-list";
+import FontSize from "./FontSize"; // Import the custom extension
+import FontType from "./FontType";
+
 
 import { 
     Bold, Italic, Link as LinkIcon, 
@@ -27,9 +30,13 @@ import {
     ImageIcon,
     FileIcon,
     TrashIcon,
-    SaveIcon
+    SaveIcon,
+    Undo2Icon,
+    Redo2Icon,
+    ItalicIcon
 } from "lucide-react";
 import { authFetch } from "@/app/lib/fetchWithAuth";
+import { BoldIcon } from "@heroicons/react/24/outline";
 
 export default function RichTextEditor({id}) {
     const [showTableOptions, setShowTableOptions] = useState(false);
@@ -57,7 +64,9 @@ const subID = searchParams.get("subID");
             Table.configure({ HTMLAttributes: { class: "w-full" } }),
             TableRow,
             TableCell.configure({ HTMLAttributes: { class: "border border-gray-400 px-3 py-2 min-h-[40px]" } }), 
-            TableHeader.configure({ HTMLAttributes: { class: "border border-gray-500 bg-gray-200 px-3 py-2 font-bold" } }) 
+            TableHeader.configure({ HTMLAttributes: { class: "border border-gray-500 bg-gray-200 px-3 py-2 font-bold" } }) ,
+            FontSize,
+            FontType
         ],
         content: "<p>Start typing here...</p>",
     });
@@ -101,7 +110,14 @@ const subID = searchParams.get("subID");
             }
         });
     }, [editor]);
-
+    const changeFontSize = (event) => {
+        const size = event.target.value;
+        editor?.chain().focus().setFontSize(size).run();
+      };
+      const changeFontType = (event) => {
+        const family = event.target.value;
+        editor?.chain().focus().setFontType(family).run();
+      };
     const insertTable = () => {
         editor.chain().focus().insertTable({ rows, cols }).run();
         editor.commands.insertContent("<p><br/></p>");
@@ -272,31 +288,70 @@ const deleteFile = async (fileUrlToDelete) => {
         <div id="editor-container" className="border border-gray-300 rounded-md p-4">
             {showtoast && <Toast message={message} /> }
             {/* Toolbar */}
-            <div className="flex space-x-2 bg-gray-200 p-2 rounded-lg">
-                <button type="button" onClick={() => editor.chain().focus().toggleBold().run()}><Bold /></button>
-                <button type="button" onClick={() => editor.chain().focus().toggleItalic().run()}><Italic /></button>
-                <button type="button" onClick={() => editor.chain().focus().toggleUnderline().run()}><UnderlineIcon /></button>
-                <button type="button" onClick={() => editor.chain().focus().toggleBulletList().run()}><List /></button>
-                <button type="button" onClick={addLink}><LinkIcon /></button>
-                <button type="button" onClick={() => editor.chain().focus().toggleOrderedList().run()}><ListOrdered /></button>
+            <div className="flex space-x-2 bg-gradient-to-r from-slate-900 to-slate-700 p-2 rounded-lg">
+            <select onChange={changeFontSize} className="rounded-sm text-white bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700">
+            <option value="8px">8px</option>
+        <option value="10px">10px</option>
+        <option value="12px">12px</option>
+        <option value="14px">14px</option>
+        <option value="18px">18px</option>
+        <option value="20px">20px</option>
+        <option value="24px">24px</option>
+        <option value="28px">28px</option>
+        <option value="32px">32px</option>
+        <option value="36px">36px</option>
+        <option value="40px">40px</option>  
+        <option value="44px">44px</option>
+        <option value="48px">48px</option>
+      </select>
+      <select onChange={changeFontType} className="rounded-sm text-white  bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700">
+        <option value="Arial, sans-serif">Arial</option>
+        <option value="Georgia, serif">Georgia</option>
+        <option value="Courier New, monospace">Courier New</option>
+        <option value="Tahoma, sans-serif">Tahoma</option>
+        <option value="Verdana, sans-serif">Verdana</option>
+        <option value="Times New Roman, serif">Times New Roman</option>
+        <option value="Comic Sans MS, cursive">Comic Sans MS</option>
+        <option value="Trebuchet MS, sans-serif">Trebuchet MS</option>
+        <option value="Impact, sans-serif">Impact</option>
+        <option value="Lucida Console, monospace">Lucida Console</option>
+        <option value="Garamond, serif">Garamond</option>
+        <option value="Palatino Linotype, serif">Palatino Linotype</option>
+        <option value="Roboto, sans-serif">Roboto</option>
+        <option value="Open Sans, sans-serif">Open Sans</option>
+        <option value="Lora, serif">Lora</option>
+        <option value="Merriweather, serif">Merriweather</option>
+        <option value="Montserrat, sans-serif">Montserrat</option>
+        <option value="Raleway, sans-serif">Raleway</option>
+        <option value="PT Sans, sans-serif">PT Sans</option>
+      </select>
+                <button type="button" onClick={() => editor.chain().focus().toggleBold().run()} className="text-white  bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2"><Bold /></button>
+                <button type="button" onClick={() => editor.chain().focus().toggleItalic().run()} className="text-white  bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2"><ItalicIcon /></button>
+                <button type="button" onClick={() => editor.chain().focus().toggleUnderline().run()} className="text-white  bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2"><UnderlineIcon /></button>
+                <button type="button" onClick={() => editor.chain().focus().toggleBulletList().run()} className="text-white  bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2"><List /></button>
+                <button type="button" onClick={addLink} className="text-white  bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2"><LinkIcon /></button>
+                <button type="button" onClick={() => editor.chain().focus().toggleOrderedList().run()} className="text-white  bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2"><ListOrdered /></button>
                 {/* Upload Image Button */}
-<button type="button" onClick={() => imageInputRef.current.click()} className="p-2 rounded bg-gray-300 dark:bg-gray-600">
-    <ImageIcon className="w-5 h-5 text-black dark:text-white" />
+<button type="button" onClick={() => imageInputRef.current.click()} className="text-white  bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2">
+    <ImageIcon className="w-5 h-5 text-white dark:text-white" />
 </button>
 <input type="file" accept="image/*" ref={imageInputRef} className="hidden" onChange={(e) => handleFileUpload(e, "image")} />
 
 {/* Upload File Button */}
-<button type="button" onClick={() => fileInputRef.current.click()} className="p-2 rounded bg-gray-300 dark:bg-gray-600">
-    <FileIcon className="w-5 h-5 text-black dark:text-white" />
+<button type="button" onClick={() => fileInputRef.current.click()} className="text-white  bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2">
+    <FileIcon className="w-5 h-5 text-white dark:text-white" />
 </button>
 <input type="file" ref={fileInputRef} className="hidden" onChange={(e) => handleFileUpload(e, "file")} />
 
-                <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}><Heading1 /></button>
-                <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}><Heading2 /></button>
-                <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}><Heading3 /></button>
+                <button type="button" onClick={() => setShowTableOptions(!showTableOptions)} className="text-white  bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2"><TableIcon /></button>
+                <button type="button" onClick={removeTable} className="text-white  bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2"><Trash /></button>
+                <button type="button" onClick={() => editor.chain().focus().undo().run()} className="text-white  bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2">
+    <Undo2Icon /> {/* Add an Undo icon from Lucide or another library */}
+</button>
 
-                <button type="button" onClick={() => setShowTableOptions(!showTableOptions)}><TableIcon /></button>
-                <button type="button" onClick={removeTable} className="text-red-500"><Trash /></button>
+<button type="button" onClick={() => editor.chain().focus().redo().run()} className="text-white  bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2">
+    <Redo2Icon /> {/* Add a Redo icon from Lucide or another library */}
+</button>
 
             </div>
 
@@ -330,6 +385,72 @@ const deleteFile = async (fileUrlToDelete) => {
                 </div>
             )}
 
+{editor && (
+                <BubbleMenu editor={editor} className="flex gap-1 p-2 opacity-95 bg-black rounded-lg w-full flex-wrap">
+                 
+            <select onChange={changeFontSize} className="rounded-sm text-white bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700">
+            <option value="8px">8px</option>
+        <option value="10px">10px</option>
+        <option value="12px">12px</option>
+        <option value="14px">14px</option>
+        <option value="18px">18px</option>
+        <option value="20px">20px</option>
+        <option value="24px">24px</option>
+        <option value="28px">28px</option>
+        <option value="32px">32px</option>
+        <option value="36px">36px</option>
+        <option value="40px">40px</option>  
+        <option value="44px">44px</option>
+        <option value="48px">48px</option>
+      </select>
+      <select onChange={changeFontType} className="rounded-sm text-white  bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700">
+        <option value="Arial, sans-serif">Arial</option>
+        <option value="Georgia, serif">Georgia</option>
+        <option value="Courier New, monospace">Courier New</option>
+        <option value="Tahoma, sans-serif">Tahoma</option>
+        <option value="Verdana, sans-serif">Verdana</option>
+        <option value="Times New Roman, serif">Times New Roman</option>
+        <option value="Comic Sans MS, cursive">Comic Sans MS</option>
+        <option value="Trebuchet MS, sans-serif">Trebuchet MS</option>
+        <option value="Impact, sans-serif">Impact</option>
+        <option value="Lucida Console, monospace">Lucida Console</option>
+        <option value="Garamond, serif">Garamond</option>
+        <option value="Palatino Linotype, serif">Palatino Linotype</option>
+        <option value="Roboto, sans-serif">Roboto</option>
+        <option value="Open Sans, sans-serif">Open Sans</option>
+        <option value="Lora, serif">Lora</option>
+        <option value="Merriweather, serif">Merriweather</option>
+        <option value="Montserrat, sans-serif">Montserrat</option>
+        <option value="Raleway, sans-serif">Raleway</option>
+        <option value="PT Sans, sans-serif">PT Sans</option>
+      </select>
+                <button type="button" onClick={() => editor.chain().focus().toggleBold().run()} className="text-white  bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2"><Bold /></button>
+                <button type="button" onClick={() => editor.chain().focus().toggleItalic().run()} className="text-white  bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2"><ItalicIcon /></button>
+                <button type="button" onClick={() => editor.chain().focus().toggleUnderline().run()} className="text-white  bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2"><UnderlineIcon /></button>
+                <button type="button" onClick={() => editor.chain().focus().toggleBulletList().run()} className="text-white  bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2"><List /></button>
+                <button type="button" onClick={addLink} className="text-white  bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2"><LinkIcon /></button>
+                <button type="button" onClick={() => editor.chain().focus().toggleOrderedList().run()} className="text-white  bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2"><ListOrdered /></button>
+                {/* Upload Image Button */}
+<button type="button" onClick={() => imageInputRef.current.click()} className="text-white  bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2">
+    <ImageIcon className="w-5 h-5 text-white dark:text-white" />
+</button>
+<input type="file" accept="image/*" ref={imageInputRef} className="hidden" onChange={(e) => handleFileUpload(e, "image")} />
+
+{/* Upload File Button */}
+<button type="button" onClick={() => fileInputRef.current.click()} className="text-white  bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2">
+    <FileIcon className="w-5 h-5 text-white dark:text-white" />
+</button>
+<input type="file" ref={fileInputRef} className="hidden" onChange={(e) => handleFileUpload(e, "file")} />
+                <button type="button" onClick={() => editor.chain().focus().undo().run()} className="text-white  bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2">
+    <Undo2Icon /> {/* Add an Undo icon from Lucide or another library */}
+</button>
+
+<button type="button" onClick={() => editor.chain().focus().redo().run()} className="text-white  bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2">
+    <Redo2Icon /> {/* Add a Redo icon from Lucide or another library */}
+</button>
+                </BubbleMenu>
+            )}
+
             {/* Table Controls */}
             {editor && editor.isActive("table") && (
                 <div className="bg-gray-100 p-2 rounded-lg flex  mt-2 gap-3 text-sm">
@@ -339,12 +460,12 @@ const deleteFile = async (fileUrlToDelete) => {
                     <button type="button" className="bg-gray-300 p-1 items-center flex gap-1  rounded" onClick={deleteColumn}><Minus  className="h-3 w-3"/> Column</button>
                 </div>
             )}
-
+            
             {/* Editor */}
             <div className="mt-2 border border-gray-300 rounded-lg p-4">
                 <EditorContent 
                     editor={editor} 
-                    className="prose min-h-[200px] focus:outline-none"
+                    className="prose min-h-[200px] focus:outline-none p-4"
                 />
             </div>
 
