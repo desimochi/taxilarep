@@ -23,7 +23,7 @@ const Sidebar = ({collapsed, toggleSidebar, toggleMenu, openMenus, role, type  }
   const pathname = usePathname();
   const getMenuByRole = (role, type) => {
     switch (role) {
-        case "admin":
+        case "Super Admin":
             return menuItems;
         case "Faculty":
             return FacmenuItems;

@@ -1,10 +1,11 @@
 "use client";
 import { authFetch } from "@/app/lib/fetchWithAuth";
+import { GlobalContext } from "@/components/GlobalContext";
 import FullWidthLoader from "@/components/Loaader";
 import { PaperClipIcon } from "@heroicons/react/24/outline";
 import { Loader, PlusSquareIcon, Trash } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 
 export default function Page() {
   const [loading, setLoading] = useState(false);
@@ -12,6 +13,7 @@ export default function Page() {
   const [notice, setNotice] = useState([]);
   const [users, setUsers] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const {state} = useContext(GlobalContext)
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -84,13 +86,13 @@ export default function Page() {
                 className="bg-white border border-gray-300 text-gray-700 text-sm rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
               />
             </div>
-            <div className="w-1/5">
-              <Link href="/notice/noticeboard/add-notice">
+            {state.role_name !== 'Student' &&<div className="w-1/5">
+               <Link href="/notice/noticeboard/add-notice">
                 <button className="flex gap-1 justify-center w-full bg-black py-2.5 rounded-sm">
                   <PlusSquareIcon className="h-5 w-5" /> Post a Notice
                 </button>
               </Link>
-            </div>
+            </div>}
           </div>
         </div>
       {loading? <FullWidthLoader /> : (<table className="w-full rounded-xl text-sm text-left rtl:text-right text-gray-800 dark:text-gray-400 mt-4 mb-2">
