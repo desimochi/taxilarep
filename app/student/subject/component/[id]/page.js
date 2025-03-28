@@ -9,10 +9,12 @@ import { useContext, useEffect, useState } from "react"
 import ComponentDate from "@/components/ComponentDate"
 import { EyeDropperIcon, EyeSlashIcon } from "@heroicons/react/24/outline"
 import StudentAnswerSub from "@/components/StudentAnswerSub";
+import StudentAnswerView from "@/components/StudentAnswerView";
+import AnswerAdd from "@/components/AnswerAdd";
 
 export default function Page(){
     const {id} = useParams()
-    const {state} = useContext(GlobalContext)
+    const{state} = useContext(GlobalContext)
     const router = useRouter()
       const [students, setStudents] = useState(null)
       const[subcom, setSubcom] = useState([])
@@ -72,6 +74,15 @@ export default function Page(){
             setStudents(data)
         }
     }
+    const isButtonDisabled = () => {
+        if (!students?.start_date || !students?.end_date) return true;
+    
+        const now = new Date();
+        const start = new Date(students.start_date);
+        const end = new Date(students.end_date);
+    
+        return now < start || now > end;
+    };
     return(
         <div className="px-6 py-6">
             {editDetails && <>
@@ -85,7 +96,7 @@ export default function Page(){
                           {/* Modal header */}
                           <div className="flex items-center justify-between p-6 md:p-5 border-b rounded-t dark:border-gray-600 border-gray-200">
                             <h3 className="text-lg font-semibold text-gray-700 dark:text-white">
-                             Add Component Dates and Data
+                            Add Your Answer
                             </h3>
                             <button
                               onClick={()=>setEditDetails(false)}
@@ -108,11 +119,11 @@ export default function Page(){
                               <span className="sr-only">Close modal</span>
                             </button>
                           </div>
-                          <ComponentDate 
+                          <AnswerAdd 
                                 id={selectedId} 
-                                setsetStudents={handleSetData} 
                                 setEditDetails={setEditDetails} 
                                 subcomponent={students?.has_subcomponents}
+                                userID= {state.user_id}
                             />
                           
                         </div>
@@ -145,10 +156,6 @@ export default function Page(){
     <h3 className="bg-black rounded-sm text-white text-center py-1.5">
       Components Details
     </h3>
-    <div className="flex justify-between mt-4">
-      <p className="font-bold">Subcomponent</p>
-      <p>{students?.has_subcomponents ? "Yes" : "No"}</p>
-    </div>
 
     {!students?.has_subcomponents && (
       <>
@@ -181,10 +188,10 @@ export default function Page(){
     : "NA"}</p>
         </div>
         <button
-          onClick={() => handleOpenModal(students?.id)}
+          onClick={() => handleOpenModal(students?.id)}  
           className="text-sm bg-red-600 w-full py-1.5 rounded-sm text-white shadow-sm hover:shadow-xl transition-shadow mt-6"
         >
-          Add Component Dates & Data
+          Submit Answer
         </button>
       </>
     )}
@@ -202,7 +209,7 @@ export default function Page(){
               <div key={subcomp.id} className="border p-4 rounded-sm">
                 <div className="flex justify-between items-center">
                 <h5 className="mt-3 font-bold">{subcomp.name}</h5>
-                <span className=" flex gap-1 items-center text-sm text-red-600 underline"><EyeIcon className="h-4 w-4"/><Link href={`/subjects/details/component/sub-component/${subcomp.id}`}>See Details</Link></span>
+                <span className=" flex gap-1 items-center text-sm text-red-600 underline"><EyeIcon className="h-4 w-4"/><Link href={`/student/subject/subcomponent/${subcomp.id}`}>See Details</Link></span>
                 </div>
                     
                 <hr className="border border-b-2 border-red-600 w-12 mt-1" />
@@ -231,15 +238,15 @@ export default function Page(){
       }) : "NA"}</p>
                 </div>
                 <button
-                  onClick={() => handleOpenModal(subcomp.id)}
+                  onClick={() => handleOpenModal(subcomp.id)}  
                   className="text-sm bg-red-600 w-full py-1.5 rounded-sm text-white shadow-sm hover:shadow-xl transition-shadow mt-6"
                 >
-                  Add Component Dates & Data
+                  Submit Answer
                 </button>
               </div>
             ))
           ) : (
-            <Link href={`/exam-components/create-subcomponent?componentId=${id}`} className="bg-black px-8 py-2 rounded-sm text-white w-fit">Add Sub-Component</Link>
+        <p>Details Not Updated Yet</p>
           )}
           
         </div>
@@ -273,8 +280,8 @@ export default function Page(){
         <div className="flex justify-between mt-4">
           <p className="font-bold">End Date</p>
           <p>
-            {students?.start_date
-              ? new Date(students.start_date).toLocaleString("en-IN", {
+            {students?.end_date
+              ? new Date(students.end_date).toLocaleString("en-IN", {
                   year: "numeric",
                   month: "long",
                   day: "numeric",
@@ -296,17 +303,17 @@ export default function Page(){
           />
         </div>
         <button
-          onClick={() => handleOpenModal(students?.id)}
+          onClick={() => handleOpenModal(students?.id)}  disabled={isButtonDisabled()}
           className="text-sm bg-red-600 w-full py-1.5 rounded-sm text-white shadow-sm hover:shadow-xl transition-shadow mt-6"
         >
-          Add Component Dates & Data
+          Add Submission
         </button>
       </>
     )}
 
     <div className="border border-b-2 mt-4"></div>
   </div>
-  {students?.id ? <StudentAnswerSub id={students.id} subcomponent={false} /> : <p>Loading...</p>}
+  {students?.id ? <StudentAnswerView id={students.id} compId={state.user_id} subcomponent={false} /> : <p>Loading...</p>}
 </div>}
 
         </div>

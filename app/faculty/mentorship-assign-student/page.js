@@ -29,13 +29,13 @@ export default function Page(){
     }, [state.user_id]);
 
     // Filter mentees based on full name or email
-    const filteredMentees = mentee.filter(stu => {
+    const filteredMentees = Array.isArray(mentee) ? mentee.filter(stu => {
         const fullName = `${stu?.first_name || ""} ${stu?.middle_name || ""} ${stu?.last_name || ""}`.toLowerCase();
         return (
             fullName.includes(searchTerm.toLowerCase()) || 
             (stu?.user?.email || "").toLowerCase().includes(searchTerm.toLowerCase())
         );
-    });
+    }) : [];
 
     return (
         <div className="px-6 py-8">
@@ -102,7 +102,7 @@ export default function Page(){
                         ))
                     ) : (
                         <tr>
-                            <td colSpan="7" className="px-6 py-4 text-center">No students found</td>
+                            <td colSpan="7" className="px-6 py-4 text-center">No students Assigned Yet</td>
                         </tr>
                     )}
                 </tbody>

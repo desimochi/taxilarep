@@ -128,7 +128,7 @@ export const menuItems = [
       icon: <PenSquareIcon className="h-5 w-5" />,
       subMenu: [
         { label: "Subject", path: "/faculty/assign-subject" },
-        { label: "Internship Report", path: "/faculty/internship-report" },
+        { label: "Class Schedule", path: "/faculty/class-schedule" },
         {label : "Syllabus", hasSubMenu:true,  subMenu : [
             {label:"Upload Syllabus", path:"/syllabus/see-syllabus"},
             { label: "Uploaded Syllabus", path: "/faculty/uploaded-syllabus" },

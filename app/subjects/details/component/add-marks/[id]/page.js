@@ -153,7 +153,7 @@ export default function AnswerDetails() {
                   <td className="border px-4 py-2">
                     <input
                       type="number"
-                    //   disabled={!student.submitted}
+                      disabled={!student.submitted}
                       value={formData[student.id] ?? ""}
                      className={`px-2 py-0.5 border border-gray-600 ${
     markErrors[student.id] ? "bg-red-300" : ""

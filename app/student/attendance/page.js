@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { GlobalContext } from "@/components/GlobalContext";
 import { useContext } from "react";
 import FullWidthLoader from "@/components/Loaader";
+import Link from "next/link";
 export default function Page(){
     const [loading, setLoading] = useState(false);
       const [error, setError] = useState(false);
@@ -100,6 +101,9 @@ const handleSubmit = async () => {
   const subjects = atten.map((item) => item.subject_mapping.subject.name);
     return(
         <div className="py-4 px-5">
+            <div className=" flex justify-end px-2">
+                <Link href={`/student/leave?stuId=${state.user_id}`} className="bg-red-600 py-2 px-8 rounded-sm text-white">Apply for Leave</Link>
+            </div>
             <div>
             <div className="w-full">
             <div className="border border-gray-300 rounded-xl mt-4 bg-gradient-to-bl from-gray-700 to-stone-900 text-white p-2 hover:shadow-xl transition-shadow  py-8 px-12">
@@ -110,7 +114,7 @@ const handleSubmit = async () => {
                 </div>
                 <div className=" flex w-3/5 gap-2 items-start">
                 <div>
-            <select value={selectedTerm} onChange={handleTermChange} className=" w-full border border-gray-300 rounded-sm p-2 text-black">
+            <select value={selectedTerm} onChange={handleTermChange} className=" w-fit border border-gray-300 rounded-sm p-2 text-black">
                 <option value="">Select Term</option>
                 {terms.map(term => (
                     <option key={term.id} value={term.id}>{term.name}</option>
@@ -118,7 +122,7 @@ const handleSubmit = async () => {
             </select>
             </div>
             <div>
-            <select onChange={(e) => setSelectedSubject(e.target.value)} disabled={!selectedTerm} className=" border w-full border-gray-300 rounded-sm p-2 text-black">
+            <select onChange={(e) => setSelectedSubject(e.target.value)} disabled={!selectedTerm} className=" border w-fit border-gray-300 rounded-sm p-2 text-black">
                 <option value="">Select Subject</option>
                 {filteredSubjects.map(sub => (
                     <option key={sub.subjectMappingId} value={sub.subjectMappingId}>

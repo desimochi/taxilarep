@@ -33,7 +33,6 @@ export default function LoginPage() {
     try {
       const response = await fetch(`${API_BASE_URL}login`, {
         method: "POST",
-        mode: "cors",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       });
@@ -125,7 +124,7 @@ export default function LoginPage() {
                 />
               </div>
 
-              <div className="flex items-center justify-between">
+              {/* <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <input
                     id="remember-me"
@@ -142,7 +141,7 @@ export default function LoginPage() {
                     Forgot password?
                   </a>
                 </div>
-              </div>
+              </div> */}
 
               <div>
                 <button

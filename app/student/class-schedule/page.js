@@ -24,34 +24,31 @@ const [e_date, setEndDate] = useState('');
       try {
         setLoading(true);
         const [response, response1] = await Promise.all([
-            await authFetch(`subject-student-wise/${state.user_id}`),
-            await authFetch(`attendance-summary-filter/${state.user_id}`)
+            await authFetch(`student-wise-class/${state.user_id}`)
 
         ])
         if (!response.ok && !response1.ok) throw new Error("Failed to fethc the data");
 
         const data = await response.json();
-        const data2 = await response1.json()
 
         setsclass(data.data);
-        setatten(data2.data)
         const uniqueTerms = Array.from(
             new Map(
                 data.data
-                    .filter(item => item.term)
-                    .map(item => [item.term.id, item.term])
+                    .filter(item => item.mapping && item.mapping.term)
+                    .map(item => [item.mapping.term.id, item.mapping.term])
             ).values()
         );
         setTerms(uniqueTerms);
         
         // Get subjects
         const mappedSubjects = data.data
-            .filter(item => item.term && item.subject)
-            .map(item => ({
-                termId: item.term.id,
-                subjectMappingId: item.id, // id is the subject_mapping id
-                subjectName: item.subject.name
-            }));
+        .filter(item => item.mapping && item.mapping.term && item.mapping.subject)
+        .map(item => ({
+            termId: item.mapping.term.id,
+            subjectMappingId: item.mapping.id,
+            subjectName: item.mapping.subject.name
+        }));
         setSubjectas(mappedSubjects);
         
       } catch (err) {
@@ -80,13 +77,13 @@ const handleSubmit = async () => {
         if (s_date) params.append('s_date', s_date);
         if (e_date) params.append('e_date', e_date);
 
-        const url = `attendance-summary-filter/${state.user_id}?${params.toString()}`;
+        const url = `student-wise-class/${state.user_id}?${params.toString()}`;
 
         const response = await authFetch(url);
         if (!response.ok) throw new Error("Failed to fetch filtered data");
 
         const data = await response.json();
-        setatten(data.data);
+        setsclass(data.data);
     } catch (error) {
         setError(error.message);
     } finally {
@@ -95,9 +92,6 @@ const handleSubmit = async () => {
 }
 
 
-
-    const uniqueDates = [...new Set(atten.flatMap((item) => item.attendance.map((att) => att.date)))];
-  const subjects = atten.map((item) => item.subject_mapping.subject.name);
     return(
         <div className="py-4 px-5">
             <div>
@@ -141,38 +135,32 @@ const handleSubmit = async () => {
             <div>
             {loading? <FullWidthLoader/> :     <table className="w-full text-sm text-left text-gray-800 dark:text-gray-400 mt-4">
                             <thead className="text-xs text-gray-100 uppercase bg-black dark:bg-gray-700 dark:text-gray-400">
-              <tr>
-                <th scope="col" className="px-6 py-3">Date</th>
-            {subjects.map((subject, index) => (
-              <th key={index} scope="col" className="px-6 py-3">{subject}</th>
-            ))}
-              </tr>
+             
+                         <tr >
+                                <th scope="col" className="px-6 py-3">S.No.</th>
+                <th scope="col" className="px-6 py-3">Date.</th>
+                <th scope="col" className="px-6 py-3">Subject Name</th>
+                <th scope="col" className="px-6 py-3">Faculty</th>
+           
+                         </tr>
+                
             </thead>
             <tbody>
-            {uniqueDates.map((date, index) => (
-            <tr key={index} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200">
-              <td className="px-6 py-4">{date}</td>
-              {atten.map((item, subIndex) => {
-                const attendanceRecord = item.attendance.find((att) => att.date === date);
-                const status = attendanceRecord ? attendanceRecord.status : "No Data";
-                
-                return (
-                  <td
-                    key={subIndex}
-                    className={`border border-gray-300 px-4 py-2 ${
-                      status === "Present"
-                        ? "bg-green-200"
-                        : status === "Class Not Scheduled"
-                        ? "bg-gray-100"
-                        : "bg-red-200"
-                    }`}
-                  >
-                    {status}
-                  </td>
-                );
-              })}
-            </tr>
-          ))}
+            { sclass.length > 0 ? (
+    sclass.map((cls, index) => (
+        <tr key={cls.id} className="hover:bg-gray-50">
+            <td className="px-6 py-3">{index + 1}</td>
+            <td className="px-6 py-3">{cls.date}</td>
+            <td className="px-6 py-3">{cls.mapping.subject?.name}</td>
+            <td className="px-6 py-3">{cls.mapping.faculty?.first_name} {cls.mapping.faculty?.last_name}</td>
+        </tr>
+    ))
+) : (
+    <tr>
+        <td colSpan={4} className="text-center py-4">No Class Schedule</td>
+    </tr>
+)}
+            
     
             </tbody>
                             </table>}
