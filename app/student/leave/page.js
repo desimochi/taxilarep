@@ -1,10 +1,10 @@
 "use client";
-import { useSearchParams, useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
-import { authFetch } from '@/app/lib/fetchWithAuth';
-import Toast from '@/components/Toast';
+import { Suspense, useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { authFetch } from "@/app/lib/fetchWithAuth";
+import Toast from "@/components/Toast";
 
-export default function Page() {
+function LeaveForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [stuId, setStuId] = useState(null);
@@ -18,9 +18,9 @@ export default function Page() {
 
   // Extract stuId safely inside useEffect
   useEffect(() => {
-    const id = searchParams.get('stuId');
+    const id = searchParams.get("stuId");
     if (!id) {
-      router.push('/unauthorized'); // redirect if no ID
+      router.push("/unauthorized"); // Redirect if no ID
     } else {
       setStuId(id);
     }
@@ -44,7 +44,7 @@ export default function Page() {
     };
 
     try {
-      const response = await authFetch('student-leave-viewset', {
+      const response = await authFetch("student-leave-viewset", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -65,7 +65,7 @@ export default function Page() {
 
     } catch (error) {
       console.error(error);
-      alert(error.message || 'Something went wrong');
+      alert(error.message || "Something went wrong");
     }
   };
 
@@ -108,7 +108,7 @@ export default function Page() {
               onChange={handleChange}
               placeholder="Enter Your Reason..."
               required
-              className='bg-white border border-gray-300 mb-6 text-gray-700 text-sm rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
+              className="bg-white border border-gray-300 mb-6 text-gray-700 text-sm rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
             />
 
             <button type="submit" className="w-full bg-red-700 py-2 text-white rounded-sm">
@@ -118,5 +118,14 @@ export default function Page() {
         </div>
       </div>
     </>
+  );
+}
+
+// ✅ Wrap the component in Suspense
+export default function Page() {
+  return (
+    <Suspense fallback={<p>Loading...</p>}>
+      <LeaveForm />
+    </Suspense>
   );
 }
