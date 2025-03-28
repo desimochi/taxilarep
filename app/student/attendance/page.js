@@ -21,6 +21,11 @@ const [s_date, setStartDate] = useState('');
 const [e_date, setEndDate] = useState('');
 
     useEffect(() => {
+        if (!state || !state.user_id) {
+            console.error("User ID is missing in deployment.");
+            setError("User ID is not available.");
+            return;
+        }
     const fetchclassData = async () => {
       try {
         setLoading(true);
