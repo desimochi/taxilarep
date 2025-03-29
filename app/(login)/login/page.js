@@ -60,7 +60,7 @@ export default function LoginPage() {
         if (data.data.user.employee_type === "Teaching") {
           router.replace("/faculty");
         } else if (data.data.user.user_type === "STUDENT") {
-          router.replace("/student/dashboard");
+          router.replace("/student");
         } else {
           router.replace("/admin");
         }
