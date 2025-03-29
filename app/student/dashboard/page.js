@@ -5,6 +5,7 @@ import { GlobalContext } from "@/components/GlobalContext";
 import FullWidthLoader from "@/components/Loaader";
 import Link from "next/link"
 import { useState, useContext, useEffect } from "react";
+export const dynamic = "force-dynamic"; 
 export default function Page(){
 const [sclass, setsclass] = useState([]);
 const [atten, setatten] = useState([])
