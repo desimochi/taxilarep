@@ -13,7 +13,6 @@ import Table from "@tiptap/extension-table";
 import TableRow from "@tiptap/extension-table-row";
 import TableCell from "@tiptap/extension-table-cell";
 import TableHeader from "@tiptap/extension-table-header";
-import Heading from "@tiptap/extension-heading";
 import ListItem from "@tiptap/extension-list-item";
 import BulletList from "@tiptap/extension-bullet-list";
 import OrderedList from "@tiptap/extension-ordered-list";
@@ -33,19 +32,18 @@ import {
     SaveIcon,
     Undo2Icon,
     Redo2Icon,
-    ItalicIcon
+    ItalicIcon,
+    DeleteIcon
 } from "lucide-react";
 import { authFetch } from "@/app/lib/fetchWithAuth";
 import { BoldIcon } from "@heroicons/react/24/outline";
 
 export default function RichTextEditor({id}) {
-    const [showTableOptions, setShowTableOptions] = useState(false);
     const [editorContent, setEditorContent] = useState("<p>Loading content...</p>");
     const router = useRouter(); 
     const[message, setMessage]= useState("")
     const[showtoast, setShowToast] = useState(false)
-    const [rows, setRows] = useState(3);
-    const [cols, setCols] = useState(3);
+    const [mounted, setMounted] = useState(false);
       const [uploadedFiles, setUploadedFiles] = useState([]);
       const [isSaving, setIsSaving] = useState(false);
     const imageInputRef = useRef(null);
@@ -54,7 +52,15 @@ const searchParams = useSearchParams();
 const subID = searchParams.get("subID");
     const editor = useEditor({
         extensions: [
-            StarterKit,
+            StarterKit.configure({
+                bulletList: false,
+                orderedList: false,
+                listItem: false,
+                table: false, // ✅ explicitly disable if included
+  tableRow: false,
+  tableCell: false,
+  tableHeader: false,
+              }),
             Link.configure({ HTMLAttributes: { class: "text-blue-700 cursor-pointer" } }),
             Underline,
             Image, 
@@ -69,8 +75,28 @@ const subID = searchParams.get("subID");
             FontType
         ],
         content: "<p>Start typing here...</p>",
+        editorProps: {
+            attributes: { class: "prose p-4" },
+          },
+          editorProps: {
+            handleDOMEvents: {
+              beforeinput: () => false
+            }
+          },
+          parseOptions: {
+            preserveWhitespace: "full",
+          },
+          onCreate: ({ editor }) => {
+            editor.view.dom.setAttribute("spellcheck", "false");
+          },
+          // 👇 This is the key setting
+          editableContent: true,
+          immediatelyRender: false,
     });
-
+    useEffect(() => {
+        setMounted(true);
+      }, []);
+    
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -98,18 +124,7 @@ const subID = searchParams.get("subID");
 
         fetchData();
     }, [subID, editor]);
-    useEffect(() => {
-        if (!editor) return;
 
-        editor.on("update", () => {
-            const html = editor.getHTML();
-
-            // Ensure there's always a paragraph after the table
-            if (html.includes("<table") && !html.match(/<p>(.*?)<\/p>/g)) {
-                editor.commands.insertContent("<p><br/></p>");
-            }
-        });
-    }, [editor]);
     const changeFontSize = (event) => {
         const size = event.target.value;
         editor?.chain().focus().setFontSize(size).run();
@@ -118,31 +133,8 @@ const subID = searchParams.get("subID");
         const family = event.target.value;
         editor?.chain().focus().setFontType(family).run();
       };
-    const insertTable = () => {
-        editor.chain().focus().insertTable({ rows, cols }).run();
-        editor.commands.insertContent("<p><br/></p>");
-        setShowTableOptions(false);
-    };
-
-    const removeTable = () => {
-        editor.chain().focus().deleteTable().run();
-    };
-
-    const addRow = () => {
-        editor.chain().focus().addRowAfter().run();
-    };
-
-    const deleteRow = () => {
-        editor.chain().focus().deleteRow().run();
-    };
-
-    const addColumn = () => {
-        editor.chain().focus().addColumnAfter().run();
-    };
-
-    const deleteColumn = () => {
-        editor.chain().focus().deleteColumn().run();
-    };
+      
+   
 
     const addLink = () => {
         if (!editor) return;
@@ -169,22 +161,12 @@ const subID = searchParams.get("subID");
     };
 
 
-    useEffect(() => {
-        const handleClickOutside = (e) => {
-            if (!editor) return;
-            const editorContainer = document.getElementById("editor-container");
-    
-            if (editorContainer && !editorContainer.contains(e.target)) {
-                editor.commands.insertContent("<p><br/></p>");
-                editor.commands.focus();
-            }
-        };
-        document.addEventListener("click", handleClickOutside);
-        return () => document.removeEventListener("click", handleClickOutside);
-    }, [editor]);
+  
 const handleFileUpload = async (event, type) => {
+    console.log("run")
     const file = event.target.files[0];
     if (!file) return;
+    console.log("Uploading file:", file);
 
     const formData = new FormData();
     formData.append("file", file);
@@ -281,8 +263,14 @@ const deleteFile = async (fileUrlToDelete) => {
         setIsSaving(false); // ✅ Hide loading state
     }
 };
-
-    if (!editor) return null;
+const addTable = () => {
+    editor
+        .chain()
+        .focus()
+        .insertTable({ rows: 3, cols: 3, withHeaderRow: true }) // Adds a 3x3 table
+        .run();
+};
+if (!mounted || !editor) return null;
 
     return (
         <div id="editor-container" className="border border-gray-300 rounded-md p-4">
@@ -332,19 +320,31 @@ const deleteFile = async (fileUrlToDelete) => {
                 <button type="button" onClick={addLink} className="text-white  bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2"><LinkIcon /></button>
                 <button type="button" onClick={() => editor.chain().focus().toggleOrderedList().run()} className="text-white  bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2"><ListOrdered /></button>
                 {/* Upload Image Button */}
-<button type="button" onClick={() => imageInputRef.current.click()} className="text-white  bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2">
+               
+                <button 
+    type="button" 
+    onClick={() => imageInputRef.current.click()} 
+    className="text-white bg-gray-900 bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2">
     <ImageIcon className="w-5 h-5 text-white dark:text-white" />
 </button>
-<input type="file" accept="image/*" ref={imageInputRef} className="hidden" onChange={(e) => handleFileUpload(e, "image")} />
 
+<input type="file" accept="image/*" ref={imageInputRef} className="hidden" onChange={(e) => handleFileUpload(e, "image")} />
 {/* Upload File Button */}
-<button type="button" onClick={() => fileInputRef.current.click()} className="text-white  bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2">
+<button 
+    type="button" 
+    onClick={() => fileInputRef.current.click()} 
+    className="text-white bg-gray-900 bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2">
     <FileIcon className="w-5 h-5 text-white dark:text-white" />
 </button>
-<input type="file" ref={fileInputRef} className="hidden" onChange={(e) => handleFileUpload(e, "file")} />
+<input type="file" ref={fileInputRef} accept=".pdf, .xls, .xlsx, .doc, .docx"  className="hidden" onChange={(e) => handleFileUpload(e, "file")} />
+<button type="button" onClick={addTable} className="text-white bg-gray-900 p-2 border border-gray-700">
 
-                <button type="button" onClick={() => setShowTableOptions(!showTableOptions)} className="text-white  bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2"><TableIcon /></button>
-                <button type="button" onClick={removeTable} className="text-white  bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2"><Trash /></button>
+    <TableIcon className="w-5 h-5 text-white dark:text-white" /> 
+</button>
+<button type="button" onClick={() => editor.chain().focus().deleteTable().run()} className="text-white bg-gray-900 p-2 border border-gray-700">
+   <DeleteIcon className="w-5 h-5 text-red-500 dark:text-white"/>
+</button>
+               
                 <button type="button" onClick={() => editor.chain().focus().undo().run()} className="text-white  bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2">
     <Undo2Icon /> {/* Add an Undo icon from Lucide or another library */}
 </button>
@@ -354,37 +354,8 @@ const deleteFile = async (fileUrlToDelete) => {
 </button>
 
             </div>
-
-            {/* Table Options */}
-            {showTableOptions && (
-                <div className="bg-white border p-4 rounded-lg shadow-md mt-2 flex  items-center  gap-3">
-                    <div className="flex space-x-2 items-center">
-                        <label>Rows:</label>
-                        <input 
-                            type="number" 
-                            value={rows} 
-                            onChange={(e) => setRows(parseInt(e.target.value) || 1)} 
-                            className="border px-2 py-1 w-16 text-center"
-                        />
-                    </div>
-                    <div className="flex space-x-2 items-center">
-                        <label>Columns:</label>
-                        <input 
-                            type="number" 
-                            value={cols} 
-                            onChange={(e) => setCols(parseInt(e.target.value) || 1)} 
-                            className="border px-2 py-1 w-16 text-center"
-                        />
-                    </div>
-                    <button 
-                        className="bg-red-600 text-white px-4 py-2 rounded-md "
-                        onClick={insertTable}
-                    >
-                        Insert Table
-                    </button>
-                </div>
-            )}
-
+        
+            
 {editor && (
                 <BubbleMenu editor={editor} className="flex gap-1 p-2 opacity-95 bg-black rounded-lg w-full flex-wrap">
                  
@@ -431,16 +402,7 @@ const deleteFile = async (fileUrlToDelete) => {
                 <button type="button" onClick={addLink} className="text-white  bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2"><LinkIcon /></button>
                 <button type="button" onClick={() => editor.chain().focus().toggleOrderedList().run()} className="text-white  bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2"><ListOrdered /></button>
                 {/* Upload Image Button */}
-<button type="button" onClick={() => imageInputRef.current.click()} className="text-white  bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2">
-    <ImageIcon className="w-5 h-5 text-white dark:text-white" />
-</button>
-<input type="file" accept="image/*" ref={imageInputRef} className="hidden" onChange={(e) => handleFileUpload(e, "image")} />
-
-{/* Upload File Button */}
-<button type="button" onClick={() => fileInputRef.current.click()} className="text-white  bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2">
-    <FileIcon className="w-5 h-5 text-white dark:text-white" />
-</button>
-<input type="file" ref={fileInputRef} className="hidden" onChange={(e) => handleFileUpload(e, "file")} />
+              
                 <button type="button" onClick={() => editor.chain().focus().undo().run()} className="text-white  bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2">
     <Undo2Icon /> {/* Add an Undo icon from Lucide or another library */}
 </button>
@@ -450,17 +412,36 @@ const deleteFile = async (fileUrlToDelete) => {
 </button>
                 </BubbleMenu>
             )}
-
+{editor && editor.isActive("table") && (
+    <div className="flex gap-2 mt-2 border p-2 bg-gray-100">
+        <button type="button" 
+            onClick={() => editor.chain().focus().addColumnBefore().run()}
+            className="p-2 bg-gray-400 text-white rounded-sm text-sm"
+        >
+            ➕ Add Column
+        </button>
+        <button type="button"
+            onClick={() => editor.chain().focus().addRowBefore().run()}
+            className="p-2 bg-gray-400 text-white rounded-sm text-sm"
+        >
+            ➕ Add Row
+        </button>
+        <button type="button"
+            onClick={() => editor.chain().focus().deleteColumn().run()}
+            className="p-2 bg-gray-400 text-white rounded-sm text-sm"
+        >
+            ❌ Remove Column
+        </button>
+        <button type="button"
+            onClick={() => editor.chain().focus().deleteRow().run()}
+            className="p-2 bg-gray-400 text-white rounded-sm text-sm"
+        >
+            ❌ Remove Row
+        </button>
+    </div>
+)}
             {/* Table Controls */}
-            {editor && editor.isActive("table") && (
-                <div className="bg-gray-100 p-2 rounded-lg flex  mt-2 gap-3 text-sm">
-                    <button type="button" className="bg-gray-300 p-1 items-center flex gap-1 rounded" onClick={addRow}><Plus className="h-3 w-3"/> Row</button>
-                    <button type="button" className="bg-gray-300 p-1 items-center flex gap-1 rounded" onClick={deleteRow}><Minus className="h-3 w-3"/> Row</button>
-                    <button type="button" className="bg-gray-300 p-1 items-center flex gap-1  rounded" onClick={addColumn}><Plus className="h-3 w-3"/> Column</button>
-                    <button type="button" className="bg-gray-300 p-1 items-center flex gap-1  rounded" onClick={deleteColumn}><Minus  className="h-3 w-3"/> Column</button>
-                </div>
-            )}
-            
+        
             {/* Editor */}
             <div className="mt-2 border border-gray-300 rounded-lg p-4">
                 <EditorContent 
@@ -469,12 +450,6 @@ const deleteFile = async (fileUrlToDelete) => {
                 />
             </div>
 
-            <style jsx>{`
-                table {
-                    width: 100%;
-                    border-collapse: collapse;
-                }
-            `}</style>
              {uploadedFiles.length > 0 && (
               <div className="mt-2 p-2 bg-gray-100 rounded dark:bg-gray-700">
                 <h3 className="text-sm font-semibold text-gray-700 dark:text-white">
