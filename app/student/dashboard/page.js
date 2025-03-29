@@ -15,6 +15,7 @@ const [atten, setatten] = useState([])
   const { state } = useContext(GlobalContext);
 
   useEffect(() => {
+    if (!state?.user_id) return;
     const fetchclassData = async () => {
       try {
         setLoading(true);
