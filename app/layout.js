@@ -46,7 +46,13 @@ function InnerLayout({ children }) {
   const [collapsed, setCollapsed] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(null);
 
-  console.log(state) 
+  useEffect(() => {
+    const storedState = localStorage.getItem("userState");
+    if (storedState) {
+      updateState(JSON.parse(storedState)); // Assuming updateState is available from GlobalContext
+    }
+  }, [updateState]);
+
  
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
