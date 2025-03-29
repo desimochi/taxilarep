@@ -55,8 +55,8 @@ export default function EmployeeProfile() {
         <div>
         
           <h1 className="font-semibold text-xl font-sans">{data.salutation.name} {data.first_name} {data.last_name}</h1>
-          <p className="text-gray-600 font-semibold">{data.designation.name} - {data.employee_role.name}</p>
-          <p className="text-gray-500 text-sm">{data.institute_department.name}</p>
+          <p className="text-gray-600 font-semibold">{data.designation?.name} - {data.employee_role.name}</p>
+          <p className="text-gray-500 text-sm">{data.institute_department?.name}</p>
         </div>
         <button
           onClick={editing ? handleSubmit : handleEdit}
