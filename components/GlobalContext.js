@@ -9,29 +9,49 @@ export const GlobalProvider = ({ children }) => {
   const [state, setState] = useState(() => {
     if (typeof window !== "undefined") {
       const savedState = localStorage.getItem("userState");
-      return savedState ? JSON.parse(savedState) : null;
+      return savedState ? JSON.parse(savedState) : {
+        name: "",
+        email: "",
+        role_name: "",
+        user_id: "",
+        employee_type: "",
+      }; // Default structure to prevent errors
     }
-    return null;
+    return {
+      name: "",
+      email: "",
+      role_name: "",
+      user_id: "",
+      employee_type: "",
+    };
   });
+
   useEffect(() => {
-    if (state !== null) {
+    if (state) {
       localStorage.setItem("userState", JSON.stringify(state));
     }
   }, [state]);
+
   useEffect(() => {
     const handleStorageChange = () => {
       const savedState = localStorage.getItem("userState");
-      setState(savedState ? JSON.parse(savedState) : null);
+      if (savedState) {
+        setState(JSON.parse(savedState));
+      }
     };
 
     window.addEventListener("storage", handleStorageChange);
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
-  // Function to update state and persist it in localStorage
+
+  // ✅ Function to update state and merge changes
   const updateState = (newState) => {
-    setState(newState); 
-    localStorage.setItem("userState", JSON.stringify(newState));
-    window.dispatchEvent(new Event("storage")); // Force update across tabs and components
+    setState((prevState) => ({
+      ...prevState, // Keep existing properties
+      ...newState,  // Update only new properties
+    }));
+
+    localStorage.setItem("userState", JSON.stringify({ ...state, ...newState }));
   };
 
   return (
@@ -40,3 +60,6 @@ export const GlobalProvider = ({ children }) => {
     </GlobalContext.Provider>
   );
 };
+
+// ✅ Hook to use the context
+export const useGlobalContext = () => useContext(GlobalContext);
