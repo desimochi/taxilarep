@@ -25,6 +25,8 @@ const Sidebar = ({collapsed, toggleSidebar, toggleMenu, openMenus, role, type  }
     switch (role) {
         case "Super Admin":
             return menuItems;
+        case "admin":
+            return menuItems;
         case "Faculty":
             return FacmenuItems;
         case "Student":
