@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const studentAllowedPaths = [
-  "/student/dashboard",
+  "/student",
   "/student/subject",
   "/student/subject/details", // Base path
   "/student/attendance",

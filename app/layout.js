@@ -82,11 +82,11 @@ function InnerLayout({ children }) {
     Cookies.remove("user");
     router.push("/login"); // Redirect to login page
   }
-  const noLayoutRoutes = ["/login", "/student"]
-  const isStudentLayout = pathname.includes("student"); // Check if URL contains "student"
+  const noLayoutRoutes = ["/login"]
+
 
   if (isAuthenticated === null) {
-    if (noLayoutRoutes.includes(pathname) || isStudentLayout) {
+    if (noLayoutRoutes.includes(pathname)) {
       return <GlobalProvider><html> <body>{children}</body></html></GlobalProvider>;
     } else {
       return <html><body></body></html>;

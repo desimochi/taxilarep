@@ -6,8 +6,10 @@ import { GlobalContext } from "@/components/GlobalContext";
 import { useContext } from "react";
 import FullWidthLoader from "@/components/Loaader";
 import Link from "next/link";
-export default function Page({id}){
+export default function Page(){
     const [loading, setLoading] = useState(false);
+    const{state} = useContext(GlobalContext)
+    const id  = state.user_id
       const [error, setError] = useState(false);
         const [sclass, setsclass] = useState([]);
         const [atten, setatten] = useState([])

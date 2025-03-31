@@ -37,10 +37,6 @@ export const menuItems = [
       icon: <PenSquareIcon className="h-5 w-5" />,
       subMenu: [
         { label: "Internship Report", path: "/internship-report" },
-        {label : "Exam Case Study", hasSubMenu:true,  subMenu : [
-            {label:"Upload Case Study", path:"/upload-casestudy"},
-            { label: "Uploaded Case Study", path: "/uploaded-casestudy" },
-          ]},
           {label : "Exam Schedule", hasSubMenu:true,  subMenu : [
             {label:"Main Exam Schedule", path:"/main-exam-schedule"},
             { label: "Re-Sit Exam Schedule", path: "/resit-exam-schedule" },
@@ -51,23 +47,16 @@ export const menuItems = [
             { label: "Student Attendence", path: "/attendance/student-attendance" },
             { label: "Faculty Attendence", path: "/attendance/faculty-attendance" },
           ]},
-          {label : "CE Exam Manager", hasSubMenu:true,  subMenu : [
-            {label:"Add Marks", path:"/ceexam/add-marks"},
-            { label: "Upload Excel Sheet", path: "/ceexam/upload-excel" }, 
-            { label: "See Result", path: "/ceexam/result" },
-          ]},
-          {label : "Written Exam Manager", hasSubMenu:true,  subMenu : [
+         
+          {label : "Exam Manager", hasSubMenu:true,  subMenu : [
             {label:"Add Marks", path:"/written/add-marks"},
-            { label: "Upload Excel Sheet", path: "/written/upload-excel" },
             { label: "See Result", path: "/written/result" },
           ]},
           {label : "Re-Sit Exam Manager", hasSubMenu:true,  subMenu : [
             {label:"Add Marks", path:"/resit/add-marks"},
-            { label: "Upload Excel Sheet", path: "/resit/upload-excel" },
             { label: "See Result", path: "/resit/result" },
           ]},
           {label : "Component Manager", path: "/exam-components/component-manager"},
-        { label: "Question Paper", path: "/question-paper" },
       ],
     },
    
@@ -76,9 +65,6 @@ export const menuItems = [
       icon: <NewspaperIcon className="h-5 w-5" />,
       subMenu: [
         { label: "Noticeboard", path: "/notice/noticeboard" },
-        { label: "News Manager", path: "/notice/news-manager" },
-        { label: "Upload Document", path: "/notice/upload-document" },
-        { label: "Uploaded Document", path: "/notice/uploaded-document" },
       ],
     },
     {
@@ -98,15 +84,6 @@ export const menuItems = [
         { label: "Add Faculty", path: "/add-faculty" },
         { label: "All Faculty", path: "/faculty" },
         { label: "Assign Subject", path: "/assign-faculty" },
-        {label : "Faculty Report", hasSubMenu: true, subMenu :[
-          { label: "Faculty Activity", path: "/faculty-report/faculty-activity" },
-          { label: "Faculty Syllabus", path: "/faculty-report/faculty-syllabus" },
-          { label: "Faculty Assignment", path: "/faculty-report/faculty-assignment" },
-          { label: "Faculty Case Study", path: "/faculty-report/faculty-casestudy" },
-          { label: "Faculty Questions", path: "/faculty-report/faculty-questions" },
-          { label: "Add Syllabus", path: "/faculty-report/add-syllabus" },
-        ]},
-       
       ],
     },
     { label: "Events", icon: <CalendarIcon className="h-5 w-5" />, path: "/events" },
@@ -162,7 +139,7 @@ export const menuItems = [
   ]
 
   export const stumenuItems = [
-    { label: "Dashboard", icon: <HomeIcon className="h-5 w-5" />, path: "/student/dashboard" },
+    { label: "Dashboard", icon: <HomeIcon className="h-5 w-5" />, path: "/student" },
     { label: "Subject", icon: <BookCheckIcon className="h-5 w-5" />, path: "/student/subject" },
     { label: "Attendance", icon: <PenSquareIcon className="h-5 w-5" />, path: "/student/attendance" },
     { label: "Class Schedule", icon: <NewspaperIcon className="h-5 w-5" />, path: "/student/class-schedule" },
