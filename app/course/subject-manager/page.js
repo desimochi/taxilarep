@@ -158,98 +158,101 @@ useEffect(() => {
                 </tr>
             </thead>
             <tbody>
-                {users.map((user, index) => (
-                    <tr
-                        key={index}
-                        className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+            {users.length > 0 &&
+    users.map((user, index) => (
+        <tr
+            key={index}
+            className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+        >
+            <td className="px-6 py-4">{index + 1}</td>
+            <td className="px-6 py-4">
+                {editingRow === index ? (
+                    <input
+                        type="text"
+                        name="name"
+                        value={user.name}
+                        onChange={(e) => handleChange(e, index)}
+                        className="border p-1 rounded"
+                    />
+                ) : (
+                    user.name
+                )}
+            </td>
+            <td className="px-6 py-4">
+                {editingRow === index ? (
+                    <input
+                        type="text"
+                        name="code"
+                        value={user.code}
+                        onChange={(e) => handleChange(e, index)}
+                        className="border p-1 rounded"
+                    />
+                ) : (
+                    user.code
+                )}
+            </td>
+            <td className="px-6 py-4">
+                {editingRow === index ? (
+                    <input
+                        type="number"
+                        name="credit"
+                        value={user.credit}
+                        onChange={(e) => handleChange(e, index)}
+                        className="border p-1 rounded"
+                    />
+                ) : (
+                    user.credit
+                )}
+            </td>
+            <td className="px-6 py-4">
+                {editingRow === index ? (
+                    <select
+                        value={user.type}
+                        onChange={(e) => handleChange(e, index, "type")}
+                        className="border rounded px-2 py-1"
                     >
-                        <td className="px-6 py-4">{index+1}</td>
-                        <td className="px-6 py-4">
-                            {editingRow === index ? (
-                                <input
-                                    type="text"
-                                    name="name"
-                                    value={user.name}
-                                    onChange={(e) => handleChange(e, index)}
-                                    className="border p-1 rounded"
-                                />
-                            ) : (
-                                user.name
-                            )}
-                        </td>
-                        <td className="px-6 py-4">
-                            {editingRow === index ? (
-                                <input
-                                    type="text"
-                                    name="code"
-                                    value={user.code}
-                                    onChange={(e) => handleChange(e, index)}
-                                    className="border p-1 rounded"
-                                />
-                            ) : (
-                                user.code
-                            )}
-                        </td>
-                        <td className="px-6 py-4">
-                            {editingRow === index ? (
-                                <input
-                                    type="number"
-                                    name="credit"
-                                    value={user.credit}
-                                    onChange={(e) => handleChange(e, index)}
-                                    className="border p-1 rounded"
-                                />
-                            ) : (
-                                user.credit
-                            )}
-                        </td>
-                        <td className="px-6 py-4">
-                            {editingRow === index ? (
-                                 <select
-                                 value={user.type}
-                                 onChange={(e) => handleChange(e, user.id, "type")}
-                                 className="border rounded px-2 py-1"
-                               >
-                                 <option value="Theory">Theory</option>
-                                 <option value="Practical">Practical</option>
-                               </select>
-                            ) : (
-                                user.type
-                            )}
-                        </td>
-                        <td className="px-6 py-4">
-                            {editingRow === index ? (
-                                 <select
-                                 value={user.is_active ? "true" : "false"}
-                                 onChange={(e) => handleChange(e, user.id, "is_active")}
-                                 className="border rounded px-2 py-1"
-                               >
-                                 <option value="true">Active</option>
-                                 <option value="false">Inactive</option>
-                               </select>
-                            ) : (
-                                user.is_active ? "Active" : "Inactive"
-                            )}
-                        </td>
-                        <td className="px-6 py-4 flex justify-start gap-4">
-                            <span
-                                onClick={() =>
-                                    editingRow === index ? handleSaveClick(user.id) : handleEditClick(index)
-                                }
-                                className="cursor-pointer"
-                            >
-                                {editingRow === index ? (
-                                    <SaveIcon className="h-5 w-5 text-green-600" />
-                                ) : (
-                                    <PencilIcon className="h-5 w-5 text-blue-600" />
-                                )}
-                            </span>
-                            <span className="cursor-pointer">
-                                <Trash2Icon className="h-5 w-5 text-red-600" onClick={()=>setIsDel(true)}/>
-                            </span>
-                        </td>
-                    </tr>
-                ))}
+                        <option value="Theory">Theory</option>
+                        <option value="Practical">Practical</option>
+                    </select>
+                ) : (
+                    user.type
+                )}
+            </td>
+            <td className="px-6 py-4">
+                {editingRow === index ? (
+                    <select
+                        value={user.is_active ? "true" : "false"}
+                        onChange={(e) => handleChange(e, index, "is_active")}
+                        className="border rounded px-2 py-1"
+                    >
+                        <option value="true">Active</option>
+                        <option value="false">Inactive</option>
+                    </select>
+                ) : (
+                    user.is_active ? "Active" : "Inactive"
+                )}
+            </td>
+            <td className="px-6 py-4 flex justify-start gap-4">
+                <span
+                    onClick={() =>
+                        editingRow === index ? handleSaveClick(user.id) : handleEditClick(index)
+                    }
+                    className="cursor-pointer"
+                >
+                    {editingRow === index ? (
+                        <SaveIcon className="h-5 w-5 text-green-600" />
+                    ) : (
+                        <PencilIcon className="h-5 w-5 text-blue-600" />
+                    )}
+                </span>
+                <span className="cursor-pointer">
+                    <Trash2Icon className="h-5 w-5 text-red-600" onClick={() => setIsDel(true)} />
+                </span>
+            </td>
+        </tr>
+    ))
+}
+
             </tbody>
         </table>
         </div>
