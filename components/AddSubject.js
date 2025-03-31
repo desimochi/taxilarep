@@ -2,9 +2,13 @@
 import { authFetch } from "@/app/lib/fetchWithAuth";
 import { SaveIcon } from "lucide-react";
 import { useState } from "react";
+import Toast from "./Toast";
 
 export default function AddSubject() {
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+  const [message, setMessage] = useState("");
+  const [errors, setErrors] = useState({});
+  const [showToast, setShowToast] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -34,7 +38,6 @@ export default function AddSubject() {
     try {
       const response = await authFetch(`subject-viewset`, {
         method: "POST",
-        mode: "cors",
         headers: {
           "Content-Type": "application/json",
         },
@@ -42,12 +45,27 @@ export default function AddSubject() {
       });
   
       const data = await response.json();
-      console.log("Success:", data);
   
       if (response.ok) {
-        alert("Subject Added")
+        setMessage("Subject created successfully");
+        setShowToast(true);
+        setTimeout(() => {
+          setShowToast(false);
+          setMessage("");
+          window.location.href = "/course/subject-manager";
+        }, 2000);
       } else {
-        console.error("Course creation failed:", data);
+        if (data.message) {
+          const errorMessages = {};
+          data.message.forEach((error) => {
+            const [field, msg] = error.split(": ");
+            errorMessages[field] = msg;
+          });
+          setErrors(errorMessages);
+        } else {
+          setMessage("Something went wrong.");
+          setShowToast(true);
+        }
       }
     } catch (error) {
       console.error("Error:", error);
@@ -56,13 +74,14 @@ export default function AddSubject() {
 
   return (
     <div className="p-5">
+      {showToast && <Toast message={message} />}
       <div className="w-full rounded-sm py-12">
         <div className="border border-gray-300 shadow-sm hover:shadow-md rounded-md">
           <h4 className="px-6 py-4 bg-gradient-to-bl font-bold from-gray-700 to-stone-900 text-white">
             Add Main Exam Schedule
           </h4>
           <form className="py-5 px-5" onSubmit={handleSubmit}>
-            <label className="font-bold">Subject Name</label>
+            <label className="font-bold flex justify-between"><p>Subject Name</p>{errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}</label>
             <input
               type="text"
               name="name"
@@ -74,6 +93,7 @@ export default function AddSubject() {
 
             <div className="flex gap-2 justify-between mb-4 mt-2">
               <div className="w-1/3">
+              {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
                 <label className="font-bold">Subject Details</label>
                 <input
                   type="text"
@@ -86,6 +106,7 @@ export default function AddSubject() {
               </div>
 
               <div className="w-1/4">
+              {errors.code && <p className="text-red-500 text-sm">{errors.code}</p>}
                 <label className="font-bold">Subject Code</label>
                 <input
                   type="text"
@@ -98,18 +119,21 @@ export default function AddSubject() {
               </div>
 
               <div className="w-1/4">
+              {errors.type && <p className="text-red-500 text-sm">{errors.type}</p>}
                 <label className="font-bold">Subject Type</label>
-                <input
-                  type="text"
+                <select
                   name="type"
-                  placeholder="Enter Theory or Practical"
                   value={formData.type}
                   onChange={handleChange}
-                  className="bg-white border border-gray-300 text-gray-700 text-sm rounded-sm p-2.5 block w-full"
-                />
+                  className="bg-white border border-gray-300 text-gray-700 text-sm rounded-sm p-2.5 block w-full">
+                  <option value="">Select Subject Type</option>
+                  <option value="Theory">Theory</option>
+                  <option value="Practical">Practical</option>
+                  </select>
               </div>
 
               <div className="w-1/3">
+              {errors.credit && <p className="text-red-500 text-sm">{errors.credit}</p>}
                 <label className="font-bold">Subject Credit</label>
                 <input
                   type="number"

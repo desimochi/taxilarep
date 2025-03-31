@@ -1,7 +1,8 @@
 "use client"
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PencilIcon, PlusCircleIcon, SaveIcon, Trash2Icon } from "lucide-react";
+import { authFetch } from "@/app/lib/fetchWithAuth";
 import Addsubject from "@/components/AddSubject";
 import AssignedSubject from "@/components/AssignedSubject";
 import CourseSelection from "@/components/AssignSubject";
@@ -9,31 +10,93 @@ import CourseSelection from "@/components/AssignSubject";
 const UserTable = () => {
     const [editingRow, setEditingRow] = useState(null); 
     const [activeTab, setActiveTab] = useState("subject");
+    const[loading, setLoading] = useState(true)
+    const [error, setError] = useState("")
     const [isDel, setIsDel] = useState(false)
-    const [users, setUsers] = useState([{
-        coursename: "PGDM+Business Analytics",
-        batchcode:"T-29",
-        session:"2024-2026",
-        terms:6,
-        duration: "24",
-        status: "Active",
-    },
-]); // State for managing user data
+    const [users, setUsers] = useState([]); 
+useEffect(() => {
+    const fetchCourses = async () => {
+     
+      try {
+        const response = await authFetch(`subject-viewset`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status} - ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        setUsers(data.data); // Handle different API structures
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCourses();
+  }, []);
 
     const handleEditClick = (index) => {
         setEditingRow(index); // Set the clicked row as editable
     };
 
-    const handleSaveClick = () => {
-        setEditingRow(null); // Disable editing when save is clicked
+    const handleSaveClick = async (id) => {
+        const courseToUpdate = users.find(course => course.id === id);
+      
+        if (!courseToUpdate) {
+          console.error("Course not found");
+          return;
+        }
+      
+        try {
+          const response = await authFetch(`subject-viewset/${id}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              name: courseToUpdate.name,
+              code: courseToUpdate.code,
+              credit: courseToUpdate.credit,
+              is_active: courseToUpdate.is_active,
+              type: courseToUpdate.type,
+            }),
+          });
+      
+          if (response.ok) {
+            const updatedCourse = await response.json();
+      
+            setUsers(prevCourses =>
+              prevCourses.map(course =>
+                course.id === id ? { ...course, ...updatedCourse.data } : course
+              )
+            );
+    
+            setEditingRow(null); // Exit edit mode
+          } else {
+            console.error("Failed to update course");
+          }
+        } catch (error) {
+          console.error("Error updating course:", error);
+        }
     };
+    
 
-    const handleChange = (e, index) => {
+      const handleChange = (e, index) => {
         const { name, value } = e.target;
-        const updatedUsers = [...users];
-        updatedUsers[index][name] = value;
-        setUsers(updatedUsers);
+        
+        setUsers(prevUsers => 
+            prevUsers.map((user, i) => 
+                i === index ? { ...user, [name]: value } : user
+            )
+        );
     };
+    
     const toggleModal = () => {
         setIsOpen(!isOpen);
       };
@@ -75,22 +138,9 @@ const UserTable = () => {
                 <span className="text-sm text-gray-400">Taxila Business School</span>
                 </div>
                 <div className="w-1/5">
-                    <select id="course"  className="bg-white border mt-3 border-gray-300 mb-3 text-gray-700 text-sm rounded-sm focus:ring-red-600 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-  <option value="" disabled selected>Select a Course</option>
-    <option value="PGDM+Business Analytics">PGDM+Business Analytics</option>
-    <option value="EPDM">EPDM</option>
-  </select>
+                  <input type="text" placeholder="Search..." className="border border-gray-300 rounded-md p-2 w-full" />
         </div>
-                <div className="w-1/5">
-                    <select id="term"  className="bg-white border mt-3 border-gray-300 mb-3 text-gray-700 text-sm rounded-sm focus:ring-red-600 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-  <option value="" disabled selected>Select a Term</option>
-    <option value="Term 1">Term 1</option>
-    <option value="Term 2">Term 2</option>
-    <option value="Term 3">Term 3</option>
-    <option value="Term 4">Term 4</option>
-    <option value="Term 5">Term 5</option>
-  </select>
-        </div>
+    
             
                 </div>
                 
@@ -98,10 +148,12 @@ const UserTable = () => {
         <table className="w-full text-sm text-left text-gray-700 dark:text-gray-400 mt-4">
             <thead className="text-xs text-white uppercase bg-black dark:bg-gray-700 dark:text-white-400 w-full">
                 <tr >
-                    <th className="px-6 py-3">Course Name</th>
-                    <th className="px-6 py-3">Batch Code</th>
-                    <th className="px-6 py-3">Session</th>
-                    <th className="px-6 py-3">Terms</th>
+                    <th className="px-6 py-3">S. No.</th>
+                    <th className="px-6 py-3">Subject Name</th>
+                    <th className="px-6 py-3">Code</th>
+                    <th className="px-6 py-3">Credit</th>
+                    <th className="px-6 py-3">Type</th>
+                    <th className="px-6 py-3">Status</th>
                     <th className="px-6 py-3">Action</th>
                 </tr>
             </thead>
@@ -111,62 +163,78 @@ const UserTable = () => {
                         key={index}
                         className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
                     >
+                        <td className="px-6 py-4">{index+1}</td>
                         <td className="px-6 py-4">
                             {editingRow === index ? (
                                 <input
                                     type="text"
-                                    name="coursename"
-                                    value={user.coursename}
+                                    name="name"
+                                    value={user.name}
                                     onChange={(e) => handleChange(e, index)}
                                     className="border p-1 rounded"
                                 />
                             ) : (
-                                user.coursename
+                                user.name
                             )}
                         </td>
                         <td className="px-6 py-4">
                             {editingRow === index ? (
                                 <input
                                     type="text"
-                                    name="duration"
-                                    value={user.batchcode}
+                                    name="code"
+                                    value={user.code}
                                     onChange={(e) => handleChange(e, index)}
                                     className="border p-1 rounded"
                                 />
                             ) : (
-                                user.batchcode
+                                user.code
                             )}
                         </td>
                         <td className="px-6 py-4">
                             {editingRow === index ? (
                                 <input
-                                    type="text"
-                                    name="status"
-                                    value={user.session}
+                                    type="number"
+                                    name="credit"
+                                    value={user.credit}
                                     onChange={(e) => handleChange(e, index)}
                                     className="border p-1 rounded"
                                 />
                             ) : (
-                                user.session
+                                user.credit
                             )}
                         </td>
                         <td className="px-6 py-4">
                             {editingRow === index ? (
-                                <input
-                                    type="text"
-                                    name="status"
-                                    value={user.terms}
-                                    onChange={(e) => handleChange(e, index)}
-                                    className="border p-1 rounded"
-                                />
+                                 <select
+                                 value={user.type}
+                                 onChange={(e) => handleChange(e, user.id, "type")}
+                                 className="border rounded px-2 py-1"
+                               >
+                                 <option value="Theory">Theory</option>
+                                 <option value="Practical">Practical</option>
+                               </select>
                             ) : (
-                                user.terms
+                                user.type
+                            )}
+                        </td>
+                        <td className="px-6 py-4">
+                            {editingRow === index ? (
+                                 <select
+                                 value={user.is_active ? "true" : "false"}
+                                 onChange={(e) => handleChange(e, user.id, "is_active")}
+                                 className="border rounded px-2 py-1"
+                               >
+                                 <option value="true">Active</option>
+                                 <option value="false">Inactive</option>
+                               </select>
+                            ) : (
+                                user.is_active ? "Active" : "Inactive"
                             )}
                         </td>
                         <td className="px-6 py-4 flex justify-start gap-4">
                             <span
                                 onClick={() =>
-                                    editingRow === index ? handleSaveClick() : handleEditClick(index)
+                                    editingRow === index ? handleSaveClick(user.id) : handleEditClick(index)
                                 }
                                 className="cursor-pointer"
                             >

@@ -3,12 +3,15 @@
 import { useState, useEffect } from "react";
 import { PencilIcon, PlusCircleIcon, SaveIcon, Trash2Icon } from "lucide-react";
 import { authFetch } from "@/app/lib/fetchWithAuth";
+import Toast from "@/components/Toast";
 
 export default function Page () {
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   const [editingRow, setEditingRow] = useState(null);
   const [token, setToken] = useState(null);
-
+  const[message, setMessage] = useState("")
+  const[showToast, setShowToast] = useState(false)
+  const [errors, setErrors] = useState({});
 
   const [deleteCourseId, setDeleteCourseId] = useState(null);
   const [search, setSearch] = useState("");
@@ -134,7 +137,6 @@ export default function Page () {
     try {
       const response = await authFetch(`course-viewset`, {
         method: "POST",
-        mode: "cors",
         headers: {
           "Content-Type": "application/json",
         },
@@ -151,10 +153,27 @@ export default function Page () {
             : []
         );
         
-        setFormData({ name: "", duration_in_months: "", description: "" }); // Reset form fields
-        toggleModal();
+        setFormData({ name: "", duration_in_months: "", description: "" });
+        setMessage("Course created successfully")
+            setShowToast(true)
+            setTimeout(()=>{
+        
+              setShowToast(false)
+              setMessage("")
+              toggleModal();
+            },2000) 
       } else {
-        console.error("Course creation failed:", data);
+        if (data.message) {
+          const errorMessages = {};
+          data.message.forEach((error) => {
+            const [field, msg] = error.split(": ");
+            errorMessages[field] = msg;
+          });
+          setErrors(errorMessages);
+        } else {
+          setMessage("Something went wrong.");
+          setShowToast(true);
+        }
       }
     } catch (error) {
       console.error("Error:", error);
@@ -213,6 +232,7 @@ export default function Page () {
               <form className="p-6" onSubmit={handleSubmit}>
                 <div className="grid gap-4 mb-4 grid-cols-2">
                   <div className="col-span-2">
+                  {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
                     <label className="block mb-2 text-sm font-bold text-gray-700">Course Name</label>
                     <input
                       type="text"
@@ -261,6 +281,7 @@ export default function Page () {
 
       {/* Table */}
       <div className="px-5 py-4">
+        {showToast && <Toast message={message}/>}
         <div className="border border-gray-300 rounded-xl mt-4 bg-gradient-to-bl from-gray-700 to-stone-900 text-white p-4">
           <div className="flex justify-between items-center">
             <h5 className="text-2xl font-bold">Course Manager</h5>
@@ -345,7 +366,7 @@ export default function Page () {
       </div>
       {isDel && (
         <div
-          className="fixed inset-0 z-[999] grid h-screen w-screen place-items-center bg-black bg-opacity-60 backdrop-blur-sm transition-opacity duration-300"
+          className="fixed inset-0 z-40 grid h-screen w-screen place-items-center bg-black bg-opacity-60 backdrop-blur-sm transition-opacity duration-300"
         >
           <div className="relative m-4 p-4 rounded-lg bg-white shadow-sm transition-all duration-300 opacity-100 translate-y-0 scale-100">
        

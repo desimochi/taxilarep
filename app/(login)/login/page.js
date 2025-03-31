@@ -19,7 +19,7 @@ export default function LoginPage() {
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
     if (token) {
-      router.replace("/admin");  // Redirect if already logged in
+      router.replace("/");  // Redirect if already logged in
     }
   }, [router]);
   async function handleLogin(e) {
@@ -57,20 +57,15 @@ export default function LoginPage() {
           updateState(data.data.user);
           resolve();
         });
-        if (data.data.user.employee_type === "Teaching") {
-          router.replace("/faculty");
-        } else if (data.data.user.user_type === "STUDENT") {
-          router.replace("/student");
-        } else {
-          router.replace("/admin");
-        }
+        router.replace("/"); // Redirect to home page
       } else {
-        console.error("Login failed:", data);
+        setError(true);
+        setLoading(false);
       }
     } catch (error) {
-      console.error("Error:", error);
-    } finally {
+      setError(true);
       setLoading(false);
+    } finally {
     }
   }
   

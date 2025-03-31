@@ -9,7 +9,7 @@ const Toast = ({message }) => {
   return (
     <div
       id="toast-default"
-      className="fixed top-15 left-1/2  flex items-center w-full max-w-xs p-4 text-white bg-red-600 rounded-lg shadow-md dark:text-gray-400 dark:bg-gray-800 animate-fadeInUp"
+      className="fixed top-15 left-1/2 z-[999] flex items-center w-full max-w-xs p-4 text-white bg-red-600 rounded-lg shadow-md dark:text-gray-400 dark:bg-gray-800 animate-fadeInUp"
       role="alert"
     >
       <div className="inline-flex items-center justify-center shrink-0 w-8 h-8 text-red-600- bg-red-100 rounded-lg dark:bg-blue-800 dark:text-blue-200">

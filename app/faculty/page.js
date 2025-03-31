@@ -9,7 +9,6 @@ export default function Page(){
             <div className="w-2/3">
             <ClassOverview />
             <div className="mt-3">
-            <AttendanceManageFac />
             </div>
             
             </div>

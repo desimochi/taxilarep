@@ -98,12 +98,11 @@ const handleSubmit = async () => {
             <div className="w-full">
             <div className="border border-gray-300 rounded-xl mt-4 bg-gradient-to-bl from-gray-700 to-stone-900 text-white p-2 hover:shadow-xl transition-shadow  py-8 px-12">
                 <div className="flex justify-between items-center gap-2">
-                    <div className="w-2/5">
-                <h5 className="text-2xl font-bold">Class Schedule</h5>
+                    <div className="w-2/6">
+                <h5 className="text-2xl font-bold">Student Attendance</h5>
                 <span className="text-sm text-gray-400">Taxila Business School</span>
                 </div>
-                <div className=" flex w-3/5 gap-2 items-start">
-                <div>
+                <div className="w-1/5 ">
             <select value={selectedTerm} onChange={handleTermChange} className=" w-full border border-gray-300 rounded-sm p-2 text-black">
                 <option value="">Select Term</option>
                 {terms.map(term => (
@@ -111,8 +110,8 @@ const handleSubmit = async () => {
                 ))}
             </select>
             </div>
-            <div>
-            <select onChange={(e) => setSelectedSubject(e.target.value)} disabled={!selectedTerm} className=" border w-full border-gray-300 rounded-sm p-2 text-black">
+            <div className="w-1/5 ">
+            <select onChange={(e) => setSelectedSubject(e.target.value)} disabled={!selectedTerm} className="w-full  border border-gray-300 rounded-sm p-2 text-black">
                 <option value="">Select Subject</option>
                 {filteredSubjects.map(sub => (
                     <option key={sub.subjectMappingId} value={sub.subjectMappingId}>
@@ -121,17 +120,15 @@ const handleSubmit = async () => {
                 ))}
             </select>
         </div>
-        <div>
-            <input type="date" className="w-full border border-gray-300 rounded-sm p-1 text-black" onChange={(e) => setStartDate(e.target.value)} />
+        <div className="w-1/5 ">
+            <input type="date" className="w-full  border border-gray-300 rounded-sm p-1 text-black" onChange={(e) => setStartDate(e.target.value)} />
         </div>
-        <div>
-            <input type="date" className="w-full border border-gray-300 rounded-sm p-1 text-black" onChange={(e) => setEndDate(e.target.value)} />
+        <div className="w-1/5 ">
+            <input type="date" className="w-full  border border-gray-300 rounded-sm p-1 text-black" onChange={(e) => setEndDate(e.target.value)} />
         </div>
-        <button className=" bg-green-600 text-white p-1.5 px-12 rounded-sm" onClick={handleSubmit}>Submit</button>
+        <button className=" bg-green-600 text-white p-1.5 px-12 rounded-sm w-1/5" onClick={handleSubmit}>Submit</button>
                 </div>
                 </div>
-                
-            </div>
             <div>
             {loading? <FullWidthLoader/> :     <table className="w-full text-sm text-left text-gray-800 dark:text-gray-400 mt-4">
                             <thead className="text-xs text-gray-100 uppercase bg-black dark:bg-gray-700 dark:text-gray-400">

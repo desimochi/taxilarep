@@ -270,6 +270,7 @@ const confirmReschdule = async () => {
                
                 <th scope="col" className="px-6 py-3">From</th>
                 <th scope="col" className="px-6 py-3">To</th>
+                <th scope="col" className="px-6 py-3">Status</th>
                 <th scope="col" className="px-6 py-3">Action</th>
            
                          </tr>
@@ -285,6 +286,15 @@ const confirmReschdule = async () => {
             <td className="px-6 py-3">{cls.date}</td>
             <td className="px-6 py-3">{cls.start_time}</td>
             <td className="px-6 py-3">{cls.end_time}</td>
+            <td className="px-6 py-3">
+  {cls.is_cancel ? (
+    <span className="bg-red-600 text-sm text-white py-0.5 px-3 rounded-sm">Cancelled</span>
+  ) : cls.is_complete ? (
+    <span className="bg-green-600 text-sm text-white py-0.5 px-3 rounded-sm">Completed</span>
+  ) : (
+    <span className="bg-green-600 text-sm text-white py-0.5 px-3 rounded-sm">Scheduled</span>
+  )}
+</td>
             <td className="px-6 py-3 flex gap-3 items-center">{!cls.is_cancel && <button className="bg-green-600 text-white rounded-sm py-1 px-2" onClick={() => handleCancelClick(cls.id, "cancel")}><BanIcon className="h-5 w-5 cursor-pointer"/></button>} <button className="bg-red-600 text-white rounded-sm py-1 px-2">{!cls.is_complete? <Calendar1Icon className="h-5 w-5 cursor-pointer" onClick={() => handleCancelClick(cls.id, "reshed")}/> : <SquareUserRoundIcon  className="h-5 w-5"/>}</button></td>
         </tr>
     ))

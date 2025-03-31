@@ -3,11 +3,16 @@
 import { useEffect, useState } from "react";
 import { PencilIcon, PlusCircleIcon, SaveIcon, Trash2Icon } from "lucide-react";
 import { authFetch } from "@/app/lib/fetchWithAuth";
+import Toast from "@/components/Toast";
 
 const UserTable = () => {
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
     const [editingRow, setEditingRow] = useState(null); // Track which row is being edited
+    const[message, setMessage] = useState("")
+    const[showToast, setShowToast] = useState(false)
+    const [errors, setErrors] = useState({});
     const [isOpen, setIsOpen] = useState(false);
+    const[endDateError, setEndDateError] = useState("")
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
     const [deleteBatchId, setDeleteBatchId] = useState(null);
@@ -149,11 +154,15 @@ const UserTable = () => {
           end_date: formData.get("end_date"),
           is_active: true,
         };
-      
+        const startDate = formData.get("start_date");
+    const endDate = formData.get("end_date");
+        if (new Date(endDate) < new Date(startDate)) {
+          setEndDateError("End date must be after start date.");
+          return; // Stop submission
+      }
         try {
           const response = await authFetch(`batch-viewset`, {
             method: "POST",
-            mode: "cors",
             headers: {
               "Content-Type": "application/json",
             },
@@ -170,9 +179,26 @@ const UserTable = () => {
                 : []
             ); 
             setFormData({ name: "", duration_in_months: "", description: "" }); // Reset form fields
-            toggleModal();
+            setMessage("Batch created successfully")
+            setShowToast(true)
+            setTimeout(()=>{
+        
+              setShowToast(false)
+              setMessage("")
+              toggleModal();
+            },2000) 
           } else {
-            console.error("Course creation failed:", data);
+            if (data.message) {
+              const errorMessages = {};
+              data.message.forEach((error) => {
+                const [field, msg] = error.split(": ");
+                errorMessages[field] = msg;
+              });
+              setErrors(errorMessages);
+            } else {
+              setMessage("Something went wrong.");
+              setShowToast(true);
+            }
           }
         } catch (error) {
           console.error("Error:", error);
@@ -191,6 +217,7 @@ const UserTable = () => {
           id="crud-modal"
           className="fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black bg-opacity-50"
         >
+          {showToast && <Toast message={message}/>}
           <div className="relative p-4 w-full max-w-md max-h-full">
             {/* Modal content */}
             <div className="relative bg-white rounded-xl shadow-sm dark:bg-gray-700">
@@ -225,6 +252,7 @@ const UserTable = () => {
               <form className="p-6 md:p-5" onSubmit={handleSubmit}>
                 <div className="grid gap-4 mb-4 grid-cols-2">
                   <div className="col-span-2">
+                    {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
                     <label
                       htmlFor="name"
                       className="block mb-2 text-sm font-bold text-gray-700 dark:text-white"
@@ -246,7 +274,7 @@ const UserTable = () => {
                       htmlFor="start_date"
                       className="block mb-2 text-sm font-bold text-gray-700 dark:text-white"
                     >
-                      Batch Session
+                      Batch Session Start Date
                     </label>
                     <input
                       type="date"
@@ -258,11 +286,14 @@ const UserTable = () => {
                     />
                   </div>
                   <div className="col-span-2">
+                    {endDateError && (
+                      <p className="text-red-500 text-sm">{endDateError}</p>
+                    )}
                     <label
                       htmlFor="end_date"
                       className="block mb-2 text-sm font-bold text-gray-700 dark:text-white"
                     >
-                      Batch Session
+                      Batch Session End Date
                     </label>
                     <input
                       type="date"

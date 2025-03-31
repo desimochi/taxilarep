@@ -99,15 +99,15 @@ export default function Page() {
                             <h3 className="bg-black rounded-sm text-white text-center py-1.5">Components Details</h3>
                             {additionalData.map((comp) => (
                                 <div className="flex justify-between mt-4" key={comp.id}>
-                                    <p className="font-bold">{comp.name} - {comp.max_marks} Marks </p>
-                                    <Link href={`/subjects/details/component/${comp.id}`} className="text-sm underline text-blue-500">
+                                    <p className="font-bold text-sm">{comp.name} - {comp.max_marks} Marks </p>
+                                    <Link href={`/subjects/details/component/${comp.id}`} className="text-xs bg-blue-600 text-white py-0.5 px-2 rounded-sm">
                                         See Details
                                     </Link>
                                 </div>
                             ))}
                             {students?.id && (
                                 <Link href={`/exam-components/component-manager/create-component?subID=${students.id}`}>
-                                    <div className="text-center border border-gray-600 py-1 mt-6 rounded-sm">
+                                    <div className="text-center border border-gray-600 py-1 mt-6 rounded-sm hover:bg-red-600 hover:text-white">
                                         Create Component
                                     </div>
                                 </Link>

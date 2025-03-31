@@ -108,7 +108,6 @@ export const menuItems = [
         { label: "Class Schedule", path: "/faculty/class-schedule" },
         {label : "Syllabus", hasSubMenu:true,  subMenu : [
             {label:"Upload Syllabus", path:"/syllabus/see-syllabus"},
-            { label: "Uploaded Syllabus", path: "/faculty/uploaded-syllabus" },
           ]},
           { label: "Student Attendance", path: "/attendance/class-attendance" },
       ],
@@ -119,7 +118,6 @@ export const menuItems = [
         icon: <NewspaperIcon className="h-5 w-5" />,
         subMenu: [
           { label: "Noticeboard", path: "/notice/noticeboard" },
-          { label: "News Manager", path: "/notice/news-manager" }
         ],
       },
     { label: "Mentorship Student", icon: <NewspaperIcon className="h-5 w-5" />, path: "/faculty/mentorship-assign-student" },

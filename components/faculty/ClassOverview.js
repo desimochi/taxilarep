@@ -16,7 +16,7 @@ export default function ClassOverview() {
     const fetchclassData = async () => {
       try {
         setLoading(true);
-        const response = await authFetch(`assign-faculty-filter?${state.user_id}`);
+        const response = await authFetch(`assign-faculty-filter?faculty=${state.user_id}`);
 
         if (!response.ok) throw new Error("Failed to fetch component data");
 

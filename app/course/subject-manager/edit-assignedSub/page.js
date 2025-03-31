@@ -1,9 +1,15 @@
+"use client";
 import { authFetch } from "@/app/lib/fetchWithAuth";
 import { SaveIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-import Toast from "./Toast";
+import { useSearchParams } from "next/navigation";
+import Toast from "@/components/Toast";
 
-const CourseSelection = () => {
+export default function Page(){
+    const searchParams = useSearchParams();
+  const subjectId = searchParams.get("subjectId"); 
+  const[error, setError] = useState(false)
+  const[loading, setLoading] = useState(false)
   const [message, setMessage] = useState("");
   const [errors, setErrors] = useState({});
   const [showToast, setShowToast] = useState(false);
@@ -68,10 +74,51 @@ const CourseSelection = () => {
         setData((prev) => ({ ...prev, error: err.message }));
       }
     };
+    const fetchSubjectDetails = async () => {
+        if (!subjectId) return;
+        
+        try {
+          const response = await authFetch(`subject-mapping-viewset/${subjectId}`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+  
+          if (!response.ok) {
+            throw new Error(`Error: ${response.status} - ${response.statusText}`);
+          }
+          const data = await response.json();
+          const subjectData = data.data;
+          setData((prev) => ({
+            ...prev,
+            selected: {
+              ...prev.selected,
+              course: subjectData.course[0]?.id || "",
+              batch: subjectData.batch?.id || "",
+              faculty: subjectData.faculty?.id || "",
+              specialization: subjectData.specialization[0]?.id || "",
+              term: subjectData.term?.id || "",
+              subject: subjectData.subject?.id || "",
+              total_classes: subjectData.total_classes || "",
+              weightage_external: subjectData.weightage_external || "",
+              weightage_internal: subjectData.weightage_internal || "",
+              type: subjectData.type || "main",
+            },
+          }));
+          
+        } catch (err) {
+          setError(err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+  
+      fetchSubjectDetails();
 
     fetchAll();
     fetchFaculty();
-  }, [token]);
+  }, [token, subjectId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -105,7 +152,7 @@ const CourseSelection = () => {
 
     try {
       const response = await authFetch("subject-mapping-viewset", {
-        method: "POST",
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
@@ -145,7 +192,7 @@ const CourseSelection = () => {
         {/* Course Name Dropdown */}
         <div className="flex gap-2">
           <div className="w-1/2">
-          {errors.course && <p className="text-red-500 text-sm">Course is Required</p>}
+          {errors.course && <p className="text-red-500 text-sm">{errors.course}</p>}
           <label className="font-bold">Course Name</label>
         <select name="course" value={data.selected.course} onChange={handleChange} className="bg-white border border-gray-300 mb-3 text-gray-700 text-sm rounded-sm focus:ring-red-600 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
           <option value="">Select Course</option>
@@ -167,7 +214,7 @@ const CourseSelection = () => {
         </div>
         <div className="flex gap-2">
           <div className="w-1/3">
-          {errors.specialization && <p className="text-red-500 text-sm">Specialization is required</p>}
+          {errors.specialization && <p className="text-red-500 text-sm">{errors.specialization}</p>}
           <label className="font-bold">Specialization</label>
             <select name="specialization" value={data.selected.specialization} onChange={handleChange} className="bg-white border border-gray-300 mb-3 text-gray-700 text-sm rounded-sm focus:ring-red-600 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
               <option value="">Select Specialization</option>
@@ -248,4 +295,3 @@ const CourseSelection = () => {
   );
 };
 
-export default CourseSelection;
