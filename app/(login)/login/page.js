@@ -14,7 +14,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false)
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(false)
+  const [error, setError] = useState("")
   const router = useRouter();
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
@@ -38,14 +38,10 @@ export default function LoginPage() {
       });
   
       const data = await response.json();
-  
+      if(response.status===400){
+        setError(data.message)
+      }
       if (response.ok) {
-        if (data.code === 400) {
-          setError(true);
-          setLoading(false);
-          return;
-        }
-  
         // Save tokens
         saveTokens(data.data.access_token, data.data.refresh_token);
   
@@ -59,8 +55,8 @@ export default function LoginPage() {
         });
         router.replace("/"); // Redirect to home page
       } else {
-        setError(true);
-        setLoading(false);
+        
+        setLoading(false)
       }
     } catch (error) {
       setError(true);
@@ -85,7 +81,7 @@ export default function LoginPage() {
                 Sign in to your account
               </h2>
             </div>
-            {error && <p className="text-sm text-center text-red-600">Invalid Credentials</p>}
+            {error && <p className="text-sm text-center text-red-600">{error}</p>}
             <form className="space-y-6" onSubmit={handleLogin}>
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700">
