@@ -420,9 +420,9 @@ const UserTable = () => {
                         <button onClick={() => (editingRow === batch.id ? handleSaveClick(batch.id) : handleEditClick(batch.id))}>
           {editingRow === batch.id ? <SaveIcon className="h-5 w-5 text-green-600" /> : <PencilIcon className="h-5 w-5 text-blue-600" />}
         </button>
-        <button onClick={() => handleDeleteClick(batch.id)}>
+        {/* <button onClick={() => handleDeleteClick(batch.id)}>
           <Trash2Icon className="h-5 w-5 text-red-600" />
-        </button>
+        </button> */}
                         </td>
                     </tr>
                 ))}

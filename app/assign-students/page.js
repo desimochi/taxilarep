@@ -6,15 +6,15 @@ import Toast from "@/components/Toast";
 import FullWidthLoader from "@/components/Loaader";
 
 export default function Page() {
-  const [terms, setTerms] = useState([]);
   const [specializations, setSpecializations] = useState([]);
   const [showToast, setShowToast] = useState(false);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const [student, setStudent] = useState([]);
-  const [batch, setBatch] = useState([]);
-  const [course, setCourse] = useState([]);
+const[course, setCourse] = useState([]);
+const[batch, setBatch] = useState([]);
+const[terms, setTerms] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState("");
   const [selectedBatch, setSelectedBatch] = useState("");
   const [selectedTerm, setSelectedTerm] = useState("");
@@ -26,29 +26,16 @@ export default function Page() {
     const fetchAllData = async () => {
       setLoading(true);
       try {
-        const [classRes, subRes, stuRes] = await Promise.all([
-          authFetch("terms-list"),
-          authFetch("specializations-list"),
-          authFetch("student-list"),
-        ]);
+        const data = await authFetch("all-entities")
+        if (!data.ok) {
+          throw new Error("Failed to fetch data");
+        }
+        const response = await data.json();
 
-        const termData = await classRes.json();
-        const courseData = await subRes.json();
-        const studentData = await stuRes.json();
-
-        setTerms(termData.data);
-        setSpecializations(courseData.data);
-        setStudent(studentData.data);
-
-        const uniqueBatches = Array.from(
-          new Map(studentData.data.map((student) => [student.batch.id, student.batch])).values()
-        );
-        setBatch(uniqueBatches);
-
-        const uniqueCourses = Array.from(
-          new Map(studentData.data.map((student) => [student.course.id, student.course])).values()
-        );
-        setCourse(uniqueCourses);
+        setSpecializations(response.data.specializations);
+        setCourse(response.data.courses);
+        setBatch(response.data.batches);
+        setTerms(response.data.terms);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -77,19 +64,40 @@ export default function Page() {
       return newSet;
     });
   };
+  useEffect(() => {
+    if (selectedCourse && selectedBatch) {
+      callApi(selectedCourse, selectedBatch);
+    }
+  }, [selectedCourse, selectedBatch]);
+  const callApi = async (course, batch) => {
+    setLoading(true);
+    try {
+      const response = await authFetch(`student-list?course=${course}&batch=${batch}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch students");
+      }
+      const data = await response.json();
+      setStudent(data.data);
+    } catch (error) {
+      console.error("Error fetching students:", error);
+    } finally {
+      setLoading(false);
+    }
+  }
   const handleSubmit = async () => {
-    if (!selectedTerm || !selectedSpecialization || selectedStudents.size === 0) {
-      setMessage("Please select Term, Specialization, and at least one student.");
+    if (!selectedTerm || !selectedSpecialization ) {
+      setMessage("Please select Term, Specialization");
       setShowToast(true);
       return;
     }
 
     const payload = {
+      course: parseInt(selectedCourse),
+      batch: parseInt(selectedBatch),
       term: parseInt(selectedTerm),
       specialization: parseInt(selectedSpecialization),
       student: Array.from(selectedStudents),
     };
-
     try {
       setLoading(true);
       const response = await authFetch("student-mapping-viewset", {
@@ -129,12 +137,14 @@ export default function Page() {
           <select
             className="bg-white border border-gray-300 mb-3 text-gray-700 text-sm rounded-sm focus:ring-red-600 focus:border-blue-500 block w-full p-2.5"
             value={selectedCourse}
-            onChange={(e) => setSelectedCourse(e.target.value)}
+            onChange={(e) => {
+              setSelectedCourse(e.target.value);
+            }}
           >
             <option value="">Select Course</option>
-            {course.map((course) => (
-              <option key={course.id} value={course.id}>
-                {course.name}
+            {course.map((cour) => (
+              <option key={cour.id} value={cour.id}>
+                {cour.name}
               </option>
             ))}
           </select>
@@ -148,7 +158,9 @@ export default function Page() {
           <select
             className="bg-white border border-gray-300 mb-3 text-gray-700 text-sm rounded-sm focus:ring-red-600 focus:border-blue-500 block w-full p-2.5"
             value={selectedBatch}
-            onChange={(e) => setSelectedBatch(e.target.value)}
+            onChange={(e) => {
+              setSelectedBatch(e.target.value);
+            }}
           >
             <option value="">Select Batch</option>
             {batch.map((batch) => (

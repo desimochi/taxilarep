@@ -1,6 +1,6 @@
 "use client"
 import { authFetch } from "@/app/lib/fetchWithAuth";
-import { SaveIcon, PencilIcon } from "lucide-react";
+import { SaveIcon, PencilIcon, EyeIcon } from "lucide-react";
 import { Trash2Icon } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -81,6 +81,7 @@ export default function AssignedSubject(){
                 <th scope="col" className="px-6 py-3">Term</th>
                 <th scope="col" className="px-6 py-3">Assigned Subject</th>
                 <th scope="col" className="px-6 py-3">Assigned Faculty</th>
+                <th scope="col" className="px-6 py-3">Details</th>
                 <th scope="col" className="px-6 py-3">Action</th>
             </tr>
         </thead>
@@ -107,7 +108,12 @@ export default function AssignedSubject(){
       <td className="px-6 py-4">
        {course.faculty.first_name +" " + course.faculty.last_name}
       </td>
-      <td className="px-6 py-4 flex gap-4">
+      <td className="px-6 py-4 flex gap-2 text-blue-600 underline">
+        <EyeIcon className="h-5 w-5" />
+       <Link href={`/subjects/details/${course.id}`}>See Details</Link>
+      </td>
+      
+      <td className="px-6 py-4">
        <Link href={`subject-manager/edit-assignedSub?subjectId=${course.id}`}>
         <PencilIcon className="h-5 w-5" />
        </Link>

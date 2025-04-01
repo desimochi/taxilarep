@@ -196,9 +196,9 @@ const token = localStorage.getItem("accessToken");
         <button onClick={() => (editingRow === course.id ? handleSaveClick(course.id) : handleEditClick(course.id))}>
           {editingRow === course.id ? <SaveIcon className="h-5 w-5 text-green-600" /> : <PencilIcon className="h-5 w-5 text-blue-600" />}
         </button>
-        <button onClick={() => handleDeleteClick(course.id)}>
+        {/* <button onClick={() => handleDeleteClick(course.id)}>
           <Trash2Icon className="h-5 w-5 text-red-600" />
-        </button>
+        </button> */}
       </td>
     </tr>
   )) : <p>No Courses Found</p>}

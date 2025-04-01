@@ -245,9 +245,9 @@ useEffect(() => {
                         <PencilIcon className="h-5 w-5 text-blue-600" />
                     )}
                 </span>
-                <span className="cursor-pointer">
+                {/* <span className="cursor-pointer">
                     <Trash2Icon className="h-5 w-5 text-red-600" onClick={() => setIsDel(true)} />
-                </span>
+                </span> */}
             </td>
         </tr>
     ))

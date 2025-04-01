@@ -28,9 +28,11 @@ export default function Page() {
         const noticeData = await noticeRes.json();
         const usersData = await usersRes.json();
 
-        setNotice(noticeData.data);
-        setUsers(usersData.data);
-        setTotalPages(noticeData.extra.total);
+        console.log("Notice API Response:", noticeData); // Debugging log
+
+        setNotice(Array.isArray(noticeData.data) ? noticeData.data : []);
+        setUsers(Array.isArray(usersData.data) ? usersData.data : []);
+        setTotalPages(noticeData.extra?.total || 1);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -46,7 +48,7 @@ export default function Page() {
     return acc;
   }, {});
 
-  const filteredNotices = notice.filter((item) => {
+  const filteredNotices = Array.isArray(notice) ? notice.filter((item) => {
     const postedBy = userMap[item.user] || "Unknown";
     const searchText = searchQuery.toLowerCase();
 
@@ -57,7 +59,7 @@ export default function Page() {
       item.date.includes(searchText) ||
       item.valid_date.includes(searchText)
     );
-  });
+  }) : [];
 
   return (
     <div className="py-4 px-5">
@@ -89,6 +91,7 @@ export default function Page() {
           )}
         </div>
       </div>
+
       {loading ? <FullWidthLoader /> : (
         <>
           <table className="w-full rounded-xl text-sm text-left text-gray-800 dark:text-gray-400 mt-4 mb-2">
@@ -125,10 +128,23 @@ export default function Page() {
               )}
             </tbody>
           </table>
+
           <div className="flex justify-between mt-4">
-            <button disabled={page === 1} onClick={() => setPage(page - 1)} className="bg-gray-700 text-white px-4 py-2 rounded disabled:opacity-50">Previous</button>
+            <button 
+              disabled={page === 1} 
+              onClick={() => setPage(page - 1)} 
+              className="bg-gray-700 text-white px-4 py-2 rounded disabled:opacity-50"
+            >
+              Previous
+            </button>
             <span>Page {page} of {totalPages}</span>
-            <button disabled={page === totalPages} onClick={() => setPage(page + 1)} className="bg-gray-700 text-white px-4 py-2 rounded disabled:opacity-50">Next</button>
+            <button 
+              disabled={page === totalPages} 
+              onClick={() => setPage(page + 1)} 
+              className="bg-gray-700 text-white px-4 py-2 rounded disabled:opacity-50"
+            >
+              Next
+            </button>
           </div>
         </>
       )}

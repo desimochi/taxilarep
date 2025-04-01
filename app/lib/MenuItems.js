@@ -42,8 +42,6 @@ export const menuItems = [
             { label: "Re-Sit Exam Schedule", path: "/resit-exam-schedule" },
           ]},
           {label : "Attendance Manager", hasSubMenu:true,  subMenu : [
-            {label:"Daily Attendance", path:"/attendance/daily-attendance"},
-            { label: "Update Attendance", path: "/attendance/update-attendance" },
             { label: "Student Attendence", path: "/attendance/student-attendance" },
             { label: "Faculty Attendence", path: "/attendance/faculty-attendance" },
           ]},
@@ -82,8 +80,8 @@ export const menuItems = [
       icon: <BookCheckIcon className="h-5 w-5" />,
       subMenu: [
         { label: "Add Faculty", path: "/add-faculty" },
-        { label: "All Faculty", path: "/faculty" },
-        { label: "Assign Subject", path: "/assign-faculty" },
+        { label: "All Faculty", path: "/all-faculty" },
+        { label: "Assign Subject", path: "/course/subject-manager" },
       ],
     },
     { label: "Events", icon: <CalendarIcon className="h-5 w-5" />, path: "/events" },
