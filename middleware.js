@@ -77,7 +77,7 @@ export function middleware(req) {
       }
     }
   } catch (error) {
-    console.error("Error parsing user cookie:", error);
+    console.error("Error parsing user cookies:", error);
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
