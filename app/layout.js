@@ -144,12 +144,12 @@ function InnerLayout({ children }) {
             </div>
                     </div>
     <div>
-    <button className="bg-black text-white py-2 px-8 rounded-md hover:bg-gray-800" onMouseEnter={()=>entermouse()} onMouseLeave={()=>leavemouse()}>
+    <button className="bg-black text-white py-2 px-12 rounded-md hover:bg-gray-800" onMouseEnter={()=>entermouse()} onMouseLeave={()=>leavemouse()}>
       {state.name}
     </button>
     <div
-                className={`absolute z-50  right-0 transform -translate-x-10 mt-2 w-64 text-sm text-gray-500 bg-white border border-gray-200 rounded-lg shadow-md dark:text-gray-400 dark:border-gray-600 dark:bg-gray-800 transition-all duration-300 ${
-                    isHovered ? "opacity-100 translate-y-0 z-10" : "opacity-0 -translate-y-3 pointer-events-none"
+                className={`absolute z-50 right-4  w-64 text-sm text-gray-500 bg-white border border-gray-200 rounded-lg shadow-md dark:text-gray-400 dark:border-gray-600 dark:bg-gray-800 transition-all duration-300 ${
+                  isHovered ? "opacity-100 translate-y-0 z-10" : "opacity-0 pointer-events-none"
                 }`}
                 onMouseEnter={()=>entermouse()}
                 onMouseLeave={()=>leavemouse()}
