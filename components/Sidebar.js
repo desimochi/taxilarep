@@ -26,7 +26,13 @@ const Sidebar = ({collapsed, toggleSidebar, toggleMenu, openMenus, role, type  }
         case "Super Admin":
             return menuItems;
         case "admin":
-            return menuItems;
+          if (type === "Teaching") {
+            return [...FacmenuItems, ...menuItems]; 
+        } else {
+          return menuItems;
+        }
+            case "Examination":
+              return menuItems;
         case "Faculty":
             return FacmenuItems;
         case "Student":
