@@ -119,7 +119,7 @@ export const menuItems = [
         ],
       },
     { label: "Mentorship Student", icon: <NewspaperIcon className="h-5 w-5" />, path: "/faculty/mentorship-assign-student" },
-    { label: "Events", icon: <CalendarIcon className="h-5 w-5" />, path: "/see/events" },
+    { label: "Events", icon: <CalendarIcon className="h-5 w-5" />, path: "/events" },
   ];
 
   export const ITManager = [
@@ -141,5 +141,5 @@ export const menuItems = [
     { label: "Class Schedule", icon: <NewspaperIcon className="h-5 w-5" />, path: "/student/class-schedule" },
     { label: "Exam Schedule", icon: <NewspaperIcon className="h-5 w-5" />, path: "/student/exam-schedule" },
     { label: "Notice", icon: <NewspaperIcon className="h-5 w-5" />, path: "/notice/noticeboard" },
-    { label: "Events", icon: <CalendarIcon className="h-5 w-5" />, path: "/see/events" },
+    { label: "Events", icon: <CalendarIcon className="h-5 w-5" />, path: "/events" },
   ];

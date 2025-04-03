@@ -2,6 +2,7 @@
 import { authFetch } from "@/app/lib/fetchWithAuth"
 import { GlobalContext } from "@/components/GlobalContext";
 import FullWidthLoader from "@/components/Loaader";
+import { EyeIcon } from "lucide-react";
 import Link from "next/link";
 import { useContext, useEffect, useState } from "react"
 
@@ -38,32 +39,29 @@ export default function Page(){
     }) : [];
 
     return (
-        <div className="px-6 py-8">
-            <div className="border border-gray-300 rounded-xl mt-4 bg-gradient-to-bl from-gray-700 to-stone-900 text-white py-8">
-                <div className="flex justify-between items-center px-6">
-                    <div className="w-2/5">
-                        <h5 className="text-xl font-bold">Mentorship - Assigned Student</h5>
-                        <p className="text-sm">Assigned student list</p>
-                    </div>
-                    <div className="w-1/5"></div>
-                    <div className="w-1/5"></div>
-                    <div className="w-1/5">
-                        <div className="flex gap-2">
+        <section className="relative">
+    <div className="bg-violet-200 w-full sm:w-80 h-40 rounded-full absolute top-1 opacity-20 max-sm:left-0 sm:right-56 z-0"></div>
+    <div className="bg-violet-300 w-full sm:w-40 h-24 absolute top-0 -right-0 opacity-20 z-0"></div>
+    <div className="bg-violet-500 w-full sm:w-40 h-24 absolute top-40 -right-0 opacity-20 z-0"></div>
+    <div className="w-full pt-12 px-16 relative z-10 backdrop-blur-3xl min-h-screen">
+    <h1 className="text-3xl font-bold mb-2 font-sans">Mentorship Assigned Students </h1>
+            <p className="text-sm text-gray-500 mb-8">Everyhting you need to know about Your Mentorship Responsbilities</p>
+            <hr className=" border  border-spacing-y-0.5 mb-6"/>
+            <div className="flex gap-2 justify-between">
                             <input 
                                 type="text" 
                                 placeholder="Search by name or email..." 
-                                className="p-2 rounded-sm text-gray-700 w-full border border-gray-300" 
+                                className="p-2 rounded-sm text-gray-700 w-fit border border-gray-300" 
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
-                    </div>
-                </div>
-            </div>
+        <div className="">
+        
 
-            {loading?<FullWidthLoader/> :<table className="w-full text-sm text-left mt-4">
-                <thead className="text-xs uppercase bg-black text-white">
-                    <tr>
+            {loading?<FullWidthLoader/> :<table className="overflow-x-auto w-full text-center mt-4">
+                <thead className="min-w-full border border-red-200 rounded-lg">
+                    <tr  className="text-red-700 bg-red-50 font-normal text-sm border-b">
                         <th className="px-6 py-3">S.No.</th>
                         <th className="px-6 py-3">Student Name</th>
                         <th className="px-6 py-3">Enrollment No.</th>
@@ -76,7 +74,7 @@ export default function Page(){
                 <tbody>
                     {filteredMentees.length > 0 ? (
                         filteredMentees.map((stu, index) => (
-                            <tr key={stu.id} className="bg-white border-b hover:bg-gray-50">
+                            <tr key={stu.id} className="border-b text-sm">
                                 <td className="px-6 py-4 border-r-2 border-l-2">{index + 1}</td>
                                 <td className="px-6 py-4 border-r-2">
                                     {`${stu?.first_name || ""} ${stu?.middle_name || ""} ${stu?.last_name || ""}`.trim() || "N/A"}
@@ -93,10 +91,9 @@ export default function Page(){
                                 <td className="px-6 py-4 border-r-2">
                                     {stu?.course?.name || "N/A"}
                                 </td>
-                                <td className="px-6 py-4">
-                                   <Link href={`/students/details/${stu.id}`} ><button className="bg-blue-500 text-white px-3 py-1 rounded">
-                                        Details
-                                    </button> </Link>
+                                <td className="px-6 py-4 flex items-center justify-center">
+                                   <Link href={`/students/details/${stu.id}`} className="font-medium text-green-800 bg-green-100 px-2 py-0.5 rounded-sm text-xs border border-green-200 hover:underline flex items-center w-fit">
+                                     <EyeIcon className="h-4 w-4"  /> Details </Link>
                                 </td>
                             </tr>
                         ))
@@ -109,5 +106,7 @@ export default function Page(){
             </table>
 }
         </div>
+        </div>
+        </section>
     )
 }

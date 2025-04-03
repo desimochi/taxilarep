@@ -74,9 +74,9 @@ export default function Page() {
     }
 
     return (
-        <div className="w-full rounded-sm py-12">
+        <div className="w-full rounded-sm py-12 px-12">
             <div className="border border-gray-300 shadow-sm hover:shadow-md rounded-sm">
-                <h4 className="px-10 py-4 bg-gradient-to-bl font-bold from-gray-700 to-stone-900 text-white">
+                <h4 className=" py-6 px-8 text-2xl font-bold text-red-800 bg-red-50">
                     Upload Syllabus
                 </h4>
                 <form className="py-5 px-5">

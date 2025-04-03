@@ -4,6 +4,7 @@ import { useState, useContext, useEffect } from "react";
 import { GlobalContext } from "@/components/GlobalContext";
 import FullWidthLoader from "@/components/Loaader";
 import Link from "next/link";
+import { PenSquareIcon, SearchIcon } from "lucide-react";
 
 export default function ClassSchedule() {
   const [sclass, setsclass] = useState([]);
@@ -17,7 +18,7 @@ export default function ClassSchedule() {
     const fetchclassData = async () => {
       try {
         setLoading(true);
-        const response = await authFetch(`faculty-wise-class/${state.user_id}`);
+        const response = await authFetch(`faculty-wise-class-filter/${state.user_id}`);
 
         if (!response.ok) throw new Error("Failed to fetch component data");
 
@@ -51,36 +52,49 @@ export default function ClassSchedule() {
     return matchesSearch && matchesDate;
   });
   return (
-    <div className="shadow-md rounded-lg w-full mt-4">
-          <div className="border border-gray-300 rounded-xl mt-4 bg-gradient-to-bl from-gray-700 to-stone-900 text-white p-8 mx-6 mb-8">
-          <div className="flex justify-between items-center">
-            <h5 className="text-2xl font-bold">Class Attendance</h5>
-           
-            <div className="flex gap-2">
-            <input type="text" placeholder="search..."  className="p-2 rounded-sm text-gray-700"  value={search} onChange={(e) => setSearch(e.target.value)}/>
+    <section className="relative">
+        <div className="bg-violet-200 w-full sm:w-80 h-40 rounded-full absolute top-1 opacity-20 max-sm:left-0 sm:right-56 z-0"></div>
+        <div className="bg-violet-300 w-full sm:w-40 h-24 absolute top-0 -right-0 opacity-20 z-0"></div>
+        <div className="bg-violet-500 w-full sm:w-40 h-24 absolute top-40 -right-0 opacity-20 z-0"></div>
+        <div className="w-full pt-12 px-16 relative z-10 backdrop-blur-3xl">
+        <h1 className="text-3xl font-bold mb-2 font-sans">Class Attendance </h1>
+            <p className="text-sm text-gray-500 mb-8">Everyhting you need to know about Your Class Attendance</p>
+            <hr className=" border  border-spacing-y-0.5 mb-6"/>
+            <div className="mb-4 flex items-center justify-between ">
+            <div className="relative">
+  <input
+    type="text"
+    placeholder="Search subject..."
+    className="p-2 pl-10 rounded-sm border border-gray-300 text-gray-700 w-full"
+    value={search}
+    onChange={(e) => setSearch(e.target.value)}
+  />
+  <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500">
+    <SearchIcon className="h-4 w-4"/>
+  </span>
+</div>
             <input
               type="date"
-              className="p-2 rounded-sm text-gray-700"
+              className="p-2 rounded-sm text-gray-700 border border-gray-300 px-4"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
             />
             </div>
-          </div>
-        </div>
+
         {loading ? (
         <FullWidthLoader />
       ) : (
       <div>
-        <div className="px-6">
+        <div className="">
   {loading ? (
     <p>Loading...</p>
   ) : error ? (
     <p className="text-red-500">{error}</p>
   ) : filteredClasses.length > 0 ? (
     <div className="overflow-x-auto shadow-md sm:rounded-lg">
-      <table className="w-full text-sm text-left text-gray-800 dark:text-gray-400">
-        <thead className="text-xs text-gray-100 uppercase bg-black dark:bg-gray-700 dark:text-gray-400">
-          <tr>
+      <table className="overflow-x-auto w-full text-center">
+        <thead className="min-w-full border border-red-200 rounded-lg">
+          <tr className="text-red-700 bg-red-50 font-normal text-sm border-b">
           <th scope="col" className="px-6 py-3">S.No.</th>
             <th scope="col" className="px-6 py-3">Subject</th>
             <th scope="col" className="px-6 py-3">Batch</th>
@@ -95,7 +109,7 @@ export default function ClassSchedule() {
           {filteredClasses.map((cls, index) => (
             <tr
               key={cls.id}
-              className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200"
+              className="border-b text-sm hover:bg-red-50"
             >
                 <td className="px-6 py-4">
                     {index+1}
@@ -115,23 +129,23 @@ export default function ClassSchedule() {
                   : "N/A"}
               </td>
               <td className="px-6 py-4">
-                {cls.start_time
-                  ? new Date(`1970-01-01T${cls.start_time}Z`).toLocaleTimeString(
-                      [],
-                      { hour: "2-digit", minute: "2-digit" }
-                    )
-                  : "N/A"}
-              </td>
-              <td className="px-6 py-4">
-                {cls.end_time
-                  ? new Date(`1970-01-01T${cls.end_time}Z`).toLocaleTimeString(
-                      [],
-                      { hour: "2-digit", minute: "2-digit" }
-                    )
-                  : "N/A"}
-              </td>
-              <td className="px-6 py-4">
-                {cls.is_ready_for_attendance? <Link className="text-red-600 underline" href={`/attendance/class-attendance/${cls.id}`}>Edit Attendance</Link> : "Edit Attendance"}
+  {(() => {
+    const [hours, minutes, seconds] = cls.start_time.split(':');
+    let hour12 = (hours % 12 || 12).toString().padStart(2, '0');
+    let period = hours >= 12 ? 'PM' : 'AM';
+    return `${hour12}:${minutes}:${seconds} ${period}`;
+  })()}
+</td>
+<td className="px-6 py-4">
+  {(() => {
+    const [hours, minutes, seconds] = cls.end_time.split(':');
+    let hour12 = (hours % 12 || 12).toString().padStart(2, '0');
+    let period = hours >= 12 ? 'PM' : 'AM';
+    return `${hour12}:${minutes}:${seconds} ${period}`;
+  })()}
+</td>
+              <td className="px-6 py-4 text-center ">
+                {cls.is_ready_for_attendance? <Link className="text-green-800 bg-green-100 p-2 text-center rounded-sm text-xs" href={`/attendance/class-attendance/${cls.id}`}>Edit Attendance</Link> : <span className="bg-red-100 text-red-800 p-2 text-xs rounded-sm w-fit text-center">NA</span>}
               </td>
             </tr>
           ))}
@@ -145,5 +159,6 @@ export default function ClassSchedule() {
       </div>
       )}
     </div>
+    </section>
   );
 }

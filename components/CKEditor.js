@@ -276,8 +276,8 @@ if (!mounted || !editor) return null;
         <div id="editor-container" className="border border-gray-300 rounded-md p-4">
             {showtoast && <Toast message={message} /> }
             {/* Toolbar */}
-            <div className="flex space-x-2 bg-gradient-to-r from-slate-900 to-slate-700 p-2 rounded-lg">
-            <select onChange={changeFontSize} className="rounded-sm text-white bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700">
+            <div className="flex space-x-2 border py-4 px-6 rounded-lg">
+            <select onChange={changeFontSize} className="rounded-sm bg-red-100 text-red-800  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-red-700 px-2">
             <option value="8px">8px</option>
         <option value="10px">10px</option>
         <option value="12px">12px</option>
@@ -292,7 +292,7 @@ if (!mounted || !editor) return null;
         <option value="44px">44px</option>
         <option value="48px">48px</option>
       </select>
-      <select onChange={changeFontType} className="rounded-sm text-white  bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700">
+      <select onChange={changeFontType} className="rounded-sm bg-red-100 text-red-800  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-red-700">
         <option value="Arial, sans-serif">Arial</option>
         <option value="Georgia, serif">Georgia</option>
         <option value="Courier New, monospace">Courier New</option>
@@ -313,19 +313,19 @@ if (!mounted || !editor) return null;
         <option value="Raleway, sans-serif">Raleway</option>
         <option value="PT Sans, sans-serif">PT Sans</option>
       </select>
-                <button type="button" onClick={() => editor.chain().focus().toggleBold().run()} className="text-white  bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2"><Bold /></button>
-                <button type="button" onClick={() => editor.chain().focus().toggleItalic().run()} className="text-white  bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2"><ItalicIcon /></button>
-                <button type="button" onClick={() => editor.chain().focus().toggleUnderline().run()} className="text-white  bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2"><UnderlineIcon /></button>
-                <button type="button" onClick={() => editor.chain().focus().toggleBulletList().run()} className="text-white  bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2"><List /></button>
-                <button type="button" onClick={addLink} className="text-white  bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2"><LinkIcon /></button>
-                <button type="button" onClick={() => editor.chain().focus().toggleOrderedList().run()} className="text-white  bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2"><ListOrdered /></button>
+                <button type="button" onClick={() => editor.chain().focus().toggleBold().run()} className="bg-red-100 text-red-800  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-red-700 p-2 rounded-sm"><Bold /></button>
+                <button type="button" onClick={() => editor.chain().focus().toggleItalic().run()} className="bg-red-100  text-red-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-red-700 p-2 rounded-sm"><ItalicIcon /></button>
+                <button type="button" onClick={() => editor.chain().focus().toggleUnderline().run()} className="bg-red-100 text-red-800  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-red-700 p-2 rounded-sm"><UnderlineIcon /></button>
+                <button type="button" onClick={() => editor.chain().focus().toggleBulletList().run()} className="bg-red-100 text-red-800  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-red-700 p-2 rounded-sm"><List /></button>
+                <button type="button" onClick={addLink} className="bg-red-100 text-red-800  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-red-700 p-2"><LinkIcon /></button>
+                <button type="button" onClick={() => editor.chain().focus().toggleOrderedList().run()} className="bg-red-100 text-red-800  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-red-700 p-2 rounded-sm"><ListOrdered /></button>
                 {/* Upload Image Button */}
                
                 <button 
     type="button" 
     onClick={() => imageInputRef.current.click()} 
-    className="text-white bg-gray-900 bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2">
-    <ImageIcon className="w-5 h-5 text-white dark:text-white" />
+    className="text-red-800 bg-red-100 bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-red-700 p-2 rounded-sm">
+    <ImageIcon className="w-5 h-5 text-red-800 dark:text-white" />
 </button>
 
 <input type="file" accept="image/*" ref={imageInputRef} className="hidden" onChange={(e) => handleFileUpload(e, "image")} />
@@ -333,23 +333,23 @@ if (!mounted || !editor) return null;
 <button 
     type="button" 
     onClick={() => fileInputRef.current.click()} 
-    className="text-white bg-gray-900 bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2">
-    <FileIcon className="w-5 h-5 text-white dark:text-white" />
+    className="text-red-800 bg-red-100 bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-red-700 p-2 rounded-sm">
+    <FileIcon className="w-5 h-5 text-red-800 dark:text-white" />
 </button>
 <input type="file" ref={fileInputRef} accept=".pdf, .xls, .xlsx, .doc, .docx"  className="hidden" onChange={(e) => handleFileUpload(e, "file")} />
-<button type="button" onClick={addTable} className="text-white bg-gray-900 p-2 border border-gray-700">
+<button type="button" onClick={addTable} className="text-red-800 bg-red-100 p-2 border border-red-700 rounded-sm">
 
-    <TableIcon className="w-5 h-5 text-white dark:text-white" /> 
+    <TableIcon className="w-5 h-5 text-red-800 dark:text-white" /> 
 </button>
-<button type="button" onClick={() => editor.chain().focus().deleteTable().run()} className="text-white bg-gray-900 p-2 border border-gray-700">
-   <DeleteIcon className="w-5 h-5 text-red-500 dark:text-white"/>
+<button type="button" onClick={() => editor.chain().focus().deleteTable().run()} className="text-red-800 bg-red-100 p-2 border border-red-700 rounded-sm">
+   <DeleteIcon className="w-5 h-5 text-red-800 dark:text-white"/>
 </button>
                
-                <button type="button" onClick={() => editor.chain().focus().undo().run()} className="text-white  bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2">
+                <button type="button" onClick={() => editor.chain().focus().undo().run()} className="text-red-800  bg-red-100  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-red-700 p-2 rounded-sm">
     <Undo2Icon /> {/* Add an Undo icon from Lucide or another library */}
 </button>
 
-<button type="button" onClick={() => editor.chain().focus().redo().run()} className="text-white  bg-gray-900  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-gray-700 p-2">
+<button type="button" onClick={() => editor.chain().focus().redo().run()} className="text-red-800  bg-red-100  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-red-700 p-2 rounded-sm">
     <Redo2Icon /> {/* Add a Redo icon from Lucide or another library */}
 </button>
 
@@ -416,25 +416,25 @@ if (!mounted || !editor) return null;
     <div className="flex gap-2 mt-2 border p-2 bg-gray-100">
         <button type="button" 
             onClick={() => editor.chain().focus().addColumnBefore().run()}
-            className="p-2 bg-gray-400 text-white rounded-sm text-sm"
+            className="p-2 bg-red-100 text-red-800 rounded-sm text-sm"
         >
             ➕ Add Column
         </button>
         <button type="button"
             onClick={() => editor.chain().focus().addRowBefore().run()}
-            className="p-2 bg-gray-400 text-white rounded-sm text-sm"
+            className="p-2 bg-red-100 text-red-800 rounded-sm text-sm"
         >
             ➕ Add Row
         </button>
         <button type="button"
             onClick={() => editor.chain().focus().deleteColumn().run()}
-            className="p-2 bg-gray-400 text-white rounded-sm text-sm"
+            className="p-2 bg-red-100 text-red-800 rounded-sm text-sm"
         >
             ❌ Remove Column
         </button>
         <button type="button"
             onClick={() => editor.chain().focus().deleteRow().run()}
-            className="p-2 bg-gray-400 text-white rounded-sm text-sm"
+            className="p-2 bg-red-100 text-red-800 rounded-sm text-sm"
         >
             ❌ Remove Row
         </button>

@@ -89,26 +89,24 @@ export default function Page() {
         );
     });
     return (
-        <div className="px-6 py-6">
-            {/* Toast */}
+        <section className="relative ">
             {showToast && <Toast message={message} />}
-
-            {/* Back Button */}
+        <div className="bg-violet-200 w-full sm:w-80 h-40 rounded-full absolute top-1 opacity-20 max-sm:left-0 sm:right-56 z-0"></div>
+        <div className="bg-violet-300 w-full sm:w-40 h-24 absolute top-0 -right-0 opacity-20 z-0"></div>
+        <div className="bg-violet-500 w-full sm:w-40 h-24 absolute top-40 -right-0 opacity-20 z-0"></div>
+        <div className="w-full pt-4 relative z-10 backdrop-blur-3xl">
+        <div className="px-12 py-6">
             <button 
                 onClick={() => router.back()} 
                 className="px-6 py-1 flex align-middle items-center gap-1 text-gray-600 text-sm rounded"
             >
                 <ArrowLeft className='h-4 w-4' /> Back to List
             </button>
-            <div className="border border-gray-300 rounded-xl mt-4 bg-gradient-to-bl from-gray-700 to-stone-900 text-white p-8 mx-6 mb-8">
-          <div className="flex justify-between items-center">
-            <h5 className="text-2xl font-bold">Class Attendance</h5>
-           
-            <div className="flex gap-2">
-            <input type="text" placeholder="search..."  className="p-2 rounded-sm text-gray-700"  value={search} onChange={(e) => setSearch(e.target.value)}/>
-            </div>
-          </div>
-        </div>
+            <h1 className="text-3xl font-bold mb-2 font-sans px-6 mt-6">Class Attendance </h1>
+            <p className="text-sm text-gray-500 mb-8 px-6">Everyhting you need to know about Your Class Schedule</p>
+            <hr className=" border  border-spacing-y-0.5 mb-6 px-6"/>
+            <input type="text" placeholder="search..."  className="p-2 mx-6 mb-6 border border-gray-300 rounded-sm text-gray-700"  value={search} onChange={(e) => setSearch(e.target.value)}/>
+            
             {/* Loading & Error Handling */}
             {loading && <p>Loading...</p>}
             {error && <p className="text-red-500">{error}</p>}
@@ -116,9 +114,9 @@ export default function Page() {
             {/* Table */}
             {!loading && !error && (
                 <div className="overflow-x-auto px-6">
-                    <table className="w-full text-sm text-left text-gray-800 dark:text-gray-400">
-                        <thead className="text-xs text-gray-100 uppercase bg-black dark:bg-gray-700 dark:text-gray-400">
-                            <tr>
+                    <table className="overflow-x-auto w-full text-center">
+                        <thead className="min-w-full border border-red-200 rounded-lg">
+                            <tr className="text-red-700 bg-red-50 font-normal text-sm border-b">
                                 <th scope="col" className="px-6 py-3">S.No.</th>
                                 <th scope="col" className="px-6 py-3">Name</th>
                                 <th scope="col" className="px-6 py-3">Enrollment No.</th>
@@ -128,7 +126,7 @@ export default function Page() {
                         </thead>
                         <tbody>
                             {filteredStudents.map((student, index) => (
-                                <tr key={student.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200">
+                                <tr key={student.id} className="border-b text-sm">
                                     <td className="px-6 py-4">{index + 1}</td>
                                     <td className="px-6 py-4">
                                         {`${student.first_name} ${student.middle_name || ''} ${student.last_name}`}
@@ -145,6 +143,7 @@ export default function Page() {
                                                     value="present"
                                                     checked={presentStudents.includes(student.id)}
                                                     onChange={() => handleAttendanceChange(student.id, true)}
+                                                    className="accent-green-800"
                                                 />
                                                 Present
                                             </label>
@@ -159,6 +158,7 @@ export default function Page() {
                                                     value="absent"
                                                     checked={!presentStudents.includes(student.id)}
                                                     onChange={() => handleAttendanceChange(student.id, false)}
+                                                    className="accent-red-800"
                                                 />
                                                 Absent
                                             </label>
@@ -181,5 +181,7 @@ export default function Page() {
             </button>
             </div>
         </div>
+        </div>
+        </section>
     )
 }

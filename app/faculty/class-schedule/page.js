@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { GlobalContext } from "@/components/GlobalContext";
 import { useContext } from "react";
 import FullWidthLoader from "@/components/Loaader";
-import { BanIcon, Calendar1Icon, SquareUserRoundIcon } from "lucide-react";
+import { BanIcon, Calendar1Icon, PlusCircleIcon, SearchIcon, Settings2Icon, SquareUserRoundIcon } from "lucide-react";
 import Toast from "@/components/Toast";
 export default function Page(){
     const [loading, setLoading] = useState(false);
@@ -35,7 +35,7 @@ const [formData, setFormData] = useState({
       try {
         setLoading(true);
         const [response, response1] = await Promise.all([
-            await authFetch(`faculty-wise-class/${state.user_id}`)
+            await authFetch(`faculty-wise-class-filter/${state.user_id}`)
 
         ])
         if (!response.ok && !response1.ok) throw new Error("Failed to Fetch the data");
@@ -183,9 +183,9 @@ const confirmReschdule = async () => {
     }
 };
     return(
-        <div className="py-4 px-5">
-            {showPopup && (
-                <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50">
+    <div className="bg-white min-h-screen">
+     {showPopup && (
+                <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
                     {showToast && <Toast message={message}/>}
                     {actionType==="cancel"&& <div className="bg-white p-6 rounded-lg shadow-md">
                         <h2 className="text-lg font-semibold">Are you sure you want to cancel this class?</h2>
@@ -220,17 +220,22 @@ const confirmReschdule = async () => {
                     </div>}
                 </div>
             )}
+        <section className="relative">
+           
+        <div className="bg-violet-200 w-full sm:w-80 h-40 rounded-full absolute top-1 opacity-20 max-sm:left-0 sm:right-56 z-0"></div>
+        <div className="bg-violet-300 w-full sm:w-40 h-24 absolute top-0 -right-0 opacity-20 z-0"></div>
+        <div className="bg-violet-500 w-full sm:w-40 h-24 absolute top-40 -right-0 opacity-20 z-0"></div>
+        <div className="w-full pt-4 relative z-10 backdrop-blur-3xl">
+        <div className="py-4 px-5">
+            
             <div>
-            <div className="w-full">
-            <div className="border border-gray-300 rounded-xl mt-4 bg-gradient-to-bl from-gray-700 to-stone-900 text-white p-2 hover:shadow-xl transition-shadow  py-8 px-12">
-                <div className="flex justify-between items-center gap-2">
-                    <div className="w-2/5">
-                <h5 className="text-2xl font-bold">Class Schedule</h5>
-                <span className="text-sm text-gray-400">Taxila Business School</span>
-                </div>
-                <div className=" flex w-full gap-2 items-start">
+            <div className="w-full px-12 py-6">
+            <h1 className="text-3xl font-bold mb-2 font-sans">Class Schedule </h1>
+            <p className="text-sm text-gray-500 mb-8">Everyhting you need to know about Your Class Schedule</p>
+            <hr className=" border  border-spacing-y-0.5 mb-6"/>
+            <div className="mb-4 flex items-center justify-between ">
                 <div className="w-1/5">
-            <select value={selectedTerm} onChange={handleTermChange} className=" w-full border border-gray-300 rounded-sm p-2 text-black">
+            <select value={selectedTerm} onChange={handleTermChange} className=" w-full border border-gray-300 rounded-sm p-2 text-gray-500 ">
                 <option value="">Select Term</option>
                 {terms.map(term => (
                     <option key={term.id} value={term.id}>{term.name}</option>
@@ -238,7 +243,7 @@ const confirmReschdule = async () => {
             </select>
             </div>
             <div className="w-1/5">
-            <select onChange={(e) => setSelectedSubject(e.target.value)} disabled={!selectedTerm} className=" border w-full border-gray-300 rounded-sm p-2 text-black">
+            <select onChange={(e) => setSelectedSubject(e.target.value)} disabled={!selectedTerm} className=" border w-full border-gray-300 rounded-sm p-2 text-gray-500">
                 <option value="">Select Subject</option>
                 {filteredSubjects.map(sub => (
                     <option key={sub.subjectMappingId} value={sub.subjectMappingId}>
@@ -248,21 +253,20 @@ const confirmReschdule = async () => {
             </select>
         </div>
         <div className="w-1/5">
-            <input type="date" className="w-full border border-gray-300 rounded-sm p-1 text-black" onChange={(e) => setStartDate(e.target.value)} />
+            <input type="date" className="w-full border border-gray-300 rounded-sm p-1 text-gray-500" onChange={(e) => setStartDate(e.target.value)} />
         </div>
         <div className="w-1/5">
-            <input type="date" className="w-full border border-gray-300 rounded-sm p-1 text-black" onChange={(e) => setEndDate(e.target.value)} />
+            <input type="date" className="w-full border border-gray-300 rounded-sm p-1 text-gray-500" onChange={(e) => setEndDate(e.target.value)} />
         </div>
-        <button className=" bg-green-600 text-white p-1.5 px-12 rounded-sm" onClick={handleSubmit}>Submit</button>
-                </div>
-                </div>
-                
-            </div>
+        <button className="flex gap-1 justify-center w-fit border bg-red-700 py-2 px-8 text-white rounded-sm hover:bg-red-100 hover:text-red-800 transition duration-300 ease-in-out items-center" onClick={handleSubmit}><SearchIcon className="h-4 w-4"/> Search</button>
+               
+                   </div>
+        
             <div>
-            {loading? <FullWidthLoader/> :     <table className="w-full text-sm text-left text-gray-800 dark:text-gray-400 mt-4">
-                            <thead className="text-xs text-gray-100 uppercase bg-black dark:bg-gray-700 dark:text-gray-400">
+            {loading? <FullWidthLoader/> :     <table className="overflow-x-auto w-full text-center" >
+                            <thead className="min-w-full border border-red-200 rounded-lg">
              
-                         <tr >
+                         <tr className="text-red-700 bg-red-50 font-normal text-sm border-b" >
                                 <th scope="col" className="px-6 py-3">S.No.</th>
                                 <th scope="col" className="px-6 py-3">Batch</th>
                                 <th scope="col" className="px-6 py-3">Subject Name</th>
@@ -279,7 +283,7 @@ const confirmReschdule = async () => {
             <tbody>
             { sclass.length > 0 ? (
     sclass.map((cls, index) => (
-        <tr key={cls.id} className="hover:bg-gray-50">
+        <tr key={cls.id} className="border-b text-sm hover:bg-gray-50">
             <td className="px-6 py-3">{index + 1}</td>
             <td className="px-6 py-3">{cls.mapping.batch?.name}</td>
             <td className="px-6 py-3">{cls.mapping.subject?.name}</td>
@@ -288,14 +292,14 @@ const confirmReschdule = async () => {
             <td className="px-6 py-3">{cls.end_time}</td>
             <td className="px-6 py-3">
   {cls.is_cancel ? (
-    <span className="bg-red-600 text-sm text-white py-0.5 px-3 rounded-sm">Cancelled</span>
+    <span className="bg-red-100 text-sm text-red-800 py-0.5 px-3 rounded-sm">Cancelled</span>
   ) : cls.is_complete ? (
-    <span className="bg-green-600 text-sm text-white py-0.5 px-3 rounded-sm">Completed</span>
-  ) : (
-    <span className="bg-green-600 text-sm text-white py-0.5 px-3 rounded-sm">Scheduled</span>
-  )}
+    <span className="bg-gray-100 text-sm text-gray-800 py-0.5 px-3 rounded-sm">Completed</span>
+  ) : cls.is_ready_for_attendance ? (
+    <span className="bg-violet-100 text-sm text-violet-800 py-0.5 px-3 rounded-sm">Mark Attendance</span>
+  ) : (<span className="bg-green-100 text-sm text-green-800 py-0.5 px-3 rounded-sm">Scheduled</span>)}
 </td>
-            <td className="px-6 py-3 flex gap-3 items-center">{!cls.is_cancel && <button className="bg-green-600 text-white rounded-sm py-1 px-2" onClick={() => handleCancelClick(cls.id, "cancel")}><BanIcon className="h-5 w-5 cursor-pointer"/></button>} <button className="bg-red-600 text-white rounded-sm py-1 px-2">{!cls.is_complete? <Calendar1Icon className="h-5 w-5 cursor-pointer" onClick={() => handleCancelClick(cls.id, "reshed")}/> : <SquareUserRoundIcon  className="h-5 w-5"/>}</button></td>
+            <td className="px-6 py-3 flex gap-3 items-center justify-center">{!cls.is_cancel && <button className="bg-green-100 text-green-800 rounded-sm py-1 px-2" onClick={() => handleCancelClick(cls.id, "cancel")}><BanIcon className="h-5 w-5 cursor-pointer"/></button>} <button className="bg-red-100 text-red-800 rounded-sm py-1 px-2">{!cls.is_complete? <Calendar1Icon className="h-5 w-5 cursor-pointer" onClick={() => handleCancelClick(cls.id, "reshed")}/> : <SquareUserRoundIcon  className="h-5 w-5"/>}</button></td>
         </tr>
     ))
 ) : (
@@ -311,6 +315,9 @@ const confirmReschdule = async () => {
         </div>
             </div>
             </div>
+        </div>
+         </section>
+         </div>
     
     )
 }
