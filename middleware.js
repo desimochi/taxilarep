@@ -51,6 +51,9 @@ export function middleware(req) {
   try {
     const userData = JSON.parse(userCookie.value);
     const urlPath = nextUrl.pathname;
+    if (userData.role_name === "admin") {
+      return NextResponse.next();
+    }
 
     if (userData.employee_type === "Teaching") {
       // Allow faculty to access only defined faculty paths

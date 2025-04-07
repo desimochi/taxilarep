@@ -26,9 +26,14 @@ const Sidebar = ({collapsed, toggleSidebar, toggleMenu, openMenus, role, type  }
         case "Super Admin":
             return menuItems;
         case "admin":
-          if (type === "Teaching") {
-            return [...FacmenuItems, ...menuItems]; 
-        } else {
+         if (type === "Teaching") {
+    const combined = [...FacmenuItems, ...menuItems];
+    const uniqueByName = combined.filter(
+      (item, index, self) =>
+        index === self.findIndex((t) => t.label === item.label)
+    );
+    return uniqueByName;
+  } else {
           return menuItems;
         }
             case "Examination":
@@ -48,7 +53,6 @@ const Sidebar = ({collapsed, toggleSidebar, toggleMenu, openMenus, role, type  }
     }
 };
 const selectedMenu = getMenuByRole(role, type);
-console.log(selectedMenu);
   return (
     <div className={`h-screen bg-white shadow-md border-r-2 p-4 transition-all ${collapsed ? "w-24" : "w-80"}`}>
       <div className="flex items-center justify-between h-[70px] p-2">

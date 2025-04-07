@@ -2,22 +2,32 @@
 
 import { useEffect, useState } from "react";
 import { authFetch } from "@/app/lib/fetchWithAuth";
-import { BanIcon, Calendar1Icon, SquareUserRoundIcon } from "lucide-react";
+import { BanIcon, Calendar1Icon, SearchIcon, SquareUserRoundIcon } from "lucide-react";
 import Toast from "./Toast";
+import Link from "next/link";
+import { EyeIcon } from "@heroicons/react/24/outline";
 
 
 
 export default function ClassShedDis() {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
   const [sclass, setsclass] = useState([]);
   const [timeerror, setTimeError] = useState("")
   const[message, setMessage] = useState("")
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [terms, setTerms] = useState([]);
+   const [subjectas, setSubjectas] = useState([]);
   const [selectedClass, setSelectedClass] = useState(null);
+  const [selectedTerm, setSelectedTerm] = useState('');
+      const [filteredSubjects, setFilteredSubjects] = useState([]);
+      const [selectedSubject, setSelectedSubject] = useState('');
   const[showToast, setShowToast] = useState(false)
         const [showPopup, setShowPopup] = useState(false);
         const [actionType, setActionType] = useState("");
+        const [s_date, setStartDate] = useState('');
+        const [e_date, setEndDate] = useState('');
 const [formData, setFormData] = useState({
     date: "",
   start_time: "",
@@ -37,6 +47,27 @@ const [formData, setFormData] = useState({
       if (data && data.data) {
         setsclass(data.data);
         setTotalPages(data.extra?.total);
+        const uniqueTerms = Array.from(
+          new Map(
+              data.data
+                  .filter(item => item.mapping && item.mapping.term)
+                  .map(item => [item.mapping.term.id, item.mapping.term])
+          ).values()
+      );
+      setTerms(uniqueTerms);
+
+      const uniqueSubjects = Array.from(
+        new Map(
+            data.data
+                .filter(item => item.mapping && item.mapping.term && item.mapping.subject)
+                .map(item => [item.mapping.subject.name, { 
+                    termId: item.mapping.term.id, 
+                    subjectMappingId: item.mapping.id, 
+                    subjectName: item.mapping.subject.name 
+                }])
+        ).values()
+    );
+    setSubjectas(uniqueSubjects);
       } else {
         setClassSchedule([]);
         setTotalPages(1);
@@ -48,6 +79,39 @@ const [formData, setFormData] = useState({
       setLoading(false);
     }
   };
+
+  const handleTermChange = (e) => {
+    const termId = e.target.value;
+    setSelectedTerm(termId);
+    const filtered = subjectas.filter(sub => sub.termId.toString() === termId);
+    setFilteredSubjects(filtered);
+};
+const handleSubmit = async () => {
+    try {
+        setLoading(true);
+
+        // Build dynamic query
+        const params = new URLSearchParams();
+        if (selectedTerm) params.append('mapping__term', selectedTerm);
+        if (selectedSubject) params.append('mapping', selectedSubject);
+        if (s_date) params.append('s_date', s_date);
+        if (e_date) params.append('e_date', e_date);
+
+        const url = `class-schedule-viewset?${params.toString()}`;
+
+        const response = await authFetch(url);
+        if (!response.ok) throw new Error("Failed to fetch filtered data");
+
+        const data = await response.json();
+        setsclass(data.data);
+        setTotalPages(data.extra?.total);
+        setCurrentPage(1)
+    } catch (error) {
+        setError(error.message);
+    } finally {
+        setLoading(false);
+    }
+}
   const handleCancelClick = (classId, type) => {
     setSelectedClass(classId);
     setActionType(type);
@@ -126,7 +190,7 @@ const confirmReschdule = async () => {
     }
 };
   return (
-    <div className="p-4">
+    <div className="px-12 py-16">
        {showPopup && (
                 <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50">
                     {showToast && <Toast message={message}/>}
@@ -163,13 +227,45 @@ const confirmReschdule = async () => {
                     </div>}
                 </div>
             )}
+         <h1 className="text-3xl font-bold mb-2 font-sans">Class Schedule </h1>
+                    <p className="text-sm text-gray-500 mb-8">Everyhting you need to know about Class Schedule</p>
+                    
+                    <hr className=" border  border-spacing-y-0.5 mb-6"/>
+                    <div className="mb-4 flex items-center justify-between ">
+                        <div className="w-1/5">
+                    <select value={selectedTerm} onChange={handleTermChange} className=" w-full border border-gray-300 rounded-sm p-2 text-gray-500 ">
+                        <option value="">Select Term</option>
+                        {terms.map(term => (
+                            <option key={term.id} value={term.id}>{term.name}</option>
+                        ))}
+                    </select>
+                    </div>
+                    <div className="w-1/5">
+                    <select onChange={(e) => setSelectedSubject(e.target.value)} disabled={!selectedTerm} className=" border w-full border-gray-300 rounded-sm p-2 text-gray-500">
+                        <option value="">Select Subject</option>
+                        {filteredSubjects.map(sub => (
+                            <option key={sub.subjectMappingId} value={sub.subjectMappingId}>
+                                {sub.subjectName}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                <div className="w-1/5">
+                    <input type="date" className="w-full border border-gray-300 rounded-sm p-1 text-gray-500" onChange={(e) => setStartDate(e.target.value)} />
+                </div>
+                <div className="w-1/5">
+                    <input type="date" className="w-full border border-gray-300 rounded-sm p-1 text-gray-500" onChange={(e) => setEndDate(e.target.value)} />
+                </div>
+                <button className="flex gap-1 justify-center w-fit border bg-red-700 py-2 px-8 text-white rounded-sm hover:bg-red-100 hover:text-red-800 transition duration-300 ease-in-out items-center" onClick={handleSubmit}><SearchIcon className="h-4 w-4"/> Search</button>
+                       
+                           </div>
       {loading ? (
         <p className="text-center">Loading...</p>
       ) : (
         <div className="overflow-x-auto">
-          <table className="table-auto w-full border-collapse border border-gray-300">
-            <thead>
-              <tr className="bg-black text-white">
+          <table className="overflow-x-auto w-full text-center">
+            <thead className="min-w-full border border-red-200 rounded-lg">
+              <tr className="text-red-700 bg-red-50 font-normal text-sm border-b">
                 <th className="border px-4 py-2">S.no.</th>
                 <th className="border px-4 py-2">Term</th>
                 <th className="border px-4 py-2">Batch</th>
@@ -185,24 +281,24 @@ const confirmReschdule = async () => {
             <tbody>
               { sclass.length > 0 ? (
                   sclass.map((cls, index) => (
-                      <tr key={cls.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-3">{index + 1}</td>
-                          <td className="px-6 py-3">{cls.mapping.term?.name}</td>
-                          <td className="px-6 py-3">{cls.mapping.batch?.name}</td>
-                          <td className="px-6 py-3">{cls.mapping.subject?.name}</td>
-                          <td className="px-6 py-3">{`${cls.mapping.faculty?.first_name} ${cls.mapping.faculty?.last_name}`} </td>
-                          <td className="px-6 py-3">{cls.date}</td>
-                          <td className="px-6 py-3">{cls.start_time}</td>
-                          <td className="px-6 py-3">{cls.end_time}</td>
-                          <td className="px-6 py-3">
-                {cls.is_cancel ? (
-                  <span className="bg-red-600 text-sm text-white py-0.5 px-3 rounded-sm">Cancelled</span>
-                ) : cls.is_complete ? (
-                  <span className="bg-green-600 text-sm text-white py-0.5 px-3 rounded-sm">Completed</span>
-                ) : (
-                  <span className="bg-green-600 text-sm text-white py-0.5 px-3 rounded-sm">Scheduled</span>
-                )}
-              </td>
+                    <tr key={cls.id} className="border-b text-sm hover:bg-gray-50">
+                    <td className="px-6 py-3">{index + 1}</td>
+                    <td className="px-6 py-3">{cls.mapping.term?.name}</td>
+                    <td className="px-6 py-3">{cls.mapping.batch?.name}</td>
+                    <td className="px-6 py-3">{cls.mapping.subject?.name}</td>
+                    <td className="px-6 py-3">{cls.mapping.faculty?.first_name} {cls.mapping.faculty?.last_name}</td>
+                    <td className="px-6 py-3">{cls.date}</td>
+                    <td className="px-6 py-3">{cls.start_time}</td>
+                    <td className="px-6 py-3">{cls.end_time}</td>
+                    <td className="px-6 py-3">
+          {cls.is_cancel ? (
+            <span className="bg-red-100 text-sm text-red-800 py-0.5 px-3 rounded-sm">Cancelled</span>
+          ) : cls.is_complete ? (
+            <Link href={`attendance/class-attendance/${cls.id}`} className="bg-gray-100 text-sm text-gray-800 py-0.5 px-3 rounded-sm"><EyeIcon className="h-4 w-4"/></Link>
+          ) : cls.is_ready_for_attendance ? (
+            <span className="bg-violet-100 text-sm text-violet-800 py-0.5 px-3 rounded-sm">Attendance Not Marked</span>
+          ) : (<span className="bg-green-100 text-sm text-green-800 py-0.5 px-3 rounded-sm">Scheduled</span>)}
+        </td>
                           <td className="px-6 py-3 flex gap-3 items-center">{!cls.is_cancel && <button className="bg-green-600 text-white rounded-sm py-1 px-2" onClick={() => handleCancelClick(cls.id, "cancel")}><BanIcon className="h-5 w-5 cursor-pointer"/></button>} <button className="bg-red-600 text-white rounded-sm py-1 px-2">{!cls.is_complete? <Calendar1Icon className="h-5 w-5 cursor-pointer" onClick={() => handleCancelClick(cls.id, "reshed")}/> : <SquareUserRoundIcon  className="h-5 w-5"/>}</button></td>
                       </tr>
                   ))
@@ -221,17 +317,17 @@ const confirmReschdule = async () => {
         <button
           onClick={() => setCurrentPage((prev) => (prev - 1))}
           disabled={currentPage === 1}
-          className="px-4 py-2 bg-gray-200 text-gray-700 rounded-l disabled:opacity-50"
+          className="px-4 py-2 bg-gray-700 text-gray-100 rounded-l disabled:opacity-50"
         >
           Previous
         </button>
-        <span className="px-4 py-2 bg-gray-300 text-gray-900">
+        <span className="px-4 py-2 text-gray-900">
           Page {currentPage} of {totalPages}
         </span>
         <button
           onClick={() => setCurrentPage((prev) => (prev + 1))}
           disabled={currentPage === totalPages}
-          className="px-4 py-2 bg-gray-200 text-gray-700 rounded-r disabled:opacity-50"
+          className="px-8 py-2 bg-red-800 text-red-50 rounded-sm disabled:opacity-50"
         >
           Next
         </button>

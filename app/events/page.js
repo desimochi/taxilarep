@@ -31,7 +31,7 @@ export default function Page(){
       try {
         const response = await authFetch("events-viewset");
         const data = await response.json();
-        setEvents(data.data || []);
+        setEvents(data.data);
       } catch (error) {
         console.error("Error fetching events:", error);
       }
@@ -290,18 +290,22 @@ export default function Page(){
                 <th scope="col" className="px-6 py-3">
                     Type
                 </th>
+                <th scope="col" className="px-6 py-3">
+                    Action
+                </th>
             </tr>
         </thead>
         <tbody className="rounded-xl">
         {events.length > 0 && events.map((event, index) => (
   <tr key={index} className="bg-white border-b rounded-xl dark:bg-gray-800 dark:border-gray-700 border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600"> 
+     <td className="px-4 py-3">{index+1}</td>
     <td className="px-4 py-3">{event.name}</td>
     <td className="px-4 py-3">{event.date}</td>
     <td className="px-4 py-3">{event.venue}</td>
     <td className="px-4 py-3">{event.type}</td>
     {state.role_name !== 'Student' && (
                 <span className="flex gap-1 justify-center w-fit border bg-red-100 py-0.5 mt-2 text-xs items-center px-2 text-red-700 rounded-sm hover:bg-red-100 hover:text-red-800 transition duration-300 ease-in-out">
-                  <TrashIcon className="h-5 w-5" /> Delete Event
+                  <TrashIcon className="h-5 w-5" />
                 </span>
           )}
   </tr>

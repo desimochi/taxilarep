@@ -36,24 +36,24 @@ export const menuItems = [
       label: "Examination",
       icon: <PenSquareIcon className="h-5 w-5" />,
       subMenu: [
-        { label: "Internship Report", path: "/internship-report" },
+        // { label: "Internship Report", path: "/internship-report" },
           {label : "Exam Schedule", hasSubMenu:true,  subMenu : [
             {label:"Main Exam Schedule", path:"/main-exam-schedule"},
-            { label: "Re-Sit Exam Schedule", path: "/resit-exam-schedule" },
+            // { label: "Re-Sit Exam Schedule", path: "/resit-exam-schedule" },
           ]},
           {label : "Attendance Manager", hasSubMenu:true,  subMenu : [
             { label: "Student Attendence", path: "/attendance/student-attendance" },
-            { label: "Faculty Attendence", path: "/attendance/faculty-attendance" },
+            // { label: "Faculty Attendence", path: "/attendance/faculty-attendance" },
           ]},
          
-          {label : "Exam Manager", hasSubMenu:true,  subMenu : [
-            {label:"Add Marks", path:"/written/add-marks"},
-            { label: "See Result", path: "/written/result" },
-          ]},
-          {label : "Re-Sit Exam Manager", hasSubMenu:true,  subMenu : [
-            {label:"Add Marks", path:"/resit/add-marks"},
-            { label: "See Result", path: "/resit/result" },
-          ]},
+          // {label : "Exam Manager", hasSubMenu:true,  subMenu : [
+          //   {label:"Add Marks", path:"/written/add-marks"},
+          //   { label: "See Result", path: "/written/result" },
+          // ]},
+          // {label : "Re-Sit Exam Manager", hasSubMenu:true,  subMenu : [
+          //   {label:"Add Marks", path:"/resit/add-marks"},
+          //   { label: "See Result", path: "/resit/result" },
+          // ]},
           {label : "Component Manager", path: "/exam-components/component-manager"},
       ],
     },
@@ -70,7 +70,6 @@ export const menuItems = [
       icon: <AcademicCapIcon className="h-5 w-5" />,
       subMenu: [
         { label: "Add New Student", path: "/add-student" },
-        { label: "Add Bulk Student", path: "/add-bulk-student" },
         { label: "All Students", path: "/students" },
         { label: "Assign Students", path: "/assign-students" },
       ],
@@ -85,15 +84,7 @@ export const menuItems = [
       ],
     },
     { label: "Events", icon: <CalendarIcon className="h-5 w-5" />, path: "/events" },
-    {
-      label: "User Manager",
-      icon: <UserGroupIcon className="h-5 w-5" />,
-      subMenu: [
-        { label: "Add New User", path: "/add-user" },
-        { label: "All Users", path: "/users" },
-        { label: "Change Password", path: "/reset-password" },
-      ],
-    },
+   
   ];
   
   export const FacmenuItems = [
