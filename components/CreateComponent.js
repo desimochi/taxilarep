@@ -15,6 +15,7 @@ export default function CreateComponents() {
         name: "",
         max_marks: "",
         has_subcomponents: "true",
+        is_submission: false,
         description: ""
     });
 
@@ -112,6 +113,11 @@ export default function CreateComponents() {
                     <input type="number" name="max_marks" onChange={handleChange} value={formData.max_marks} placeholder="Enter Maximum Marks..." className="bg-white border border-gray-300 mb-3 text-gray-700 text-sm rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" />
                     <label className="font-bold">Sub Component</label>
                     <select name="has_subcomponents" onChange={handleChange} value={formData.has_subcomponents} className="bg-white border border-gray-300 mb-3 text-gray-700 text-sm rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                        <option value="true">Yes</option>
+                        <option value="false">No</option>
+                    </select>
+                    <label className="font-bold">Online Submission Required</label>
+                    <select name="is_submission" onChange={handleChange} value={formData.is_submission} className="bg-white border border-gray-300 mb-3 text-gray-700 text-sm rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                         <option value="true">Yes</option>
                         <option value="false">No</option>
                     </select>

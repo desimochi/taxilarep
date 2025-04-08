@@ -1,5 +1,6 @@
 "use client";
 import { authFetch } from "@/app/lib/fetchWithAuth";
+import Toast from "@/components/Toast";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -7,6 +8,8 @@ export default function CreateComponents() {
     const [subjects, setSubjects] = useState([]);
     const router = useRouter();
     const searchParams = useSearchParams();
+    const [message, setMessage] = useState("")
+    const [showToast, setShowToast] =  useState(false)
     const subID = searchParams.get("subID");
     const [result, setResult] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -17,6 +20,7 @@ export default function CreateComponents() {
         name: "",
         max_marks: "",
         has_subcomponents: "true",
+        is_submission: "false",
         description: "",
     });
 
@@ -83,10 +87,17 @@ export default function CreateComponents() {
                 throw new Error("Failed to submit data");
             }
             const results = await response.json();
-            alert("Form submitted successfully!");
-            if (formData.has_subcomponents === "true") {
-                router.replace(`/exam-components/create-subcomponent?componentId=${results.data.id}`);
-            }
+            setMessage("Components Create Successfully")
+            setShowToast(true)
+            setTimeout(()=>{
+                setShowToast(false)
+                if (formData.has_subcomponents === "true") {
+                    router.replace(`/exam-components/create-subcomponent?componentId=${results.data.id}`);
+                } else{
+                    router.replace(`/subjects/deails/${subID}`);
+                }
+            },2000)
+            
         } catch (error) {
             console.error("Error submitting form:", error);
             alert("Submission failed. Please try again.");
@@ -95,6 +106,7 @@ export default function CreateComponents() {
 
     return (
         <div className="flex justify-center items-center w-full rounded-sm py-12">
+            {showToast && <Toast message={message}/>}
             <div className="border border-gray-300 shadow-sm hover:shadow-md rounded-sm">
                 <h4 className="px-60 py-4 bg-gradient-to-bl font-bold from-gray-700 to-stone-900 text-white">
                     Create Component
@@ -155,6 +167,16 @@ export default function CreateComponents() {
                         name="has_subcomponents"
                         onChange={handleChange}
                         value={formData.has_subcomponents}
+                        className="bg-white border border-gray-300 mb-3 text-gray-700 text-sm rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                    >
+                        <option value="true">Yes</option>
+                        <option value="false">No</option>
+                    </select>
+                    <label className="font-bold">Online Submission Required</label>
+                    <select
+                        name="is_submission"
+                        onChange={handleChange}
+                        value={formData.is_submission}
                         className="bg-white border border-gray-300 mb-3 text-gray-700 text-sm rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                     >
                         <option value="true">Yes</option>

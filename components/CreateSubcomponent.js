@@ -7,7 +7,7 @@ export default function CreateSubComponent() {
     const [components, setComponents] = useState([]);
     const [marks, setMarks] = useState(0);
     const [selectedComponentId, setSelectedComponentId] = useState(null);
-    const [formSections, setFormSections] = useState([{ name: "", max_marks: "", description: "" }]);
+    const [formSections, setFormSections] = useState([{ name: "", max_marks: "", description: "", is_submission:"" }]);
     const router = useRouter();
     const searchParams = useSearchParams();
     const componentId = searchParams.get("componentId");
@@ -68,35 +68,38 @@ export default function CreateSubComponent() {
     const handleChange = (index, e) => {
         const { name, value } = e.target;
         const updatedSections = [...formSections];
-
-        if (name === "max_marks") {
-            const newMarks = parseInt(value) || 0;
-            const totalMarks = updatedSections.reduce((sum, sec, i) => sum + (i === index ? newMarks : sec.max_marks), 0);
-
-            // Ensure total subcomponent marks do not exceed parent component marks
-            if (totalMarks > marks || newMarks > marks) {
-                setError(true);
-                return;
-            } else {
-                setError(false);
-            }
-
-            updatedSections[index][name] = newMarks;
+       console.log(e.target.value)
+        if (name === "is_submission") {
+            updatedSections[index][name] = value === "true";
+          console.log(updatedSections)
+        } else if (name === "max_marks") {
+          const newMarks = parseInt(value) || 0;
+          const totalMarks = updatedSections.reduce((sum, sec, i) => sum + (i === index ? newMarks : sec.max_marks), 0);
+      
+          if (totalMarks > marks || newMarks > marks) {
+            setError(true);
+            return;
+          } else {
+            setError(false);
+          }
+      
+          updatedSections[index][name] = newMarks;
         } else {
-            updatedSections[index][name] = value;
+          updatedSections[index][name] = value;
         }
-
+      
         setFormSections(updatedSections);
-    };
-
+      };
+      
     const handleSubmit = async (e) => {
         e.preventDefault();
         const payload = {
-            subcomponent_data: formSections.map(({ name, max_marks, description }) => ({
+            subcomponent_data: formSections.map(({ name, max_marks, description, is_submission }) => ({
                 component: parseInt(selectedComponentId),
                 name,
                 max_marks: parseInt(max_marks) || 0,
-                description
+                description,
+                is_submission
             }))
         };
 
@@ -125,7 +128,7 @@ export default function CreateSubComponent() {
     };
 
     const addSection = () => {
-        setFormSections([...formSections, { name: "", max_marks: "", description: "" }]);
+        setFormSections([...formSections, { name: "", max_marks: "", description: "", is_submission:"" }]);
     };
 
     return (
@@ -190,6 +193,16 @@ export default function CreateSubComponent() {
                                     />
                                 </div>
                             </div>
+                            <label className="font-bold">Online Submission Required</label>
+                            <select
+  name="is_submission"
+  onChange={(e) => handleChange(index, e)}
+  value={formData.is_submission}
+  className="bg-white border border-gray-300 mb-3 text-gray-700 text-sm rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+><option value="">Select A Value</option>
+  <option value="true">Yes</option>
+  <option value="false">No</option>
+</select>
                             <label className="font-bold">Description</label>
                             <input
                                 type="text"

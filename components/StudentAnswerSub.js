@@ -4,7 +4,7 @@ import { Edit2Icon, Edit3Icon, EyeOffIcon, ScanEyeIcon, View } from "lucide-reac
 import { EyeDropperIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 
-export default function StudentAnswerSub({ id, subcomponent }) {
+export default function StudentAnswerSub({ id, subcomponent, is_submission, showmarks }) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(false);
     const [data, setData] = useState([]);
@@ -35,9 +35,9 @@ export default function StudentAnswerSub({ id, subcomponent }) {
         <div className="border border-gray-300 p-6 rounded-sm h-fit">
             <div className="flex justify-between">
             <h3 className="border rounded-sm text-black font-bold text-center py-1.5 px-4">
-                Students Answer Submission
+                {is_submission? "Students Answer Submission" : "Students Participated"}
             </h3>
-            <Link href={`/subjects/details/component/add-marks/${id}?subcomp=${subcomponent?'true':'false'}`} className="bg-red-700 rounded-sm text-white font-bold text-center py-1.5 px-6">Add Marks</Link>
+            {showmarks && <Link href={`/subjects/details/component/add-marks/${id}?subcomp=${subcomponent?'true':'false'}`} className="bg-red-700 rounded-sm text-white font-bold text-center py-1.5 px-6">Add Marks</Link>}
             </div>
             
 
@@ -52,8 +52,8 @@ export default function StudentAnswerSub({ id, subcomponent }) {
                             <th className="border px-4 py-2">S.no.</th>
                             <th className="border px-4 py-2">Name</th>
                             <th className="border px-4 py-2">Enrollment No.</th>
-                            <th className="border px-4 py-2">Submitted</th>
-                            <th className="border px-4 py-2">See Details</th>
+                            {is_submission && <th className="border px-4 py-2">Submitted</th>}
+                            {is_submission && <th className="border px-4 py-2">See Details</th>}
                         </tr>
                     </thead>
                     <tbody>
@@ -65,10 +65,10 @@ export default function StudentAnswerSub({ id, subcomponent }) {
                                         {student.first_name} {student.middle_name} {student.last_name}
                                     </td>
                                     <td className="border px-4 py-2">{student.enrollment_number}</td>
-                                    <td className="border px-4 py-2">
+                                    {is_submission && <td className="border px-4 py-2">
                                         {student.submitted ? <span className="text-sm bg-green-600 py-0.5 px-1 rounded-sm text-white">Yes</span> : <span className="text-sm py-0.5 px-1 rounded-sm bg-red-600 text-white">No</span>}
-                                    </td>
-                                    <td className="border px-4 py-2 flex gap-1 items-center">{student.submitted ? <ScanEyeIcon className="h-5 w-5 text-red-600"/> : <EyeOffIcon className="h-5 w-5"/> } {student.submitted ? <Link className="text-red-600 underline text-sm" href={`/subjects/details/component/answer/${student.id}?compId=${id}&subcomp=${subcomponent?'true':'false'}`}>See Details</Link> : <p className="text-sm">Not Available</p> }</td>
+                                    </td> }
+                                    {is_submission && <td className="border px-4 py-2 flex gap-1 items-center">{student.submitted ? <ScanEyeIcon className="h-5 w-5 text-red-600"/> : <EyeOffIcon className="h-5 w-5"/> } {student.submitted ? <Link className="text-red-600 underline text-sm" href={`/subjects/details/component/answer/${student.id}?compId=${id}&subcomp=${subcomponent?'true':'false'}`}>See Details</Link> : <p className="text-sm">Not Available</p> }</td>}
                                 </tr>
                             ))
                         ) : (

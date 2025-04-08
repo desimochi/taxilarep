@@ -23,7 +23,9 @@ const EditComponent = () => {
         type: "",
         max_markss: "",
         description: "",
-        has_subcomponents: false
+        has_subcomponents: false,
+        is_submission: false,
+        is_active: true,
     });
 
     // Fetch Data
@@ -52,6 +54,8 @@ const EditComponent = () => {
                     max_markss: data.data.max_marks || "",
                     description: data.data.description || "",
                     has_subcomponents: data.data.has_subcomponents || false,
+                    is_submission: data.data.is_submission || false,
+                    is_active: data.data.is_active || true,
                 });
             } catch (err) {
                 setError(err.message);
@@ -152,6 +156,8 @@ const EditComponent = () => {
                 name: formData.name,
                 max_marks: mainMaxMarks,
                 has_subcomponents: hasSubcomponents,
+                is_submission: formData.is_submission,
+                is_active: formData.is_active,
                 description: formData.description,
             };
     
@@ -181,6 +187,10 @@ const EditComponent = () => {
                             name: sub.name,
                             max_marks: parseInt(sub.max_marks),
                             description: sub.description,
+                            start_date:sub.start_date,
+                            end_date:sub.end_date,
+                            is_submission:sub.is_submission,
+                            is_active:sub.is_active,
                         })),
                     };
     
@@ -191,12 +201,17 @@ const EditComponent = () => {
                     });
     
                     if (!subResponse.ok) throw new Error("Failed to update subcomponents");
+                    setmessage("Component and Sub Component Updated");
+                    setShowToast(true);
+                    setTimeout(() => setShowToast(false), 2000);
+                    setError(false);
+            
                 }
             }
     
             setmessage("Component and Sub Component Updated");
             setShowToast(true);
-            setTimeout(() => setShowToast(false), 3000);
+            setTimeout(() => setShowToast(false), 2000);
             setError(false);
     
         } catch (err) {
@@ -282,6 +297,7 @@ const EditComponent = () => {
                 </div>
                 </div>
                 {/* Has Subcomponents */}
+                <div className="flex gap-2 justify-between items-center mb-4">
                 <div className="flex items-center">
                     <input
                         type="checkbox"
@@ -292,6 +308,28 @@ const EditComponent = () => {
                     />
                     <label className="font-medium">Has Subcomponents</label>
                 </div>
+                <div className="flex items-center">
+                    <input
+                        type="checkbox"
+                        name="is_submission"
+                        checked={formData.is_submission}
+                        onChange={handleChange}
+                        className="mr-2"
+                    />
+                    <label className="font-medium">Online Submission Required</label>
+                </div>
+                <div className="flex items-center">
+                    <input
+                        type="checkbox"
+                        name="is_active"
+                        checked={formData.is_active}
+                        onChange={handleChange}
+                        className="mr-2"
+                    />
+                    <label className="font-medium">Active/Inactive</label>
+                </div>
+                </div>
+                
 
                 {/* Submit Button */}
                 <button type="submit" className="bg-red-600 text-white px-4 py-2 rounded">

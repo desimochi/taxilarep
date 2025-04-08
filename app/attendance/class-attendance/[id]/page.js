@@ -11,6 +11,8 @@ export default function Page() {
     const router = useRouter()
     const [students, setStudents] = useState([])
     const [loading, setLoading] = useState(false)
+    const [subName, setSubName] = useState("")
+    const [date, setDate] = useState("")
     const [message, setMessage] = useState('')
     const [showToast, setShowToast] = useState(false)
     const [error, setError] = useState(false)
@@ -25,11 +27,11 @@ export default function Page() {
                 if (!response.ok) throw new Error("Failed to fetch student data")
 
                 const data = await response.json()
-                if(data.data)
-                setStudents(data.data)
-
+                setStudents(data.data?.students)
+                setSubName(data.data?.class_schedule?.mapping?.subject?.name)
+                setDate(data.data?.class_schedule?.date)
                 // ✅ Set presentStudents state based on is_persent value
-                const initiallyPresent = data.data
+                const initiallyPresent = data.data.students
                     .filter(student => student.is_persent)
                     .map(student => student.id)
 
@@ -102,7 +104,7 @@ export default function Page() {
             >
                 <ArrowLeft className='h-4 w-4' /> Back to List
             </button>
-            <h1 className="text-3xl font-bold mb-2 font-sans px-6 mt-6">Class Attendance </h1>
+            <h1 className="text-2xl font-bold mb-2 font-sans px-6 mt-6">{subName} Class Attendance  - {date}</h1>
             <p className="text-sm text-gray-500 mb-8 px-6">Everyhting you need to know about Your Class Schedule</p>
             <hr className=" border  border-spacing-y-0.5 mb-6 px-6"/>
             <input type="text" placeholder="search..."  className="p-2 mx-6 mb-6 border border-gray-300 rounded-sm text-gray-700"  value={search} onChange={(e) => setSearch(e.target.value)}/>

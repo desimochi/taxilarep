@@ -18,6 +18,7 @@ export default function Page(){
       const[subcom, setSubcom] = useState([])
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState(null)
+    const [submission, setSubmission] = useState(false)
     const[editDetails, setEditDetails] = useState(false)
     const [additionalData, setAdditionalData] = useState([])
     const [selectedId, setSelectedId] = useState(null)
@@ -61,8 +62,10 @@ export default function Page(){
         }
       
     }, [students?.has_subcomponents, id])
-    const handleOpenModal = (id) => {
+    const handleOpenModal = (id, sub) => {
+      console.log(sub)
         setSelectedId(id) // ✅ Set dynamic id
+        setSubmission(sub)
         setEditDetails(true)
     }
     const handleSetData = (data) => {
@@ -113,6 +116,7 @@ export default function Page(){
                                 setsetStudents={handleSetData} 
                                 setEditDetails={setEditDetails} 
                                 subcomponent={students?.has_subcomponents}
+                                is_submission = {submission}
                             />
                           
                         </div>
@@ -121,28 +125,34 @@ export default function Page(){
             </>}
              <button 
                 onClick={() => router.back()} 
-                className="px-6 py-1 flex align-middle items-center gap-1 text-gray-600 text-sm rounded"
+                className="px-12 py-1 flex align-middle items-center gap-1 text-gray-600 text-sm rounded"
             >
                 <ArrowLeft className='h-4 w-4' /> Back to List
             </button>
-            <div className="border border-gray-300 rounded-xl mt-4 bg-gradient-to-bl from-gray-700 to-stone-900 text-white p-8 mx-6 mb-8">
+            <div className=" mt-4 px-4 mx-6 mb-4">
                     <div className="flex justify-between items-center">
-                        <h5 className="text-2xl font-bold">
+                      <div>
+                        <h5 className="text-3xl font-bold mb-2 font-sans">
                             {students?.name || 'N/A'} Component Details
                         </h5>
+                        <p className="text-sm text-gray-500 mb-4">Everyhting you need to know about Your Component</p>
                         <div className="flex gap-2">
-                            <p className="bg-red-600 px-4 py-1 rounded-sm">
+                            <p className="bg-red-100 text-red-800 rounded-sm text-sm px-2 py-0.5">
                                 Type - {students?.type || 'N/A'}
                             </p>
-                            <p className="bg-green-600 px-4 py-1 rounded-sm">
+                            <p className="bg-green-100 text-green-800 px-2 py-0.5 rounded-sm text-sm">
                                 Max Marks - {students?.max_marks || 'N/A'}
                             </p>
                         </div>
+                        </div>
+                        <Link href={`/exam-components/edit-component?componentID=${students?.id}`} className="bg-red-700 text-white py-1.5 px-8 rounded-sm shadow-lg">Edit Component</Link>
                     </div>
+                    <hr className=" border  border-spacing-y-0.5 mt-6"/>
                 </div>
+                
                 {students?.has_subcomponents?<div className="grid grid-cols-1 gap-4">
-  <div className="border border-gray-300 p-6 rounded-sm">
-    <h3 className="bg-black rounded-sm text-white text-center py-1.5">
+  <div className="border border-gray-300 p-6 rounded-sm mx-10 mt-4">
+    <h3 className="bg-red-50 rounded-sm text-red-800 font-bold text-center py-1.5">
       Components Details
     </h3>
     <div className="flex justify-between mt-4">
@@ -150,7 +160,7 @@ export default function Page(){
       <p>{students?.has_subcomponents ? "Yes" : "No"}</p>
     </div>
 
-    {!students?.has_subcomponents && (
+    {!students?.has_subcomponents &&  (
       <>
         <div className="flex justify-between mt-4">
           <p className="font-bold">Start Date</p>
@@ -181,7 +191,7 @@ export default function Page(){
     : "NA"}</p>
         </div>
         <button
-          onClick={() => handleOpenModal(students?.id)}
+          onClick={() => handleOpenModal(students?.id, students?.is_submission)}
           className="text-sm bg-red-600 w-full py-1.5 rounded-sm text-white shadow-sm hover:shadow-xl transition-shadow mt-6"
         >
           Add Component Dates & Data
@@ -231,10 +241,10 @@ export default function Page(){
       }) : "NA"}</p>
                 </div>
                 <button
-                  onClick={() => handleOpenModal(subcomp.id)}
+                  onClick={() => handleOpenModal(subcomp.id, subcomp?.is_submission)}
                   className="text-sm bg-red-600 w-full py-1.5 rounded-sm text-white shadow-sm hover:shadow-xl transition-shadow mt-6"
                 >
-                  Add Component Dates & Data
+                  Add Sub Component Dates & Data
                 </button>
               </div>
             ))
@@ -248,11 +258,13 @@ export default function Page(){
   </div>
 </div>: <div className="grid grid-cols-[1fr_2fr] gap-4">
   <div className="border border-gray-300 p-6 rounded-sm">
-    <h3 className="bg-black rounded-sm text-white text-center py-1.5">
+    <h3 className="bg-red-50 text-red-800 rounded-sm text-center py-1.5">
       Components Details
     </h3>
 
     {!students?.has_subcomponents && (
+  <>
+    {students?.is_submission === true && (
       <>
         <div className="flex justify-between mt-4">
           <p className="font-bold">Start Date</p>
@@ -270,11 +282,12 @@ export default function Page(){
               : "NA"}
           </p>
         </div>
+
         <div className="flex justify-between mt-4">
           <p className="font-bold">End Date</p>
           <p>
-            {students?.start_date
-              ? new Date(students.start_date).toLocaleString("en-IN", {
+            {students?.end_date
+              ? new Date(students.end_date).toLocaleString("en-IN", {
                   year: "numeric",
                   month: "long",
                   day: "numeric",
@@ -286,7 +299,17 @@ export default function Page(){
               : "NA"}
           </p>
         </div>
-        <div>
+      </>
+    )}
+    <div className="flex justify-between mt-4">
+          <p className="font-bold">Online Submission</p>
+          <p>
+            {students?.is_submission === true
+              ? "Yes"
+              : "No"}
+          </p>
+        </div>
+    <div>
           <h4 className="text-red-700 font-bold text-xl mt-4">Description</h4>
           <hr className="w-20 border border-b-2 mt-1 mb-4" />
           <div
@@ -295,18 +318,19 @@ export default function Page(){
             }}
           />
         </div>
-        <button
-          onClick={() => handleOpenModal(students?.id)}
-          className="text-sm bg-red-600 w-full py-1.5 rounded-sm text-white shadow-sm hover:shadow-xl transition-shadow mt-6"
-        >
-          Add Component Dates & Data
-        </button>
-      </>
-    )}
+    <button
+      onClick={() => handleOpenModal(students?.id, students?.is_submission)}
+      className="text-sm bg-red-600 w-full py-1.5 rounded-sm text-white shadow-sm hover:shadow-xl transition-shadow mt-6"
+    >
+      Add Component Data
+    </button>
+  </>
+)}
+
 
     <div className="border border-b-2 mt-4"></div>
   </div>
-  {students?.id ? <StudentAnswerSub id={students.id} subcomponent={false} /> : <p>Loading...</p>}
+  {students?.id ? <StudentAnswerSub id={students.id} subcomponent={false} is_submission={students?.is_submission} showmarks= {students?.is_marks_add_status} /> : <p>Loading...</p>}
 </div>}
 
         </div>

@@ -182,7 +182,7 @@ const today = new Date().toISOString().split("T")[0];
   {cls.is_cancel ? (
     <span className="bg-red-100 text-sm text-red-800 py-0.5 px-3 rounded-sm">Cancelled</span>
   ) : cls.is_complete ? (
-    <Link href={`attendance/class-attendance/${cls.id}`} className="bg-gray-100 text-sm text-gray-800 py-0.5 px-3 rounded-sm"><EyeIcon className="h-4 w-4"/></Link>
+    <Link href={`/attendance/class-attendance/${cls.id}`} className="bg-gray-100 text-sm text-gray-800 py-0.5 px-3 rounded-sm"><EyeIcon className="h-4 w-4"/></Link>
   ) : cls.is_ready_for_attendance ? (
     <span className="bg-violet-100 text-sm text-violet-800 py-0.5 px-3 rounded-sm">Attendance Not Marked</span>
   ) : (<span className="bg-green-100 text-sm text-green-800 py-0.5 px-3 rounded-sm">Scheduled</span>)}
