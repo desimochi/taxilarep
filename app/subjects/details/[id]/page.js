@@ -36,7 +36,7 @@ export default function Page() {
         fetchClassData()
     }, [id])
 
-    // Second API call based on students.id
+
     useEffect(() => {
         if (students?.id) {
             const fetchAdditionalData = async () => {
