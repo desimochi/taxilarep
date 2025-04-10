@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 const studentAllowedPaths = [
   "/student",
@@ -17,7 +17,7 @@ const facultyPaths = [
   "/profile/employee",
   "/faculty/mentorship-assign-student",
   "/students/details",
- "/see/events",
+  "/see/events",
   "/profile/student",
   "/profile/employee",
   "/student/attendance",
@@ -37,12 +37,13 @@ const facultyPaths = [
 export function middleware(req) {
   const { nextUrl, cookies } = req;
   const userCookie = cookies.get("user");
+  const urlPath = nextUrl.pathname;
 
-  console.log("Requested Path:", nextUrl.pathname);
+  console.log("Requested Path:", urlPath);
 
-  // If no user session, redirect to login
+  // ✅ No user session cookie — redirect to login
   if (!userCookie) {
-    if (nextUrl.pathname !== "/login") {
+    if (urlPath !== "/login") {
       return NextResponse.redirect(new URL("/login", req.url));
     }
     return NextResponse.next();
@@ -50,45 +51,50 @@ export function middleware(req) {
 
   try {
     const userData = JSON.parse(userCookie.value);
-    const urlPath = nextUrl.pathname;
+    console.log("User Data:", userData);
+
+    // ✅ Priority 1: Admin has full access, skip all other checks
     if (userData.role_name === "admin") {
       return NextResponse.next();
     }
 
+    // ✅ Priority 2: Teaching Faculty
     if (userData.employee_type === "Teaching") {
-      // Allow faculty to access only defined faculty paths
       const isAllowed = facultyPaths.some(
         (path) => urlPath === path || urlPath.startsWith(path + "/")
       );
       if (!isAllowed) {
         return NextResponse.redirect(new URL("/faculty", req.url));
       }
-    } else if (userData.user_type === "STUDENT") {
-      // ✅ Check if the path is allowed or starts with `/student/subject/details/`
-      const isAllowed = studentAllowedPaths.some((path) =>
-        urlPath.startsWith(path)
-      ) || urlPath.startsWith("/student/subject/details/");
+      return NextResponse.next();
+    }
 
+    // ✅ Priority 3: Student
+    if (userData.user_type === "STUDENT") {
+      const isAllowed =
+        studentAllowedPaths.some((path) => urlPath.startsWith(path)) ||
+        urlPath.startsWith("/student/subject/details/");
       console.log("Student Access Allowed:", isAllowed);
 
       if (!isAllowed) {
         return NextResponse.redirect(new URL("/unauthorized", req.url));
       }
-    } else {
-      // Handle non-teaching staff (Admins, other roles)
-      if (urlPath.startsWith("/faculty") || urlPath.startsWith("/student")) {
-        return NextResponse.redirect(new URL("/admin", req.url));
-      }
+      return NextResponse.next();
     }
+
+    // ✅ Default: Non-teaching or unknown — restrict faculty/student areas
+    if (urlPath.startsWith("/faculty") || urlPath.startsWith("/student")) {
+      return NextResponse.redirect(new URL("/admin", req.url));
+    }
+
   } catch (error) {
-    console.error("Error parsing user cookies:", error);
+    console.error("Error parsing user cookie:", error);
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
   return NextResponse.next();
 }
 
-// Apply middleware to relevant pages
 export const config = {
   matcher: [
     "/faculty/:path*",

@@ -68,7 +68,7 @@ export default function StudentPage() {
                 
                 <div className='flex justify-end gap-2'>
                     <Link href={`/profile/student/${id}`} className='border border-gray-300 px-4 rounded shadow-sm hover:shadow-xl transition-shadow text-sm'>Profile</Link>
-                    <Link href={`/student/attendance?stuId=${id}`} className='border border-gray-300 px-4 rounded shadow-sm hover:shadow-xl transition-shadow text-sm'>Attendance</Link>
+                    <Link href={`/student/see-attendance?stuId=${id}`} className='border border-gray-300 px-4 rounded shadow-sm hover:shadow-xl transition-shadow text-sm'>Attendance</Link>
                     <Link href={``} className='border border-gray-300 px-4 rounded shadow-sm hover:shadow-xl transition-shadow text-sm'>Marks</Link>
                 </div>
             </div>

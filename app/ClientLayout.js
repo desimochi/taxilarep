@@ -115,19 +115,22 @@ function Layout({ children }) {
                   </div>
                   <ul className="p-4 space-y-2">
                   <li className="flex justify-between items-center hover:bg-gray-100 dark:hover:bg-gray-800 p-2 rounded cursor-pointer">
+                  <Link href={`/profile/${state.role_name === "Student" ? "student" : "employee"}/${state.user_id}`} className="w-full">
                       <div className="flex gap-2 items-center">
                       <User2Icon className="w-5 h-5" />
-                      <Link href={`/profile/${state.role_name === "Student" ? "student" : "employee"}/${state.user_id}`}> Profile
-                      </Link>
+                      Profile
+                    
                       </div>
-                      <span className="text-xs text-gray-400">⌘P</span>
+                      
+                      </Link>
                     </li>
                     <li className="flex justify-between items-center hover:bg-gray-100 dark:hover:bg-gray-800 p-2 rounded cursor-pointer">
+                    <Link href={`/reset-password`} className="w-full">
                       <div className="flex gap-2 items-center">
                         <Settings2Icon className="w-5 h-5" />
-                        <Link href={`/reset-password`}>Account Setting</Link>
+                        Account Setting
                       </div>
-                      <span className="text-xs text-gray-400">⌘R</span>
+                      </Link>
                     </li>
                   </ul>
                   <div className="border-t dark:border-gray-700">

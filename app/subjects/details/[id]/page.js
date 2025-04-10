@@ -15,6 +15,7 @@ export default function Page() {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState(null)
     const [additionalData, setAdditionalData] = useState([])
+    const [isCEPresent, setIsCEPresent] = useState(false);
 
     // First API call to get student data
     useEffect(() => {
@@ -47,6 +48,8 @@ export default function Page() {
 
                     const data = await response.json()
                     setAdditionalData(data.data || [])
+                    const ceExists = data.data.some(item => item.name === 'CE');
+                    setIsCEPresent(ceExists);
                 } catch (err) {
                     setError(err.message)
                 }
@@ -55,7 +58,6 @@ export default function Page() {
             fetchAdditionalData()
         }
     }, [students?.id])
-
     return (
         <div className="bg-white min-h-screen">
         <section className="relative">
@@ -110,13 +112,23 @@ export default function Page() {
                         <div className="border border-gray-300 p-6 rounded-sm">
                             <h3 className="bg-red-50 text-red-800 font-bold rounded-sm text-center py-1.5">Components Details</h3>
                             {additionalData.map((comp) => (
-                                <div className="flex justify-between mt-4" key={comp.id}>
-                                    <p className="font-bold text-sm">{comp.name} - {comp.max_marks} Marks </p>
-                                    <Link href={`/subjects/details/component/${comp.id}`} className="text-xs bg-blue-100 text-blue-800 py-0.5 px-2 rounded-sm">
-                                        See Details
-                                    </Link>
-                                </div>
-                            ))}
+  <div className="flex justify-between mt-4" key={comp.id}>
+    <p className="font-bold text-sm">{comp.name} - {comp.max_marks} Marks</p>
+    
+    {comp.name === 'CE' && isCEPresent ? (
+      <span className="text-xs bg-gray-200 text-gray-500 py-0.5 px-2 rounded-sm cursor-not-allowed opacity-70">
+        See Details
+      </span>
+    ) : (
+      <Link
+        href={`/subjects/details/component/${comp.id}`}
+        className="text-xs bg-blue-100 text-blue-800 py-0.5 px-2 rounded-sm"
+      >
+        See Details
+      </Link>
+    )}
+  </div>
+))}
                             {students?.id && (
                                 <Link href={`/exam-components/component-manager/create-component?subID=${students.id}`}>
                                     <div className="text-center border border-red-800 text-red-800 py-1 mt-6 rounded-sm hover:bg-red-800 hover:text-white transition ease-linear duration-200 cursor-pointer">
