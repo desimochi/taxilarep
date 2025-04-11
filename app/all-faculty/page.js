@@ -15,7 +15,13 @@ export default function Page() {
     const [newLock, setNewLock] = useState();
     const [showPopup, setShowPopup] = useState(false);
     const [showPopups, setShowPopups] = useState(false);
-
+    const [searchQuery, setSearchQuery] = useState("");
+    const filteredExams = exams.filter((exam) => {
+        const name = `${exam.first_name} ${exam.last_name}`.toLowerCase();
+        const email = exam.user?.email?.toLowerCase() || "";
+        const query = searchQuery.toLowerCase();
+        return name.includes(query) || email.includes(query);
+      });
     useEffect(() => {
         const fetchExams = async () => {
             try {
@@ -110,8 +116,14 @@ export default function Page() {
                 <hr className=" border  border-spacing-y-0.5 mb-6"/>
                 <div className="mb-4 flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
-                    <input type="text" placeholder="Search Faculty..." className="border p-2 rounded-md w-[240px]" />
-                    <button className="border border-gray-200 hover:bg-gray-100 text-gray-700 px-8 py-2 rounded flex items-center gap-2"> <PlusCircleIcon className="h-4 w-4"/>Faculties</button>
+                    <input
+  type="text"
+  placeholder="Search Faculty..."
+  className="border p-2 rounded-md w-[240px]"
+  value={searchQuery}
+  onChange={(e) => setSearchQuery(e.target.value)}
+/>
+                    <Link href={`/add-faculty`} className="border border-gray-200 hover:bg-gray-100 text-gray-700 px-8 py-2 rounded flex items-center gap-2"> <PlusCircleIcon className="h-4 w-4"/>Faculties</Link>
                     </div>
                     <button className="border border-gray-200 font-bold hover:bg-gray-100 text-gray-900 px-8 py-2 rounded flex items-center gap-2">
                        <Settings2Icon className="h-4 w-4"/> View
@@ -131,7 +143,7 @@ export default function Page() {
                             </tr>
                         </thead>
                         <tbody>
-                        {exams.map((exam, index) => (
+                        {filteredExams.map((exam, index) => (
                                     <tr key={index} className="border-b text-sm">
                                         <td className="p-3">{index+1}</td>
                                         <td className="p-3">{`${exam.first_name} ${exam.last_name}`}</td>

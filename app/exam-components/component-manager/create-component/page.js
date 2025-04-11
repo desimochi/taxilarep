@@ -3,6 +3,8 @@ import { authFetch } from "@/app/lib/fetchWithAuth";
 import Toast from "@/components/Toast";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import introJs from 'intro.js';
+import 'intro.js/minified/introjs.min.css';
 
 export default function CreateComponents() {
     const [subjects, setSubjects] = useState([]);
@@ -25,6 +27,26 @@ export default function CreateComponents() {
     });
 
     const token = localStorage.getItem("accessToken");
+    useEffect(() => {
+        introJs()
+          .setOptions({
+            steps: [
+              {
+                element: '#step1',
+                intro: "If you want a Performance Score component, then name it exactly 'Performance Score'."
+              }
+            ],
+            showProgress: true,
+            hidePrev: true,
+            nextLabel: 'Next →',
+            prevLabel: '← Back',
+            doneLabel: 'Finish',
+          })
+          .start();
+      }, []);
+     
+    
+
 
     useEffect(() => {
         const fetchSubjects = async () => {
@@ -106,6 +128,7 @@ export default function CreateComponents() {
 
     return (
         <div className="flex justify-center items-center w-full rounded-sm py-12">
+         
             {showToast && <Toast message={message}/>}
             <div className="border border-gray-300 shadow-sm hover:shadow-md rounded-sm">
                 <h4 className="px-60 py-4 bg-gradient-to-bl font-bold from-gray-700 to-stone-900 text-white">
@@ -135,6 +158,7 @@ export default function CreateComponents() {
                                 name="type"
                                 onChange={handleChange}
                                 value={formData.type}
+
                                 className="bg-white border border-gray-300 mb-3 text-gray-700 text-sm rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                             >
                                 <option value="EXTERNAL">External</option>
@@ -149,6 +173,7 @@ export default function CreateComponents() {
                                 onChange={handleChange}
                                 value={formData.name}
                                 placeholder="Enter Component Name..."
+                                id="step1"
                                 className="bg-white border border-gray-300 mb-3 text-gray-700 text-sm rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                             />
                         </div>

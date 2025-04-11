@@ -71,7 +71,7 @@ function Layout({ children }) {
   return (
     <div className={`${roboto.variable} ${robotoMono.variable}`}>
       <main className="flex">
-        <Sidebar collapsed={collapsed} toggleSidebar={toggleSidebar} toggleMenu={toggleMenu} openMenus={openMenus} role={state.role_name} type={state.employee_type} />
+        <Sidebar collapsed={collapsed} toggleSidebar={toggleSidebar} toggleMenu={toggleMenu} openMenus={openMenus} role={state.role_id} type={state.employee_type} />
         
         <aside className="w-full bg-white">
           <div className="w-full h-[87px] p-8 flex items-center justify-between bg-white">

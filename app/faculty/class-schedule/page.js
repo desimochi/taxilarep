@@ -7,6 +7,7 @@ import { useContext } from "react";
 import FullWidthLoader from "@/components/Loaader";
 import { BanIcon, Calendar1Icon, PlusCircleIcon, SearchIcon, Settings2Icon, SquareUserRoundIcon } from "lucide-react";
 import Toast from "@/components/Toast";
+import Link from "next/link";
 export default function Page(){
     const [loading, setLoading] = useState(false);
     const [timeerror, setTimeError] = useState("")
@@ -296,10 +297,10 @@ const confirmReschdule = async () => {
   ) : cls.is_complete ? (
     <span className="bg-gray-100 text-sm text-gray-800 py-0.5 px-3 rounded-sm">Completed</span>
   ) : cls.is_ready_for_attendance ? (
-    <span className="bg-violet-100 text-sm text-violet-800 py-0.5 px-3 rounded-sm">Mark Attendance</span>
+    <Link href={`/attendance/class-attendance/${cls.id}`} className="bg-violet-100 text-sm text-violet-800 py-0.5 px-3 rounded-sm">Mark Attendance</Link>
   ) : (<span className="bg-green-100 text-sm text-green-800 py-0.5 px-3 rounded-sm">Scheduled</span>)}
 </td>
-            <td className="px-6 py-3 flex gap-3 items-center justify-center">{!cls.is_cancel && <button className="bg-green-100 text-green-800 rounded-sm py-1 px-2" onClick={() => handleCancelClick(cls.id, "cancel")}><BanIcon className="h-5 w-5 cursor-pointer"/></button>} <button className="bg-red-100 text-red-800 rounded-sm py-1 px-2">{!cls.is_complete? <Calendar1Icon className="h-5 w-5 cursor-pointer" onClick={() => handleCancelClick(cls.id, "reshed")}/> : <SquareUserRoundIcon  className="h-5 w-5"/>}</button></td>
+            <td className="px-6 py-3 flex gap-3 items-center justify-center">{!cls.is_cancel && <button className="bg-green-100 text-green-800 rounded-sm py-1 px-2" onClick={() => handleCancelClick(cls.id, "cancel")}><BanIcon className="h-5 w-5 cursor-pointer"/></button>} <button className="bg-red-100 text-red-800 rounded-sm py-1 px-2">{!cls.is_complete && !cls.is_cancel && !cls.is_ready_for_attendance? <Calendar1Icon className="h-5 w-5 cursor-pointer" onClick={() => handleCancelClick(cls.id, "reshed")}/> : <SquareUserRoundIcon  className="h-5 w-5"/>}</button></td>
         </tr>
     ))
 ) : (

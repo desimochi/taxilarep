@@ -53,7 +53,7 @@ export default function Page() {
                     if (!compResponse.ok) throw new Error("Failed to fetch CE data");
     
                     const compData = await compResponse.json();
-                    const ceExists = compData.data.some(item => item.name === 'CE');
+                    const ceExists = compData.data.some(item => item.name === 'Performance Score');
                     setIsCEPresent(ceExists);
                 }
     

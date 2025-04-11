@@ -22,36 +22,46 @@ import { lastDayOfDecade } from "date-fns";
 const Sidebar = ({collapsed, toggleSidebar, toggleMenu, openMenus, role, type  }) => {
   const pathname = usePathname();
   const getMenuByRole = (role, type) => {
-    switch (role) {
-        case "Super Admin":
-            return menuItems;
-        case "admin":
-         if (type === "Teaching") {
-    const combined = [...FacmenuItems, ...menuItems];
-    const uniqueByName = combined.filter(
-      (item, index, self) =>
-        index === self.findIndex((t) => t.label === item.label)
-    );
-    return uniqueByName;
-  } else {
+    const roles = Array.isArray(role) ? role.map(String) : [String(role)]; // Always treat as array of strings
+  
+    switch (true) {
+      case roles.includes("1"): // Super Admin
+        return menuItems;
+  
+      case roles.includes("2"): // Admin
+        if (type === "Teaching") {
+          const combined = [...FacmenuItems, ...menuItems];
+          const uniqueByName = combined.filter(
+            (item, index, self) =>
+              index === self.findIndex((t) => t.label === item.label)
+          );
+          return uniqueByName;
+        } else {
           return menuItems;
         }
-            case "Examination":
-              return menuItems;
-        case "Faculty":
-            return FacmenuItems;
-        case "Student":
-              return stumenuItems;
-          case "IT Manager":
-            if (type === "Teaching") {
-              return [...FacmenuItems, ...ITManager]; 
-          } else {
-            return menuItems;
-          }
-        default:
-            return []; // Return an empty array if the role is not recognized
+  
+      case roles.includes("6"): // Examination
+        return menuItems;
+  
+      case roles.includes("4"): // Faculty
+        return FacmenuItems;
+  
+      case roles.includes("3"): // Student
+        return stumenuItems;
+  
+      case roles.includes("6"): // IT Manager
+        if (type === "Teaching") {
+          return [...FacmenuItems, ...ITManager];
+        } else {
+          return menuItems;
+        }
+  
+      default:
+        return [];
     }
-};
+  };
+  
+  
 const selectedMenu = getMenuByRole(role, type);
   return (
     <div className={`h-screen bg-white shadow-md border-r-2 p-4 transition-all ${collapsed ? "w-24" : "w-80"}`}>

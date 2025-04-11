@@ -73,3 +73,48 @@ body {
 .shake {
   animation: shake 0.3s ease-in-out;
 }
+
+/* --- Custom Intro.js Tooltip Design --- */
+.introjs-tooltip {
+  background: white !important;
+  color: #1f2937 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
+  padding: 20px !important;
+  max-width: 300px;
+  font-family: 'Inter', sans-serif;
+}
+
+.introjs-tooltip-title {
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  margin-bottom: 10px !important;
+  color: #111827 !important;
+}
+
+.introjs-tooltiptext {
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+  color: #374151 !important;
+}
+
+.introjs-button {
+  background-color: #aa1032 !important;
+  border: none !important;
+  color: white !important;
+  font-weight: 400 !important;
+  padding: 8px 14px !important;
+  border-radius: 6px !important;
+  transition: all 0.3s ease;
+}
+
+.introjs-button:hover {
+  background-color: #df1652 !important;
+}
+
+.introjs-skipbutton {
+  color: #6b7280 !important;
+  background: transparent !important;
+  font-size: 13px;
+}
+
