@@ -12,8 +12,7 @@ export default function Atten15Day({id}){
       try {
         setLoading(true);
         const [ response1] = await Promise.all([
-            await authFetch(`attendance-summary/${id}/${days}`)
-
+            await authFetch(`attendance-summary/${id}/${days}`),
         ])
         if ( !response1.ok) throw new Error("Failed to fethc the data");
         const data2 = await response1.json()
@@ -41,7 +40,7 @@ export default function Atten15Day({id}){
                     <option value="15">15</option>
                 </select>
                 </div>
-               {loading? <FullWidthLoader/> :     <table className="w-full text-sm text-left text-gray-800 dark:text-gray-400 mt-4">
+               {loading? <FullWidthLoader/> :     <table className="w-full text-sm text-left text-gray-800 dark:text-gray-400 mt-4 max-h-96 overflow-y-auto">
                             <thead className="text-xs text-gray-100 uppercase bg-black dark:bg-gray-700 dark:text-gray-400">
               <tr>
                 <th scope="col" className="px-6 py-3">Date</th>
@@ -69,7 +68,7 @@ export default function Atten15Day({id}){
                         : "bg-red-200"
                     }`}
                   >
-                    {status}
+                    {status === "Class Not Scheduled"? "CNS" : `${status}`}
                   </td>
                 );
               })}

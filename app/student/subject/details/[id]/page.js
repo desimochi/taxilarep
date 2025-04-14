@@ -18,6 +18,7 @@ export default function Page() {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState(null)
     const [additionalData, setAdditionalData] = useState([])
+     const [isCEPresent, setIsCEPresent] = useState(false);
 
     // First API call to get student data
     useEffect(() => {
@@ -54,6 +55,8 @@ export default function Page() {
 
                     const data = await response.json()
                     setAdditionalData(data.data || [])
+                    const ceExists = data.data.some(item => item.name === 'Performance Score');
+                    setIsCEPresent(ceExists);
                 } catch (err) {
                     setError(err.message)
                 }
@@ -112,16 +115,23 @@ export default function Page() {
                         <div className="border border-gray-300 p-6 rounded-sm">
                             <h3 className="bg-black rounded-sm text-white text-center py-1.5">Components Details</h3>
                             {additionalData.map((comp) => (
-                                <div className="flex justify-between mt-4" key={comp.id}>
-                                    <p className="font-bold">{comp.name} - {comp.max_marks} Marks </p>
-                                    <Link href={`/student/subject/component/${comp.id}`} className="text-xs p-1 rounded-sm text-white bg-blue-500">
-                                        View
-                                    </Link>
-                                </div>
-                            ))}
-                        </div>
-                        <div className="border border-gray-300 p-6 rounded-sm mt-3">
-                            <h3 className="bg-black rounded-sm text-white text-center py-1.5">Upcoming Classes</h3>
+  <div className="flex justify-between mt-4" key={comp.id}>
+    <p className="font-bold text-sm">{comp.name} - {comp.max_marks} Marks</p>
+    
+    {comp.name === 'Performance Score' && isCEPresent ? (
+      <span className="text-xs bg-gray-200 text-gray-500 py-0.5 px-2 rounded-sm cursor-not-allowed opacity-70">
+        See Details
+      </span>
+    ) : (
+      <Link
+        href={`/student/subject/component/${comp.id}`}
+        className="text-xs bg-blue-100 text-blue-800 py-0.5 px-2 rounded-sm"
+      >
+        See Details
+      </Link>
+    )}
+  </div>
+))}
                         </div>
                     </div>
                     <div className="w-3/4">

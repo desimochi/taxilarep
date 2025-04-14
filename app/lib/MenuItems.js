@@ -7,7 +7,7 @@ import {
     ChevronLeftIcon,
     ChevronRightIcon,
   } from "@heroicons/react/24/outline";
-  import { AlignLeftIcon, AlignRightIcon, BookCheckIcon, NewspaperIcon, PenSquareIcon } from "lucide-react";
+  import { AlignLeftIcon, AlignRightIcon, BookCheckIcon, NewspaperIcon, PenSquareIcon, UserCircle } from "lucide-react";
 export const menuItems = [
     { label: "Dashboard", icon: <HomeIcon className="h-5 w-5" />, path: "/admin" },
     {
@@ -81,6 +81,16 @@ export const menuItems = [
         { label: "Add Faculty", path: "/add-faculty" },
         { label: "All Faculty", path: "/all-faculty" },
         { label: "Assign Subject", path: "/course/subject-manager" },
+      ],
+    },
+    {
+      label: "Staff",
+      icon: <UserCircle className="h-5 w-5" />,
+      subMenu: [
+        { label: "Department", path: "/admin/department" },
+        { label: "Salutation", path: "/admin/salutation" },
+        { label: "Role Management", path: "/admin/role-manager" },
+        { label: "Designation", path: "/admin/designation" },
       ],
     },
     { label: "Events", icon: <CalendarIcon className="h-5 w-5" />, path: "/events" },

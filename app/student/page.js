@@ -7,9 +7,11 @@ import Link from "next/link"
 import { useState, useEffect, useContext } from "react";
 import { GlobalContext } from "@/components/GlobalContext";
 import { set } from "date-fns";
+import { EyeIcon } from "lucide-react";
 export default function Page(){
     const [sclass, setsclass] = useState([]);
     const [atten, setatten] = useState([])
+    const [classData, setClassData] = useState([])
     const [studata, setStudata] = useState({})
       const [loading, setLoading] = useState(false);
       const [error, setError] = useState(false);
@@ -20,10 +22,11 @@ export default function Page(){
         const fetchclassData = async () => {
           try {
             setLoading(true);
-            const [response, response1, response2] = await Promise.all([
+            const [response, response1, response2, response3] = await Promise.all([
                 await authFetch(`subject-student-wise/${state.user_id}`),
                 await authFetch(`attendance-summary/${state.user_id}/${days}`),
-                await authFetch(`dashboard-student-data/${state.user_id}`)
+                await authFetch(`dashboard-student-data/${state.user_id}`),
+                await authFetch(`student-wise-class/${state.user_id}`)
     
             ])
             if (!response.ok && !response1.ok && !response2.ok) throw new Error("Failed to fethc the data");
@@ -31,10 +34,12 @@ export default function Page(){
             const data = await response.json();
             const data2 = await response1.json()
             const data3 = await response2.json()
+            const data4 = await response3.json()
     
             setsclass(data.data);
             setatten(data2.data)
             setStudata(data3.data)
+            setClassData(data4.data)
           } catch (err) {
             setError(err.message);
           } finally {
@@ -58,7 +63,7 @@ export default function Page(){
                             <span className="bg-red-600 bg-opacity-10 border border-gray-300  w-full text-center py-4 rounded-sm shadow-sm hover:shadow-xl transition-shadow"><p className="font-bold">{studata.course?.name}</p> <p className="text-sm text-gray-600">Course</p></span>
                             <span className="bg-red-600 bg-opacity-10  border border-gray-300 w-full text-center py-4 rounded-sm shadow-sm hover:shadow-xl transition-shadow"><p className="font-bold">{studata.batch?.name}</p> <p className="text-sm text-gray-600">Batch</p></span>
                             <span className="bg-red-600 bg-opacity-10  border border-gray-300 w-full text-center py-4 rounded-sm shadow-sm hover:shadow-xl transition-shadow"><p className="font-bold">{studata.enrollment_number}</p> <p className="text-sm text-gray-600">Enrollment Number</p></span>
-                            <span className="bg-red-600 bg-opacity-10  border border-gray-300 w-full text-center py-4 rounded-sm shadow-sm hover:shadow-xl transition-shadow"><p className="font-bold">{studata.mentor_name}</p> <p className="text-sm text-gray-600">Attendance</p></span>
+                            <span className="bg-red-600 bg-opacity-10  border border-gray-300 w-full text-center py-4 rounded-sm shadow-sm hover:shadow-xl transition-shadow"><p className="font-bold">{studata.mentor_name}</p> <p className="text-sm text-gray-600">Mentor</p></span>
                             <span className="bg-red-600 bg-opacity-10  border border-gray-300 w-full text-center py-4 rounded-sm shadow-sm hover:shadow-xl transition-shadow"><p className="font-bold">{studata.upcoming_class}</p> <p className="text-sm text-gray-600">Upcoming Classes in 7 Days</p></span>
                             </div>
                             <div className="mt-4">
@@ -80,7 +85,7 @@ export default function Page(){
                         <td className="px-6 py-4">{item.subject.name}</td>
                       <td className="px-6 py-4">{item.total_classes}</td>
                       <td className="px-6 py-4">{item.classes_completed}</td>
-                      <td className="px-6 py-4"><Link href ={``}>See Details</Link></td>
+                      <td className="px-6 py-4"><Link href ={`/student/subject/details/${item.id}`} className="  text-green-800 rounded-sm"><EyeIcon className="h-4 w-4"/></Link></td>
                     </tr>
                     ))
                     
@@ -98,10 +103,22 @@ export default function Page(){
                         <div className="w-1/4">
                         <div className="border border-gray-300 p-2">
                             <h3 className="font-bold px-6 py-2 bg-black text-white rounded-sm text-center">Upcoming Class</h3>
-                            <ul>
-                                <li className="mt-3">Markering - 28/03/2025 at 10:30 AM</li>
-                                <hr className="border border-b-2 mt-2 mb-3"/>
-                            </ul>
+                           {loading? <FullWidthLoader/> : <ul className="max-h-96 overflow-y-auto">
+  {classData.length > 0 ? (
+    <>
+      {classData.map((item, index) => (
+        <div key={item.id || index}>
+          <li className="mt-3 text-sm text-center">
+            Markering - 28/03/2025 at 10:30 AM
+          </li>
+          <hr className="border border-b-2 mt-2 mb-3" />
+        </div>
+      ))}
+    </>
+  ) : (
+    <p className="text-center text-sm mt-2">No Upcoming Classes</p>
+  )}
+</ul>}
                         </div>
                         </div>
                     </div>

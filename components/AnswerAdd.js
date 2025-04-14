@@ -146,13 +146,11 @@ export default function AnswerAdd({ id,setEditDetails, subcomponent, userID  }) 
     const comp = subcomponent ? "sub_component" : "component";
 
 const data = {
-  [comp]: id, // Dynamically set key
-  student: userID,
   answers_file: editor.getHTML()
 };
 
     try {
-      const response = await authFetch(`${url}`, {
+      const response = await authFetch(`${url}/${userID}/${id}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
