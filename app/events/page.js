@@ -221,12 +221,14 @@ export default function Page(){
                     </div>
                   </div>
                   <div className="flex items-center rounded-md p-1 bg-red-50 gap-px">
-                  <button
-  className="py-2.5 px-5 rounded-lg bg-red-50 text-red-600 text-sm font-medium transition-all duration-300 hover:bg-red-600 hover:text-white"
-  onClick={() => setShowPopup(true)}
->
-  Add New Event
-</button>
+                  {state.role_name !== 'Student' && (
+  <button
+    className="py-2.5 px-5 rounded-lg bg-red-50 text-red-600 text-sm font-medium transition-all duration-300 hover:bg-red-600 hover:text-white"
+    onClick={() => setShowPopup(true)}
+  >
+    Add New Event
+  </button>
+)}
                   </div>
                 </div>
                 <div className="border border-red-200 rounded-xl">

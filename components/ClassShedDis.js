@@ -40,8 +40,14 @@ const [formData, setFormData] = useState({
 
   const fetchAllData = async (page) => {
     setLoading(true);
+    const params = new URLSearchParams();
+    if (selectedTerm) params.append('mapping__term', selectedTerm);
+    if (selectedSubject) params.append('mapping', selectedSubject);
+    if (s_date) params.append('s_date', s_date);
+    if (e_date) params.append('e_date', e_date);
+    if (currentPage) params.append('page', currentPage);
     try {
-      const response = await authFetch(`class-schedule-viewset?page=${page}`);
+      const response = await authFetch(`class-schedule-viewset?${params.toString()}`);
       const data = await response.json();
 
       if (data && data.data) {
@@ -96,6 +102,7 @@ const handleSubmit = async () => {
         if (selectedSubject) params.append('mapping', selectedSubject);
         if (s_date) params.append('s_date', s_date);
         if (e_date) params.append('e_date', e_date);
+        if (currentPage) params.append('page', currentPage);
 
         const url = `class-schedule-viewset?${params.toString()}`;
 

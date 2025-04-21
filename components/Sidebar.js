@@ -64,7 +64,7 @@ const Sidebar = ({collapsed, toggleSidebar, toggleMenu, openMenus, role, type  }
   
 const selectedMenu = getMenuByRole(role, type);
   return (
-    <div className={`h-screen bg-white shadow-md border-r-2 p-4 transition-all ${collapsed ? "w-24" : "w-80"}`}>
+    <div className={`h-fit bg-white border-r-2 p-4 transition-all ${collapsed ? "w-24" : "w-80"}`}>
       <div className="flex items-center justify-between h-[70px] p-2">
         {!collapsed && <Link href={`/`}> <Image src={logo} width={140} height={60} alt="Taxila Logo" /></Link>}
         <button onClick={toggleSidebar} className="p-1 rounded-md hover:bg-gray-200">

@@ -7,7 +7,7 @@ import {
     ChevronLeftIcon,
     ChevronRightIcon,
   } from "@heroicons/react/24/outline";
-  import { AlignLeftIcon, AlignRightIcon, BookCheckIcon, NewspaperIcon, PenSquareIcon, UserCircle } from "lucide-react";
+  import { AlignLeftIcon, AlignRightIcon, BookCheckIcon, BookCopyIcon, DockIcon, FileAxis3D, NewspaperIcon, PaperclipIcon, PenBox, PenSquareIcon, UserCircle, UserRoundCheck } from "lucide-react";
 export const menuItems = [
     { label: "Dashboard", icon: <HomeIcon className="h-5 w-5" />, path: "/admin" },
     {
@@ -55,15 +55,14 @@ export const menuItems = [
           //   { label: "See Result", path: "/resit/result" },
           // ]},
           {label : "Component Manager", path: "/exam-components/component-manager"},
+          {label : "Admit Card", path: "/exam-components/admitcard"},
       ],
     },
    
     {
       label: "Imp. News & Notice",
       icon: <NewspaperIcon className="h-5 w-5" />,
-      subMenu: [
-        { label: "Noticeboard", path: "/notice/noticeboard" },
-      ],
+      path: "/notice/noticeboard" 
     },
     {
       label: "Students",
@@ -112,13 +111,11 @@ export const menuItems = [
       ],
     },
    
-      {
-        label: "Imp. News & Notice",
-        icon: <NewspaperIcon className="h-5 w-5" />,
-        subMenu: [
-          { label: "Noticeboard", path: "/notice/noticeboard" },
-        ],
-      },
+    {
+      label: "Imp. News & Notice",
+      icon: <NewspaperIcon className="h-5 w-5" />,
+      path: "/notice/noticeboard" 
+    },
     { label: "Mentorship Student", icon: <NewspaperIcon className="h-5 w-5" />, path: "/faculty/mentorship-assign-student" },
     { label: "Events", icon: <CalendarIcon className="h-5 w-5" />, path: "/events" },
   ];
@@ -138,9 +135,10 @@ export const menuItems = [
   export const stumenuItems = [
     { label: "Dashboard", icon: <HomeIcon className="h-5 w-5" />, path: "/student" },
     { label: "Subject", icon: <BookCheckIcon className="h-5 w-5" />, path: "/student/subject" },
-    { label: "Attendance", icon: <PenSquareIcon className="h-5 w-5" />, path: "/student/attendance" },
-    { label: "Class Schedule", icon: <NewspaperIcon className="h-5 w-5" />, path: "/student/class-schedule" },
-    { label: "Exam Schedule", icon: <NewspaperIcon className="h-5 w-5" />, path: "/student/exam-schedule" },
+    { label: "Attendance", icon: <UserRoundCheck className="h-5 w-5" />, path: "/student/attendance" },
+    { label: "Class Schedule", icon: <BookCopyIcon className="h-5 w-5" />, path: "/student/class-schedule" },
+    { label: "Exam Schedule", icon: <PenBox className="h-5 w-5" />, path: "/student/exam-schedule" },
+    { label: "Admit Card", icon: <FileAxis3D className="h-5 w-5" />, path: "/student/admit-card" },
     { label: "Notice", icon: <NewspaperIcon className="h-5 w-5" />, path: "/notice/noticeboard" },
     { label: "Events", icon: <CalendarIcon className="h-5 w-5" />, path: "/events" },
   ];

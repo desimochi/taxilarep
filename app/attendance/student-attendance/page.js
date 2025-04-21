@@ -32,7 +32,13 @@ useEffect(() => {
     const fetchclassData = async (page) => {
       try {
         setLoading(true);
-        const response = await authFetch(`class-schedule-viewset?page=${page}`);
+        const params = new URLSearchParams();
+        if (selectedTerm) params.append('mapping__term', selectedTerm);
+        if (selectedSubject) params.append('mapping', selectedSubject);
+        if (s_date) params.append('s_date', s_date);
+        if (e_date) params.append('e_date', e_date);
+        if (currentPage) params.append('page', currentPage);
+        const response = await authFetch(`class-schedule-viewset?${params.toString()}`);
         if (!response.ok ) throw new Error("Failed to Fetch the data");
 
         const data = await response.json();
@@ -82,10 +88,11 @@ const handleSubmit = async () => {
 
         // Build dynamic query
         const params = new URLSearchParams();
-        if (selectedTerm) params.append('mapping__term', selectedTerm);
-        if (selectedSubject) params.append('mapping', selectedSubject);
-        if (s_date) params.append('s_date', s_date);
-        if (e_date) params.append('e_date', e_date);
+    if (selectedTerm) params.append('mapping__term', selectedTerm);
+    if (selectedSubject) params.append('mapping', selectedSubject);
+    if (s_date) params.append('s_date', s_date);
+    if (e_date) params.append('e_date', e_date);
+    if (currentPage) params.append('page', currentPage);
 
         const url = `class-schedule-viewset?${params.toString()}`;
 

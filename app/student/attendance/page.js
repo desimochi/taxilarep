@@ -102,6 +102,8 @@ const handleSubmit = async () => {
 
     const uniqueDates = [...new Set(atten.flatMap((item) => item.attendance.map((att) => att.date)))];
   const subjects = atten.map((item) => item.subject_mapping.subject.name);
+  const percntage = atten.map((item) => item.attended_percentage);
+ 
     return(
         <div className="py-4 px-5">
          
@@ -147,7 +149,7 @@ const handleSubmit = async () => {
               <tr>
                 <th scope="col" className="px-6 py-3">Date</th>
             {subjects.map((subject, index) => (
-              <th key={index} scope="col" className="px-6 py-3">{subject}</th>
+              <th key={index} scope="col" className="px-6 py-3">{subject} - {percntage[index]}</th>
             ))}
               </tr>
             </thead>

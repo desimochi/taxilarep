@@ -41,7 +41,7 @@ export default function Atten15Day({id}){
                 </select>
                 </div>
                {loading? <FullWidthLoader/> :     <table className="w-full text-sm text-left text-gray-800 dark:text-gray-400 mt-4 max-h-96 overflow-y-auto">
-                            <thead className="text-xs text-gray-100 uppercase bg-black dark:bg-gray-700 dark:text-gray-400">
+                            <thead className="text-xs text-red-800 uppercase bg-red-50 dark:bg-gray-700 dark:text-gray-400">
               <tr>
                 <th scope="col" className="px-6 py-3">Date</th>
             {subjects.map((subject, index) => (

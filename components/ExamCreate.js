@@ -1,17 +1,18 @@
 import { authFetch } from "@/app/lib/fetchWithAuth";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import Toast from "./Toast";
 
 export default function ExamCreate(){
     const [subjects, setSubjects] = useState([]);
-    const[components, setComponents] = useState([])
     const [filteredSubjects, setFilteredSubjects] = useState([]);
-    const [filteredComponents, setFilteredComponents] = useState([]);
     const[enable, setenable] = useState(true)
     const router = useRouter();
-    const [result, setResult] = useState([])
+    const [message, setMessage] = useState("")
+    const [showtoast, setShowToast] = useState(false)
+    const [examInputs, setExamInputs] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(false);
+    const [error, setError] = useState("");
     const [selectedValues, setSelectedValues] = useState({
         course: "",
         batch: "",
@@ -44,7 +45,6 @@ export default function ExamCreate(){
                 }
 
                 const data = await response.json();
-                console.log(data);
                 setSubjects(data.data); 
             } catch (err) {
                 setError(err.message);
@@ -52,39 +52,16 @@ export default function ExamCreate(){
                 setLoading(false);
             }
         };
-        const fetchComponets = async () => {
-            console.log(token);
-
-            if (!token) {
-                setError("No token found. Please log in.");
-                setLoading(false);
-                return;
-            }
-
-            try {
-                const response = await authFetch(`component-viewset`, {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Error: ${response.status} - ${response.statusText}`);
-                }
-
-                const data = await response.json();
-                console.log(data);
-                setComponents(data.data); 
-            } catch (err) {
-                setError(err.message);
-            } finally {
-                setLoading(false);
-            }
-        };
+      
         fetchSubjects();
-        fetchComponets()
     }, [token]);
+    function updateExamInput(index, updatedValues) {
+      setExamInputs((prev) => {
+        const updated = [...prev];
+        updated[index] = { ...updated[index], ...updatedValues };
+        return updated;
+      });
+    }
     function handleChange(e) {
         const { name, value } = e.target;
         const selectedItem = filteredSubjects.find(item => item.subject.id.toString() === value);
@@ -96,15 +73,15 @@ export default function ExamCreate(){
         setSubjectMappingId(selectedId)
     }
     useEffect(() => {
-        const { course, batch, term } = selectedValues;
+        const { batch, term } = selectedValues;
       
-        if (course && batch && term) {
+        if (batch && term ) {
           const fetchSubjects = async () => {
             setLoading(true);
             setError(null);
             try {
               const response = await authFetch(
-                `subject-mapping-filter?course=${course}&batch=${batch}&term=${term}`
+                `subject-exam-schedule-bulk?batch_id=${batch}&term_id=${term}`
               );
       
               if (!response.ok) {
@@ -125,96 +102,64 @@ export default function ExamCreate(){
           setFilteredSubjects([]);
         }
       }, [selectedValues]);
-    useEffect(() => {
-        const { course, batch, term, subject } = selectedValues;
-      
-        if (course && batch && term && subject) {
-          const fetchSubjects = async () => {
-            setLoading(true);
-            setError(null);
-            try {
-              const response = await authFetch(
-                `subject-mapping-list?course=${course}&batch=${batch}&term=${term}&subject=${subject}`
-              );
-      
-              if (!response.ok) {
-                throw new Error('Failed to fetch subjects');
-              }
-      
-              const data = await response.json();
-              setFilteredSubjects(data.data);  
-            } catch (err) {
-              setError(err.message);
-            } finally {
-              setLoading(false);
-            }
-          };
-      
-          fetchSubjects();
-        } else {
-          setFilteredSubjects([]);
-        }
-      }, [selectedValues]);
-    useEffect(() => {
-        if (subjectMappingId) {
-            const filtered = components.filter(
-                (component) => component.subject_mapping === subjectMappingId
-            );
-            setFilteredComponents(filtered);
-        } else {
-            setFilteredComponents([]);
-        }
-    }, [subjectMappingId, components]);
+
 
     async function handleSubmit(e){
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        const newData = {
-            component: formData.get("component"),
-            start_time: formData.get("start_time"),
-            end_time: formData.get("end_time"),
-            date: formData.get("date"),
-          };
+      e.preventDefault();
+
+      const validData = examInputs.filter(
+        (input) =>
+          input?.component_id &&
+          input?.date &&
+          input?.start_time &&
+          input?.duration
+      );
+    
+      // if (validData.length !== filteredSubjects.filter(item => item.component !== null).length) {
+      //   alert("Please fill all fields for all valid subjects.");
+      //   return;
+      // }
+    
+      const payload = {
+        exam_data: validData,
+      };
           try {
-            const response = await authFetch(`exam-viewset`, {
+            const response = await authFetch(`subject-exam-schedule-bulk`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
               },
-              body: JSON.stringify(newData),
+              body: JSON.stringify(payload),
             });
         
             const data = await response.json();
-            console.log("Success:", data);
-        
-            if (response.ok) {
-                alert("Exam Added successfully")
-            } else {
-              console.error("Course creation failed:", data);
+            if(!response.ok){
+              throw new Error(data.message)
             }
+            setMessage("Exam Added Successfully")
+            setShowToast(true)
+            setTimeout(() => {
+              setMessage("")
+              setShowToast(false)
+              window.location.reload()
+            }, 2000);
           } catch (error) {
-            console.error("Error:", error);
+            setError(error.message)
           }
     }
+    const isAnyNull = filteredSubjects.some(item => item.component === null);
+
     return(
-        <div className=" w-full rounded-sm py-12">
+        <div className=" w-full rounded-sm py-12 max-w-4xl mx-auto"> 
+        {showtoast && <Toast message={message}/>}
             <div className="border border-gray-300 shadow-sm hover:shadow-md rounded-sm">
-                <h4 className="px-10 py-4 bg-gradient-to-bl font-bold from-gray-700 to-stone-900 text-white">Create Exam 
+                <h4 className="px-10 py-4 bg-red-50 text-red-800 text-center font-bold">Create Exam Schedule
 
                 </h4>
-                <form className="py-5 px-5" onSubmit={handleSubmit}>
-                    <div className="flex gap-2">
-                        <div className="w-1/4">
-                        <label className="font-bold">Course</label>
-                        <select name="course" onChange={handleChange} className="bg-white border border-gray-300 mb-3 text-gray-700 text-sm rounded-sm focus:ring-red-600 focus:border-blue-500 block w-full p-2.5">
-    <option value="">---- Select Course ----</option>
-    {[...new Map(subjects.flatMap(item => item.course.map(course => [course.id, course]))).values()]
-    .map((course) => (
-        <option key={course.id} value={course.id}>{course.name}</option>
-    ))}
-</select>
-                        </div>
-                        <div className="w-1/4">
+                {error && <p className="text-center mt-4 text-red-600">{error}</p>}
+                    <div className="flex gap-2 p-8">
+                   
+                        <div className="w-1/2">
                         <label className="font-bold">Batch</label>
                     <select name="batch" onChange={handleChange}  className="bg-white border border-gray-300 mb-3 text-gray-700 text-sm rounded-sm focus:ring-red-600 focus:border-blue-500 block w-full p-2.5">
                         <option value="">---- Select Batch ----</option>
@@ -224,7 +169,7 @@ export default function ExamCreate(){
     ))}
                     </select>
                         </div>
-                        <div className="w-1/4">
+                        <div className="w-1/2">
                         <label className="font-bold">Term</label>
                     <select name="term"  onChange={handleChange} className="bg-white border border-gray-300 mb-3 text-gray-700 text-sm rounded-sm focus:ring-red-600 focus:border-blue-500 block w-full p-2.5">
                         <option value="">---- Select Term ----</option>
@@ -234,43 +179,71 @@ export default function ExamCreate(){
     ))}
                     </select>
                         </div>
-                        <div className="w-1/4">
-                        <label className="font-bold">Subject</label>
-                    <select name="subject" onChange={handleChange}  className="bg-white border border-gray-300 mb-3 text-gray-700 text-sm rounded-sm focus:ring-red-600 focus:border-blue-500 block w-full p-2.5">
-                        <option value="">---- Select Subject ----</option>
-                        {filteredSubjects.map((item) => (
-              <option key={item.id} value={item.subject.id}>
-                {item.subject.name}
-              </option>
-            ))}
-                    </select>
-                        </div>
+                       
                     </div>
-                    {filteredComponents.length>0 && <label className="font-bold">Component</label>}
-                    {filteredComponents.length > 0 && (
-                <select name="component"  className="bg-white border border-gray-300 mb-3 text-gray-700 text-sm rounded-sm focus:ring-red-600 focus:border-blue-500 block w-full p-2.5">
-                    <option value="">---- Select Component ----</option>
-                    {filteredComponents.map((component) => (
-                        <option key={component.id} value={component.id}>{component.name}</option>
-                    ))}
-                </select>
+                    {filteredSubjects.map((item, index) => (
+          <div key={index} className="mb-6">
+            {item.component === null ? (
+              <span className="text-gray-600 text-sm px-8 mt-4">{item.subject.name} - Kindly Add a Component with Final Name</span>
+              
+            ) : (
+            <div className=" px-8">
+              <span className="text-red-700 mb-2 font-bold">{item.subject.name}</span>
+              <div className="flex gap-2 items-center mt-2 mb-4">
+              <input
+  type="date"
+  value={examInputs[index]?.date || ""}
+  onChange={(e) =>
+    updateExamInput(index, {
+      component_id: item.component.id,
+      date: e.target.value,
+    })
+  }
+  className="border border-gray-300 p-2 rounded-sm w-full"
+  required
+/>
+
+<input
+  type="time"
+  value={examInputs[index]?.start_time || ""}
+  onChange={(e) =>
+    updateExamInput(index, {
+      component_id: item.component.id,
+      start_time: e.target.value,
+    })
+  }
+  className="border border-gray-300 p-2 rounded-sm w-full"
+  required
+/>
+
+<input
+  type="number"
+  step="0.1"
+  placeholder="Duration (hrs)"
+  value={examInputs[index]?.duration || ""}
+  onChange={(e) =>
+    updateExamInput(index, {
+      component_id: item.component.id,
+      duration: parseFloat(e.target.value),
+    })
+  }
+  className="border border-gray-300 p-2 rounded-sm w-full"
+  required
+/>
+              </div>
+            </div>
             )}
-                   {filteredComponents.length>0 && <>
-                    <div className="flex gap-2 justify-between">
-                        <div className="w-1/2">
-                        <label className="font-bold">Start Time</label>
-                        <input type="time" name="start_time"  className="bg-white border border-gray-300 mb-3 text-gray-700 text-sm rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" />
-                        </div>
-                        <div className="w-1/2">
-                            <label className="font-bold">End Time</label>
-                            <input type="time" name="end_time"  className="bg-white border border-gray-300 mb-3 text-gray-700 text-sm rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" />
-                        </div>
-                    </div>
-                    <label className="font-bold">Exam Date</label>
-                            <input type="date" name="date" placeholder="Enter Component Name..." className="bg-white border border-gray-300 mb-3 text-gray-700 text-sm rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" />
-                   <button type="submit" className="w-full bg-red-700 py-2 text-white rounded-sm">Submit</button>
-                   </>} 
-                </form>
+          </div>
+        ))}
+        <hr className=" border border-b-2 mb-6" />
+           {filteredSubjects.length>0 && <button
+        disabled={isAnyNull}
+        onClick={handleSubmit}
+        className={`mx-8 px-6 py-2 rounded font-semibold transition mb-6
+          ${    isAnyNull     ? "bg-red-100 cursor-not-allowed text-red-600 "     : "bg-red-600 hover:bg-red-700 text-white" }`}
+      >
+        Submit Exam Sechdule
+      </button>}    
             </div>
         </div>
     )

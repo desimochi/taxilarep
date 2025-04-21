@@ -8,33 +8,6 @@ import { useState } from "react";
 
 const NavigationTabs = () => {
   const [activeTab, setActiveTab] = useState("mainexam");
-  const [fields, setFields] = useState([
-    { subject: "", component: "", examDate: "", examTime: "" },
-  ]);
-
-  // Function to add a new field group
-  const addFields = () => {
-    setFields([...fields, { subject: "", component: "", examDate: "", examTime: "" }]);
-  };
-
-  // Function to remove a field group
-  const removeFields = (index) => {
-    setFields(fields.filter((_, i) => i !== index));
-  };
-
-  // Function to handle input changes
-  const handleChange = (index, event) => {
-    const { name, value } = event.target;
-    const newFields = [...fields];
-    newFields[index][name] = value;
-    setFields(newFields);
-  };
-
-  // Handle form submission
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    console.log("Submitted Data:", fields);
-  };
 
 
   return (

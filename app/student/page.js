@@ -60,17 +60,17 @@ export default function Page(){
                     <div className=" flex gap-4">
                         <div className=" w-3/4">
                         <div className="flex gap-4">
-                            <span className="bg-red-600 bg-opacity-10 border border-gray-300  w-full text-center py-4 rounded-sm shadow-sm hover:shadow-xl transition-shadow"><p className="font-bold">{studata.course?.name}</p> <p className="text-sm text-gray-600">Course</p></span>
-                            <span className="bg-red-600 bg-opacity-10  border border-gray-300 w-full text-center py-4 rounded-sm shadow-sm hover:shadow-xl transition-shadow"><p className="font-bold">{studata.batch?.name}</p> <p className="text-sm text-gray-600">Batch</p></span>
-                            <span className="bg-red-600 bg-opacity-10  border border-gray-300 w-full text-center py-4 rounded-sm shadow-sm hover:shadow-xl transition-shadow"><p className="font-bold">{studata.enrollment_number}</p> <p className="text-sm text-gray-600">Enrollment Number</p></span>
-                            <span className="bg-red-600 bg-opacity-10  border border-gray-300 w-full text-center py-4 rounded-sm shadow-sm hover:shadow-xl transition-shadow"><p className="font-bold">{studata.mentor_name}</p> <p className="text-sm text-gray-600">Mentor</p></span>
-                            <span className="bg-red-600 bg-opacity-10  border border-gray-300 w-full text-center py-4 rounded-sm shadow-sm hover:shadow-xl transition-shadow"><p className="font-bold">{studata.upcoming_class}</p> <p className="text-sm text-gray-600">Upcoming Classes in 7 Days</p></span>
+                            <span className="bg-red-600 bg-opacity-10 text-red-800  border border-gray-300  w-full text-center py-4 rounded-sm shadow-sm hover:shadow-xl transition-shadow"><p className="font-bold">{studata.course?.name}</p> <p className="text-sm text-gray-600">Course</p></span>
+                            <span className="bg-red-600 bg-opacity-10   text-red-800 border border-gray-300 w-full text-center py-4 rounded-sm shadow-sm hover:shadow-xl transition-shadow"><p className="font-bold">{studata.batch?.name}</p> <p className="text-sm text-gray-600">Batch</p></span>
+                            <span className="bg-red-600 bg-opacity-10 text-red-800   border border-gray-300 w-full text-center py-4 rounded-sm shadow-sm hover:shadow-xl transition-shadow"><p className="font-bold">{studata.enrollment_number}</p> <p className="text-sm text-gray-600">Enrollment Number</p></span>
+                            <span className="bg-red-600 bg-opacity-10 text-red-800   border border-gray-300 w-full text-center py-4 rounded-sm shadow-sm hover:shadow-xl transition-shadow"><p className="font-bold">{studata.mentor_name}</p> <p className="text-sm text-gray-600">Mentor</p></span>
+                            <span className="bg-red-600 bg-opacity-10 text-red-800   border border-gray-300 w-full text-center py-4 rounded-sm shadow-sm hover:shadow-xl transition-shadow"><p className="font-bold">{studata.upcoming_class}</p> <p className="text-sm text-gray-600">Upcoming Classes in 7 Days</p></span>
                             </div>
                             <div className="mt-4">
                             <div className="p-4 border border-gray-300 rounded-sm shadow-sm hover:shadow-xl transition-shadow">
                                 <h3 className="bg-red-700 px-12 w-fit py-3 text-white rounded-sm font-bold">Subject Wise Class Details</h3>
-                                <table className="w-full text-sm text-left text-gray-800 dark:text-gray-400 mt-4">
-                                <thead className="text-xs text-gray-100 uppercase bg-black dark:bg-gray-700 dark:text-gray-400">
+                                {sclass.length>0 ? ( <table className="w-full text-sm text-left text-gray-800 dark:text-gray-400 mt-4">
+                                <thead className="text-xs text-red-800 uppercase bg-red-50 dark:bg-gray-700 dark:text-gray-400">
                   <tr>
                     <th scope="col" className="px-6 py-3">Subject Name</th>
                     <th scope="col" className="px-6 py-3">Total Classes</th>
@@ -79,37 +79,37 @@ export default function Page(){
                   </tr>
                 </thead>
                 <tbody>
-                {sclass.length>0 ? (
-                    sclass.map((item)=>(
+               
+                   { sclass.map((item)=>(
                         <tr key={item.id}  className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200">
                         <td className="px-6 py-4">{item.subject.name}</td>
                       <td className="px-6 py-4">{item.total_classes}</td>
                       <td className="px-6 py-4">{item.classes_completed}</td>
                       <td className="px-6 py-4"><Link href ={`/student/subject/details/${item.id}`} className="  text-green-800 rounded-sm"><EyeIcon className="h-4 w-4"/></Link></td>
                     </tr>
-                    ))
+                    )) }
                     
-                ) : (<tr className="text-center mt-5"><td>Subject Class Data Not Available at Moment Please Wait or  Kindly Refresh the Page</td></tr>)}
+                
                 
     
                 
                 
         
                 </tbody>
-                                </table>
+                                </table>) : (<FullWidthLoader/>)}
                             </div>
                         </div>
                         </div>
                         <div className="w-1/4">
                         <div className="border border-gray-300 p-2">
-                            <h3 className="font-bold px-6 py-2 bg-black text-white rounded-sm text-center">Upcoming Class</h3>
+                            <h3 className="font-bold px-6 py-2 bg-red-50 text-red-800 rounded-sm mb-3 text-center">Upcoming Class</h3>
                            {loading? <FullWidthLoader/> : <ul className="max-h-96 overflow-y-auto">
   {classData.length > 0 ? (
     <>
       {classData.map((item, index) => (
         <div key={item.id || index}>
           <li className="mt-3 text-sm text-center">
-            Markering - 28/03/2025 at 10:30 AM
+            {item.mapping?.subject?.name} - {item.date} - {item.start_time}
           </li>
           <hr className="border border-b-2 mt-2 mb-3" />
         </div>
@@ -119,6 +119,7 @@ export default function Page(){
     <p className="text-center text-sm mt-2">No Upcoming Classes</p>
   )}
 </ul>}
+<Link href={"/student/class-schedule"} className="bg-red-800 w-full text-white py-2 px-12 rounded-sm flex justify-center">View All</Link>
                         </div>
                         </div>
                     </div>

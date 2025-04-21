@@ -104,7 +104,7 @@ export default function AssignedSubject(){
       </td>
       <td className="px-6 py-4 flex gap-2 text-blue-600 underline">
         <EyeIcon className="h-5 w-5" />
-       <Link href={`/subjects/details/${course.id}`}>See Details</Link>
+       <Link href={`/admin/subject/details/${course.id}`}>See Details</Link>
       </td>
     </tr>
   )) : <p>No Courses Found</p>}
