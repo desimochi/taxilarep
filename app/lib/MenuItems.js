@@ -56,6 +56,7 @@ export const menuItems = [
           // ]},
           {label : "Component Manager", path: "/exam-components/component-manager"},
           {label : "Admit Card", path: "/exam-components/admitcard"},
+          {label : "Download Admit Card", path: "/exam-components/admitcard/download-admitcard"},
       ],
     },
    

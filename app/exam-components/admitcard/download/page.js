@@ -35,8 +35,6 @@ export default function Page() {
         const data = await response.json();
         setStudents(data.data);
         setFilteredStudents(data.data);
-
-        // Extract unique batches for dropdown
         const batches = [
           ...new Set(data.data.map((s) => s.batch?.name).filter(Boolean)),
         ];
@@ -112,7 +110,7 @@ export default function Page() {
 
       {/* Add New Student Button */}
       <div className="">
-        <h4 className="text-2xl font-sans font-bold ">Download Admit Card</h4>
+        <h4 className="text-2xl font-sans font-bold ">Download Admit Card - {students[0]?.batch?.name} </h4>
         <p className="text-gray-600">Here you can download the admit card of every student</p>
        
 
@@ -130,19 +128,7 @@ export default function Page() {
           placeholder="Search by Name, Email, or ID"
           className="block p-2 ps-4 text-sm text-gray-700 border border-gray-400 rounded-sm bg-white focus:ring-blue-500 focus:border-blue-500"
         />
-<select
-          name="batch"
-          value={filters.batch}
-          onChange={handleFilterChange}
-          className="block p-2 ps-4 text-sm text-gray-700 border border-gray-400 rounded-sm bg-white focus:ring-blue-500 focus:border-blue-500"
-        >
-          <option value="">Select Batch</option>
-          {batchOptions.map((batch) => (
-            <option key={batch} value={batch}>
-              {batch}
-            </option>
-          ))}
-        </select>
+
         </div>
        
          <select
