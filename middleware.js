@@ -21,6 +21,7 @@ const facultyPaths = [
   "/profile/student",
   "/profile/employee",
   "/student/attendance",
+  "/student/see-attendance",
   "/notice/noticeboard",
   "/notice/noticeboard/add-notice",
   "/attendance/class-attendance",

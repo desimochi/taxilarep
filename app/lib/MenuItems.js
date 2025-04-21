@@ -9,7 +9,7 @@ import {
   } from "@heroicons/react/24/outline";
   import { AlignLeftIcon, AlignRightIcon, BookCheckIcon, BookCopyIcon, DockIcon, FileAxis3D, NewspaperIcon, PaperclipIcon, PenBox, PenSquareIcon, UserCircle, UserRoundCheck } from "lucide-react";
 export const menuItems = [
-    { label: "Dashboard", icon: <HomeIcon className="h-5 w-5" />, path: "/admin" },
+    // { label: "Dashboard", icon: <HomeIcon className="h-5 w-5" />, path: "/admin" },
     {
       label: "Course",
       icon: <BookCheckIcon className="h-5 w-5" />,

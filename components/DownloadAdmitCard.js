@@ -79,7 +79,7 @@ export default function DownloadAdmitCard ({data, isOpen, onClose}){
       </tr>
     </thead>
     <tbody>
-  {data.subject_data.map((subject, index) => {
+  {data.subject_data?.map((subject, index) => {
     const date = subject.exam_date ? new Date(`${subject.exam_date}T${subject.start_time}`) : null;
 
     let formattedTime = "To Be Announced";
