@@ -7,6 +7,7 @@ import { GlobalContext } from "@/components/GlobalContext";
 import { useContext } from "react";
 import FullWidthLoader from "@/components/Loaader";
 import Link from "next/link";
+import { SearchIcon } from "lucide-react";
 export default function Page(){
     const [loading, setLoading] = useState(false);
     const{state} = useContext(GlobalContext)
@@ -109,12 +110,17 @@ const handleSubmit = async () => {
          
             <div>
             <div className="w-full">
-            <div className="border border-gray-300 rounded-xl mt-4 bg-gradient-to-bl from-gray-700 to-stone-900 text-white p-2 hover:shadow-xl transition-shadow  py-8 px-12">
+            <div className=" mt-4 p-2  py-8 px-12">
                 <div className="flex justify-between items-center gap-2">
                     <div className="w-2/6">
                 <h5 className="text-2xl font-bold">Student Attendance</h5>
                 <span className="text-sm text-gray-400">Taxila Business School</span>
                 </div>
+              
+                </div>
+                <hr className="border border-b-2 mt-4"/>
+                </div>
+                <div className="flex px-12 gap-2 text-sm">
                 <div className="w-1/5 ">
             <select value={selectedTerm} onChange={handleTermChange} className=" w-full border border-gray-300 rounded-sm p-2 text-black">
                 <option value="">Select Term</option>
@@ -139,17 +145,15 @@ const handleSubmit = async () => {
         <div className="w-1/5 ">
             <input type="date" className="w-full  border border-gray-300 rounded-sm p-1 text-black" onChange={(e) => setEndDate(e.target.value)} />
         </div>
-        <button className=" bg-green-600 text-white p-1.5 px-12 rounded-sm w-1/5" onClick={handleSubmit}>Submit</button>
+        <button className=" bg-red-50 text-red-800 border border-red-300 hover:text-red-50 hover:bg-red-800 flex items-center justify-center gap-1 p-1.5 px-12 rounded-sm w-1/5" onClick={handleSubmit}><SearchIcon className="h-4 w-4"/> Search</button>
                 </div>
-                </div>
-                
-            <div>
+            <div className="px-12">
             {loading? <FullWidthLoader/> :     <table className="w-full text-sm text-left text-gray-800 dark:text-gray-400 mt-4">
-                            <thead className="text-xs text-gray-100 uppercase bg-black dark:bg-gray-700 dark:text-gray-400">
+                            <thead className="text-xs text-red-800 uppercase bg-red-50 dark:bg-gray-700 dark:text-gray-400">
               <tr>
                 <th scope="col" className="px-6 py-3">Date</th>
             {subjects.map((subject, index) => (
-              <th key={index} scope="col" className="px-6 py-3">{subject} - {percntage[index]}</th>
+              <th key={index} scope="col" className="px-6 py-3">{subject} - {percntage[index]}%</th>
             ))}
               </tr>
             </thead>

@@ -79,27 +79,8 @@ function Layout({ children }) {
 
             <div className="flex items-center gap-4 relative">
               {/* Notification Bell */}
-              <button onClick={() => setIsOpen(!isOpen)} className="bg-gradient-to-tl from-red-400 to-red-900 text-white p-2 rounded-full hover:bg-red-600 relative">
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M15 17h5l-1.405-1.405A2 2 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V4a2 2 0 10-4 0v1.341C7.67 6.165 7 7.388 7 9v5.159c0 .538-.214 1.055-.595 1.436L5 17h5a3 3 0 006 0z" />
-                </svg>
-                <span className="absolute top-0 right-0 h-2.5 w-2.5 bg-red-500 rounded-sm border-2 border-white"></span>
-              </button>
+              
 
-              {/* Notification Dropdown */}
-              <div className={`absolute right-60 top-9 z-50 transform mt-2 w-80 text-sm bg-white border rounded-lg shadow-md transition-all duration-300 ${isOpen ? "opacity-100 translate-y-0 z-10" : "opacity-0 -translate-y-3 pointer-events-none"}`}>
-                <div className="px-6 py-2 bg-gray-900 text-white flex justify-between items-center rounded-t-lg">
-                  <h3 className="font-semibold text-md">Notification</h3>
-                  <button className="bg-gray-100 text-black px-3 py-1 rounded-full" onClick={() => setIsOpen(false)}>X</button>
-                </div>
-                {["urgent", "", ""].map((tag, idx) => (
-                  <div key={idx} className="px-3 py-2">
-                    {tag && <span className="bg-red-200 text-red-700 px-2 py-0.5 rounded-sm">{tag}</span>}
-                    <p className="mt-1">Exam Time Table for Term 5 Just Announced</p>
-                    <hr className="mt-2 border-gray-500" />
-                  </div>
-                ))}
-              </div>
 
               {/* User Profile Dropdown */}
               <div onMouseEnter={entermouse} onMouseLeave={leavemouse} className="relative">

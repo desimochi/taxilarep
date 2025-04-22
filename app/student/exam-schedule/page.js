@@ -1,126 +1,118 @@
-"use client"
+"use client";
 
+import { useContext, useEffect, useState } from "react";
 import { authFetch } from "@/app/lib/fetchWithAuth";
-import { useEffect, useState } from "react";
-import { GlobalContext } from "@/components/GlobalContext";
-import { useContext } from "react";
 import FullWidthLoader from "@/components/Loaader";
-import Link from "next/link";
-import { EyeIcon } from "lucide-react";
-export default function Page(){
-    const [loading, setLoading] = useState(false);
-      const [error, setError] = useState(false);
-      const { state } = useContext(GlobalContext);
-        const [sclass, setsclass] = useState([]);
-        const [atten, setatten] = useState([])
-        const [terms, setTerms] = useState([]);
-    const [subjectas, setSubjectas] = useState([]);
-    const [selectedTerm, setSelectedTerm] = useState('');
-    const [filteredSubjects, setFilteredSubjects] = useState([]);
+import { Calendar, CrossIcon, EditIcon } from "lucide-react";
+import { GlobalContext } from "@/components/GlobalContext";
 
-    useEffect(() => {
-    const fetchclassData = async () => {
+export default function MainExamCom() {
+  const [loading, setLoading] = useState(false);
+  const [classSchedule, setClassSchedule] = useState([]);
+  const [component, setComponent] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+ const {state} = useContext(GlobalContext)
+ const id = state.user_id
+  useEffect(() => {
+    const fetchAllData = async () => {
+      setLoading(true);
       try {
-        setLoading(true);
-        const [response, response1] = await Promise.all([
-            await authFetch(`subject-student-wise/${state.user_id}`),
+        const [classRes, componentRes] = await Promise.all([
+          authFetch(`student-wise-exam-list/${id}`),
+          authFetch("terms-list"),
+        ]);
 
-        ])
-        if (!response.ok && !response1.ok) throw new Error("Failed to fethc the data");
+        const classData = await classRes.json();
+        const componentData = await componentRes.json(); // ✅ Fixed API response assignment
 
-        const data = await response.json();
-
-        setsclass(data.data);
-        const uniqueTerms = Array.from(
-            new Map(
-                data.data
-                    .filter(item => item.term)
-                    .map(item => [item.term.id, item.term])
-            ).values()
-        );
-        setTerms(uniqueTerms);
-        
-        // Get subjects
-        const mappedSubjects = data.data
-            .filter(item => item.term && item.subject)
-            .map(item => ({
-                termId: item.term.id,
-                termName:item.term.name,
-                subjectMappingId: item.id, // id is the subject_mapping id
-                subjectName: item.subject.name
-            }));
-        setSubjectas(mappedSubjects);
-        
-      } catch (err) {
-        setError(err.message);
+        setClassSchedule(Array.isArray(classData.data) ? classData.data : []);
+        setComponent(Array.isArray(componentData.data) ? componentData.data : []);
+      } catch (error) {
+        console.error("Error fetching data:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchclassData();
-  }, [state.user_id,]);
-  const handleTermChange = (e) => {
-    const termId = e.target.value;
-    setSelectedTerm(termId);
-    const filtered = subjectas.filter(sub => sub.termId.toString() === termId);
-    setFilteredSubjects(filtered);
-};
+    fetchAllData();
+  }, []);
 
+const filteredSchedule = classSchedule.filter((item) =>
+  item.subject_name?.toLowerCase().includes(searchTerm)
+);
 
-    return(
-        <div className="py-4 px-5">
-            
-            <div>
-            <div className="w-full">
-            <div className="border border-gray-300 rounded-xl mt-4 bg-gradient-to-bl from-gray-700 to-stone-900 text-white p-2 hover:shadow-xl transition-shadow  py-8 px-12">
-                <div className="flex justify-between items-center gap-2">
-                    <div className="w-2/5">
-                <h5 className="text-2xl font-bold">Exam Schedule</h5>
-                <span className="text-sm text-gray-400">Taxila Business School</span>
-                </div>
-                <div className=" flex w-3/5 gap-2 justify-end">
-                <div>
-            <select value={selectedTerm} onChange={handleTermChange} className=" w-full border border-gray-300 rounded-sm px-8 py-2 text-black">
-                <option value="">Select Term</option>
-                {terms.map(term => (
-                    <option key={term.id} value={term.id}>{term.name}</option>
-                ))}
+  return (
+    <div className="px-8 py-6">
+     <div className="bg-white min-h-screen">
+   
+        <section className="relative">
+           
+           <div className="bg-violet-200 w-full sm:w-80 h-40 rounded-full absolute top-1 opacity-20 max-sm:left-0 sm:right-56 z-0"></div>
+           <div className="bg-violet-300 w-full sm:w-40 h-24 absolute top-0 -right-0 opacity-20 z-0"></div>
+           <div className="w-full pt-4 relative z-10 backdrop-blur-3xl">
+           <div className="px-6">
+          <div className="w-1/3">
+            <h2 className="text-2xl font-bold">Exam Schedule</h2>
+            <p className="text-gray-500 text-sm">Check the examination schedule</p>
+          </div>
+          <hr className="border border-b-2 mt-4 mb-4"/>
+          <div className="flex gap-3">
+          <input
+  type="text"
+  name="search"
+  placeholder="search for subject...."
+  className="border border-gray-300 p-2.5"
+  value={searchTerm}
+  onChange={(e) => setSearchTerm(e.target.value)}
+/>
+            <select className="bg-white border border-gray-300 text-gray-700 text-sm rounded-sm block w-[180px] p-2.5">
+              <option value="" disabled selected>Select a Term</option>
+  {component.map((item) => (
+    <option key={item.id} value={item.id}>
+      {item.name}
+    </option>
+  ))}
             </select>
-            </div>
-                </div>
-                </div>
-                
-            </div>
-            <div>
-            {loading ? <FullWidthLoader /> : (
-                        <>
-                                <table className="w-full text-sm text-left text-gray-800 dark:text-gray-400 mt-4">
-                                    <thead className="text-xs text-gray-100 uppercase bg-black dark:bg-gray-700 dark:text-gray-400">
-                                        <tr>
-                                        <th scope="col" className="px-6 py-3">S.No.</th>
-                                            <th scope="col" className="px-6 py-3">Subject Name</th>
-                                            <th scope="col" className="px-6 py-3">Term Name</th>
-                                            <th scope="col" className="px-6 py-3">Details</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                    {(selectedTerm === '' ? subjectas : filteredSubjects).map((subject, index) => (
-        <tr key={subject.subjectMappingId} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-            <td className="px-6 py-4">{index+1}</td>
-            <td className="px-6 py-4">{subject.subjectName}</td>
-            <td className="px-6 py-4">{subject.termName}</td>
-            <td className="px-6 py-4 flex gap-2"><Link href={`/student/exam-schedule/details?subID=${subject.subjectMappingId}`} className="flex gap-2 text-red-500"><EyeIcon className="h-5 w-5"/>See Details</Link></td>
-        </tr>
-    ))}
-                                    </tbody>
-                                </table>
-                        </>
-                    )}
-            </div>
+          </div>
         </div>
-            </div>
-            </div>
-    
-    )
+           </div>
+      {loading ? (
+        <FullWidthLoader />
+      ) : (
+        <table className="table-auto w-full border-collapse border border-gray-300 mt-8">
+          <thead>
+            <tr className="bg-red-50 text-red-800">
+              <th className="border px-4 py-2">S.no.</th>
+              <th className="border px-4 py-2">Term</th>
+              <th className="border px-4 py-2">Subject</th>
+              <th className="border px-4 py-2">Exam Date</th>
+              <th className="border px-4 py-2">Start Time</th>
+              <th className="border px-4 py-2">Duration</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredSchedule.length > 0 ? (
+              filteredSchedule.map((row, index) => (
+                <tr key={index} className="text-center border">
+                  <td className="border px-4 py-2">{index + 1}</td>
+                  <td className="border px-4 py-2">{row.term_name}</td>
+                  <td className="border px-4 py-2">{row.subject_name}</td>
+                  <td className="border px-4 py-2">{row.date}</td>
+                  <td className="border px-4 py-2">{row.start_time}</td>
+                  <td className="border px-4 py-2">{row.duration}</td>
+                  
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="8" className="text-center py-4">No schedule available</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      )}
+      </section>
+      </div>
+    </div>
+  );
 }

@@ -75,12 +75,7 @@ export default function Page() {
            <div className="bg-violet-500 w-full sm:w-40 h-24 absolute top-40 -right-0 opacity-20 z-0"></div>
            <div className="w-full pt-4 relative z-10 backdrop-blur-3xl">
             <div className="px-6 py-6">
-            <button 
-                onClick={() => router.back()} 
-                className="px-12 py-1 flex align-middle items-center gap-1 text-gray-600 text-sm rounded"
-            >
-                <ArrowLeft className='h-4 w-4' /> Back to List
-            </button>
+           
             {!loading && !error && students && <div className="w-full px-12 py-6">
             
             <h1 className="text-3xl font-bold mb-2 font-sans">  {students?.subject?.name || 'N/A'} Subject Details </h1>

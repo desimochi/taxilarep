@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { GlobalContext } from "@/components/GlobalContext";
 import { useContext } from "react";
 import FullWidthLoader from "@/components/Loaader";
+import { SearchIcon } from "lucide-react";
 export default function Page(){
     const [loading, setLoading] = useState(false);
       const [error, setError] = useState(false);
@@ -96,12 +97,17 @@ const handleSubmit = async () => {
         <div className="py-4 px-5">
             <div>
             <div className="w-full">
-            <div className="border border-gray-300 rounded-xl mt-4 bg-gradient-to-bl from-gray-700 to-stone-900 text-white p-2 hover:shadow-xl transition-shadow  py-8 px-12">
+            <div className=" py-8 px-12">
                 <div className="flex justify-between items-center gap-2">
                     <div className="w-2/6">
-                <h5 className="text-2xl font-bold">Student Attendance</h5>
+                <h5 className="text-2xl font-bold">Class Schedule </h5>
                 <span className="text-sm text-gray-400">Taxila Business School</span>
                 </div>
+
+                </div>
+                <hr className="border border-b-2 mt-4 mb-2"/>
+                </div>
+                <div className="flex gap-2 px-12 text-sm">
                 <div className="w-1/5 ">
             <select value={selectedTerm} onChange={handleTermChange} className=" w-full border border-gray-300 rounded-sm p-2 text-black">
                 <option value="">Select Term</option>
@@ -126,19 +132,20 @@ const handleSubmit = async () => {
         <div className="w-1/5 ">
             <input type="date" className="w-full  border border-gray-300 rounded-sm p-1 text-black" onChange={(e) => setEndDate(e.target.value)} />
         </div>
-        <button className=" bg-green-600 text-white p-1.5 px-12 rounded-sm w-1/5" onClick={handleSubmit}>Submit</button>
+        <button className=" bg-red-50 border border-red-300 text-red-800 hover:text-red-50 hover:bg-red-800 p-1.5 px-12 rounded-sm w-1/5 flex items-center justify-center gap-1" onClick={handleSubmit}><SearchIcon className="h-4 w-4"/> Search</button>
                 </div>
-                </div>
-            <div>
+            <div className="px-12">
             {loading? <FullWidthLoader/> :     <table className="w-full text-sm text-left text-gray-800 dark:text-gray-400 mt-4">
-                            <thead className="text-xs text-gray-100 uppercase bg-black dark:bg-gray-700 dark:text-gray-400">
+                            <thead className="text-xs text-red-800 uppercase bg-red-50 dark:bg-gray-700 dark:text-gray-400">
              
                          <tr >
                                 <th scope="col" className="px-6 py-3">S.No.</th>
+                                <th scope="col" className="px-6 py-3">Subject Name</th>
                 <th scope="col" className="px-6 py-3">Date.</th>
-                <th scope="col" className="px-6 py-3">Subject Name</th>
+                <th scope="col" className="px-6 py-3">From</th>
+                <th scope="col" className="px-6 py-3">To</th>
                 <th scope="col" className="px-6 py-3">Faculty</th>
-           
+                <th scope="col" className="px-6 py-3">Status</th>
                          </tr>
                 
             </thead>
@@ -147,9 +154,20 @@ const handleSubmit = async () => {
     sclass.map((cls, index) => (
         <tr key={cls.id} className="hover:bg-gray-50">
             <td className="px-6 py-3">{index + 1}</td>
-            <td className="px-6 py-3">{cls.date}</td>
             <td className="px-6 py-3">{cls.mapping.subject?.name}</td>
+            <td className="px-6 py-3">{cls.date}</td>
+            <td className="px-6 py-3">{cls.start_time}</td>
+            <td className="px-6 py-3">{cls.end_time}</td>
             <td className="px-6 py-3">{cls.mapping.faculty?.first_name} {cls.mapping.faculty?.last_name}</td>
+            <td className="px-6 py-3">
+  {cls.is_cancel ? (
+    <span className="text-sm bg-red-50 text-red-800 p-1 rounded-sm">Cancelled</span>
+  ) : cls.is_complete ? (
+    <span className="text-sm bg-green-50 text-green-800 p-1 rounded-sm">Completed</span>
+  ) : (
+    <span className="text-sm bg-violet-50 text-violet-800 p-1 rounded-sm">Scheduled</span>
+  )}
+</td>
         </tr>
     ))
 ) : (

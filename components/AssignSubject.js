@@ -221,8 +221,8 @@ const CourseSelection = () => {
           <label className="font-bold">Type</label>
         <select name="type" value={data.selected.type} onChange={handleChange} className="bg-white border border-gray-300 mb-3 text-gray-700 text-sm rounded-sm focus:ring-red-600 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
           <option value="main">Main</option>
-          <option value="reset-1">Reset-1</option>
-          <option value="reset-2">Reset-2</option>
+          <option value="resit-1">Reset-1</option>
+          <option value="resit-2">Reset-2</option>
         </select>
           </div>
           <div className="w-1/2">

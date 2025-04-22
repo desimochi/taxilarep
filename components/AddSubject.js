@@ -78,7 +78,7 @@ export default function AddSubject() {
       <div className="w-full rounded-sm py-12">
         <div className="border border-gray-300 shadow-sm hover:shadow-md rounded-md">
           <h4 className="px-6 py-4 bg-gradient-to-bl font-bold from-gray-700 to-stone-900 text-white">
-            Add Main Exam Schedule
+            Add Subject
           </h4>
           <form className="py-5 px-5" onSubmit={handleSubmit}>
             <label className="font-bold flex justify-between"><p>Subject Name</p>{errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}</label>

@@ -55,8 +55,10 @@ export const menuItems = [
           //   { label: "See Result", path: "/resit/result" },
           // ]},
           {label : "Component Manager", path: "/exam-components/component-manager"},
+          
           {label : "Admit Card", path: "/exam-components/admitcard"},
           {label : "Download Admit Card", path: "/exam-components/admitcard/download-admitcard"},
+          {label : "Result", path: "/exam-components/result"},
       ],
     },
    
@@ -72,6 +74,7 @@ export const menuItems = [
         { label: "Add New Student", path: "/add-student" },
         { label: "All Students", path: "/students" },
         { label: "Assign Students", path: "/assign-students" },
+        {label: "Promote Students", path: "/promote-student" },
       ],
     },
     {
@@ -91,6 +94,7 @@ export const menuItems = [
         { label: "Salutation", path: "/admin/salutation" },
         { label: "Role Management", path: "/admin/role-manager" },
         { label: "Designation", path: "/admin/designation" },
+        { label: "All Employee", path: "/all-employee" },
       ],
     },
     { label: "Events", icon: <CalendarIcon className="h-5 w-5" />, path: "/events" },
@@ -139,6 +143,7 @@ export const menuItems = [
     { label: "Attendance", icon: <UserRoundCheck className="h-5 w-5" />, path: "/student/attendance" },
     { label: "Class Schedule", icon: <BookCopyIcon className="h-5 w-5" />, path: "/student/class-schedule" },
     { label: "Exam Schedule", icon: <PenBox className="h-5 w-5" />, path: "/student/exam-schedule" },
+    { label: "Result", icon: <PenBox className="h-5 w-5" />, path: "/exam-components/result/see-result" },
     { label: "Admit Card", icon: <FileAxis3D className="h-5 w-5" />, path: "/student/admit-card" },
     { label: "Notice", icon: <NewspaperIcon className="h-5 w-5" />, path: "/notice/noticeboard" },
     { label: "Events", icon: <CalendarIcon className="h-5 w-5" />, path: "/events" },

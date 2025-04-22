@@ -4,10 +4,11 @@ import { useState, useContext, useEffect } from "react";
 import { GlobalContext } from "@/components/GlobalContext";
 import FullWidthLoader from "@/components/Loaader";
 import Link from "next/link";
-import { PenSquareIcon, SearchIcon } from "lucide-react";
+import { BookCheck, PenSquareIcon, SearchIcon } from "lucide-react";
 
 export default function ClassSchedule() {
   const [sclass, setsclass] = useState([]);
+  const [terms, setTerms] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const [search, setSearch] = useState("")
@@ -18,16 +19,21 @@ export default function ClassSchedule() {
     const fetchclassData = async () => {
       try {
         setLoading(true);
-        const response = await authFetch(`faculty-wise-class-filter/${state.user_id}`);
+        const [response, reponse1] = await Promise.all([
+          authFetch(`faculty-wise-class-filter/${state.user_id}`),
+          authFetch(`terms-list`)
+        ]);
 
         if (!response.ok) throw new Error("Failed to fetch component data");
 
         const data = await response.json();
+        const data2 = await reponse1.json()
         const filteredClasses = data.data.filter(
             (cls) => !cls.is_cancel && cls.mapping
           );
   
           setsclass(filteredClasses);
+          setTerms(data2.data)
       } catch (err) {
         setError(err.message);
       } finally {
@@ -51,6 +57,29 @@ export default function ClassSchedule() {
 
     return matchesSearch && matchesDate;
   });
+
+  async function handleTermChange(e) {
+    const id = e.target.value
+    setLoading(true)
+    try {
+        const response = await authFetch(`faculty-wise-class-filter/${state.user_id}?term=${id}`)
+        
+        if(!response.ok){
+          throw new Error("Failed to Fetch Data")
+        }
+        const data = await response.json()
+        const filteredClasses = data.data.filter(
+          (cls) => !cls.is_cancel && cls.mapping
+        );
+
+        setsclass(filteredClasses);
+        setsclass(data.data)
+    } catch (error) {
+        setError(error.message)
+    } finally{
+      setLoading(false)
+    }
+  }
   return (
     <section className="relative">
         <div className="bg-violet-200 w-full sm:w-80 h-40 rounded-full absolute top-1 opacity-20 max-sm:left-0 sm:right-56 z-0"></div>
@@ -61,7 +90,8 @@ export default function ClassSchedule() {
             <p className="text-sm text-gray-500 mb-8">Everyhting you need to know about Your Class Attendance</p>
             <hr className=" border  border-spacing-y-0.5 mb-6"/>
             <div className="mb-4 flex items-center justify-between ">
-            <div className="relative">
+              <div className="flex gap-2">
+              <div className="relative">
   <input
     type="text"
     placeholder="Search subject..."
@@ -73,6 +103,19 @@ export default function ClassSchedule() {
     <SearchIcon className="h-4 w-4"/>
   </span>
 </div>
+<div className="relative">
+    <select className="p-2.5 pl-10 rounded-sm border border-gray-300 text-gray-700 w-full" onChange={handleTermChange}>
+      <option >Select A Term</option>
+      {terms.map((item)=>(
+         <option key={item.id} value={item.id}>{item.name}</option>
+      ))}
+    </select>
+  <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500">
+    <BookCheck className="h-4 w-4"/>
+  </span>
+</div>
+              </div>
+            
             <input
               type="date"
               className="p-2 rounded-sm text-gray-700 border border-gray-300 px-4"

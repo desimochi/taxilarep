@@ -14,6 +14,8 @@ const UserTable = () => {
     const [error, setError] = useState("")
     const [isDel, setIsDel] = useState(false)
     const [users, setUsers] = useState([]); 
+    const [searchTerm, setSearchTerm] = useState("");
+
 useEffect(() => {
     const fetchCourses = async () => {
      
@@ -87,23 +89,21 @@ useEffect(() => {
     };
     
 
-      const handleChange = (e, index) => {
-        const { name, value } = e.target;
-        
-        setUsers(prevUsers => 
-            prevUsers.map((user, i) => 
-                i === index ? { ...user, [name]: value } : user
-            )
-        );
+    const handleChange = (e, index, fieldName = null) => {
+      const { name, value } = e.target;
+      const key = fieldName || name;
+    
+      setUsers(prevUsers =>
+        prevUsers.map((user, i) =>
+          i === index ? { ...user, [key]: key === "is_active" ? value === "true" : value } : user
+        )
+      );
     };
     
-    const toggleModal = () => {
-        setIsOpen(!isOpen);
-      };
-      function handleSubmit (e){ 
-        e.preventDefault()
-        console.log("submitted")
-    }
+    
+    const filteredUsers = users.filter((user) =>
+      user.name?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
     return (
         <>
         <div className="border-b border-gray-200 dark:border-gray-700 px-5">
@@ -131,22 +131,29 @@ useEffect(() => {
       </div>
        {activeTab==="subject" && <>
         <div className="px-5 py-4">
-         <div className="border border-gray-300 rounded-xl mt-4 bg-gradient-to-bl from-gray-700 to-stone-900 text-white p-2 hover:shadow-xl transition-shadow  py-8 px-12">
+         <div className="py-8 px-12">
                 <div className="flex justify-between items-center gap-2">
                     <div className="w-3/5">
                 <h5 className="text-2xl font-bold">Subject Manager</h5>
                 <span className="text-sm text-gray-400">Taxila Business School</span>
                 </div>
                 <div className="w-1/5">
-                  <input type="text" placeholder="Search..." className="border border-gray-300 rounded-md p-2 w-full" />
+                <input
+  type="text"
+  placeholder="Search..."
+  className="border border-gray-300 rounded-md p-2 w-full"
+  value={searchTerm}
+  onChange={(e) => setSearchTerm(e.target.value)}
+/>
         </div>
     
-            
+           
                 </div>
-                
+                <hr className="border border-b-2 mt-4"/>
             </div>
+          <div className="px-12">
         <table className="w-full text-sm text-left text-gray-700 dark:text-gray-400 mt-4">
-            <thead className="text-xs text-white uppercase bg-black dark:bg-gray-700 dark:text-white-400 w-full">
+            <thead className="text-xs text-red-800 uppercase bg-red-50 dark:bg-gray-700 dark:text-white-400 w-full">
                 <tr >
                     <th className="px-6 py-3">S. No.</th>
                     <th className="px-6 py-3">Subject Name</th>
@@ -158,8 +165,8 @@ useEffect(() => {
                 </tr>
             </thead>
             <tbody>
-            {users.length > 0 &&
-    users.map((user, index) => (
+            {filteredUsers.length > 0 &&
+    filteredUsers.map((user, index) => (
         <tr
             key={index}
             className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
@@ -255,6 +262,7 @@ useEffect(() => {
 
             </tbody>
         </table>
+        </div>
         </div>
         {isDel && (
         <div

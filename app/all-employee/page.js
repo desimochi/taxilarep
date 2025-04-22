@@ -25,7 +25,7 @@ export default function Page() {
     useEffect(() => {
         const fetchExams = async () => {
             try {
-                const response = await authFetch(`employee-list`); // Replace with your API URL
+                const response = await authFetch(`all-employee_list`); // Replace with your API URL
                 const data = await response.json();
                 setExams(data.data);
             } catch (error) {
@@ -111,8 +111,8 @@ export default function Page() {
     {showtoast && <Toast message={message}/>}
     <div className="p-6 min-h-screen">
             <div className="bg-white p-6 rounded-lg">
-                <h1 className="text-3xl font-bold mb-2 font-sans">Faculty </h1>
-                <p className="text-sm text-gray-500 mb-8">Everyhting you need to know about faculty</p>
+                <h1 className="text-3xl font-bold mb-2 font-sans">All Employee </h1>
+                <p className="text-sm text-gray-500 mb-8">Everyhting you need to know about all employee of Taxila Busines School</p>
                 <hr className=" border  border-spacing-y-0.5 mb-6"/>
                 <div className="mb-4 flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
@@ -123,7 +123,7 @@ export default function Page() {
   value={searchQuery}
   onChange={(e) => setSearchQuery(e.target.value)}
 />
-                    <Link href={`/add-faculty`} className="border border-gray-200 hover:bg-gray-100 text-gray-700 px-8 py-2 rounded flex items-center gap-2"> <PlusCircleIcon className="h-4 w-4"/>Faculties</Link>
+                    <Link href={`/add-employee`} className="border border-gray-200 hover:bg-gray-100 text-gray-700 px-8 py-2 rounded flex items-center gap-2"> <PlusCircleIcon className="h-4 w-4"/>Employee</Link>
                     </div>
                     <button className="border border-gray-200 font-bold hover:bg-gray-100 text-gray-900 px-8 py-2 rounded flex items-center gap-2">
                        <Settings2Icon className="h-4 w-4"/> View
