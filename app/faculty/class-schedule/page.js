@@ -271,6 +271,7 @@ const confirmReschdule = async () => {
                                 <th scope="col" className="px-6 py-3">S.No.</th>
                                 <th scope="col" className="px-6 py-3">Batch</th>
                                 <th scope="col" className="px-6 py-3">Subject Name</th>
+                                <th scope="col" className="px-6 py-3">Type</th>
                 <th scope="col" className="px-6 py-3">Date.</th>
                
                 <th scope="col" className="px-6 py-3">From</th>
@@ -288,6 +289,7 @@ const confirmReschdule = async () => {
             <td className="px-6 py-3">{index + 1}</td>
             <td className="px-6 py-3">{cls.mapping.batch?.name}</td>
             <td className="px-6 py-3">{cls.mapping.subject?.name}</td>
+            <td className="px-6 py-3">{cls.mapping?.type  ==="main"? <span className="text-sm text-green-800 bg-green-50 rounded-sm px-2 py-.5 border">main</span>:<span className="text-sm text-red-800 bg-red-50 rounded-sm px-2 py-.5 border">{product.type}</span>}</td>
             <td className="px-6 py-3">{cls.date}</td>
             <td className="px-6 py-3">{cls.start_time}</td>
             <td className="px-6 py-3">{cls.end_time}</td>

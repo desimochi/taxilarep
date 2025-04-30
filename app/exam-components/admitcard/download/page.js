@@ -20,7 +20,8 @@ export default function Page() {
   const [batchOptions, setBatchOptions] = useState([]);
   const [selectedStudentId, setSelectedStudentId] = useState(null);
   const term = searchParams.get("term");
-
+  const batch = searchParams.get("batch");
+  const type = searchParams.get("type");
   const [filters, setFilters] = useState({
     batch: "",
     search: "",
@@ -31,7 +32,7 @@ export default function Page() {
     const fetchStudents = async () => {
       setLoading(true);
       try {
-        const response = await authFetch("student-list"); // Replace with actual API URL
+        const response = await authFetch(`student-list-filter?batch=${batch}&term=${term}&type=${type}`); // Replace with actual API URL
         const data = await response.json();
         setStudents(data.data);
         setFilteredStudents(data.data);

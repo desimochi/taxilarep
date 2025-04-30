@@ -35,7 +35,25 @@ export default function MainExamCom() {
     };
 
     fetchAllData();
-  }, []);
+  }, [id]);
+
+async function handleTermChange(e) {
+  const term = e.target.value
+  setLoading(true)
+  try {
+    const response = await authFetch(`student-wise-exam-list/${id}?term=${term}`)
+    const data = await response.json()
+    if(!response.ok){
+      throw new Error("Failed to Fetch Data")
+    }
+    setClassSchedule(data.data)
+  } catch (error) {
+    console.error(error.message)
+  } finally{
+    setLoading(false)
+  }
+  
+}
 
 const filteredSchedule = classSchedule.filter((item) =>
   item.subject_name?.toLowerCase().includes(searchTerm)
@@ -65,7 +83,7 @@ const filteredSchedule = classSchedule.filter((item) =>
   value={searchTerm}
   onChange={(e) => setSearchTerm(e.target.value)}
 />
-            <select className="bg-white border border-gray-300 text-gray-700 text-sm rounded-sm block w-[180px] p-2.5">
+            <select className="bg-white border border-gray-300 text-gray-700 text-sm rounded-sm block w-[180px] p-2.5" onChange={handleTermChange}>
               <option value="" disabled selected>Select a Term</option>
   {component.map((item) => (
     <option key={item.id} value={item.id}>

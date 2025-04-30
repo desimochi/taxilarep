@@ -14,6 +14,7 @@ const EditComponent = () => {
     const[message, setmessage] = useState("")
     const [editingRow, setEditingRow] = useState(false);
     const [equalmarks, setEqualMarks] = useState(false)
+    const[submap, setSubMap] = useState("")
     const [marks, setMarks] = useState()
     const [subcomponent, setSubcomponent] = useState([])
     const [loading, setLoading] = useState(true);
@@ -57,6 +58,7 @@ const EditComponent = () => {
                     is_submission: data.data.is_submission || false,
                     is_active: data.data.is_active || true,
                 });
+                setSubMap(data.data.subject_mapping)
             } catch (err) {
                 setError(err.message);
             } finally {
@@ -151,7 +153,7 @@ const EditComponent = () => {
     
             // Prepare main component data
             const mainComponentData = {
-                subject_mapping: 1, // Adjust as needed
+                subject_mapping: submap, // Adjust as needed
                 type: formData.type,
                 name: formData.name,
                 max_marks: mainMaxMarks,

@@ -105,7 +105,7 @@ export default function ClassSchedule() {
 </div>
 <div className="relative">
     <select className="p-2.5 pl-10 rounded-sm border border-gray-300 text-gray-700 w-full" onChange={handleTermChange}>
-      <option >Select A Term</option>
+      <option value="">Select A Term</option>
       {terms.map((item)=>(
          <option key={item.id} value={item.id}>{item.name}</option>
       ))}
@@ -140,6 +140,7 @@ export default function ClassSchedule() {
           <tr className="text-red-700 bg-red-50 font-normal text-sm border-b">
           <th scope="col" className="px-6 py-3">S.No.</th>
             <th scope="col" className="px-6 py-3">Subject</th>
+            <th scope="col" className="px-6 py-3">Type</th>
             <th scope="col" className="px-6 py-3">Batch</th>
             <th scope="col" className="px-6 py-3">Term</th>
             <th scope="col" className="px-6 py-3">Date</th>
@@ -160,6 +161,7 @@ export default function ClassSchedule() {
               <td className="px-6 py-4">
                 {cls.mapping?.subject?.name || "N/A"}
               </td>
+              <td className="px-6 py-3">{cls.mapping?.type  ==="main"? <span className="text-sm text-green-800 bg-green-50 rounded-sm px-2 py-.5 border">main</span>:<span className="text-sm text-red-800 bg-red-50 rounded-sm px-2 py-.5 border">{product.type}</span>}</td>
               <td className="px-6 py-4">
                 {cls.mapping?.batch?.name || "N/A"}
               </td>

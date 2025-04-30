@@ -112,6 +112,7 @@ export const menuItems = [
         {label : "Syllabus", hasSubMenu:true,  subMenu : [
             {label:"Upload Syllabus", path:"/syllabus/see-syllabus"},
           ]},
+          { label: "Notes", path: "/notes" },
           { label: "Student Attendance", path: "/attendance/class-attendance" },
       ],
     },

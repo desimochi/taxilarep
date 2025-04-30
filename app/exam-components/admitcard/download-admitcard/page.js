@@ -62,8 +62,8 @@ export default function Page(){
 {admit.length > 0 ? (
     admit.map((item) => (
         <div key={item.id} className="flex justify-between mt-3 items-center">
-            <p className="font-bold text-red-800">{item.term?.name}</p>
-            <Link href={`/exam-components/admitcard/download?term=${item.term?.id}&batch=${batch}`} className="text-sm bg-red-50 text-red-800 py-0.5 px-2 rounded-sm flex items-center gap-2"><DownloadCloudIcon className="h-3 w-3"/>Download</Link>
+            <p className="font-bold text-red-800">{item.term?.name} - {item.type}</p>
+            <Link href={`/exam-components/admitcard/download?term=${item.term?.id}&batch=${batch}&type=${item.type}`} className="text-sm bg-red-50 text-red-800 py-0.5 px-2 rounded-sm flex items-center gap-2"><DownloadCloudIcon className="h-3 w-3"/>Download</Link>
         </div>
     ))
 ) : (

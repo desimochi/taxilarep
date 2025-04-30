@@ -47,51 +47,33 @@ const [formData, setFormData] = useState({
     if (e_date) params.append('e_date', e_date);
     if (currentPage) params.append('page', currentPage);
     try {
-      const response = await authFetch(`class-schedule-viewset?${params.toString()}`);
+      const [response, response1, response2] = await Promise.all([
+        authFetch(`class-schedule-viewset?${params.toString()}`),
+        authFetch("terms-list"),
+        authFetch("subjects-list")
+      ]);
       const data = await response.json();
+      const data1 = await response1.json();
+      const data2 = await response2.json();
 
       if (data && data.data) {
         setsclass(data.data);
         setTotalPages(data.extra?.total);
-        const uniqueTerms = Array.from(
-          new Map(
-              data.data
-                  .filter(item => item.mapping && item.mapping.term)
-                  .map(item => [item.mapping.term.id, item.mapping.term])
-          ).values()
-      );
-      setTerms(uniqueTerms);
-
-      const uniqueSubjects = Array.from(
-        new Map(
-            data.data
-                .filter(item => item.mapping && item.mapping.term && item.mapping.subject)
-                .map(item => [item.mapping.subject.name, { 
-                    termId: item.mapping.term.id, 
-                    subjectMappingId: item.mapping.id, 
-                    subjectName: item.mapping.subject.name 
-                }])
-        ).values()
-    );
-    setSubjectas(uniqueSubjects);
+        setTerms(data1.data)
+    setSubjectas(data2.data);
       } else {
-        setClassSchedule([]);
+        setsclass([]);
         setTotalPages(1);
       }
     } catch (error) {
       console.error("Error fetching data:", error);
-      setClassSchedule([]);
+      setsclass([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleTermChange = (e) => {
-    const termId = e.target.value;
-    setSelectedTerm(termId);
-    const filtered = subjectas.filter(sub => sub.termId.toString() === termId);
-    setFilteredSubjects(filtered);
-};
+ 
 const handleSubmit = async () => {
     try {
         setLoading(true);
@@ -111,7 +93,7 @@ const handleSubmit = async () => {
 
         const data = await response.json();
         setsclass(data.data);
-        setTotalPages(data.extra?.total);
+        setTotalPages(data.extra?.total || 1);
         setCurrentPage(1)
     } catch (error) {
         setError(error.message);
@@ -244,7 +226,7 @@ const confirmReschdule = async () => {
                     <hr className=" border  border-spacing-y-0.5 mb-6"/>
                     <div className="mb-4 flex items-center justify-between ">
                         <div className="w-1/5">
-                    <select value={selectedTerm} onChange={handleTermChange} className=" w-full border border-gray-300 rounded-sm p-2 text-gray-500 ">
+                    <select value={selectedTerm} onChange={(e)=>setSelectedTerm(e.target.value)} className=" w-full border border-gray-300 rounded-sm p-2 text-gray-500 ">
                         <option value="">Select Term</option>
                         {terms.map(term => (
                             <option key={term.id} value={term.id}>{term.name}</option>
@@ -252,11 +234,11 @@ const confirmReschdule = async () => {
                     </select>
                     </div>
                     <div className="w-1/5">
-                    <select onChange={(e) => setSelectedSubject(e.target.value)} disabled={!selectedTerm} className=" border w-full border-gray-300 rounded-sm p-2 text-gray-500">
+                    <select onChange={(e) => setSelectedSubject(e.target.value)} className=" border w-full border-gray-300 rounded-sm p-2 text-gray-500">
                         <option value="">Select Subject</option>
-                        {filteredSubjects.map(sub => (
-                            <option key={sub.subjectMappingId} value={sub.subjectMappingId}>
-                                {sub.subjectName}
+                        {subjectas.map(sub => (
+                            <option key={sub.id} value={sub.id}>
+                                {sub.name}
                             </option>
                         ))}
                     </select>
@@ -281,6 +263,7 @@ const confirmReschdule = async () => {
                 <th className="border px-4 py-2">Term</th>
                 <th className="border px-4 py-2">Batch</th>
                 <th className="border px-4 py-2">Subject</th>
+                <th className="border px-4 py-2">Type</th>
                 <th className="border px-4 py-2">Faculty</th>
                 <th className="border px-4 py-2">Class Date</th>
                 <th className="border px-4 py-2">Start Time</th>
@@ -297,6 +280,7 @@ const confirmReschdule = async () => {
                     <td className="px-6 py-3">{cls.mapping.term?.name}</td>
                     <td className="px-6 py-3">{cls.mapping.batch?.name}</td>
                     <td className="px-6 py-3">{cls.mapping.subject?.name}</td>
+                    <td className="px-6 py-3">{cls.mapping?.type  ==="main"? <span className="text-sm text-green-800 bg-green-50 rounded-sm px-2 py-.5 border">main</span>:<span className="text-sm text-red-800 bg-red-50 rounded-sm px-2 py-.5 border">{cls.mapping?.type}</span>}</td>
                     <td className="px-6 py-3">{cls.mapping.faculty?.first_name} {cls.mapping.faculty?.last_name}</td>
                     <td className="px-6 py-3">{cls.date}</td>
                     <td className="px-6 py-3">{cls.start_time}</td>
@@ -305,7 +289,7 @@ const confirmReschdule = async () => {
           {cls.is_cancel ? (
             <span className="bg-red-100 text-sm text-red-800 py-0.5 px-3 rounded-sm">Cancelled</span>
           ) : cls.is_complete ? (
-            <Link href={`attendance/class-attendance/${cls.id}`} className="bg-gray-100 text-sm text-gray-800 py-0.5 px-3 rounded-sm"><EyeIcon className="h-4 w-4"/></Link>
+            <Link href={`attendance/class-attendance/${cls.id}`} className="bg-gray-100 text-sm flex items-center justify-center w-fit text-gray-800 py-0.5 px-3 rounded-sm"><EyeIcon className="h-4 w-4"/></Link>
           ) : cls.is_ready_for_attendance ? (
             <span className="bg-violet-100 text-sm text-violet-800 py-0.5 px-3 rounded-sm">Attendance Not Marked</span>
           ) : (<span className="bg-green-100 text-sm text-green-800 py-0.5 px-3 rounded-sm">Scheduled</span>)}
@@ -315,7 +299,7 @@ const confirmReschdule = async () => {
                   ))
               ) : (
                   <tr>
-                      <td colSpan={4} className="text-center py-4">No Class Schedule</td>
+                      <td colSpan={11} className="text-center py-4">No Class Schedule</td>
                   </tr>
               )}
             </tbody>

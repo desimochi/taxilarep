@@ -77,7 +77,7 @@ export default function Page() {
             {/* Back Button */}
             <button 
                 onClick={() => router.back()} 
-                className="px-6 py-1 flex align-middle items-center gap-1 text-gray-600 text-sm rounded"
+                className="px-12 py-1 flex align-middle items-center gap-1 text-gray-600 text-sm rounded"
             >
                 <ArrowLeft className='h-4 w-4' /> Back to List
             </button>
@@ -88,32 +88,34 @@ export default function Page() {
 
             {/* Render only if students data is available */}
             {!loading && !error && students && (
-                <div className="border border-gray-300 rounded-xl mt-4 bg-gradient-to-bl from-gray-700 to-stone-900 text-white p-8 mx-6 mb-8">
+                <div className=" p-8 mx-6 mb-3">
                     <div className="flex justify-between items-center">
                         <h5 className="text-2xl font-bold">
                             {students?.subject?.name || 'N/A'} Subject Details
                         </h5>
-                        <div className="flex gap-2">
-                            <p className="bg-red-600 px-4 py-1 rounded-sm">
+                        
+                    </div>
+                    <div className="flex gap-2 text-xs mt-2">
+                            <p className="bg-red-50 text-red-800 px-4 py-1 rounded-sm">
                                 Batch - {students?.batch?.name || 'N/A'}
                             </p>
-                            <p className="bg-green-600 px-4 py-1 rounded-sm">
+                            <p className="bg-green-50 text-green-800 px-4 py-1 rounded-sm">
                                 Term - {students?.term?.name || 'N/A'}
                             </p>
-                            <p className="bg-black px-4 py-1 rounded-sm">
+                            <p className="bg-gray-100 text-gray-800 px-4 py-1 rounded-sm">
                                 Specialization - {students?.specialization?.map(spec => spec.name).join(', ') || 'N/A'}
                             </p>
                         </div>
-                    </div>
+                        <hr className="border border-b-2 mt-6"/>
                 </div>
             )}
 
             {/* Table */}
             {!loading && !error && (
-                <div className="flex gap-2 px-6">
+                <div className="flex gap-2 px-12">
                     <div className="w-1/4">
                         <div className="border border-gray-300 p-6 rounded-sm">
-                            <h3 className="bg-black rounded-sm text-white text-center py-1.5">Components Details</h3>
+                            <h3 className="bg-red-50 rounded-sm text-red-800 text-center py-1.5 font-bold">Components Details</h3>
                             {additionalData.map((comp) => (
   <div className="flex justify-between mt-4" key={comp.id}>
     <p className="font-bold text-sm">{comp.name} - {comp.max_marks} Marks</p>
@@ -125,7 +127,7 @@ export default function Page() {
     ) : (
       <Link
         href={`/student/subject/component/${comp.id}`}
-        className="text-xs bg-blue-100 text-blue-800 py-0.5 px-2 rounded-sm"
+        className="text-xs bg-green-50 text-green-800 py-0.5 px-2 rounded-sm"
       >
         See Details
       </Link>
@@ -163,9 +165,9 @@ export default function Page() {
                             
                         </div>
                         <div className="p-4 border border-gray-300 rounded-sm mt-4">
-                            <div className="flex justify-between bg-black p-2 py-5 rounded-sm ">
-                            <h3 className="text-white font-bold text-xl px-4">Syllabus of {students?.subject?.name || 'N/A'}</h3>
-                            <button className="text-white bg-red-600 py-1 px-8 rounded-sm" onClick={handlePrint}>Download PDF</button>
+                            <div className="flex justify-between bg-red-50 p-2 py-5 rounded-sm ">
+                            <h3 className=" font-bold text-xl px-4 text-red-800">Syllabus of {students?.subject?.name || 'N/A'}</h3>
+                            <button className="text-white mx-4 bg-red-800 py-1 px-8 rounded-sm" onClick={handlePrint}>Download PDF</button>
                         </div>
                         {data?.description && (
   <div ref={componentRef}

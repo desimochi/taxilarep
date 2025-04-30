@@ -200,6 +200,7 @@ export default function AssignedSubject(){
                 <th scope="col" className="px-6 py-3">Batch Name</th>
                 <th scope="col" className="px-6 py-3">Term</th>
                 <th scope="col" className="px-6 py-3">Assigned Subject</th>
+                <th scope="col" className="px-6 py-3">Type</th>
                 <th scope="col" className="px-6 py-3">Assigned Faculty</th>
                 <th scope="col" className="px-6 py-3">Action</th>
             </tr>
@@ -229,6 +230,8 @@ export default function AssignedSubject(){
       <td className="px-6 py-4">
        {course.subject.name}
       </td>
+      
+      <td className="px-6 py-3">{course.type  ==="main"? <span className="text-sm text-green-800 bg-green-50 rounded-sm px-2 py-.5 border">main</span>:<span className="text-sm text-red-800 bg-red-50 rounded-sm px-2 py-.5 border">{course.type}</span>}</td>
       <td className="px-6 py-4">
        {course.faculty.first_name +" " + course.faculty.last_name}
       </td>

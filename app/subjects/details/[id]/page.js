@@ -78,7 +78,7 @@ export default function Page() {
            
             {!loading && !error && students && <div className="w-full px-12 py-6">
             
-            <h1 className="text-3xl font-bold mb-2 font-sans">  {students?.subject?.name || 'N/A'} Subject Details </h1>
+            <h1 className="text-3xl font-bold mb-2 font-sans">  {students?.subject?.name || 'N/A'} Subject Details - {students?.type} </h1>
             <p className="text-sm text-gray-500 mb-4">Everyhting you need to know about Your Subject</p>
             <div className="flex justify-between items-center">
                 <div className="flex gap-2 text-sm mb-6">

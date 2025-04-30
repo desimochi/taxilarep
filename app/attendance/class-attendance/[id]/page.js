@@ -14,6 +14,7 @@ export default function Page() {
     const [subName, setSubName] = useState("")
     const [date, setDate] = useState("")
     const [message, setMessage] = useState('')
+    const [type, setType] = useState('')
     const [showToast, setShowToast] = useState(false)
     const [error, setError] = useState(false)
     const [search, setSearch] = useState("")
@@ -37,6 +38,7 @@ export default function Page() {
                 setStudents(data.data?.students);
                 setSubName(data.data?.class_schedule?.mapping?.subject?.name);
                 setDate(data.data?.class_schedule?.date);
+                setType(data.data?.class_schedule?.mapping?.type);
                 const compfeId = data.data?.class_schedule?.mapping?.id;
                 setcomfe(compfeId);
     
@@ -131,7 +133,7 @@ export default function Page() {
             >
                 <ArrowLeft className='h-4 w-4' /> Back to List
             </button>
-            <h1 className="text-2xl font-bold mb-2 font-sans px-6 mt-6">{subName} Class Attendance  - {date}</h1>
+            <h1 className="text-2xl font-bold mb-2 font-sans px-6 mt-6">{subName} Class Attendance  - {date} -({type})</h1>
             <p className="text-sm text-gray-500 mb-8 px-6">Everyhting you need to know about Your Class Schedule</p>
             <hr className=" border  border-spacing-y-0.5 mb-6 px-6"/>
             <div className="flex justify-between items-center mb-6">

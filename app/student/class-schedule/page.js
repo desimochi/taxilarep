@@ -25,31 +25,34 @@ const [e_date, setEndDate] = useState('');
       try {
         setLoading(true);
         const [response, response1] = await Promise.all([
-            await authFetch(`student-wise-class/${state.user_id}`)
+            await authFetch(`student-wise-class/${state.user_id}`),
+            await authFetch(`subject-student-wise/${state.user_id}`),
 
         ])
         if (!response.ok && !response1.ok) throw new Error("Failed to fethc the data");
 
         const data = await response.json();
-
+        const data2 = await response1.json()
         setsclass(data.data);
+        setatten(data2.data)
         const uniqueTerms = Array.from(
             new Map(
-                data.data
-                    .filter(item => item.mapping && item.mapping.term)
-                    .map(item => [item.mapping.term.id, item.mapping.term])
+                data2.data
+                    .filter(item => item.term)
+                    .map(item => [item.term.id, item.term])
             ).values()
         );
         setTerms(uniqueTerms);
         
         // Get subjects
-        const mappedSubjects = data.data
-        .filter(item => item.mapping && item.mapping.term && item.mapping.subject)
-        .map(item => ({
-            termId: item.mapping.term.id,
-            subjectMappingId: item.mapping.id,
-            subjectName: item.mapping.subject.name
-        }));
+        const mappedSubjects = data2.data
+            .filter(item => item.term && item.subject)
+            .map(item => ({
+                termId: item.term.id,
+                subjectMappingId: item.id, // id is the subject_mapping id
+                subjectName: item.subject.name,
+                subjectType : item.type
+            }));
         setSubjectas(mappedSubjects);
         
       } catch (err) {
@@ -121,7 +124,7 @@ const handleSubmit = async () => {
                 <option value="">Select Subject</option>
                 {filteredSubjects.map(sub => (
                     <option key={sub.subjectMappingId} value={sub.subjectMappingId}>
-                        {sub.subjectName}
+                        {sub.subjectName} - {sub.subjectType}
                     </option>
                 ))}
             </select>
@@ -141,6 +144,7 @@ const handleSubmit = async () => {
                          <tr >
                                 <th scope="col" className="px-6 py-3">S.No.</th>
                                 <th scope="col" className="px-6 py-3">Subject Name</th>
+                                <th scope="col" className="px-6 py-3">Subject Type</th>
                 <th scope="col" className="px-6 py-3">Date.</th>
                 <th scope="col" className="px-6 py-3">From</th>
                 <th scope="col" className="px-6 py-3">To</th>
@@ -155,6 +159,11 @@ const handleSubmit = async () => {
         <tr key={cls.id} className="hover:bg-gray-50">
             <td className="px-6 py-3">{index + 1}</td>
             <td className="px-6 py-3">{cls.mapping.subject?.name}</td>
+            <td className="px-6 py-3">{cls.mapping?.type === "main" ? (
+                    <span className="bg-green-50 text-green-800 px-2 py-1 shadow-sm rounded-sm border border-green-100">main</span>
+                ) : (
+                    <span className="bg-red-50 text-red-800 px-2 py-1 shadow-sm rounded-sm border border-red-100">{cls.mapping?.type}</span>
+                )}</td>
             <td className="px-6 py-3">{cls.date}</td>
             <td className="px-6 py-3">{cls.start_time}</td>
             <td className="px-6 py-3">{cls.end_time}</td>

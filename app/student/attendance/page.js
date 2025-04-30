@@ -55,7 +55,8 @@ const [e_date, setEndDate] = useState('');
             .map(item => ({
                 termId: item.term.id,
                 subjectMappingId: item.id, // id is the subject_mapping id
-                subjectName: item.subject.name
+                subjectName: item.subject.name,
+                subjectType : item.type
             }));
         setSubjectas(mappedSubjects);
         
@@ -102,9 +103,11 @@ const handleSubmit = async () => {
 
 
     const uniqueDates = [...new Set(atten.flatMap((item) => item.attendance.map((att) => att.date)))];
-  const subjects = atten.map((item) => item.subject_mapping.subject.name);
+    const subjects = atten.map((item) => ({
+      name: item.subject_mapping.subject.name,
+      type: item.subject_mapping.type,
+    }));
   const percntage = atten.map((item) => item.attended_percentage);
- 
     return(
         <div className="py-4 px-5">
          
@@ -134,7 +137,7 @@ const handleSubmit = async () => {
                 <option value="">Select Subject</option>
                 {filteredSubjects.map(sub => (
                     <option key={sub.subjectMappingId} value={sub.subjectMappingId}>
-                        {sub.subjectName}
+                        {sub.subjectName} - {sub.subjectType}
                     </option>
                 ))}
             </select>
@@ -153,7 +156,7 @@ const handleSubmit = async () => {
               <tr>
                 <th scope="col" className="px-6 py-3">Date</th>
             {subjects.map((subject, index) => (
-              <th key={index} scope="col" className="px-6 py-3">{subject} - {percntage[index]}%</th>
+              <th key={index} scope="col" className="px-6 py-3">{subject.name}-({subject.type}) - {percntage[index]}%</th>
             ))}
               </tr>
             </thead>
@@ -168,15 +171,15 @@ const handleSubmit = async () => {
                 return (
                   <td
                     key={subIndex}
-                    className={`border border-gray-300 px-4 py-2 ${
-                      status === "Present"
-                        ? "bg-green-200"
-                        : status === "Class Not Scheduled"
-                        ? "bg-gray-100"
-                        : "bg-red-200"
-                    }`}
+                   
                   >
-                    {status}
+                    <span  className={`border text-sm px-2 py-1 border-l-2 rounded-sm ${
+                      status === "Present"
+                        ? "bg-green-50 text-green-800"
+                        : status === "Class Not Scheduled"
+                        ? "bg-gray-50 text-gray-800"
+                        : "bg-red-50 text-red-800"
+                    }`}>{status}</span>
                   </td>
                 );
               })}

@@ -13,7 +13,7 @@ export default function BulkClassShed({id}) {
   const [showToast, setShowToast] = useState(false)
   const [weekdays, setWeekdays] = useState({});
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(false)
+  const [error, setError] = useState("")
 
   const weekdayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -50,6 +50,11 @@ export default function BulkClassShed({id}) {
 
   const handleSubmit = async () => {
     const dataa = generateSchedule();
+    if (dataa.schedules.length === 0) {
+        setError("Please select at least one weekday and time")
+        return;
+    }
+
     setLoading(true)
     try {
       const res = await authFetch('bulk-class-schedule', {
@@ -67,7 +72,7 @@ export default function BulkClassShed({id}) {
         setMessage("Class Schedule Successfully")
         setShowToast(false)
         setLoading(false)
-        // router.push('/course/course-schedule');
+        router.push('/add-class');
       }, 2000)
     } catch (error) {
         setMessage(error)
@@ -84,6 +89,7 @@ export default function BulkClassShed({id}) {
   return (
     <div className="max-w-3xl mx-auto bg-white">
         {showToast && <Toast message={message}/>}
+        {error && <div className="text-red-500 text-center">{error}</div>}
         <div className='flex justify-between gap-2 mb-2'>
       <div className="space-y-2 w-full">
         <label className="block font-medium">Start Date</label>

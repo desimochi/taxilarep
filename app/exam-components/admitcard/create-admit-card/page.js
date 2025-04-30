@@ -49,10 +49,12 @@ export default function Page() {
         const batch = formData.get("batch")
         const term = formData.get("term")
         const is_active = formData.get("is_active")
+        const type =  formData.get("type")
         const payload = {
             batch,
             term,
-            is_active
+            is_active, 
+            type
         }
         try {
             setLoading(true)
@@ -118,6 +120,13 @@ export default function Page() {
                 <option >Select A Status</option>
                 <option value='true'>Active</option>
                 <option value='false'>Inactive</option>
+                </select>
+                <label className="font-bold mb-2">Exam Type</label> <br/>
+                <select name="type" className=" border border-x-gray-300 p-2 w-full mt-2">
+                <option >Select A Type</option>
+                <option value='main'>Main</option>
+                <option value='resit-2'>Resit-1</option>
+                <option value='resit-1'>Resit-2</option>
                 </select>
                 <button type="submit" className="mt-4 mb-4 bg-red-800 flex items-center justify-center gap-1 text-white px-12 py-2 rounded-sm shadow-sm hover:shadow-xl transition-shadow"><SaveIcon className="h-4 w-4"/> Submit </button>
             </form>

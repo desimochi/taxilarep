@@ -120,7 +120,17 @@ export default function Page() {
                             <h2 className="text-xl font-semibold mb-2 text-red-800 bg-red-50 py-2 text-center">Basic Information</h2>
                             <hr className='border border-b1 border-red-700 mb-4' />
                             <p className='flex items-center justify-between mt-2 gap-2 text-sm'><strong>Full Name:</strong> {student.first_name} {student.middle_name} {student.last_name}</p>
-                            <p className='flex items-center justify-between mt-2 gap-2 text-sm'><strong>Enrollment Number:</strong> {student.enrollment_number}</p>
+                            <p className='flex items-center justify-between mt-2 gap-2 text-sm'><strong>Enrollment Number:</strong> 
+                            {isEditing ?
+                                    <input
+                                        type="text"
+                                        name="enrollment_number"
+                                        value={student.enrollment_number || ""}
+                                        onChange={handleChange}
+                                        className='border border-gray-300 p-2 rounded-sm w-full'
+                                    /> : student.enrollment_number
+                                }
+                                    </p>
                             <p className='flex items-center justify-between mt-2 gap-2 text-sm'><strong>Gender:</strong> {student.gender}</p>
                             <p className='flex items-center justify-between mt-2 gap-2 text-sm'><strong>Date of Birth:</strong> {student.date_of_birth}</p>
                             <p className='flex items-center justify-between mt-2 gap-2 text-sm'><strong>Category:</strong>

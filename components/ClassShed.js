@@ -57,36 +57,19 @@ const weekdayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'S
   const fetchAllData = async (page) => {
     setLoading(true);
     try {
-      const response = await authFetch(`subject-mapping-viewset?page=${page}`);
+      const [response, respone1, response2 ]= await Promise.all([ authFetch(`subject-mapping-list?page=${page}`),
+        authFetch(`terms-list`),
+        authFetch(`subjects-list`)
+      ])
       const data = await response.json();
+      const data1 = await respone1.json();
+      const data2 = await response2.json();
 
       if (data && data.data) {
         setsclass(data.data);
-        setTotalPages(data.extra?.total);
-        const uniqueTerms = Array.from(
-          new Map(
-              data.data
-                  .filter(item => item.term)
-                  .map(item => [item.term.id, item.term])
-          ).values()
-      );
-      setTerms(uniqueTerms);
-  
-      const uniqueSubjects = Array.from(
-          new Map(
-              data.data
-                  .filter(item => item.term && item.subject)
-                  .map(item => [
-                      `${item.subject.id}-${item.term.id}`, // <-- unique key
-                      {
-                          termId: item.term.id,
-                          subjectMappingId: item.id,
-                          subjectName: item.subject.name,
-                      },
-                  ])
-          ).values()
-      );
-      setSubjectas(uniqueSubjects);
+        setTotalPages(data.extra?.total || 1);
+        setTerms(data1.data);
+        setSubjectas(data2.data);
       } else {
         setClassSchedule([]);
         setTotalPages(1);
@@ -99,19 +82,14 @@ const weekdayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'S
     }
   };
 
-  const handleTermChange = (e) => {
-    const termId = e.target.value;
-    setSelectedTerm(termId);
-    const filtered = subjectas.filter(sub => sub.termId.toString() === termId);
-    setFilteredSubjects(filtered);
-};
+
 const handleSubmit = async () => {
     try {
         setLoading(true);
 
         // Build dynamic query
         const params = new URLSearchParams();
-        // if (selectedTerm) params.append('term', selectedTerm);
+        if (selectedTerm) params.append('term', selectedTerm);
         if (selectedSubject) params.append('subject__name', selectedSubject);
 
         const url = `subject-mapping-viewset?${params.toString()}`;
@@ -184,7 +162,7 @@ const generateSchedule = () => {
                     <hr className=" border  border-spacing-y-0.5 mb-6"/>
                     <div className="mb-4 flex items-center justify-start gap-2 ">
                         <div className="w-1/5">
-                    <select value={selectedTerm} onChange={handleTermChange} className=" w-full border border-gray-300 rounded-sm p-2 text-gray-500 ">
+                    <select value={selectedTerm} onChange={(e) => setSelectedTerm(e.target.value)} className=" w-full border border-gray-300 rounded-sm p-2 text-gray-500 ">
                         <option value="">Select Term</option>
                         {terms.map(term => (
                             <option key={term.id} value={term.id}>{term.name}</option>
@@ -192,11 +170,11 @@ const generateSchedule = () => {
                     </select>
                     </div>
                     <div className="w-1/5">
-                    <select onChange={(e) => setSelectedSubject(e.target.value)} disabled={!selectedTerm} className=" border w-full border-gray-300 rounded-sm p-2 text-gray-500">
+                    <select onChange={(e) => setSelectedSubject(e.target.value)}  className=" border w-full border-gray-300 rounded-sm p-2 text-gray-500">
                         <option value="">Select Subject</option>
-                        {filteredSubjects.map(sub => (
-                            <option key={sub.subjectMappingId} value={sub.subjectName}>
-                                {sub.subjectName}
+                        {subjectas.map(sub => (
+                            <option key={sub.id} value={sub.name}>
+                                {sub.name}
                             </option>
                         ))}
                     </select>
