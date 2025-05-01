@@ -85,7 +85,7 @@ export default function Page() {
   async function handledownload(id) {
         sethallLoading(true);
         try {
-          const response = await authFetch(`hall-ticket/${id}/${term}`); // Replace with actual API URL
+          const response = await authFetch(`hall-ticket/${id}/${term}/${type}`); // Replace with actual API URL
           const data = await response.json();
           setAdmicard(data.data);
         } catch (error) {

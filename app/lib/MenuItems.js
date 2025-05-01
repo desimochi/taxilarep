@@ -59,7 +59,7 @@ export const menuItems = [
           {label : "Admit Card", path: "/exam-components/admitcard"},
           {label : "Download Admit Card", path: "/exam-components/admitcard/download-admitcard"},
           {label : "Result", path: "/exam-components/result"},
-          {label : "Result", path: "/exam-components/resit"},
+          {label : "Resit", path: "/exam-components/resit"},
       ],
     },
    
