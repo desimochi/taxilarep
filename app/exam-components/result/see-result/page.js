@@ -6,10 +6,13 @@ import Link from "next/link";
 import { ArrowLeft, DownloadCloudIcon } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { GlobalContext } from "@/components/GlobalContext";
+import { set } from "date-fns";
 
 export default function Page() {
     const [term, setTerm] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [gpa, setGpa] = useState(0);
+    const [cgpa, setCgpa] = useState(0);
     const {state} =  useContext(GlobalContext)
     const [display, setdisplay] = useState(true)
     const [showresult, setshowResult] = useState(false)
@@ -77,6 +80,8 @@ export default function Page() {
             // Handle successful form submission
             
             setResult(data.data)
+            setGpa(data.extra.gpa)
+            setCgpa(data.extra.cgpa)
             if(data.data.length>0){
                 setdisplay(false)
                 setshowResult(true)
@@ -168,9 +173,26 @@ export default function Page() {
         <ArrowLeft className="h-5 w-5" />
         <p>Back</p>
       </div>
+      <div className="flex justify-between items-center mt-4 mb-2">
       <div className="px-2 p-6">
         <h2 className="text-2xl font-bold">Exam Result</h2>
         <p className="text-sm text-gray-600">See the final exam result</p>
+      </div>
+      <div className="flex gap-2">
+        <div className="bg-green-50 px-4 py-1 text-sm text-green-800 rounded-sm">
+          GPA: {gpa}
+        </div>
+        <div className="bg-red-50 px-4 py-1 text-sm text-red-800 rounded-sm">
+          CGPA: {cgpa}
+        </div>
+        {/* <Link
+          href={`/student/result/download?term=${formData.term}&type=${formData.type}&enrollment_number=${formData.enrollment_number}`}
+          className="bg-red-800 text-white px-4 py-1 rounded-sm flex items-center gap-2"
+        >
+          <DownloadCloudIcon className="h-3 w-3" />
+          Download
+        </Link> */}
+      </div>
       </div>
       <hr className="border border-b-2 mb-6 " />
       <table className="overflow-x-auto w-full text-center mt-2">
@@ -192,15 +214,15 @@ export default function Page() {
                                     {result.map((item, index)=>(
                                         <tr key={item["Subject Code"]} className="border-b text-sm">
                                             <td className="p-3">{index+1}</td>
-                                            <td className="p-2">{item["Subject Name"]}</td>
+                                            <td className="p-2">{item.subject_name}</td>
                                             <td className="p-2">{item.credit}</td>
-                                            <td className="p-2">{item["External Marks"]}</td>
-                                            <td className="p-2">{item["Internal Marks"]}</td>
+                                            <td className="p-2">{Math.floor(item.external_marks * 100) / 100}</td>
+                                            <td className="p-2">{Math.floor(item.internal_marks * 100) / 100}</td>
                                             <td className="p-2">{item.grade}</td>
-                                            <td className="p-2">{item.grade_point}</td>
-                                            <td className="p-2">{item.total_marks}</td>
+                                            <td className="p-2">{item.grade_point || "NA"}</td>
+                                            <td className="p-2">{Math.floor(item.total_marks * 100) / 100}</td>
                                             {item.is_pass ? <td className="bg-green-50 text-green-800 px-4 py-1 rounded-sm">Pass</td> : <td><span className="bg-red-50 text-red-800 px-4 py-1 rounded-sm">Fail</span></td>}
-                                            <td className="p-2">{item.get_credit_xgp}</td>
+                                            <td className="p-2">{item.get_credit_xgp || "NA"}</td>
                                             {state.role_name === 'Student' && (
   item.is_pass ? (
     <td>

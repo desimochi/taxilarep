@@ -50,7 +50,7 @@ export default function Atten15Day({id}){
               </tr>
             </thead>
             <tbody>
-            {uniqueDates.map((date, index) => (
+            {uniqueDates.length>0? uniqueDates.map((date, index) => (
             <tr key={index} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200">
               <td className="px-6 py-4">{date}</td>
               {atten.map((item, subIndex) => {
@@ -73,7 +73,7 @@ export default function Atten15Day({id}){
                 );
               })}
             </tr>
-          ))}
+          )) : <tr><td className="text-center py-3">Attendance Data Not Available</td></tr>}
     
             </tbody>
                             </table>}

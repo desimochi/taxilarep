@@ -307,7 +307,7 @@ const confirmReschdule = async () => {
     ))
 ) : (
     <tr>
-        <td colSpan={4} className="text-center py-4">No Class Schedule</td>
+        <td colSpan={9} className="text-center py-4">No Class Schedule</td>
     </tr>
 )}
             

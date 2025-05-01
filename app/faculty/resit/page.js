@@ -17,7 +17,7 @@ export default function ClassOverview() {
     const fetchclassData = async () => {
       try {
         setLoading(true);
-        const response = await authFetch(`assign-faculty-filter?faculty=${state.user_id}`);
+        const response = await authFetch(`assign-faculty-filter?faculty=${state.user_id}&type=resit`);
 
         if (!response.ok) throw new Error("Failed to fetch component data");
 
@@ -40,8 +40,8 @@ export default function ClassOverview() {
     <div className="bg-violet-300 w-full sm:w-40 h-24 absolute top-0 -right-0 opacity-20 z-0"></div>
     <div className="bg-violet-500 w-full sm:w-40 h-24 absolute top-40 -right-0 opacity-20 z-0"></div>
     <div className="w-full pt-12 px-16 relative z-10 backdrop-blur-3xl min-h-screen">
-    <h1 className="text-3xl font-bold mb-2 font-sans">Assigned Subjects </h1>
-            <p className="text-sm text-gray-500 mb-8">Everyhting you need to know about Your Syllabus</p>
+    <h1 className="text-3xl font-bold mb-2 font-sans">Assigned Resit Subjects </h1>
+            <p className="text-sm text-gray-500 mb-8">Resit Subjects Students Information Panel</p>
             <hr className=" border  border-spacing-y-0.5 mb-6"/>
     <div className="">
       {loading ? (
@@ -79,7 +79,7 @@ export default function ClassOverview() {
                   </td>
                   <td className="px-6 py-4 flex items-center justify-center">
                     <Link
-                      href={`/subjects/details/${product.id}`}
+                      href={`/faculty/resit/${product.id}`}
                       className="font-medium text-green-800 bg-green-100 px-2 py-0.5 rounded-sm text-xs border border-green-200 hover:underline flex items-center w-fit"
                     >
                       <EyeIcon className="h-4 w-4 mr-1" />
@@ -87,7 +87,7 @@ export default function ClassOverview() {
                     </Link>
                   </td>
                 </tr>
-              )) : <tr><td colSpan={7} className="p-2">No Subject Assigned</td></tr>}
+              )) : <tr><td colSpan={7} className="p-2">No Resit Subject Assigned</td></tr>}
             </tbody>
           </table>
         </div>

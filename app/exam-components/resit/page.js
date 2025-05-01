@@ -17,7 +17,7 @@ export default function ClassOverview() {
     const fetchclassData = async () => {
       try {
         setLoading(true);
-        const response = await authFetch(`assign-faculty-filter?faculty=${state.user_id}`);
+        const response = await authFetch(`resit-viewset`);
 
         if (!response.ok) throw new Error("Failed to fetch component data");
 
@@ -40,8 +40,8 @@ export default function ClassOverview() {
     <div className="bg-violet-300 w-full sm:w-40 h-24 absolute top-0 -right-0 opacity-20 z-0"></div>
     <div className="bg-violet-500 w-full sm:w-40 h-24 absolute top-40 -right-0 opacity-20 z-0"></div>
     <div className="w-full pt-12 px-16 relative z-10 backdrop-blur-3xl min-h-screen">
-    <h1 className="text-3xl font-bold mb-2 font-sans">Assigned Subjects </h1>
-            <p className="text-sm text-gray-500 mb-8">Everyhting you need to know about Your Syllabus</p>
+    <h1 className="text-3xl font-bold mb-2 font-sans">Resit Details </h1>
+            <p className="text-sm text-gray-500 mb-8">Check out the Resit Progress of All Students</p>
             <hr className=" border  border-spacing-y-0.5 mb-6"/>
     <div className="">
       {loading ? (
@@ -51,43 +51,29 @@ export default function ClassOverview() {
           <table className="overflow-x-auto w-full text-center">
             <thead className="min-w-full border border-red-200 rounded-lg">
               <tr className="text-red-700 bg-red-50 font-normal text-sm border-b">
-                <th scope="col" className="px-6 py-3">Subject Name</th>
-                <th scope="col" className="px-6 py-3">Subject Type</th>
+                <th scope="col" className="px-6 py-3">Student Name</th>
+                <th scope="col" className="px-6 py-3">Subject</th>
                 <th scope="col" className="px-6 py-3">Batch</th>
                 <th scope="col" className="px-6 py-3">Term</th>
                 <th scope="col" className="px-6 py-3">Course</th>
                 <th scope="col" className="px-6 py-3">Specialization</th>
-                <th scope="col" className="px-6 py-3">See Details</th>
+                <th scope="col" className="px-6 py-3">Viva/Presentation</th>
+                <th scope="col" className="px-6 py-3">WriteUp</th>
               </tr>
             </thead>
             <tbody>
               {sclass.length> 0 ? sclass.map((product, index) => (
                 <tr key={index} className="border-b text-sm">
-                  <td className="px-6 py-4">{product.subject.name}</td>
-                  <td className="px-6 py-3">{product.type  ==="main"? <span className="text-sm text-green-800 bg-green-50 rounded-sm px-2 py-.5 border">main</span>:<span className="text-sm text-red-800 bg-red-50 rounded-sm px-2 py-.5 border">{product.type}</span>}</td>
-                  <td className="px-6 py-4">{product.batch.name}</td>
-                  <td className="px-6 py-4">{product.term.name}</td>
-                  <td className="px-6 py-4">
-                    {product.course.length > 0
-                      ? product.course.map((c) => c.name).join(", ")
-                      : "N/A"}
-                  </td>
-                  <td className="px-6 py-4">
-                    {product.specialization.length > 0
-                      ? product.specialization.map((s) => s.name).join(", ")
-                      : "N/A"}
-                  </td>
-                  <td className="px-6 py-4 flex items-center justify-center">
-                    <Link
-                      href={`/subjects/details/${product.id}`}
-                      className="font-medium text-green-800 bg-green-100 px-2 py-0.5 rounded-sm text-xs border border-green-200 hover:underline flex items-center w-fit"
-                    >
-                      <EyeIcon className="h-4 w-4 mr-1" />
-                      See Details
-                    </Link>
-                  </td>
-                </tr>
-              )) : <tr><td colSpan={7} className="p-2">No Subject Assigned</td></tr>}
+                  <td className="px-6 py-4">{product.student}</td>
+                  <td className="px-6 py-4">{product.subjects}</td>
+                  <td className="px-6 py-4">{product.batch}</td>
+                  <td className="px-6 py-4">{product.term}</td>
+                  <td className="px-6 py-4">{product.course}</td>
+                  <td className="px-6 py-4">{product.course}</td>
+                  <td className="px-6 py-4">{product.criteria_first? <span className="bg-green-100 text-green-800 py-1 px-2 rounded-sm text-sm">Completed</span> : <span className="bg-red-100 text-sm text-red-800 py-1 px-2 rounded-sm">Not Completed</span>}</td>
+                  <td className="px-6 py-4">{product.criteria_second? <span className="bg-green-100 text-green-800 py-1 px-2 rounded-sm text-sm">Completed</span> : <span className="bg-red-100 text-sm text-red-800 py-1 px-2 rounded-sm">Not Completed</span>}</td>
+                  </tr>
+              )) : <tr><td colSpan={7} className="p-2">No Resit Subject Assigned</td></tr>}
             </tbody>
           </table>
         </div>

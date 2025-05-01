@@ -11,7 +11,7 @@ import { DownloadCloudIcon } from "lucide-react";
 import { GlobalContext } from "@/components/GlobalContext";
 import FullWidthLoader from "@/components/Loaader";
 export default function Page(){
-    const [datas, setData] =  useState([])
+    const [datas, setData] =  useState("")
     const [admit, setAdmit] = useState([])
     const {state} =  useContext(GlobalContext)
     const [batch, setBatch] = useState()
@@ -62,7 +62,7 @@ useEffect(()=>{
 {admit.length > 0 && (
     admit.map((item) => (
         <div key={item.id} className="flex justify-between mt-3 items-center">
-            <p className="font-bold text-red-800">{item.term?.name}</p>
+            <p className="font-bold text-red-800">{item.term?.name} <span className="bg-green-50 text-sm text-green-800 font-normal px-3  py-1 rounded-sm">{item.type}</span></p>
             <Link href={`/student/admit-card/download?term=${item.term?.id}`} className="text-sm bg-red-50 text-red-800 py-0.5 px-2 rounded-sm flex items-center gap-2"><DownloadCloudIcon className="h-3 w-3"/>Download</Link>
         </div>
     ))

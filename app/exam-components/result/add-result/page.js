@@ -10,56 +10,11 @@ import ResueForm from '@/components/Form';
 export default function Page() {
     const router = useRouter()
     const { batch, term, course, loading, error } = useClassFormData();    
-    const [selectedCourses, setSelectedCourses] = useState([]);
-    const [message, setMessage] = useState("")
-    const [showtoast, setShowToast] = useState(false)
-    const [dropdownOpen, setDropdownOpen] = useState(false);
-
-    
-   
-   async function handlesubmit(e){
-        e.preventDefault()
-        const formData = new FormData(e.target)
-        const batch = formData.get("batch")
-        const term = formData.get("term")
-        const course = selectedCourses;
-        const type =  formData.get("type")
-        const payload = {
-            batch,
-            term,
-            course,
-            type
-        }
-        try {
-            setLoading(true)
-            const response = await authFetch(`student-result-save?batch=${batch}&term=${term}&type=${type}&course=${course}`, {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify(payload),
-              });
-            const data =  await response.json()
-            if ( !response.ok) throw new Error(data.message)
-            setMessage("Added Successfully")
-            setShowToast(true)
-            setTimeout(()=>{
-                setMessage("")
-                setShowToast(false)
-                router.push('/exam-components/result')
-            }, 2000)
-        } catch (err) {
-            setError(err.message)
-        } finally {
-            setLoading(false)
-        }
-    }
 
 
     return (
         <div className="bg-white min-h-screen">
         <section className="relative">
-           {showtoast && <Toast message={message}/>}
            <div className="bg-violet-200 w-full sm:w-80 h-40 rounded-full absolute top-1 opacity-20 max-sm:left-0 sm:right-56 z-0"></div>
            <div className="bg-violet-300 w-full sm:w-40 h-24 absolute top-0 -right-0 opacity-20 z-0"></div>
            <div className="bg-violet-500 w-full sm:w-40 h-24 absolute top-40 -right-0 opacity-20 z-0"></div>
@@ -71,7 +26,7 @@ export default function Page() {
             >
                 <ArrowLeft className='h-4 w-4' /> Back to List
             </button>
-            <ResueForm batch={batch} term={term} course={course} showterm={true} enrollement={false} api="student-result-save" redirect="/exam-components/result"/>
+            <ResueForm heading="Add Result Announcement" batch={batch} term={term} course={course} showterm={true} enrollement={false} api="student-result-save" redirect="/exam-components/result"type={true} method="POST"/>
           </div>
         </div>
         </section>

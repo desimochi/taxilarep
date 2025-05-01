@@ -7,7 +7,7 @@ import {
     ChevronLeftIcon,
     ChevronRightIcon,
   } from "@heroicons/react/24/outline";
-  import { AlignLeftIcon, AlignRightIcon, BookCheckIcon, BookCopyIcon, DockIcon, FileAxis3D, NewspaperIcon, PaperclipIcon, PenBox, PenSquareIcon, UserCircle, UserRoundCheck } from "lucide-react";
+  import { AlignLeftIcon, AlignRightIcon, BookCheckIcon, BookCopyIcon, DockIcon, FileAxis3D, IndianRupee, NewspaperIcon, PaperclipIcon, PenBox, PenSquareIcon, UserCircle, UserRoundCheck } from "lucide-react";
 export const menuItems = [
     // { label: "Dashboard", icon: <HomeIcon className="h-5 w-5" />, path: "/admin" },
     {
@@ -59,6 +59,7 @@ export const menuItems = [
           {label : "Admit Card", path: "/exam-components/admitcard"},
           {label : "Download Admit Card", path: "/exam-components/admitcard/download-admitcard"},
           {label : "Result", path: "/exam-components/result"},
+          {label : "Result", path: "/exam-components/resit"},
       ],
     },
    
@@ -97,6 +98,13 @@ export const menuItems = [
         { label: "All Employee", path: "/all-employee" },
       ],
     },
+    {
+      label: "Accounts",
+      icon: <IndianRupee className="h-5 w-5" />,
+      subMenu: [
+        { label: "Fee Management", path: "/fees-management" },
+      ],
+    },
     { label: "Events", icon: <CalendarIcon className="h-5 w-5" />, path: "/events" },
    
   ];
@@ -114,6 +122,7 @@ export const menuItems = [
           ]},
           { label: "Notes", path: "/notes" },
           { label: "Student Attendance", path: "/attendance/class-attendance" },
+          { label: "Resit", path: "/faculty/resit" },
       ],
     },
    

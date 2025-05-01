@@ -22,22 +22,19 @@ export default function Page(){
         const fetchclassData = async () => {
           try {
             setLoading(true);
-            const [response, response1, response2, response3] = await Promise.all([
+            const [response,  response2, response3] = await Promise.all([
                 await authFetch(`subject-student-wise/${state.user_id}`),
-                await authFetch(`attendance-summary/${state.user_id}/${days}`),
                 await authFetch(`dashboard-student-data/${state.user_id}`),
                 await authFetch(`student-wise-class/${state.user_id}`)
     
             ])
-            if (!response.ok && !response1.ok && !response2.ok) throw new Error("Failed to fethc the data");
+            if (!response.ok && !response2.ok) throw new Error("Failed to fethc the data");
     
             const data = await response.json();
-            const data2 = await response1.json()
             const data3 = await response2.json()
             const data4 = await response3.json()
     
             setsclass(data.data);
-            setatten(data2.data)
             setStudata(data3.data)
             setClassData(data4.data)
           } catch (err) {
@@ -49,22 +46,17 @@ export default function Page(){
     
         fetchclassData();
       }, [state.user_id, days]);
-      async function handledays(e){
-    setSelectedDays(e.target.value)
-      }
-      const uniqueDates = [...new Set(atten.flatMap((item) => item.attendance.map((att) => att.date)))];
-      const subjects = atten.map((item) => item.subject_mapping.subject.name);
         
         return (
                 <div className="p-6">
                     <div className=" flex gap-4">
                         <div className=" w-3/4">
                         <div className="flex gap-4">
-                            <span className="bg-red-600 bg-opacity-10 text-red-800  border border-gray-300  w-full text-center py-4 rounded-sm shadow-sm hover:shadow-xl transition-shadow"><p className="font-bold">{studata.course?.name}</p> <p className="text-sm text-gray-600">Course</p></span>
-                            <span className="bg-red-600 bg-opacity-10   text-red-800 border border-gray-300 w-full text-center py-4 rounded-sm shadow-sm hover:shadow-xl transition-shadow"><p className="font-bold">{studata.batch?.name}</p> <p className="text-sm text-gray-600">Batch</p></span>
-                            <span className="bg-red-600 bg-opacity-10 text-red-800   border border-gray-300 w-full text-center py-4 rounded-sm shadow-sm hover:shadow-xl transition-shadow"><p className="font-bold">{studata.enrollment_number}</p> <p className="text-sm text-gray-600">Enrollment Number</p></span>
-                            <span className="bg-red-600 bg-opacity-10 text-red-800   border border-gray-300 w-full text-center py-4 rounded-sm shadow-sm hover:shadow-xl transition-shadow"><p className="font-bold">{studata.mentor_name}</p> <p className="text-sm text-gray-600">Mentor</p></span>
-                            <span className="bg-red-600 bg-opacity-10 text-red-800   border border-gray-300 w-full text-center py-4 rounded-sm shadow-sm hover:shadow-xl transition-shadow"><p className="font-bold">{studata.upcoming_class}</p> <p className="text-sm text-gray-600">Upcoming Classes in 7 Days</p></span>
+                            <span className="bg-red-600 bg-opacity-10 text-red-800  border border-red-100  w-full text-center py-4 rounded-sm shadow-sm hover:shadow-xl transition-shadow"><p className="font-bold">{studata.course?.name}</p> <p className="text-sm text-black">Course</p></span>
+                            <span className="bg-red-600 bg-opacity-10   text-red-800 border border-red-100 w-full text-center py-4 rounded-sm shadow-sm hover:shadow-xl transition-shadow"><p className="font-bold">{studata.batch?.name}</p> <p className="text-sm text-black">Batch</p></span>
+                            <span className="bg-red-600 bg-opacity-10 text-red-800   border border-red-100 w-full text-center py-4 rounded-sm shadow-sm hover:shadow-xl transition-shadow"><p className="font-bold">{studata.enrollment_number}</p> <p className="text-sm text-black">Enrollment Number</p></span>
+                            <span className="bg-red-600 bg-opacity-10 text-red-800   border border-red-100 w-full text-center py-4 rounded-sm shadow-sm hover:shadow-xl transition-shadow"><p className="font-bold">{studata.mentor_name}</p> <p className="text-sm text-black">Mentor</p></span>
+                            <span className="bg-red-600 bg-opacity-10 text-red-800   border border-red-100 w-full text-center py-4 rounded-sm shadow-sm hover:shadow-xl transition-shadow"><p className="font-bold">{studata.upcoming_class}</p> <p className="text-sm text-black">Upcoming Classes in 7 Days</p></span>
                             </div>
                             <div className="mt-4">
                             <div className="p-4 border border-gray-300 rounded-sm shadow-sm hover:shadow-xl transition-shadow">
@@ -96,7 +88,7 @@ export default function Page(){
                 
         
                 </tbody>
-                                </table>) : (<FullWidthLoader/>)}
+                                </table>) : (loading ? <FullWidthLoader/> : <p className="text-center mt-4">No Class Data Available</p>)}
                             </div>
                         </div>
                         </div>
@@ -116,7 +108,7 @@ export default function Page(){
       ))}
     </>
   ) : (
-    <p className="text-center text-sm mt-2">No Upcoming Classes</p>
+    <p className="text-center text-sm py-4">No Upcoming Classes</p>
   )}
 </ul>}
 <Link href={"/student/class-schedule"} className="bg-red-800 w-full text-white py-2 px-12 rounded-sm flex justify-center">View All</Link>
