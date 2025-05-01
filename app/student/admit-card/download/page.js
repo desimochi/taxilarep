@@ -14,24 +14,29 @@ export default function Page() {
   const searchParams = useSearchParams();
   const [halllaoding, sethallLoading] = useState([])
   const [admitcard, setAdmicard] = useState({})
+  const [error, setError] = useState("");
   const term = searchParams.get("term");
+  const type = searchParams.get("type");
   const {state} = useContext(GlobalContext)
   const id = state.user_id
 useEffect(()=>{
     async function handledownload() {
         sethallLoading(true);
         try {
-          const response = await authFetch(`hall-ticket/${id}/${term}`); // Replace with actual API URL
+          const response = await authFetch(`hall-ticket/${id}/${term}/${type}`); // Replace with actual API URL
           const data = await response.json();
+          if(!response.ok) {
+            throw new Error(data.message);
+          }
           setAdmicard(data.data);
         } catch (error) {
-          console.error("Error fetching students:", error);
+          setError(error.message);
         } finally {
           sethallLoading(false);
         }
       }
       handledownload()
-},[id, term])
+},[id, term, type])
   
  const [currentTime, setCurrentTime] = useState('');
         const componentRef = useRef();
@@ -64,7 +69,7 @@ useEffect(()=>{
     <button className="flex items-center py-2 px-6 rounded-sm mb-4 border border-gray-300" onClick={handlePrint}> <PrinterIcon className="h-4 w-4" />Print</button>
     </div>
     
-<div className="p-8 font-sans bg-white max-w-4xl mx-auto border border-gray-300 shadow-md overflow-y-auto max-h-[90vh]" >
+{error? <p>{error}</p> :<div className="p-8 font-sans bg-white max-w-4xl mx-auto border border-gray-300 shadow-md overflow-y-auto max-h-[90vh]" >
 <div ref={componentRef} className="p-4">
 <div class="text-sm text-left mb-2">{currentTime}</div>
 
@@ -155,6 +160,7 @@ return (
 <div class="text-xs text-right mt-4">https://erp.taxila.in/exam-components/admitcard/download-admitcard</div>
 </div>
 </div>
+}
 </div>
   )
 }

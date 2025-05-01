@@ -63,7 +63,7 @@ useEffect(()=>{
     admit.map((item) => (
         <div key={item.id} className="flex justify-between mt-3 items-center">
             <p className="font-bold text-red-800">{item.term?.name} <span className="bg-green-50 text-sm text-green-800 font-normal px-3  py-1 rounded-sm">{item.type}</span></p>
-            <Link href={`/student/admit-card/download?term=${item.term?.id}`} className="text-sm bg-red-50 text-red-800 py-0.5 px-2 rounded-sm flex items-center gap-2"><DownloadCloudIcon className="h-3 w-3"/>Download</Link>
+            <Link href={`/student/admit-card/download?term=${item.term?.id}&type=${item.type}`} className="text-sm bg-red-50 text-red-800 py-0.5 px-2 rounded-sm flex items-center gap-2"><DownloadCloudIcon className="h-3 w-3"/>Download</Link>
         </div>
     ))
 )}

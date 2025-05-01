@@ -7,6 +7,7 @@ import { authFetch } from "@/app/lib/fetchWithAuth";
 import { Download } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import DownloadAdmitCard from "@/components/DownloadAdmitCard";
+import { set } from "date-fns";
 
 export default function Page() {
   const [isOpen, setIsOpen] = useState(false);
@@ -14,6 +15,7 @@ export default function Page() {
   const [students, setStudents] = useState([]);
   const [halllaoding, sethallLoading] = useState([])
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [filteredStudents, setFilteredStudents] = useState([]);
   const [pageSize, setPageSize] = useState(10);
   const [admitcard, setAdmicard] = useState({})
@@ -87,9 +89,12 @@ export default function Page() {
         try {
           const response = await authFetch(`hall-ticket/${id}/${term}/${type}`); // Replace with actual API URL
           const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.message);
+          }
           setAdmicard(data.data);
         } catch (error) {
-          console.error("Error fetching students:", error);
+          setError(error.message);
         } finally {
           sethallLoading(false);
         }
@@ -101,7 +106,7 @@ export default function Page() {
       {isOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 px-40 overflow-x-auto">
           <div className="p-6 ">
-           <DownloadAdmitCard data={admitcard} isOpen={setIsOpen} onClose={() => setIsOpen(false)}/>
+         {error? <p className="bg-white px-8 py-6 rounded-sm" onClick={() => setIsOpen(false)}>{error}</p> :<DownloadAdmitCard data={admitcard} isOpen={setIsOpen} onClose={() => setIsOpen(false)}/>}  
           </div>
         </div>
       )}
