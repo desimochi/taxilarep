@@ -79,7 +79,7 @@ export default function ClassOverview() {
                   </td>
                   <td className="px-6 py-4 flex gap-3 justify-center">
                   <Link
-                      href={`/notes/upload-syllabus?subID=${product.id}`}
+                      href={`/notes/upload-notes?subID=${product.id}`}
                       className="font-medium bg-green-100 p-2 rounded-sm text-green-800 dark:text-blue-500 hover:underline"
                     >
                       <UploadCloud className="h-5 w-5"/>

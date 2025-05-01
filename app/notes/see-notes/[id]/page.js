@@ -41,7 +41,6 @@ export default function Page(){
             </button>
           {error? <div><p className="text-center">No Notes Found</p> 
           
-          <button>Upload Syllabus</button>
           </div>:  <div className={` py-8 px-12 `}>
                     <div className="flex justify-between items-center gap-2">
                       <div className="w-3/5">
@@ -55,7 +54,7 @@ export default function Page(){
                         </div>
                       </div>
                       <div className=" flex gap-3">
-                       <Link href={`/syllabus/edit-syllabus?subID=${id}`}><span className="border border-red-300 text-red-800 bg-red-50 py-2 px-8 rounded-sm shadow-sm hover:shadow-xl transition-shadow cursor-pointer">Edit Syllabus</span></Link>
+                       <Link href={`/notes/edit-notes?subID=${id}`}><span className="border border-red-300 text-red-800 bg-red-50 py-2 px-8 rounded-sm shadow-sm hover:shadow-xl transition-shadow cursor-pointer">Edit Syllabus</span></Link>
                        
                       </div>
                     </div>

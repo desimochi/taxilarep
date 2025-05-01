@@ -72,12 +72,12 @@ export default function Page() {
 
         setSelectedSubject(matchedSubject || null);
     }
-
+console.log(selectedSubject)
     return (
         <div className="w-full rounded-sm py-12 px-12">
             <div className="border border-gray-300 shadow-sm hover:shadow-md rounded-sm">
                 <h4 className=" py-6 px-8 text-2xl font-bold text-red-800 bg-red-50">
-                    Upload Syllabus
+                    Upload Notes - {selectedSubject?.subject?.name || " "}
                 </h4>
                 <form className="py-5 px-5">
                     <div className="flex gap-2">
@@ -160,7 +160,7 @@ export default function Page() {
 
                     {/* Display Subject Details if found */}
                     {selectedSubject && (
-                    <RichTextEditor  id={selectedSubject.id} api="subject-mapping-syllabus" />
+                    <RichTextEditor  id={selectedSubject.id} api="subject-mapping-notes"/>
                     )}
 
                     {/* Submit Button */}

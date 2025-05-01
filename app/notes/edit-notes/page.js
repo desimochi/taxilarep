@@ -15,11 +15,11 @@ export default function Page(){
             >
                 <ArrowLeft className='h-4 w-4' /> Back to Subject
             </button>
-            <div className={`  py-8 px-12 `}>
+            <div className={`rounded-xl mt-4  p-2   py-8 px-12 `}>
                     <div className="flex justify-between items-center gap-2">
                       <div className="w-3/5">
                         <h5 className="text-2xl font-bold flex gap-1">
-                          <BookAIcon className="w-7 h-7" /> Edit Syllabus
+                          <BookAIcon className="w-7 h-7" /> Edit Notes
                         </h5>
                       </div>
                       <div className=" flex gap-3">
@@ -27,5 +27,5 @@ export default function Page(){
                       </div>
                     </div>
                   </div>
-         <RichTextEditor id={subID} api ="subject-mapping-syllabus"/></div>
+         <RichTextEditor id={subID} api ="subject-mapping-notes"/></div>
 }

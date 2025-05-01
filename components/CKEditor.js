@@ -38,7 +38,7 @@ import {
 import { authFetch } from "@/app/lib/fetchWithAuth";
 import { BoldIcon } from "@heroicons/react/24/outline";
 
-export default function RichTextEditor({id}) {
+export default function RichTextEditor({id, api}) {
     const [editorContent, setEditorContent] = useState("<p>Loading content...</p>");
     const router = useRouter(); 
     const[message, setMessage]= useState("")
@@ -100,7 +100,7 @@ const subID = searchParams.get("subID");
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await authFetch(`subject-mapping-syllabus/${subID}`, {
+                const response = await authFetch(`${api}/${subID}`, {
                     method: "GET",
                     headers: { "Content-Type": "application/json" },
                 });
@@ -123,7 +123,7 @@ const subID = searchParams.get("subID");
         };
 
         fetchData();
-    }, [subID, editor]);
+    }, [subID, editor, api]);
 
     const changeFontSize = (event) => {
         const size = event.target.value;
@@ -238,7 +238,7 @@ const deleteFile = async (fileUrlToDelete) => {
     setIsSaving(true); // ✅ Show loading state
 
     try {
-        const response = await authFetch(`subject-mapping-syllabus/${subID}`, { // ✅ Update your API route
+        const response = await authFetch(`${api}/${subID}`, { // ✅ Update your API route
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -247,7 +247,7 @@ const deleteFile = async (fileUrlToDelete) => {
         });
 
         if (response.ok) {
-            setMessage("Syllabus Updates Successfully")
+            setMessage(`Information Updated Successfully`)
             setShowToast(true)
             setTimeout(()=>{
                 setShowToast(false)
