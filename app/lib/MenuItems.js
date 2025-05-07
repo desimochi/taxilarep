@@ -43,7 +43,7 @@ export const menuItems = [
           ]},
           {label : "Attendance Manager", hasSubMenu:true,  subMenu : [
             { label: "Student Attendence", path: "/attendance/student-attendance" },
-            // { label: "Faculty Attendence", path: "/attendance/faculty-attendance" },
+            { label: "Subjet-Wise Attendance", path: "/attendance/subject-wise" },
           ]},
          
           // {label : "Exam Manager", hasSubMenu:true,  subMenu : [
@@ -121,7 +121,8 @@ export const menuItems = [
             {label:"Upload Syllabus", path:"/syllabus/see-syllabus"},
           ]},
           { label: "Notes", path: "/notes" },
-          { label: "Student Attendance", path: "/attendance/class-attendance" },
+          { label: "Class Attendance", path: "/attendance/class-attendance" },
+          { label: "Subject Wise Attendance", path: "/attendance/subject-attendance" },
           { label: "Resit", path: "/faculty/resit" },
       ],
     },
@@ -158,3 +159,30 @@ export const menuItems = [
     { label: "Notice", icon: <NewspaperIcon className="h-5 w-5" />, path: "/notice/noticeboard" },
     { label: "Events", icon: <CalendarIcon className="h-5 w-5" />, path: "/events" },
   ];
+
+  export const Accountant = [
+    {
+      label: "Staff",
+      icon: <UserCircle className="h-5 w-5" />,
+      subMenu: [
+        { label: "Department", path: "/admin/department" },
+        { label: "Salutation", path: "/admin/salutation" },
+        { label: "Role Management", path: "/admin/role-manager" },
+        { label: "Designation", path: "/admin/designation" },
+        { label: "All Employee", path: "/all-employee" },
+      ],
+    },
+    {
+      label: "Accounts",
+      icon: <IndianRupee className="h-5 w-5" />,
+      subMenu: [
+        { label: "Fee Management", path: "/fees-management" },
+      ],
+    },
+  ]
+
+  export const Staff = [
+    { label: "Dashboard", icon: <HomeIcon className="h-5 w-5" />, path: "/staf" },
+    { label: "Attendance", icon: <BookCheckIcon className="h-5 w-5" />, path: "/staff/attendance" },
+    { label: "Payroll", icon: <IndianRupee className="h-5 w-5" />, path: "/staff/payroll" },
+  ]

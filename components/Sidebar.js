@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import logo from "../public/logo.png";
-import { menuItems, stumenuItems } from "@/app/lib/MenuItems";
+import { Accountant, menuItems, Staff, stumenuItems } from "@/app/lib/MenuItems";
 import { FacmenuItems } from "@/app/lib/MenuItems";
 import { ITManager } from "@/app/lib/MenuItems";
 import {
@@ -22,44 +22,62 @@ import { lastDayOfDecade } from "date-fns";
 const Sidebar = ({collapsed, toggleSidebar, toggleMenu, openMenus, role, type  }) => {
   const pathname = usePathname();
   const getMenuByRole = (role, type) => {
-    const roles = Array.isArray(role) ? role.map(String) : [String(role)]; // Always treat as array of strings
+    const roles = Array.isArray(role) ? role.map(String) : [String(role)];
   
-    switch (true) {
-      case roles.includes("1"): // Super Admin
-        return menuItems;
+    let result = [];
   
-      case roles.includes("2"): // Admin
-        if (type === "Teaching") {
-          const combined = [...FacmenuItems, ...menuItems];
-          const uniqueByName = combined.filter(
-            (item, index, self) =>
-              index === self.findIndex((t) => t.label === item.label)
-          );
-          return uniqueByName;
-        } else {
-          return menuItems;
-        }
+    roles.forEach((r) => {
+      switch (r) {
+        case "1": // Super Admin
+          result = [...result, ...menuItems];
+          break;
   
-      case roles.includes("6"): // Examination
-        return menuItems;
+        case "2": // Admin
+          if (type === "Teaching") {
+            result = [...result, ...FacmenuItems, ...menuItems];
+          } else {
+            result = [...result, ...menuItems];
+          }
+          break;
   
-      case roles.includes("4"): // Faculty
-        return FacmenuItems;
+        case "3": // Student
+          result = [...result, ...stumenuItems];
+          break;
   
-      case roles.includes("3"): // Student
-        return stumenuItems;
+        case "4": // Faculty
+          result = [...result, ...FacmenuItems];
+          break;
+
+       case "5": // Faculty
+          result = [...result, ...Staff];
+          break;
   
-      case roles.includes("6"): // IT Manager
-        if (type === "Teaching") {
-          return [...FacmenuItems, ...ITManager];
-        } else {
-          return menuItems;
-        }
+        case "6": // IT Manager / Examination
+          if (type === "Teaching") {
+            result = [...result, ...FacmenuItems, ...ITManager];
+          } else {
+            result = [...result, ...menuItems];
+          }
+          break;
   
-      default:
-        return [];
-    }
+        case "7": // Accountant
+          result = [...result, ...Accountant];
+          break;
+  
+        default:
+          break;
+      }
+    });
+  
+    // Remove duplicates by label
+    const uniqueMenu = result.filter(
+      (item, index, self) =>
+        index === self.findIndex((t) => t.label === item.label)
+    );
+  
+    return uniqueMenu;
   };
+  
   
   
 const selectedMenu = getMenuByRole(role, type);

@@ -140,6 +140,7 @@ export default function Page() {
                                 <th className="p-3 text-left">Status</th>
                                 <th className="p-3 text-left">Lock/Unlock</th>
                                 <th className="p-3 text-left">Action</th>
+                                <th className="p-3 text-left">Roles</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -153,7 +154,7 @@ export default function Page() {
                                         </td>
                                         <td className="p-3"><span className={`px-2 py-1 rounded ${exam.user?.is_lock ? "bg-green-100 text-green-800" : "bg-red-200 text-red-800"}`}>{exam.user?.is_lock ? "Locked" : "Unlock"}</span></td>
                                         <td className="p-3 flex gap-4"><PenSquareIcon className="h-4 w-4 cursor-pointer" onClick={() => handleEditClick(exam)} /> <Link href ={`/all-faculty/details/${exam.id}`} className="text-red-500 text-xs cursor-pointer"><EyeIcon className="h-4 w-4 cursor-pointer"/></Link> <LockIcon className="h-4 w-4" onClick={() => handleLockClick(exam)}/></td>
-                                        
+                                        <td className="p-3"><Link href={`/admin/role-manager/assign-role?id=${exam.id}`} className="bg-green-100 text-green-800 text-sm py-1 px-2 rounded-sm">Assign Role</Link></td>
                                     </tr>
                                 ))}
                         </tbody>

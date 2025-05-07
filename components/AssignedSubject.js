@@ -1,14 +1,13 @@
 "use client"
 import { authFetch } from "@/app/lib/fetchWithAuth";
-import { SaveIcon, PencilIcon, EyeIcon, SearchCheckIcon, UploadCloud } from "lucide-react";
-import { Trash2Icon } from "lucide-react";
+import { PencilIcon, EyeIcon, UploadCloud } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState, useMemo } from "react";
-import Loader from "./Loaader";
 import FullWidthLoader from "./Loaader";
 import Toast from "./Toast";
+import AssignedSubjectFilters from "./ui/FiltersSub";
 
-export default function AssignedSubject(){
+export default function AssignedSubject({editt, url, title}){
     const[isDel, setIsDel] = useState(false)
     const [loading, setLoading] = useState(false)
     const [checkedState, setCheckedState] = useState({});
@@ -48,7 +47,7 @@ export default function AssignedSubject(){
         const data2 = await response2.json()
         const data3 = await response3.json()
         setAssignedSub(data.data);
-        setTotalPages(data.extra?.total);
+        setTotalPages(data.extra?.total || 1);
         setCourse(data1.data) // Handle different API structures
         setBatch(data2.data)
         setTerm(data3.data)
@@ -60,7 +59,7 @@ export default function AssignedSubject(){
     };
 
     fetchCourses();
-  }, []);
+  }, [currentPage]);
   const filteredSubjects = useMemo(() => {
     return Array.isArray(assignedSub)
       ? assignedSub.filter(item =>
@@ -89,7 +88,7 @@ export default function AssignedSubject(){
       const response = await authFetch(`subject-mapping-viewset?batch=${selectedBatch}&term=${selectedTerm}&course=${selectedCourse}&page=${currentPage}`);
       const data = await response.json();
       setAssignedSub(data.data)
-      setTotalPages(data.extra?.total);
+      setTotalPages(data.extra?.total || 1);
       setCurrentPage(1)
     } catch (error) {
       console.error("Error fetching subjects:", error);
@@ -140,7 +139,7 @@ export default function AssignedSubject(){
             <div className="  py-8 px-12">
                 <div className="flex justify-between items-center gap-2">
                     <div className="w-3/5">
-                <h5 className="text-2xl font-bold">Assigned Subject</h5>
+                <h5 className="text-2xl font-bold">{title}</h5>
                 <span className="text-sm text-gray-400">Taxila Business School</span>
                 </div>
                 <div className="w-1/5">
@@ -155,41 +154,40 @@ export default function AssignedSubject(){
                
                 </div>
                 <hr className="border border-b-2 mt-4 mb-6"/>
-                <div className="flex justify-between gap-2 ">
-                <select className="border border-gray-300 p-2 w-full rounded-sm" onChange={(e)=>setselectedCourse(e.target.value)}>
-  <option value="">Select a Course</option> {/* only once */}
-  {course.map((item) => (
-    <option key={item.id} value={item.id}>
-      {item.name}
-    </option>
-  ))}
-</select>
-                    <select className="border border-gray-300 p-2 w-full rounded-sm"  onChange={(e)=>setselectedBatch(e.target.value)}>
-                    <option value="">Select a Batch</option> {/* only once */}
-  {batch.map((item) => (
-    <option key={item.id} value={item.id}>
-      {item.name}
-    </option>
-  ))}
-                    </select>
-                    <select className="border border-gray-300 p-2 w-full rounded-sm" onChange={(e)=>setselectedTerm(e.target.value)}>
-                    <option value="">Select a Term</option> {/* only once */}
-  {term.map((item) => (
-    <option key={item.id} value={item.id}>
-      {item.name}
-    </option>
-  ))}
-                    </select>
-                    <button onClick={handlesearch} className="w-full flex justify-center gap-1 bg-red-50 border border-red-800 rounded-sm text-red-800 hover:bg-red-800 hover:text-white items-center"><SearchCheckIcon className="h-4 w-4"/>Find</button>
-                </div>
+                <AssignedSubjectFilters
+  course={course}
+  batch={batch}
+  term={term}
+  selectedCourse={selectedCourse}
+  selectedBatch={selectedBatch}
+  selectedTerm={selectedTerm}
+  setselectedCourse={setselectedCourse}
+  setselectedBatch={setselectedBatch}
+  setselectedTerm={setselectedTerm}
+  handleSearch={handlesearch}
+/>
             </div>
             {}
-            {edit?
-             <button onClick={handlesaves} className="mx-12 tx-sm flex items-center gap-1 justify-center bg-green-50 border border-green-700 text-green-800 hover:bg-green-800 hover:text-white px-4 py-2 rounded-sm">
-             <UploadCloud className="h-4 w-4"/>Save
-           </button>: <button onClick={()=>setEdit(true)} className="mx-12 tx-sm flex items-center gap-1 justify-center bg-red-50 border border-red-700 text-red-800 hover:bg-red-800 hover:text-white px-4 py-2 rounded-sm">
-  <PencilIcon className="h-4 w-4"/>Edit
-</button>}
+            {editt && (
+  edit ? (
+    <button
+      onClick={handlesaves}
+      className="mx-12 tx-sm flex items-center gap-1 justify-center bg-green-50 border border-green-700 text-green-800 hover:bg-green-800 hover:text-white px-4 py-2 rounded-sm"
+    >
+      <UploadCloud className="h-4 w-4" />
+      Save
+    </button>
+  ) : (
+    <button
+      onClick={() => setEdit(true)}
+      className="mx-12 tx-sm flex items-center gap-1 justify-center bg-red-50 border border-red-700 text-red-800 hover:bg-red-800 hover:text-white px-4 py-2 rounded-sm"
+    >
+      <PencilIcon className="h-4 w-4" />
+      Edit
+    </button>
+  )
+)}
+
 {error && <p className="mx-12 text-sm text-red-800">{error}</p> }
           {loading? <FullWidthLoader/> : <div className="px-12">  <table className="w-full rounded-xl text-sm text-left rtl:text-right text-gray-800 dark:text-gray-400 mt-4 mb-2">
         <thead className="text-xs text-red-800 uppercase bg-red-50 dark:bg-gray-700 dark:text-white-400 w-full">
@@ -238,10 +236,10 @@ export default function AssignedSubject(){
       
       <td className="px-6 py-4 flex items-center  gap-2">
       
-      <Link href={`/admin/subject/details/${course.id}`} className="bg-green-50 text-green-800 p-1 rounded-sm"><EyeIcon className="h-5 w-5" /></Link>
-       <Link href={`subject-manager/edit-assignedSub?subjectId=${course.id}`} className="bg-red-50 text-red-800 p-1 rounded-sm">
+      <Link href={`${url}${course.id}`} className="bg-green-50 text-green-800 p-1 rounded-sm"><EyeIcon className="h-5 w-5" /></Link>
+      {editt &&  <Link href={`subject-manager/edit-assignedSub?subjectId=${course.id}`} className="bg-red-50 text-red-800 p-1 rounded-sm">
         <PencilIcon className="h-5 w-5" />
-       </Link>
+       </Link> }
       </td>
     </tr>
   )) : <tr className="text-center mt-4"><td colSpan={7}>No Subject Found For Selected Filter</td></tr>}

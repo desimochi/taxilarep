@@ -8,7 +8,7 @@ export default function Page(){
 
     return(
         <>
-          <AssignedSubject title="Component Manager" editt={false} url="/admin/subject/details/" />
+          <AssignedSubject title="Subject-Wise Attendance" editt={false} url="/attendance/subject-wise/" />
     </>
     )
 }

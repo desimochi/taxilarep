@@ -293,7 +293,7 @@ useEffect(() => {
       )}
        </>}
        {activeTab==="addsubject" && <Addsubject/>}
-       {activeTab==="assignedsub" && <AssignedSubject/>}
+       {activeTab==="assignedsub" && <AssignedSubject title="Assigned Subject" editt={true} url="/admin/subject/details/" />}
        {activeTab==="assignsub" && <CourseSelection/>}
         </>
     );

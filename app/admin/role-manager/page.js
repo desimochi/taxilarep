@@ -182,7 +182,7 @@ export default function Page(){
   onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search Department...." className="p-2 rounded-sm border border-x-gray-200" />
                     <button onClick={() => handleAddClick("add")} className="flex justify-center items-center border border-gray-200 hover:bg-gray-200 px-4"> <PlusIcon className="h-4 w-4"/>Add Role</button>
                 </div>
-                <Link href={"/admin/role-manager/assign-role"} className="border border-gray-500 px-4 flex items-center justify-center gap-1"><Settings2Icon className="h-4 w-4"/>Assign Role</Link>
+                <Link href={"/admin/role-manager/assign-permission"} className="border border-gray-500 px-4 flex items-center justify-center gap-1"><Settings2Icon className="h-4 w-4"/>Assign Permission</Link>
             </div>
             <table className="overflow-x-auto w-full text-center mt-4" >
             <thead className="min-w-full border border-red-200 rounded-lg">

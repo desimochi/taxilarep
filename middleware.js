@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 const studentAllowedPaths = [
   "/student",
   "/student/subject",
-  "/student/subject/details", // Base path
+  "/student/subject/details",
   "/student/attendance",
   "/student/class-schedule",
   "/student/exam-schedule",
@@ -40,9 +40,6 @@ export function middleware(req) {
   const userCookie = cookies.get("user");
   const urlPath = nextUrl.pathname;
 
-  console.log("Requested Path:", urlPath);
-
-  // ✅ No user session cookie — redirect to login
   if (!userCookie) {
     if (urlPath !== "/login") {
       return NextResponse.redirect(new URL("/login", req.url));
@@ -52,26 +49,32 @@ export function middleware(req) {
 
   try {
     const userData = JSON.parse(userCookie.value);
-    console.log("User Data:", userData);
+    const roles = userData?.role_name || [];
+    const employeeType = userData?.employee_type;
+    const userType = userData?.user_type;
 
-    // ✅ Priority 1: Admin has full access, skip all other checks
-    if (userData.role_name === "admin") {
+    console.log("Parsed User Roles:", roles);
+
+    // ✅ Admin role has full access
+    if (Array.isArray(roles) && roles.includes("admin")) {
+      console.log("Admin access granted");
       return NextResponse.next();
     }
 
-    // ✅ Priority 2: Teaching Faculty
-    if (userData.employee_type === "Teaching") {
+    // ✅ Teaching faculty role
+    if (employeeType === "Teaching") {
       const isAllowed = facultyPaths.some(
         (path) => urlPath === path || urlPath.startsWith(path + "/")
       );
+      console.log("Faculty Access Allowed:", isAllowed);
       if (!isAllowed) {
-        return NextResponse.redirect(new URL("/faculty", req.url));
+        return NextResponse.redirect(new URL("/unauthorized", req.url));
       }
       return NextResponse.next();
     }
 
-    // ✅ Priority 3: Student
-    if (userData.user_type === "STUDENT") {
+    // ✅ Student access
+    if (userType === "STUDENT") {
       const isAllowed =
         studentAllowedPaths.some((path) => urlPath.startsWith(path)) ||
         urlPath.startsWith("/student/subject/details/");
@@ -83,7 +86,7 @@ export function middleware(req) {
       return NextResponse.next();
     }
 
-    // ✅ Default: Non-teaching or unknown — restrict faculty/student areas
+    // ✅ Fallback: no access to student/faculty areas
     if (urlPath.startsWith("/faculty") || urlPath.startsWith("/student")) {
       return NextResponse.redirect(new URL("/admin", req.url));
     }
@@ -106,6 +109,7 @@ export const config = {
     "/subjects/:path*",
     "/student/:path*",
     "/notice/:path*",
+    "/course/:path*",
     "/see/events",
     "/attendance/class-attendance",
   ],

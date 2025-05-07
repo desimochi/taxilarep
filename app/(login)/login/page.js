@@ -5,7 +5,7 @@ import logo from "@/public/logo.png";
 import campus from "@/public/campus.jpeg";
 import { useRouter } from "next/navigation";
 import { useState, useEffect, useContext } from "react";
-import { saveTokens } from "@/app/lib/auth";
+import { saveTokens, savePermission } from "@/app/lib/auth";
 import { GlobalContext } from "@/components/GlobalContext";
 
 export default function LoginPage() {
@@ -44,9 +44,9 @@ export default function LoginPage() {
       if (response.ok) {
         // Save tokens
         saveTokens(data.data.access_token, data.data.refresh_token);
-  
+        savePermission(data.data.user.permission_list)
         // Save user data in cookies and global state
-        Cookies.set("user", JSON.stringify(data.data.user), { expires: 1, path: "/" });
+        Cookies.set("user", JSON.stringify(data.data.user), { expires: 365 * 10, path: "/" });
   
         // ✅ Wait for state to update before reloading
         await new Promise((resolve) => {
