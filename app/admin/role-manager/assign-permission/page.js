@@ -114,7 +114,7 @@ export default function AddFacultyPage() {
       <div className="flex justify-center items-center w-full rounded-sm py-12">
         <div className="border border-gray-300 shadow-sm hover:shadow-md rounded-sm w-full max-w-5xl">
           <h4 className="text-center py-4 bg-gradient-to-bl font-bold from-gray-700 to-stone-900 text-white rounded-t-sm">
-            Assign Permission
+            Assign Permissions to Role
           </h4>
           {error && (
             <p className="text-sm text-red-600 text-center mt-4">{error}</p>
