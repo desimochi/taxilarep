@@ -57,7 +57,7 @@ export default function CreateComponents() {
             }
 
             try {
-                const response = await authFetch(`subject-mapping-viewset`, {
+                const response = await authFetch(`subject-mapping-list`, {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
