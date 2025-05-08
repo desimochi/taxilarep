@@ -95,6 +95,7 @@ export default function Page() {
                 <div className="flex gap-2 text-sm mb-6">
                         <Link className="bg-red-700 text-white py-1.5 px-8 rounded-sm shadow-lg" href={`/attendance/class-attendance`}>Attendance</Link>
                         <Link className="bg-green-700 text-white py-1.5 px-8 rounded-sm shadow-lg" href={`/syllabus/see-syllabus/${students?.id}`}>Syllabus</Link>
+                        <Link className="bg-yellow-700 text-white py-1.5 px-8 rounded-sm shadow-lg" href={`/marks/${students?.id}?subName=${students?.subject?.name}`}>Marks</Link>
                 </div>
                            
                         </div>
@@ -124,8 +125,10 @@ export default function Page() {
                                     <p className="text-xs text-gray-600">Total Classes</p>
                                 </div>
                                 <div className="w-1/3 border-r-2 text-center">
+                                <Link href={`/attendance/subject-wise/${students?.id}`}>
                                     <p className="font-sans font-bold text-xl">{students?.classes_completed || 0}</p>
-                                    <p className="text-xs text-gray-600">Completed Classes</p>
+                                    <p className="text-xs text-gray-600">Completed Classes - See Attendance</p>
+                                    </Link>
                                 </div>
                                 <div className="w-1/3 border-r-2 text-center">
                                     <p className="font-sans font-bold text-xl">{students?.weightage_external || 'N/A'}</p>
