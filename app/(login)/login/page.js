@@ -46,7 +46,8 @@ export default function LoginPage() {
         saveTokens(data.data.access_token, data.data.refresh_token);
         savePermission(data.data.user.permission_list)
         // Save user data in cookies and global state
-        Cookies.set("user", JSON.stringify(data.data.user), { expires: 365 * 10, path: "/" });
+        Cookies.set("user", JSON.stringify(data.data.user), { expires: 365, path: "/", secure: true,
+          sameSite: "Lax" });
   
         // ✅ Wait for state to update before reloading
         await new Promise((resolve) => {

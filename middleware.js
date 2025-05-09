@@ -39,13 +39,15 @@ export function middleware(req) {
   const { nextUrl, cookies } = req;
   const userCookie = cookies.get("user");
   const urlPath = nextUrl.pathname;
-
-  if (!userCookie) {
-    if (urlPath !== "/login") {
-      return NextResponse.redirect(new URL("/login", req.url));
-    }
-    return NextResponse.next();
+  if (!userCookie && urlPath !== "/login") {
+    return NextResponse.redirect(new URL("/login", req.url));
   }
+
+  // Prevent logged-in users from accessing login again
+  if (userCookie && urlPath === "/login") {
+    return NextResponse.redirect(new URL("/", req.url)); // Change "/" to your dashboard or homepage
+  }
+
 
   try {
     const userData = JSON.parse(userCookie.value);
@@ -53,7 +55,6 @@ export function middleware(req) {
     const employeeType = userData?.employee_type;
     const userType = userData?.user_type;
 
-    console.log("Parsed User Roles:", roles);
 
     // ✅ Admin role has full access
     if (Array.isArray(roles) && roles.includes("admin")) {

@@ -36,21 +36,26 @@ function Layout({ children }) {
   const [openMenus, setOpenMenus] = useState({});
   const [collapsed, setCollapsed] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(null);
-
+  const userCookie = Cookies.get("user");
   const noLayoutRoutes = ["/login"];
-
+  if(!userCookie){
+    router.replace("/login");
+  }
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
-    if (!token && !noLayoutRoutes.includes(pathname)) {
-      router.replace("/login");
-    } else {
-      setIsAuthenticated(true);
-    }
-  }, [pathname, router, noLayoutRoutes]);
+
+
+if ((!token || !userCookie) && !noLayoutRoutes.includes(pathname)) {
+  router.replace("/login");
+} else {
+  setIsAuthenticated(true);
+}
+  }, [pathname, router, noLayoutRoutes, userCookie]);
 
   const handleLogout = () => {
     localStorage.clear();
     Cookies.remove("user");
+    window.location.reload()
     router.push("/login");
   };
 
