@@ -75,6 +75,7 @@ export const menuItems = [
         { label: "Add New Student", path: "/add-student" },
         { label: "All Students", path: "/students" },
         { label: "Assign Students", path: "/assign-students" },
+         { label: "Student Mapping", path: "/edit-student-mapping" },
         {label: "Promote Students", path: "/promote-student" },
       ],
     },

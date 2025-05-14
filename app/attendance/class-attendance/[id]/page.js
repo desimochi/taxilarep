@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import { authFetch } from "@/app/lib/fetchWithAuth";
+import { hasPermission } from "@/app/lib/checkPermission";
 import Toast from "@/components/Toast";
 
 export default function Page() {
@@ -23,8 +24,8 @@ export default function Page() {
     const [value, setValue] = useState('');
     const [compfe, setcomfe]= useState(1)
     const [isCEPresent, setIsCEPresent] = useState(false);
-
     useEffect(() => {
+      
         const fetchAllData = async () => {
             try {
                 setLoading(true);
@@ -65,9 +66,16 @@ export default function Page() {
                 setLoading(false);
             }
         };
-    
-        fetchAllData();
-    }, [id]);
+        const hasper = hasPermission(("66ce8b2aed943a2198a02e9bb3bd012df9c06b595593225e360cd15c55e67c55"))
+        if(!hasper){
+
+            
+         router.replace("/unauthorized")
+        } else{
+         fetchAllData();
+        }
+        
+    }, [id, router]);
     
 
     const handleAttendanceChange = (studentId, isPresent) => {

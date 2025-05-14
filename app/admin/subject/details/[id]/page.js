@@ -8,6 +8,7 @@ import FullWidthLoader from "@/components/Loaader";
 
 import Link from "next/link";
 import { GlobalContext } from "@/components/GlobalContext";
+import { hasPermission } from "@/app/lib/checkPermission";
 
 export default function Page() {
     const { id } = useParams()
@@ -19,6 +20,7 @@ export default function Page() {
     const [additionalData, setAdditionalData] = useState([])
     const[clases, setClases] = useState([])
     const [isCEPresent, setIsCEPresent] = useState(false);
+    const hasadd = hasPermission(("b22e5de9bd04a4792a9c285e08ee07a9d66ac8129ab7fdc9d789e9174e647506"))
 
     // First API call to get student data
     useEffect(() => {
@@ -165,11 +167,11 @@ export default function Page() {
   </div>
 ))}
                             {students?.id && (
-                                <Link href={`/exam-components/component-manager/create-component?subID=${students.id}`}>
+                                hasadd && (<Link href={`/exam-components/component-manager/create-component?subID=${students.id}`}>
                                     <div className="text-center border border-red-800 text-red-800 py-1 mt-6 rounded-sm hover:bg-red-800 hover:text-white transition ease-linear duration-200 cursor-pointer">
                                         Create Component
                                     </div>
-                                </Link>
+                                </Link>)
                             )}
                         </div>
                         

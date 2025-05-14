@@ -9,20 +9,21 @@ import { useContext, useEffect, useState } from "react"
 import ComponentDate from "@/components/ComponentDate"
 import { EyeDropperIcon, EyeSlashIcon } from "@heroicons/react/24/outline"
 import StudentAnswerSub from "@/components/StudentAnswerSub";
+import { hasPermission } from "@/app/lib/checkPermission";
 
 export default function Page(){
     const {id} = useParams()
     const {state} = useContext(GlobalContext)
     const router = useRouter()
       const [students, setStudents] = useState(null)
-      const[subcom, setSubcom] = useState([])
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState(null)
     const [submission, setSubmission] = useState(false)
     const[editDetails, setEditDetails] = useState(false)
     const [additionalData, setAdditionalData] = useState([])
     const [selectedId, setSelectedId] = useState(null)
-
+    const hasview = hasPermission(("b22e5de9bd04a4792a9c285e08ee07a9d66ac8129ab7fdc9d789e9174e647506"))
+    const hasedit = hasPermission(("2f72526b4e3a64b84edd665637d72cdf5b00b0711640ab62061b5756fd8f16fe"))
       useEffect(() => {
         const fetchClassData = async () => {
             try {
@@ -38,8 +39,12 @@ export default function Page(){
                 setLoading(false)
             }
         }
-
-        fetchClassData()
+        if (!hasview){
+            router.replace("/unauthorized")
+        } else{
+          fetchClassData()
+        }
+        
     }, [id])
     useEffect(() => {
         if(students?.has_subcomponents){
@@ -62,6 +67,10 @@ export default function Page(){
         }
       
     }, [students?.has_subcomponents, id])
+
+    if(!hasview){
+      return null;
+    }
     const handleOpenModal = (id, sub) => {
       console.log(sub)
         setSelectedId(id) // ✅ Set dynamic id
@@ -145,7 +154,7 @@ export default function Page(){
                             </p>
                         </div>
                         </div>
-                        <Link href={`/exam-components/edit-component?componentID=${students?.id}`} className="bg-red-700 text-white py-1.5 px-8 rounded-sm shadow-lg">Edit Component</Link>
+                       {hasedit && <Link href={`/exam-components/edit-component?componentID=${students?.id}`} className="bg-red-700 text-white py-1.5 px-8 rounded-sm shadow-lg">Edit Component</Link>}
                     </div>
                     <hr className=" border  border-spacing-y-0.5 mt-6"/>
                 </div>
@@ -190,12 +199,12 @@ export default function Page(){
       })
     : "NA"}</p>
         </div>
-        <button
+        has edit && (<button
           onClick={() => handleOpenModal(students?.id, students?.is_submission)}
           className="text-sm bg-red-600 w-full py-1.5 rounded-sm text-white shadow-sm hover:shadow-xl transition-shadow mt-6"
         >
           Add Component Dates & Data
-        </button>
+        </button>)
       </>
     )}
 

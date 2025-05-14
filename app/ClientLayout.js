@@ -37,7 +37,7 @@ function Layout({ children }) {
   const [collapsed, setCollapsed] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(null);
   const userCookie = Cookies.get("user");
-  const noLayoutRoutes = ["/login"];
+  const noLayoutRoutes = ["/login", "/unauthorized"];
   if(!userCookie){
     router.replace("/login");
   }

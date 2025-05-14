@@ -4,12 +4,14 @@ import { SaveIcon, Trash2Icon } from "lucide-react";
 import { PencilIcon } from "lucide-react";
 import Toast from "./Toast";
 import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { authFetch } from "@/app/lib/fetchWithAuth";
+import { hasPermission } from "@/app/lib/checkPermission";
 
 const EditComponent = () => {
     const searchParams = useSearchParams();
     const [showToast, setShowToast] = useState(false);
+    const router = useRouter()
     const componentID = searchParams.get("componentID"); // Get componentID from URL
     const[message, setmessage] = useState("")
     const [editingRow, setEditingRow] = useState(false);
@@ -28,7 +30,7 @@ const EditComponent = () => {
         is_submission: false,
         is_active: true,
     });
-
+  const hasadd = hasPermission(("2f72526b4e3a64b84edd665637d72cdf5b00b0711640ab62061b5756fd8f16fe"))
     // Fetch Data
     useEffect(() => {
         if (!componentID) return; // Prevent execution if ID is missing
@@ -65,8 +67,12 @@ const EditComponent = () => {
                 setLoading(false);
             }
         };
-
-        fetchComponentData();
+if(!hasadd){
+    router.replace("/unauthorized")
+}else{
+fetchComponentData();
+}
+        
     }, [componentID]); // Run only when componentID changes
 
     useEffect(()=>{
@@ -97,6 +103,9 @@ const EditComponent = () => {
             fetchSubComponentData()
         }
     },[formData.has_subcomponents, componentID])
+    if(!hasadd){
+    return null
+}
     const handleEditClick = (e) => {
         setEditingRow(true);// Store ID instead of index
         setMarks(e.target.value) 

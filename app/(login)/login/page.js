@@ -44,8 +44,7 @@ export default function LoginPage() {
       if (response.ok) {
         // Save tokens
         saveTokens(data.data.access_token, data.data.refresh_token);
-        savePermission(data.data.user.permission_list)
-        // Save user data in cookies and global state
+        savePermission(data.data.permission_list)
         Cookies.set("user", JSON.stringify(data.data.user), { expires: 365, path: "/", secure: true,
           sameSite: "Lax" });
   

@@ -1,5 +1,6 @@
 "use client";
 
+import BackButton from "@/components/ui/Backbutton";
 import { useRouter } from "next/navigation";
 
 export default function UnauthorizedPage() {
@@ -8,7 +9,9 @@ export default function UnauthorizedPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
       <div className="max-w-md w-full bg-white p-8 shadow-lg rounded-lg">
+        <BackButton />
         <div className="flex justify-center">
+          
           <svg
             className="w-16 h-16 text-red-500"
             xmlns="http://www.w3.org/2000/svg"

@@ -3,6 +3,7 @@ import { authFetch } from "@/app/lib/fetchWithAuth";
 import Toast from "@/components/Toast";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { hasPermission } from "@/app/lib/checkPermission";
 import introJs from 'intro.js';
 import 'intro.js/minified/introjs.min.css';
 
@@ -25,7 +26,7 @@ export default function CreateComponents() {
         is_submission: "false",
         description: "",
     });
-
+  const hasadd = hasPermission(("b22e5de9bd04a4792a9c285e08ee07a9d66ac8129ab7fdc9d789e9174e647506"))
     const token = localStorage.getItem("accessToken");
     useEffect(() => {
         introJs()
@@ -87,10 +88,16 @@ export default function CreateComponents() {
                 setLoading(false);
             }
         };
-
-        fetchSubjects();
+            if(!hasadd){
+                router.replace("/unauthorized")
+            }else{
+ fetchSubjects();
+            }
+       
     }, [token, subID]);
-
+if(!hasPermission){
+    return null;
+}
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });

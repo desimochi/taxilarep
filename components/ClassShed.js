@@ -7,40 +7,39 @@ import Toast from "./Toast";
 import Link from "next/link";
 import { EyeIcon } from "@heroicons/react/24/outline";
 import BulkClassShed from "./BulkClassShed";
-
+import { hasPermission } from "@/app/lib/checkPermission";
+import { useRouter } from "next/navigation";
 
 
 export default function ClassShedDis() {
   const [loading, setLoading] = useState(false);
   const [startDate, setStartDate] = useState('');
+  const router = useRouter()
   const [endDate, setEndDate] = useState('');
   const [weekdays, setWeekdays] = useState({});
   const [error, setError] = useState(false);
   const [sclass, setsclass] = useState([]);
-  const [timeerror, setTimeError] = useState("")
-  const[message, setMessage] = useState("")
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [terms, setTerms] = useState([]);
    const [subjectas, setSubjectas] = useState([]);
   const [selectedClass, setSelectedClass] = useState(null);
   const [selectedTerm, setSelectedTerm] = useState('');
-      const [filteredSubjects, setFilteredSubjects] = useState([]);
       const [selectedSubject, setSelectedSubject] = useState('');
-  const[showToast, setShowToast] = useState(false)
         const [showPopup, setShowPopup] = useState(false);
-        const [actionType, setActionType] = useState("");
-const [formData, setFormData] = useState({
-    date: "",
-  start_time: "",
-  end_time : ""
-})
+  const hasView = hasPermission(("07a09a5fc494b902800797af057188d858d753ab1bc26d853f2a5246ec3b9fc4"))
+
 const weekdayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
   useEffect(() => {
-    fetchAllData(currentPage);
-  }, [currentPage]);
-
+   
+     if(!hasView){
+      router.replace("/unauthorized")
+    } else{
+       fetchAllData(currentPage);
+    }
+  }, [currentPage, router, hasView]);
+ 
   useEffect(() => {
     if (startDate && endDate) {
       const start = new Date(startDate);
@@ -81,7 +80,9 @@ const weekdayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'S
       setLoading(false);
     }
   };
-
+if (!hasView) {
+    return null; // or a full-screen loader if you prefer
+  }
 
 const handleSubmit = async () => {
     try {

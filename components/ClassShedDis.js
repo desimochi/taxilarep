@@ -6,11 +6,14 @@ import { BanIcon, Calendar1Icon, SearchIcon, SquareUserRoundIcon } from "lucide-
 import Toast from "./Toast";
 import Link from "next/link";
 import { EyeIcon } from "@heroicons/react/24/outline";
+import { hasPermission } from "@/app/lib/checkPermission";
+import { useRouter } from "next/navigation";
 
 
 
 export default function ClassShedDis() {
   const [loading, setLoading] = useState(false);
+  const router = useRouter()
   const [error, setError] = useState(false);
   const [sclass, setsclass] = useState([]);
   const [timeerror, setTimeError] = useState("")
@@ -33,11 +36,19 @@ const [formData, setFormData] = useState({
   start_time: "",
   end_time : ""
 })
-
+ const hasadd = hasPermission(("c2c33c8eda72efef3e7a986f035d5a82e0e9e951585ecf379e82902c2ff55088"))
+  const hasedit = hasPermission(("9ddd4893a3df8b6b0caae6893805aa60f009b5f48cfa413a708e78e7d3e6a1f2"))
+  const hasView = hasPermission(("07a09a5fc494b902800797af057188d858d753ab1bc26d853f2a5246ec3b9fc4"))
   useEffect(() => {
+    if(!hasView){
+         router.replace("/unauthorized")
+    }else{
     fetchAllData(currentPage);
+    }
   }, [currentPage]);
-
+if(!hasView){
+  return null;
+}
   const fetchAllData = async (page) => {
     setLoading(true);
     const params = new URLSearchParams();
@@ -221,8 +232,8 @@ const confirmReschdule = async () => {
          <h1 className="text-3xl font-bold mb-2 font-sans">Class Schedule </h1>
                     <p className="text-sm text-gray-500 mb-8">Everyhting you need to know about Class Schedule</p>
                     </div>
-                    <Link href={`/add-class`} className="bg-red-800 text-green-50 px-8 py-2 rounded-sm shadow-sm hover:shadow-xl transition-shadow">Add Class</Link>
-                    </div>          
+                    {hasadd && <Link href={`/add-class`} className="bg-red-800 text-green-50 px-8 py-2 rounded-sm shadow-sm hover:shadow-xl transition-shadow">Add Class</Link>}
+                    </div>         
                     <hr className=" border  border-spacing-y-0.5 mb-6"/>
                     <div className="mb-4 flex items-center justify-between ">
                         <div className="w-1/5">
@@ -269,7 +280,7 @@ const confirmReschdule = async () => {
                 <th className="border px-4 py-2">Start Time</th>
                 <th className="border px-4 py-2">End Time</th>
                 <th className="border px-4 py-2">Staus</th>
-                <th className="border px-4 py-2">Action</th>
+               {hasedit &&  <th className="border px-4 py-2">Action</th>}
               </tr>
             </thead>
             <tbody>
@@ -294,7 +305,7 @@ const confirmReschdule = async () => {
             <span className="bg-violet-100 text-sm text-violet-800 py-0.5 px-3 rounded-sm">Attendance Not Marked</span>
           ) : (<span className="bg-green-100 text-sm text-green-800 py-0.5 px-3 rounded-sm">Scheduled</span>)}
         </td>
-                          <td className="px-6 py-3 flex gap-3 items-center">{!cls.is_cancel && <button className="bg-green-600 text-white rounded-sm py-1 px-2" onClick={() => handleCancelClick(cls.id, "cancel")}><BanIcon className="h-5 w-5 cursor-pointer"/></button>} <button className="bg-red-600 text-white rounded-sm py-1 px-2">{!cls.is_complete? <Calendar1Icon className="h-5 w-5 cursor-pointer" onClick={() => handleCancelClick(cls.id, "reshed")}/> : <SquareUserRoundIcon  className="h-5 w-5"/>}</button></td>
+                   {hasedit &&       <td className="px-6 py-3 flex gap-3 items-center">{!cls.is_cancel && <button className="bg-green-600 text-white rounded-sm py-1 px-2" onClick={() => handleCancelClick(cls.id, "cancel")}><BanIcon className="h-5 w-5 cursor-pointer"/></button>} <button className="bg-red-600 text-white rounded-sm py-1 px-2">{!cls.is_complete? <Calendar1Icon className="h-5 w-5 cursor-pointer" onClick={() => handleCancelClick(cls.id, "reshed")}/> : <SquareUserRoundIcon  className="h-5 w-5"/>}</button></td>}
                       </tr>
                   ))
               ) : (

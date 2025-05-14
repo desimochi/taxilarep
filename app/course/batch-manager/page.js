@@ -1,14 +1,18 @@
 "use client"
 
 import { useEffect, useState } from "react";
-import { PencilIcon, PlusCircleIcon, SaveIcon, Trash2Icon } from "lucide-react";
+import { PenBoxIcon, PencilIcon, PlusCircleIcon, SaveIcon, Trash2Icon } from "lucide-react";
 import { authFetch } from "@/app/lib/fetchWithAuth";
 import Toast from "@/components/Toast";
+import BackButton from "@/components/ui/Backbutton";
+import { hasPermission } from "@/app/lib/checkPermission";
+import { useRouter } from "next/navigation";
 
 const UserTable = () => {
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
     const [editingRow, setEditingRow] = useState(null); // Track which row is being edited
     const[message, setMessage] = useState("")
+    const router = useRouter()
     const[showToast, setShowToast] = useState(false)
     const [errors, setErrors] = useState({});
     const [isOpen, setIsOpen] = useState(false);
@@ -24,17 +28,13 @@ const UserTable = () => {
       start_date: "",
       end_date: "",
     });
- const token = localStorage.getItem("accessToken");
+  const hasadd = hasPermission(("8a256acc08a13bb029f1ab2934cce52f01b86919c99e2331b2e612dafa2465ce"))
+  const hasedit = hasPermission(("c6dd7c1d5c2f7b96de18cb441a2897010052524cfb60ac887284c5821d03cf42"))
+  const hasDel = hasPermission(("6dc92d0a2a679a7ea7ef223b18bb7c7ef7b3f00434d55c7f84ec8bb162f90a40"))
+  const hasView = hasPermission(("cebee63930b50737814baa077d6e10afd32365d06711a4dc7fe527e5cb34b60d"))
+ 
   useEffect(() => {
     const fetchBatches = async () => {
-      console.log(token)
-
-      if (!token) {
-        setError("No token found. Please log in.");
-        setLoading(false);
-        return;
-      }
-
       try {
         const response = await authFetch(`batch-viewset`, {
           method: "GET",
@@ -57,8 +57,17 @@ const UserTable = () => {
       }
     };
 
-    fetchBatches();
-  }, [token, API_BASE_URL]);
+    
+    if(!hasView){
+      router.replace("/unauthorized")
+    } else{
+      fetchBatches();
+    }
+  }, [ API_BASE_URL, hasView, router]);
+
+   if (!hasView) {
+    return null; // or a full-screen loader if you prefer
+  }
     const handleEditClick = (id) => {
         setEditingRow(id); // Set the clicked row as editable
     };
@@ -330,35 +339,39 @@ const UserTable = () => {
           </div>
         </div>
       )}
-        <div className="px-5 py-4">
-         <div className="border border-gray-300 rounded-xl mt-4 bg-gradient-to-bl from-gray-700 to-stone-900 text-white p-2 hover:shadow-xl transition-shadow  py-8 px-12">
+        <div className="px-5 py-8">
+        <BackButton/>
+         <div className=" py-4 px-12">
+        
                 <div className="flex justify-between items-center gap-2">
                     <div className="w-3/5">
                 <h5 className="text-2xl font-bold">Batch Manager</h5>
                 <span className="text-sm text-gray-400">Taxila Business School</span>
                 </div>
                 <div className="w-1/5">
-                <input type="text" placeholder="search..."  className="p-2 rounded-sm text-gray-700"  value={search} onChange={(e) => setSearch(e.target.value)}/>
+                <input type="text" placeholder="search..."  className="p-2 rounded-sm text-gray-700 border-2"  value={search} onChange={(e) => setSearch(e.target.value)}/>
                 </div>
-                <div className="w-1/5">
-                    <button onClick={toggleModal} className="w-full bg-black py-2.5 flex justify-center gap-1"><PlusCircleIcon className="h-5 w-5"/>Add a New Batch</button>
-                </div>
+                {hasadd &&<div className="w-1/5">
+                    <button onClick={toggleModal} className="w-full bg-red-100 text-red-800 rounded-sm py-2.5 flex justify-center gap-1"><PlusCircleIcon className="h-5 w-5"/>Add a New Batch</button>
+                </div>}
                 
                 </div>
-                
+                <hr className="border border-b-2 mt-4"/>
             </div>
-        <table className="w-full text-sm text-left text-gray-700 dark:text-gray-400 mt-4">
-            <thead className="text-xs text-white uppercase bg-black dark:bg-gray-700 dark:text-white-400 w-full">
+<div className="px-12">
+        <table className="w-full text-sm text-left text-gray-700 dark:text-gray-400 ">
+            <thead className="text-xs text-red-800 uppercase bg-red-50 dark:bg-gray-700 dark:text-white-400 w-full">
                 <tr >
                     <th className="px-6 py-3">Batch Name</th>
                     <th className="px-6 py-3">Start Date</th>
                     <th className="px-6 py-3">End Date</th>
                     <th className="px-6 py-3">Active</th>
-                    <th className="px-6 py-3">Action</th>
+                    {(hasDel || hasedit) && <th className="px-6 py-3">Action</th>}
+
                 </tr>
             </thead>
             <tbody>
-                {filteredbatches.map((batch, index) => (
+                {filteredbatches.length>0 ? filteredbatches.map((batch, index) => (
                     <tr
                         key={batch.id}
                         className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
@@ -413,21 +426,22 @@ const UserTable = () => {
             <option value="false">Inactive</option>
           </select>
         ) : (
-          batch.is_active ? "Active" : "Inactive"
+          batch.is_active ? <span className="bg-green-100 px-2 py-1 rounded-sm text-sm text-green-800">Active</span> : <span className="bg-red-100 px-2 py-1 rounded-sm text-sm text-red-800">Inactive</span>
         )}
       </td>
                         <td className="px-6 py-4 flex justify-start gap-4">
-                        <button onClick={() => (editingRow === batch.id ? handleSaveClick(batch.id) : handleEditClick(batch.id))}>
-          {editingRow === batch.id ? <SaveIcon className="h-5 w-5 text-green-600" /> : <PencilIcon className="h-5 w-5 text-blue-600" />}
-        </button>
-        {/* <button onClick={() => handleDeleteClick(batch.id)}>
+                        {hasedit &&<button onClick={() => (editingRow === batch.id ? handleSaveClick(batch.id) : handleEditClick(batch.id))}>
+          {editingRow === batch.id ? <SaveIcon className="h-5 w-5 text-green-600" /> : <PenBoxIcon className="h-5 w-5 text-red-800" />}
+        </button> }
+        {hasDel && <button onClick={() => handleDeleteClick(batch.id)}>
           <Trash2Icon className="h-5 w-5 text-red-600" />
-        </button> */}
+        </button> }
                         </td>
                     </tr>
-                ))}
+                )) : <tr><td colSpan={5}>No Batches Data Found</td></tr>}
             </tbody>
         </table>
+        </div>
         </div>
         {isDel && (
         <div
