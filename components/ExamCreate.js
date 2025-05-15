@@ -17,6 +17,7 @@ export default function ExamCreate(){
         course: "",
         batch: "",
         term: "",
+        type:"",
         subject: ""
     });
  
@@ -73,15 +74,15 @@ export default function ExamCreate(){
         setSubjectMappingId(selectedId)
     }
     useEffect(() => {
-        const { batch, term } = selectedValues;
+        const { batch, term, type } = selectedValues;
       
-        if (batch && term ) {
+        if (batch && term && type ) {
           const fetchSubjects = async () => {
             setLoading(true);
             setError(null);
             try {
               const response = await authFetch(
-                `subject-exam-schedule-bulk?batch_id=${batch}&term_id=${term}`
+                `subject-exam-schedule-bulk?batch_id=${batch}&term_id=${term}&type=${type}`
               );
       
               if (!response.ok) {
@@ -159,7 +160,7 @@ export default function ExamCreate(){
                 {error && <p className="text-center mt-4 text-red-600">{error}</p>}
                     <div className="flex gap-2 p-8">
                    
-                        <div className="w-1/2">
+                        <div className="w-1/3">
                         <label className="font-bold">Batch</label>
                     <select name="batch" onChange={handleChange}  className="bg-white border border-gray-300 mb-3 text-gray-700 text-sm rounded-sm focus:ring-red-600 focus:border-blue-500 block w-full p-2.5">
                         <option value="">---- Select Batch ----</option>
@@ -169,7 +170,7 @@ export default function ExamCreate(){
     ))}
                     </select>
                         </div>
-                        <div className="w-1/2">
+                        <div className="w-1/3">
                         <label className="font-bold">Term</label>
                     <select name="term"  onChange={handleChange} className="bg-white border border-gray-300 mb-3 text-gray-700 text-sm rounded-sm focus:ring-red-600 focus:border-blue-500 block w-full p-2.5">
                         <option value="">---- Select Term ----</option>
@@ -177,6 +178,15 @@ export default function ExamCreate(){
     .map((term) => (
         <option key={term.id} value={term.id}>{term.name}</option>
     ))}
+                    </select>
+                        </div>
+                         <div className="w-1/3">
+                        <label className="font-bold">Type</label>
+                    <select name="type"  onChange={handleChange} className="bg-white border border-gray-300 mb-3 text-gray-700 text-sm rounded-sm focus:ring-red-600 focus:border-blue-500 block w-full p-2.5">
+                        <option value="">---- Select Type ----</option>
+                        <option value="main">Main</option>
+                        <option value="resit-1">Resit-1</option>
+                        <option value="resit-2">Resit-2</option>
                     </select>
                         </div>
                        
