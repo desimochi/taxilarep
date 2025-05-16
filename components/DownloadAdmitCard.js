@@ -105,9 +105,13 @@ export default function DownloadAdmitCard ({data, isOpen, onClose}){
 
   </table>
 
-  <div class="flex justify-between mb-6">
-    <p class="text-sm font-semibold border-t border-black w-1/3 text-center">Signature of Students</p>
-    <p class="text-sm font-semibold border-t border-black w-1/3 text-center">Signature Examination Controller</p>
+  <div class="flex justify-between mb-6 mt-6 items-center">
+    <p class="text-sm font-semibold border-t border-black w-1/3 text-center mt-12">Signature of Students</p>
+    <div>
+    <Image src={"/exam-sign.png"} alt="exam-sign" height={100} width={200} />
+    <p class="text-sm font-semibold border-t border-black text-center">Signature Examination Controller</p>
+    </div>
+    
   </div>
 
   <p class="text-sm font-semibold mb-2">Note : <span class="underline">Please Carry the Admit Card while appearing for the exam.</span></p>

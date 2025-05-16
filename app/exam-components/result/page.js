@@ -97,6 +97,7 @@ export default function Page() {
                                             <th scope="col" className="px-6 py-3">S.no.</th>
                                             <th scope="col" className="px-6 py-3">Batch</th>
                                             <th scope="col" className="px-6 py-3">Term</th>
+                                            <th scope="col" className="px-6 py-3">Type</th>
                                             <th scope="col" className="px-6 py-3">Active</th>
                                             <th scope="col" className="px-6 py-3">Action</th>
                                         </tr>
@@ -108,6 +109,7 @@ export default function Page() {
                                                     <td className="px-6 py-3">{index + 1}</td>
                                                     <td className="px-6 py-3">{cls.batch?.name}</td>
                                                     <td className="px-6 py-3">{cls.term?.name}</td>
+                                                    <td className="px-6 py-3">{cls.type}</td>
                                                     <td className="px-6 py-3">{cls.is_active ? "Active" : "Inactive"}</td>
                                                     <td className="px-6 py-3 flex justify-center">
                                                         <Link href={`/exam-components/result/edit?id=${cls.id}`}>

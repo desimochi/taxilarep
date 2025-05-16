@@ -142,7 +142,7 @@ export default function ExamCreate(){
             setTimeout(() => {
               setMessage("")
               setShowToast(false)
-              window.location.reload()
+              // window.location.reload()
             }, 2000);
           } catch (error) {
             setError(error.message)
@@ -247,10 +247,8 @@ export default function ExamCreate(){
         ))}
         <hr className=" border border-b-2 mb-6" />
            {filteredSubjects.length>0 && <button
-        disabled={isAnyNull}
         onClick={handleSubmit}
-        className={`mx-8 px-6 py-2 rounded font-semibold transition mb-6
-          ${    isAnyNull     ? "bg-red-100 cursor-not-allowed text-red-600 "     : "bg-red-600 hover:bg-red-700 text-white" }`}
+        className={`mx-8 px-6 py-2 rounded font-semibold transition mb-6 text-white bg-red-600 hover:bg-red-700 text-white" }`}
       >
         Submit Exam Sechdule
       </button>}    
