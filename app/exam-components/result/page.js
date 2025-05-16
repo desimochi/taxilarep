@@ -102,7 +102,7 @@ export default function Page() {
                                             <th scope="col" className="px-6 py-3">Action</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody> 
                                         {clases.length > 0 ? (
                                             clases.map((cls, index) => (
                                                 <tr key={cls.id} className="border-b text-sm hover:bg-gray-50">
