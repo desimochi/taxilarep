@@ -52,7 +52,7 @@ export default function Marks() {
       </select>
       <hr className="border border-b-1 mt-4 mb-6"/>
       <p>"-" indicates the component is not that subject</p>
-      {result.length>0 ?  <div className="overflow-x-auto p-4">
+      {result.length>0 ?<div className="max-w-7xl">  <div className="overflow-x-auto p-4">
       <table className="min-w-full border border-gray-300 text-sm">
         <thead>
           <tr className="bg-gray-100">
@@ -88,9 +88,7 @@ export default function Marks() {
                   </td>
                 ))}
                 <td
-                  className={`border px-4 py-2 font-semibold text-center ${
-                    isFail ? "text-red-600" : "text-green-700"
-                  }`}
+                  className={`border px-4 py-2 font-semibold text-center`}
                 >
                   {totalObtained}
                 </td>
@@ -99,7 +97,7 @@ export default function Marks() {
           })}
         </tbody>
       </table>
-    </div> : <p>No Result Found</p>}
+    </div></div> : <p>No Result Found</p>}
     </div>
   );
 }

@@ -147,7 +147,6 @@ export default function Page(){
       subject: parseInt(data.selected.subject, 10), // Sending only one subject as an integer
       faculty: parseInt(data.selected.faculty, 10),
       total_classes: parseInt(data.selected.total_classes, 10),
-      classes_completed: 0,
       weightage_external: parseInt(data.selected.weightage_external, 10),
       weightage_internal: parseInt(data.selected.weightage_internal, 10),
       type: data.selected.type,
