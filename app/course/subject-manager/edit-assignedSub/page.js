@@ -20,6 +20,9 @@ export default function Page(){
     faculties: [],
     specializations: [],
     subjects: [],
+
+
+    
     selected: {
       course: "",
       batch: "",
@@ -151,7 +154,7 @@ export default function Page(){
     };
 
     try {
-      const response = await authFetch("subject-mapping-viewset", {
+      const response = await authFetch(`subject-mapping-viewset/${subjectId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

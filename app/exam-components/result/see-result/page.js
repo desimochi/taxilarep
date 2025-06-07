@@ -206,6 +206,7 @@ export default function Page() {
                                             <th scope="col" className="px-6 py-3">Grade</th>
                                             <th scope="col" className="px-6 py-3">Grade Point</th>
                                             <th scope="col" className="px-6 py-3">Total Marks</th>
+                                            <th scope="col" className="px-6 py-3">Realtive Total Marks</th>
                                             <th scope="col" className="px-6 py-3">Pass/Fail</th>
                                             <th scope="col" className="px-6 py-3">Credit XGP</th>
                                     {state.role_name === 'Student' &&         <th scope="col" className="px-6 py-3">Resit</th>}
@@ -221,6 +222,7 @@ export default function Page() {
                                             <td className="p-2">{item.grade}</td>
                                             <td className="p-2">{item.grade_point || "NA"}</td>
                                             <td className="p-2">{Math.floor(item.total_marks * 100) / 100}</td>
+                                            <td className="p-2">{item.scaled_total_marks}</td>
                                             {item.is_pass ? <td className="bg-green-50 text-green-800 px-4 py-1 rounded-sm">Pass</td> : <td><span className="bg-red-50 text-red-800 px-4 py-1 rounded-sm">Fail</span></td>}
                                             <td className="p-2">{item.get_credit_xgp || "NA"}</td>
                                             {state.role_name === 'Student' && (
