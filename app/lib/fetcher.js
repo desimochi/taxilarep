@@ -1,7 +1,7 @@
 
 export const fetcher = async (url) => {
     const token =  localStorage.getItem("accessToken")
-  const res = await fetch(`http://13.51.146.79:8000/${url}`,{
+  const res = await fetch(`https://api.taxila.in/${url}`,{
     headers: {
       Authorization: `Bearer ${token}`, // set your token
     },
