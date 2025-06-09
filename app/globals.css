@@ -69,6 +69,21 @@ body {
   75% { transform: translateX(-5px); }
   100% { transform: translateX(0); }
 }
+@media print {
+  body {
+    background: white;
+  }
+
+  button, .print:hidden {
+    display: none !important;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 1cm;
+  }
+}
+
 
 .shake {
   animation: shake 0.3s ease-in-out;

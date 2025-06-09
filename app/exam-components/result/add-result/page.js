@@ -26,7 +26,7 @@ export default function Page() {
             >
                 <ArrowLeft className='h-4 w-4' /> Back to List
             </button>
-            <ResueForm heading="Add Result Announcement" batch={batch} term={term} course={course} showterm={true} enrollement={false} api="student-result-save" redirect="/exam-components/result"type={true} method="POST"/>
+            <ResueForm heading="Add Result Announcement" batch={batch} term={term} course={course} showterm={true} date={true} enrollement={false} api="student-result-save" redirect="/exam-components/result"type={true} method="POST"/>
           </div>
         </div>
         </section>

@@ -3,14 +3,18 @@
 import { useState, useEffect, useContext } from "react";
 import { authFetch } from "@/app/lib/fetchWithAuth";
 import Link from "next/link";
-import { ArrowLeft, DownloadCloudIcon } from "lucide-react";
-import { useSearchParams } from "next/navigation";
+import { ArrowLeft, DownloadCloudIcon, DownloadIcon } from "lucide-react";
 import { GlobalContext } from "@/components/GlobalContext";
-import { set } from "date-fns";
+import Marksheet from "./Marksheet";
 
 export default function Page() {
     const [term, setTerm] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [modal, setModal] = useState(false)
+    const [termperiod, setTermPeriod] = useState("")
+    const [examPeriod, setExamPeriod] = useState("")
+    const [fname, setFname] = useState("")
+    const [sname, setSname] = useState("")
     const [gpa, setGpa] = useState(0);
     const [cgpa, setCgpa] = useState(0);
     const {state} =  useContext(GlobalContext)
@@ -82,6 +86,10 @@ export default function Page() {
             setResult(data.data)
             setGpa(data.extra.gpa)
             setCgpa(data.extra.cgpa)
+            setFname(data.extra?.father_name || 'NA')
+            setSname(data.extra?.student_name || 'NA')
+            setTermPeriod(data.extra.term_period)
+            setExamPeriod(data.extra.exam_period)
             if(data.data.length>0){
                 setdisplay(false)
                 setshowResult(true)
@@ -99,8 +107,25 @@ export default function Page() {
         setdisplay(true)
         setshowResult(false)
     }
+    console.log(term)
     return (
-        <>        {display && <div className="mx-auto max-w-2xl py-8">
+        <> 
+       {modal && (
+  <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center">
+    <div className="bg-white rounded-xl shadow-lg p-6 max-w-7xl w-full relative">
+      <Marksheet data={result} cgpa={cgpa} gpa={gpa} term_period={termperiod} examPeriod={examPeriod} term={formData.term} father_name={fname} name={sname} enroll = {formData.enrollment_number}/>
+
+      {/* Close button */}
+      <button
+        onClick={() => setModal(false)}
+        className="absolute top-2 right-3 text-gray-600 hover:text-black text-xl"
+      >
+        &times;
+      </button>
+    </div>
+  </div>
+)}
+      {display && <div className="mx-auto max-w-2xl py-8">
             <div className="border border-gray-300 rounded-sm p-4 px-6">
                 <h3 className="text-center text-xl text-red-800 font-bold">Check Result</h3>
                 <hr className="border border-b-2 mt-3 mb-4" />
@@ -185,6 +210,7 @@ export default function Page() {
         <div className="bg-red-50 px-4 py-1 text-sm text-red-800 rounded-sm">
           CGPA: {cgpa}
         </div>
+       
         {/* <Link
           href={`/student/result/download?term=${formData.term}&type=${formData.type}&enrollment_number=${formData.enrollment_number}`}
           className="bg-red-800 text-white px-4 py-1 rounded-sm flex items-center gap-2"
@@ -195,6 +221,7 @@ export default function Page() {
       </div>
       </div>
       <hr className="border border-b-2 mb-6 " />
+       <button className="px-6 py-2 bg-red-800 rounded-sm text-white flex gap-1" onClick={()=>setModal(true)}><DownloadIcon className='h-5 w-5'/> Download Marksheet</button>
       <table className="overflow-x-auto w-full text-center mt-2">
                                     <thead className="min-w-full border border-red-200 rounded-lg">
                                         <tr className="text-red-700 bg-red-50 font-normal text-sm border-b">
@@ -213,7 +240,7 @@ export default function Page() {
                                         </tr>
                                     </thead>
                                     {result.map((item, index)=>(
-                                        <tr key={item["Subject Code"]} className="border-b text-sm">
+                                        <tr key={index} className="border-b text-sm">
                                             <td className="p-3">{index+1}</td>
                                             <td className="p-2">{item.subject_name}</td>
                                             <td className="p-2">{item.credit}</td>

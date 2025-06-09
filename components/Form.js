@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { authFetch } from "@/app/lib/fetchWithAuth";
 import Toast from "./Toast";
 
-export default function ResueForm({ heading, batch, term, course, showterm, enrollement, api, redirect, type, method = "POST" }) {
+export default function ResueForm({ heading, batch, term, course, date, showterm, enrollement, api, redirect, type, method = "POST" }) {
   const [selectedCourses, setSelectedCourses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showToast, setShowToast] = useState(false);
@@ -28,6 +28,8 @@ export default function ResueForm({ heading, batch, term, course, showterm, enro
     const termValue = formData.get("term");
     const enrollmentNumber = formData.get("enrollment_number");
     const examType = formData.get("type");
+     const termperiod = formData.get("term-period");
+     const examperiod = formData.get("exam-period");
 
     // ✅ Validation
     if (!batchValue || selectedCourses.length === 0 || (showterm && !termValue)) {
@@ -47,10 +49,12 @@ export default function ResueForm({ heading, batch, term, course, showterm, enro
       batch: batchValue,
       term: termValue,
       course: selectedCourses,
-      type: examType
+      type: examType,
+      term_period : termperiod,
+      exam_period :examperiod
     };
 
-    const url = `${api}?batch=${batchValue}&term=${termValue}&type=${examType}&course=${selectedCourses.join(",")}`;
+    const url = `${api}?batch=${batchValue}&term=${termValue}&type=${examType}&term_period=${termperiod}&exam_period=${examperiod}&course=${selectedCourses.join(",")}`;
     const options = {
       method,
       headers: { "Content-Type": "application/json" }
@@ -158,7 +162,26 @@ export default function ResueForm({ heading, batch, term, course, showterm, enro
           </div>
         )}
       </div>
-
+        {date && <>
+        <label htmlFor="term-period" className="font-bold mt-4">Term Period</label><br />
+          <input
+            id="term-period"
+            type="text"
+            name="term-period"
+            className="border border-gray-300 p-2 w-full mt-2"
+            required
+          />
+        </>}
+        {date && <>
+        <label htmlFor="exam-period" className="font-bold mt-4">Result For</label><br />
+          <input
+            id="exam-period"
+            type="text"
+            name="exam-period"
+            className="border border-gray-300 p-2 w-full mt-2"
+            required
+          />
+        </>}
       {type && (
         <>
           <label htmlFor="type" className="font-bold mb-2 mt-4 block">Exam Type</label>
