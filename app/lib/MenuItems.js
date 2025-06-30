@@ -3,14 +3,11 @@ import {
     AcademicCapIcon,
     UserGroupIcon,
     CalendarIcon,
-    ChevronDownIcon,
-    ChevronLeftIcon,
-    ChevronRightIcon,
     DocumentChartBarIcon,
   } from "@heroicons/react/24/outline";
-  import { AlignLeftIcon, AlignRightIcon, BookCheckIcon, BookCopyIcon, DockIcon, FileAxis3D, IndianRupee, NewspaperIcon, PaperclipIcon, PenBox, PenSquareIcon, UserCircle, UserRoundCheck } from "lucide-react";
+  import { AlignLeftIcon, AlignRightIcon, BookCheckIcon, BookCopyIcon, DockIcon, FileAxis3D, HandshakeIcon, HelpCircleIcon, IndianRupee, NewspaperIcon, PaperclipIcon, PenBox, PenSquareIcon, Settings2Icon, UserCircle, UserRoundCheck } from "lucide-react";
 export const menuItems = [
-    // { label: "Dashboard", icon: <HomeIcon className="h-5 w-5" />, path: "/admin" },
+    { label: "Dashboard", icon: <HomeIcon className="h-5 w-5" />, path: "/admin/dashboard" },
     {
       label: "Course",
       icon: <BookCheckIcon className="h-5 w-5" />,
@@ -63,12 +60,17 @@ export const menuItems = [
           {label : "Resit", path: "/exam-components/resit"},
       ],
     },
-   
+    {
+      label: "Parent Meetings",
+      icon: <HandshakeIcon className="h-5 w-5" />,
+      path: "/admin/parents-meeting" 
+    },
     {
       label: "Imp. News & Notice",
       icon: <NewspaperIcon className="h-5 w-5" />,
       path: "/notice/noticeboard" 
     },
+     
     {
       label: "Students",
       icon: <AcademicCapIcon className="h-5 w-5" />,
@@ -107,12 +109,17 @@ export const menuItems = [
         { label: "Fee Management", path: "/fees-management" },
       ],
     },
+    {
+      label: "Support",
+      icon: <HelpCircleIcon className="h-5 w-5" />,
+      path: "/help/support" 
+    },
     { label: "Events", icon: <CalendarIcon className="h-5 w-5" />, path: "/events" },
    
   ];
   
   export const FacmenuItems = [
-    { label: "Dashboard", icon: <HomeIcon className="h-5 w-5" />, path: "/faculty" },
+    { label: "Faculty Dashboard", icon: <HomeIcon className="h-5 w-5" />, path: "/faculty" },
     {
       label: "Academics",
       icon: <PenSquareIcon className="h-5 w-5" />,
@@ -160,7 +167,18 @@ export const menuItems = [
     { label: "Result", icon: <PenBox className="h-5 w-5" />, path: "/exam-components/result/see-result" },
     { label: "Admit Card", icon: <FileAxis3D className="h-5 w-5" />, path: "/student/admit-card" },
     { label: "Notice", icon: <NewspaperIcon className="h-5 w-5" />, path: "/notice/noticeboard" },
+     {
+      label: "Parent Meetings",
+      icon: <HandshakeIcon className="h-5 w-5" />,
+      path: "/student/parent-meeting" 
+    },
     { label: "Events", icon: <CalendarIcon className="h-5 w-5" />, path: "/events" },
+     {
+      label: "Support",
+      icon: <HelpCircleIcon className="h-5 w-5" />,
+      path: "/help/support" 
+    },
+
   ];
 
   export const Accountant = [

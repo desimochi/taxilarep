@@ -38,7 +38,7 @@ function Layout({ children }) {
   const [collapsed, setCollapsed] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(null);
 
-  const noLayoutRoutes = ["/login", "/unauthorized"];
+  const noLayoutRoutes = ["/login", "/unauthorized", "/forgot-password"];
 
   useEffect(() => {
     const userCookie = Cookies.get("user");

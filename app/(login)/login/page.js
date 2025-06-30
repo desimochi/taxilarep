@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect, useContext } from "react";
 import { saveTokens, savePermission } from "@/app/lib/auth";
 import { GlobalContext } from "@/components/GlobalContext";
+import Link from "next/link";
 
 export default function LoginPage() {
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -53,7 +54,13 @@ export default function LoginPage() {
           updateState(data.data.user);
           resolve();
         });
-        router.replace("/"); // Redirect to home page
+        if(data.data.user.role_name?.includes("admin"))
+        {
+          router.replace("/admin/dashboard")
+        } else{
+router.replace("/");
+        }
+         // Redirect to home page
       } else {
         
         setLoading(false)
@@ -141,6 +148,7 @@ export default function LoginPage() {
                 >
                   {loading? "Signing In...." : "Sign in"}
                 </button>
+                <p className="text-sm text-gray-600 mt-3">Forgot Password <Link href={"/forgot-password"} className="font-bold text-red-600 underline">Click here</Link></p>
               </div>
             </form>
           </div>
