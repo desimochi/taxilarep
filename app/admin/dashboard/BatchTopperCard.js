@@ -3,7 +3,7 @@ import SubjectTopperTable from "./SubjectTopperCard";
 export default function BatchTopperTable({ batch }) {
   const sortedSubjects = batch.subjects.map((subject) => ({
     ...subject,
-    top_3: subject.top_3 ? [...subject.top_3].sort((a, b) => a.total_marks - b.total_marks) : [],
+    top_3: subject.top_3 ? [...subject.top_3].sort((a, b) => b.total_marks - c.total_marks) : [],
   }));
 
   return (
