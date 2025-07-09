@@ -1,4 +1,5 @@
 import { getAccessToken, clearTokens } from "./auth";
+import { getCookie } from "./getCSRF";
 import { refreshAccessToken } from "./refreshToken";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;

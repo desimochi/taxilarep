@@ -39,11 +39,10 @@ function Layout({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
 
   const noLayoutRoutes = ["/login", "/unauthorized", "/forgot-password"];
-
+  
   useEffect(() => {
     const userCookie = Cookies.get("user");
     const token = localStorage.getItem("accessToken");
-
     if ((!token || !userCookie) && !noLayoutRoutes.includes(pathname)) {
       router.replace("/login");
     } else {
@@ -83,8 +82,8 @@ function Layout({ children }) {
           toggleSidebar={toggleSidebar}
           toggleMenu={toggleMenu}
           openMenus={openMenus}
-          role={state.role_id}
-          type={state.employee_type}
+          role={state?.role_id}
+          type={state?.employee_type}
         />
 
         <aside className="w-full bg-white">
@@ -98,7 +97,7 @@ function Layout({ children }) {
               {/* User Profile Dropdown */}
               <div onMouseEnter={entermouse} onMouseLeave={leavemouse} className="relative">
                 <button className="bg-black text-white py-2 px-12 rounded-md hover:bg-gray-800">
-                  {state.name}
+                  {state?.name}
                 </button>
 
                 <div
@@ -109,15 +108,15 @@ function Layout({ children }) {
                   <div className="p-4 border-b dark:border-gray-700 flex items-center gap-3">
                     <Image src={userImage} height={40} width={40} alt="user" />
                     <div>
-                      <h3 className="font-semibold">{state.name || "User"}</h3>
-                      <p className="text-sm text-gray-500">{state.email || "user@example.com"}</p>
+                      <h3 className="font-semibold">{state?.name || "User"}</h3>
+                      <p className="text-sm text-gray-500">{state?.email || "user@example.com"}</p>
                     </div>
                   </div>
 
                   <ul className="p-4 space-y-2">
                     <li className="flex justify-between items-center hover:bg-gray-100 dark:hover:bg-gray-800 p-2 rounded cursor-pointer">
                       <Link
-                        href={`/profile/${state.role_name === "Student" ? "student" : "employee"}/${state.user_id}`}
+                        href={`/profile/${state?.role_name === "Student" ? "student" : "employee"}/${state?.user_id}`}
                         className="w-full"
                       >
                         <div className="flex gap-2 items-center">
