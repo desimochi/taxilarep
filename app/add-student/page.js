@@ -27,6 +27,14 @@ export default function Page(){
     mother_contact_number: "",
     mother_email: "",
     mother_aadhar_number: "",
+    tenth_score_type:"",
+    tenth_score:"",
+    twelfth_score_type:"",
+    twelfth_score:"",
+    graduation_background:"",
+    graduation_score_type:"",
+    graduation_score:"",
+    date_of_joining:"",
     batch: "",
     course: "",
     address: "",
@@ -170,6 +178,14 @@ async function handleSubmit() {
         experience_status: formdata.experience_status,
         experience_details: formdata.experience_details,
         score_card: formdata.score_card,
+         tenth_score_type:formdata.tenth_score_type,
+    tenth_score:formdata.tenth_score,
+    twelfth_score_type:formdata.twelfth_score_type,
+    twelfth_score:formdata.tenth_score,
+    graduation_background:formdata.graduation_background,
+    graduation_score_type:formdata.graduation_score_type,
+    graduation_score:formdata.graduation_score,
+    date_of_joining:formdata.date_of_joining,
         pwd: formdata.pwd,
         dropped: formdata.dropped,
         passout_status: formdata.passout_status,
@@ -259,7 +275,17 @@ async function handleSubmit() {
     <option value="AB-">AB-</option>
   </select>
 </div>
-
+<div className="w-full">
+  <label htmlFor="caste" className="block mb-2 text-sm font-semibold text-gray-900 dark:text-white mt-2">Category</label>
+  <select id="caste" name="caste" onChange={handleChange} value={formdata.caste} className="block p-2 ps-4 text-sm text-gray-900 border border-gray-400 rounded-sm w-full bg-white focus:border-blue-500">
+    <option value="General">General</option>
+    <option value="OBC">OBC</option>
+    <option value="EWS">EWS</option>
+    <option value="SC">SC</option>
+    <option value="ST">ST</option>
+    <option value="Tibal">Tribal</option>
+  </select>
+</div>
 <div className="w-full">
   <label htmlFor="aadharcard" className="block mb-2 text-sm font-semibold text-gray-900 dark:text-white mt-2">Aadhar Card</label>
   <input type="text" placeholder="Enter Aadhar Card Number" name="aadhar_number" value={formdata.aadhar_number} onChange={handleChange} className="block p-2 ps-4 text-sm text-gray-900 border border-gray-400 rounded-sm w-full bg-white focus:border-blue-500" />
@@ -351,85 +377,58 @@ async function handleSubmit() {
   <label htmlFor="pincode" className="block mb-2 text-sm font-semibold text-gray-900 dark:text-white mt-2">Pincode</label>
   <input type="number" name="pincode" value={formdata.pincode} onChange={handleChange} placeholder="Enter Pincode" className="block p-2 ps-4 text-sm text-gray-900 border border-gray-400 rounded-sm w-full bg-white focus:border-blue-500" />
 </div>
-{/* Personal Details */}
-<div className="w-full">
-  <label htmlFor="firstname" className="block mb-2 text-sm font-semibold text-gray-900 dark:text-white mt-2">First Name <span className="text-red-600">*</span></label>
-  <input type="text" placeholder="Enter First Name" value={formdata.first_name} name="first_name" onChange={handleChange} className="block p-2 ps-4 text-sm text-gray-900 border border-gray-400 rounded-sm w-full bg-white focus:border-blue-500" />
-</div>
 
-<div className="w-full">
-  <label htmlFor="middlename" className="block mb-2 text-sm font-semibold text-gray-900 dark:text-white mt-2">Middle Name</label>
-  <input type="text" placeholder="Enter Middle Name" value={formdata.middle_name} name="middle_name" onChange={handleChange} className="block p-2 ps-4 text-sm text-gray-900 border border-gray-400 rounded-sm w-full bg-white focus:border-blue-500" />
-</div>
-
-<div className="w-full">
-  <label htmlFor="lastname" className="block mb-2 text-sm font-semibold text-gray-900 dark:text-white mt-2">Last Name</label>
-  <input type="text" placeholder="Enter Last Name" value={formdata.last_name} name="last_name" onChange={handleChange} className="block p-2 ps-4 text-sm text-gray-900 border border-gray-400 rounded-sm w-full bg-white focus:border-blue-500" />
-</div>
 
 {/* Education Details */}
 <div className="w-full">
-  <label htmlFor="10thschool" className="block mb-2 text-sm font-semibold text-gray-900 dark:text-white mt-2">10<sup>th</sup> School Name <span className="text-red-600">*</span></label>
-  <input type="text" placeholder="Enter 10th School Name" name="10thschool" value={formdata["10thschool"]} onChange={handleChange} className="block p-2 ps-4 text-sm text-gray-900 border border-gray-400 rounded-sm w-full bg-white focus:border-blue-500" />
+  <label htmlFor="tenth_score_type" className="block mb-2 text-sm font-semibold text-gray-900 dark:text-white mt-2">10th Score Type</label>
+  <select name="tenth_score_type" value={formdata.tenth_score_type} onChange={handleChange} className="block p-2 ps-4 text-sm text-gray-900 border border-gray-400 rounded-sm w-full bg-white focus:border-blue-500" >
+    <option value=''>Select A Value</option>
+    <option value='Percentage'>Percentage</option>
+    <option value='CGPA'>CGPA</option>
+    </select>
+</div>
+<div className="w-full">
+  <label htmlFor="tenth_score" className="block mb-2 text-sm font-semibold text-gray-900 dark:text-white mt-2">10th Score</label>
+  <input type="number" name="tenth_score" value={formdata.tenth_score} onChange={handleChange} placeholder="Enter 10th Score" className="block p-2 ps-4 text-sm text-gray-900 border border-gray-400 rounded-sm w-full bg-white focus:border-blue-500" />
+</div>
+<div className="w-full">
+  <label htmlFor="twelfth_score_type" className="block mb-2 text-sm font-semibold text-gray-900 dark:text-white mt-2">12th Score Type</label>
+  <select name="twelfth_score_type" value={formdata.twelfth_score_type} onChange={handleChange} className="block p-2 ps-4 text-sm text-gray-900 border border-gray-400 rounded-sm w-full bg-white focus:border-blue-500" >
+    <option value=''>Select A Value</option>
+    <option value='Percentage'>Percentage</option>
+    <option value='CGPA'>CGPA</option>
+    </select>
+</div>
+<div className="w-full">
+  <label htmlFor="twelfth_score" className="block mb-2 text-sm font-semibold text-gray-900 dark:text-white mt-2">12th Score</label>
+  <input type="number" name="twelfth_score" value={formdata.twelfth_score} onChange={handleChange} placeholder="Enter 12th Score" className="block p-2 ps-4 text-sm text-gray-900 border border-gray-400 rounded-sm w-full bg-white focus:border-blue-500" />
+</div>
+<div className="w-full">
+  <label htmlFor="graduation_background" className="block mb-2 text-sm font-semibold text-gray-900 dark:text-white mt-2">Graduation Backgorund</label>
+  <input type="text" name="graduation_background" value={formdata.graduation_background} onChange={handleChange} placeholder="Enter Graduation Backgorund" className="block p-2 ps-4 text-sm text-gray-900 border border-gray-400 rounded-sm w-full bg-white focus:border-blue-500" />
+</div>
+<div className="w-full">
+  <label htmlFor="graduation_score_type" className="block mb-2 text-sm font-semibold text-gray-900 dark:text-white mt-2">Graduation Score Type</label>
+  <select name="graduation_score_type" value={formdata.graduation_score_type} onChange={handleChange} className="block p-2 ps-4 text-sm text-gray-900 border border-gray-400 rounded-sm w-full bg-white focus:border-blue-500" >
+    <option value=''>Select A Value</option>
+    <option value='Percentage'>Percentage</option>
+    <option value='CGPA'>CGPA</option>
+    </select>
+</div>
+<div className="w-full">
+  <label htmlFor="graduation_score" className="block mb-2 text-sm font-semibold text-gray-900 dark:text-white mt-2">Graduation Score</label>
+  <input type="number" name="graduation_score" value={formdata.graduation_score} onChange={handleChange} placeholder="Enter Graduation Score" className="block p-2 ps-4 text-sm text-gray-900 border border-gray-400 rounded-sm w-full bg-white focus:border-blue-500" />
+</div>
+<div className="w-full">
+  <label htmlFor="date_of_joining" className="block mb-2 text-sm font-semibold text-gray-900 dark:text-white mt-2">Date of joining</label>
+  <input type="date" name="date_of_joining" value={formdata.date_of_joining} onChange={handleChange} className="block p-2 ps-4 text-sm text-gray-900 border border-gray-400 rounded-sm w-full bg-white focus:border-blue-500" />
 </div>
 
 <div className="w-full">
-  <label htmlFor="10thboard" className="block mb-2 text-sm font-semibold text-gray-900 dark:text-white mt-2">10<sup>th</sup> Board Name</label>
-  <input type="text" placeholder="Enter 10th Board Name" name="10thboard" value={formdata["10thboard"]} onChange={handleChange} className="block p-2 ps-4 text-sm text-gray-900 border border-gray-400 rounded-sm w-full bg-white focus:border-blue-500" />
+  <label htmlFor="score_card" className="block mb-2 text-sm font-semibold text-gray-900 dark:text-white mt-2">Entrance Exam Scorecard</label>
+  <input type="text" name="score_card" value={formdata.score_card} onChange={handleChange} className="block p-2 ps-4 text-sm text-gray-900 border border-gray-400 rounded-sm w-full bg-white focus:border-blue-500" />
 </div>
-
-<div className="w-full">
-  <label htmlFor="10thpercentage" className="block mb-2 text-sm font-semibold text-gray-900 dark:text-white mt-2">10<sup>th</sup> Percentage/CGPA</label>
-  <input type="text" placeholder="Enter 10th Percentage/CGPA" name="10thpercentage" value={formdata["10thpercentage"]} onChange={handleChange} className="block p-2 ps-4 text-sm text-gray-900 border border-gray-400 rounded-sm w-full bg-white focus:border-blue-500" />
-</div>
-
-<div className="w-full">
-  <label htmlFor="10thyear" className="block mb-2 text-sm font-semibold text-gray-900 dark:text-white mt-2">10<sup>th</sup> Passing Year</label>
-  <input type="date" name="10thyear" value={formdata["10thyear"]} onChange={handleChange} className="block p-2 ps-4 text-sm text-gray-900 border border-gray-400 rounded-sm w-full bg-white focus:border-blue-500" />
-</div>
-
-{/* 12th Education */}
-<div className="w-full">
-  <label htmlFor="12thschool" className="block mb-2 text-sm font-semibold text-gray-900 dark:text-white mt-2">12<sup>th</sup> Institute Name <span className="text-red-600">*</span></label>
-  <input type="text" placeholder="Enter 12th Institute Name" name="12thschool" value={formdata["12thschool"]} onChange={handleChange} className="block p-2 ps-4 text-sm text-gray-900 border border-gray-400 rounded-sm w-full bg-white focus:border-blue-500" />
-</div>
-
-<div className="w-full">
-  <label htmlFor="12thboard" className="block mb-2 text-sm font-semibold text-gray-900 dark:text-white mt-2">12<sup>th</sup> Board Name</label>
-  <input type="text" placeholder="Enter 12th Board Name" name="12thboard" value={formdata["12thboard"]} onChange={handleChange} className="block p-2 ps-4 text-sm text-gray-900 border border-gray-400 rounded-sm w-full bg-white focus:border-blue-500" />
-</div>
-
-<div className="w-full">
-  <label htmlFor="12thpercentage" className="block mb-2 text-sm font-semibold text-gray-900 dark:text-white mt-2">12<sup>th</sup> Percentage/CGPA</label>
-  <input type="text" placeholder="Enter 12th Percentage/CGPA" name="12thpercentage" value={formdata["12thpercentage"]} onChange={handleChange} className="block p-2 ps-4 text-sm text-gray-900 border border-gray-400 rounded-sm w-full bg-white focus:border-blue-500" />
-</div>
-
-<div className="w-full">
-  <label htmlFor="12thyear" className="block mb-2 text-sm font-semibold text-gray-900 dark:text-white mt-2">12<sup>th</sup> Passing Year</label>
-  <input type="date" name="12thyear" value={formdata["12thyear"]} onChange={handleChange} className="block p-2 ps-4 text-sm text-gray-900 border border-gray-400 rounded-sm w-full bg-white focus:border-blue-500" />
-</div>
-
-{/* Graduation Education */}
-<div className="w-full">
-  <label htmlFor="graduationdegree" className="block mb-2 text-sm font-semibold text-gray-900 dark:text-white mt-2">Graduation Degree <span className="text-red-600">*</span></label>
-  <input type="text" placeholder="Enter Graduation Degree" name="graduationdegree" value={formdata["graduationdegree"]} onChange={handleChange} className="block p-2 ps-4 text-sm text-gray-900 border border-gray-400 rounded-sm w-full bg-white focus:border-blue-500" />
-</div>
-
-<div className="w-full">
-  <label htmlFor="graduationinstitute" className="block mb-2 text-sm font-semibold text-gray-900 dark:text-white mt-2">Institute/University Name</label>
-  <input type="text" placeholder="Enter Institute/University Name" name="graduationinstitute" value={formdata["graduationinstitute"]} onChange={handleChange} className="block p-2 ps-4 text-sm text-gray-900 border border-gray-400 rounded-sm w-full bg-white focus:border-blue-500" />
-</div>
-
-<div className="w-full">
-  <label htmlFor="graduationpercentage" className="block mb-2 text-sm font-semibold text-gray-900 dark:text-white mt-2">Graduation Percentage/CGPA</label>
-  <input type="text" placeholder="Enter Graduation Percentage/CGPA" name="graduationpercentage" value={formdata["graduationpercentage"]} onChange={handleChange} className="block p-2 ps-4 text-sm text-gray-900 border border-gray-400 rounded-sm w-full bg-white focus:border-blue-500" />
-</div>
-
-<div className="w-full">
-  <label htmlFor="graduationyear" className="block mb-2 text-sm font-semibold text-gray-900 dark:text-white mt-2">Graduation Passing Year</label>
-  <input type="date" name="graduationyear" value={formdata["graduationyear"]} onChange={handleChange} className="block p-2 ps-4 text-sm text-gray-900 border border-gray-400 rounded-sm w-full bg-white focus:border-blue-500" />
-</div>
-
 {/* Experience Details */}
 <div className="w-full">
   <label htmlFor="experience" className="block mb-2 text-sm font-semibold text-gray-900 dark:text-white mt-2">Do you have work experience?</label>
