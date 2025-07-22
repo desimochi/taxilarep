@@ -1,12 +1,11 @@
 "use client"
-import { EyeIcon, LockIcon, PenSquareIcon, PlusCircleIcon, PlusIcon, Settings2Icon, TicketIcon, Users } from "lucide-react";
+import { PenSquareIcon, TicketIcon } from "lucide-react";
 import { useContext, useEffect, useState } from "react";
 import { authFetch } from "@/app/lib/fetchWithAuth";
-import Link from "next/link";
 import Toast from "@/components/Toast";
 import FullWidthLoader from "@/components/Loaader";
-import MultiSelectDropdown from "./MutilSelection";
 import { GlobalContext } from "@/components/GlobalContext";
+import Link from "next/link";
 
 export default function Page() {
   const { state } = useContext(GlobalContext);
@@ -69,7 +68,21 @@ export default function Page() {
       console.error("Edit fetch error:", err);
     }
   };
+const handleCategoryChange = (e) => {
+  const categoryId = parseInt(e.target.value); // convert string to number
+  const selected = exams.find((item) => item.id === categoryId);
+  if (!selected) return;
 
+  setCategory(categoryId); // send ID, not name
+
+  // avoid duplicate emails
+  setSelectedUsers((prev) => {
+    if (!prev.includes(selected.email)) {
+      return [...prev, selected.email];
+    }
+    return prev;
+  });
+};
   const handleAddClick = (type) => {
     setType(type);
     setShowPopups(true);
@@ -91,7 +104,7 @@ export default function Page() {
       if (!res.ok) throw new Error("Failed request");
       setMessage(type === "Add" ? "Ticket Raised Successfully" : "Ticket Updated Successfully");
       setShowToast(true);
-      setTimeout(() => window.location.reload(), 2000);
+      // setTimeout(() => window.location.reload(), 2000);
     } catch (err) {
       setMessage("Something went wrong");
       setShowToast(true);
@@ -109,11 +122,15 @@ export default function Page() {
               <h1 className="text-3xl font-bold mb-2 font-sans">Tickets Category</h1>
               <p className="text-sm text-gray-500 mb-8">Everything about parents meetings at Taxila Business School</p>
             </div>
-            {state.user_type !== "EMPLOYEE" && (
+            {state.user_type !== "EMPLOYEE" ? (
               <button onClick={() => handleAddClick("Add")} className="bg-red-100 border border-red-800 text-red-800 flex gap-1 items-center px-8 py-2 rounded">
                 <TicketIcon className="h-5 w-5" />Raise A Ticket
               </button>
-            )}
+            ):
+            <Link href={'/help/ticket-category'} className="bg-red-100 border border-red-800 text-red-800 flex gap-1 items-center px-8 py-2 rounded">
+                <TicketIcon className="h-5 w-5" />Ticket Category
+              </Link>
+            }
           </div>
 
           <hr className="border mb-6" />
@@ -138,7 +155,7 @@ export default function Page() {
                     {data.length > 0 ? data.map((item, idx) => (
                       <tr key={item.id} className="border-b text-sm">
                         <td className="p-3">{idx + 1}</td>
-                        <td className="p-3">{item.category.name}</td>
+                        <td className="p-3">{item.category?.name}</td>
                         <td className="p-3">{item.short_description}</td>
                         <td className="p-3">{item.reply_solution || "NA"}</td>
                         <td className="p-3">
@@ -185,12 +202,11 @@ export default function Page() {
 
             {type !== "Edit" && (
               <>
-                <select className="border p-2 w-full rounded mb-4" value={category} onChange={(e) => setCategory(e.target.value)}>
+                <select className="border p-2 w-full rounded mb-4" value={category} onChange={handleCategoryChange}>
                   <option value="">Select A Category</option>
                   {exams.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
                 </select>
                 <textarea rows={3} placeholder="Short Description" className="border p-2 w-full rounded mb-4" value={desc} onChange={(e) => setDesc(e.target.value)} />
-                <MultiSelectDropdown onChange={(ids) => setSelectedUsers(ids)} emails={users} />
               </>
             )}
 

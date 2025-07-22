@@ -14,6 +14,7 @@ export default function Page() {
     const [selectedFaculty, setSelectedFaculty] = useState(null);
     const [newStatus, setNewStatus] = useState("");
     const [desc, setDesc] = useState("");
+    const [email, setEmail] = useState("")
     const [type, setType] = useState("");
     const [showPopups, setShowPopups] = useState(false);
     useEffect(() => {
@@ -81,7 +82,7 @@ const handledescChange = (e) => {
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ name: newStatus, description:desc }),
+                body: JSON.stringify({ name: newStatus, description:desc, email:email }),
             });
             if(!response.ok){
                 throw new Error("Someting Went Wrong")
@@ -146,6 +147,7 @@ const handledescChange = (e) => {
                     <div className="bg-white p-6 rounded-lg shadow-lg w-96">
                         <h2 className="text-sm text-gray-900 font-bold mb-4">{type} A Category</h2>
                         <input placeholder="Enter Name" className="border p-2 w-full rounded mb-4" value={newStatus} onChange={handleStatusChange} />
+                        <input type="email" placeholder="Enter Email" className="border p-2 w-full rounded mb-4" value={email} onChange={(e)=>setEmail(e.target.value)} />
                         <textarea rows={3} placeholder="Short Description" className="border p-2 w-full rounded mb-4" value={desc} onChange={handledescChange} />   
                         <div className="flex justify-end gap-2">
                             <button className="bg-gray-200 px-4 py-2 rounded" onClick={() => setShowPopups(false)}>Cancel</button>
