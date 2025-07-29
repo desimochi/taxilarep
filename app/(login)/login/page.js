@@ -46,6 +46,8 @@ export default function LoginPage() {
         // Save tokens
         saveTokens(data.data.access_token, data.data.refresh_token);
         savePermission(data.data.permission_list)
+        const date = new Date();
+date.setFullYear(date.getFullYear() + 1)
         Cookies.set("user", JSON.stringify(data.data.user), { expires: 365, path: "/", secure: true,
           sameSite: "Lax" });
   

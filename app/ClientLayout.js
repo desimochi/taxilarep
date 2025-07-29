@@ -43,7 +43,10 @@ function Layout({ children }) {
   useEffect(() => {
     const userCookie = Cookies.get("user");
     const token = localStorage.getItem("accessToken");
-    if ((!token || !userCookie) && !noLayoutRoutes.includes(pathname)) {
+    if(!userCookie){
+       router.replace("/login");
+    }
+    if ((!token) && !noLayoutRoutes.includes(pathname)) {
       router.replace("/login");
     } else {
       setIsAuthenticated(true);
