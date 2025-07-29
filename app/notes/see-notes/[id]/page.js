@@ -1,13 +1,15 @@
 "use client"
 import { authFetch } from "@/app/lib/fetchWithAuth";
+import { GlobalContext } from "@/components/GlobalContext";
 import DOMPurify from "dompurify";
 import { ArrowLeft, BookIcon } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 export default function Page(){
     const { id } = useParams();
+      const { state } = useContext(GlobalContext);
      const router = useRouter()
     const [data, setData] = useState(null);
   const [error, setError] = useState("");
@@ -53,10 +55,10 @@ export default function Page(){
                             <span className="bg-gray-100 py-0.5 px-2 text-xs rounded-sm text-gray-800"> {data?.mapping?.course?.map((course) => course.name).join(", ") || "No Course"}</span>
                         </div>
                       </div>
-                      <div className=" flex gap-3">
+                      {state.user_type === "EMPLOYEE" && <div className=" flex gap-3">
                        <Link href={`/notes/edit-notes?subID=${id}`}><span className="border border-red-300 text-red-800 bg-red-50 py-2 px-8 rounded-sm shadow-sm hover:shadow-xl transition-shadow cursor-pointer">Edit Syllabus</span></Link>
                        
-                      </div>
+                      </div>}
                     </div>
                     <hr className="border border-b-2 mt-4 mb-6"/>
                   </div> }

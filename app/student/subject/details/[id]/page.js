@@ -105,6 +105,7 @@ export default function Page() {
                             <p className="bg-gray-100 text-gray-800 px-4 py-1 rounded-sm">
                                 Specialization - {students?.specialization?.map(spec => spec.name).join(', ') || 'N/A'}
                             </p>
+                            <Link href={`/notes/see-notes/${id}`} >See Notes/Study Material</Link>
                         </div>
                         <hr className="border border-b-2 mt-6"/>
                 </div>
