@@ -48,7 +48,7 @@ export default function LoginPage() {
         savePermission(data.data.permission_list)
         const date = new Date();
 date.setFullYear(date.getFullYear() + 1)
-        Cookies.set("user", JSON.stringify(data.data.user), { expires: 365, path: "/", secure: true,
+        Cookies.set("new_user", JSON.stringify(data.data.user), { expires: date, path: "/", secure: true,
           sameSite: "Lax" });
   
         // ✅ Wait for state to update before reloading

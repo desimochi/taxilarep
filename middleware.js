@@ -37,7 +37,7 @@ const facultyPaths = [
 
 export function middleware(req) {
   const { nextUrl, cookies } = req;
-  const userCookie = cookies.get("user");
+  const userCookie = cookies.get("new_user");
   const urlPath = nextUrl.pathname;
   if (!userCookie && urlPath !== "/login") {
     return NextResponse.redirect(new URL("/login", req.url));
