@@ -2526,7 +2526,7 @@ async function saveGameState() {
   const stateToSave = JSON.parse(JSON.stringify(gameState));
 
   try {
-    const res = await fetch("http://localhost:3000/api/game", {
+    const res = await fetch("https://erp.taxila.in/api/game", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId, name, gameState: stateToSave }),
@@ -2544,7 +2544,7 @@ async function saveGameState() {
 
 async function loadGameState(uid) {
   try {
-    const res = await fetch(`http://localhost:3000/api/game?userId=${uid}`);
+    const res = await fetch(`https://erp.taxila.in/api/game?userId=${uid}`);
     if (!res.ok) throw new Error("Failed to load game");
     const savedGame = await res.json();
 
@@ -2769,7 +2769,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     try {
         // 🔹 Load game state from MongoDB
-        const res = await fetch(`http://localhost:3000/api/game?userId=${userId}`);
+        const res = await fetch(`https://erp.taxila.in/api/game?userId=${userId}`);
         let savedGame = null;
 
         if (res.ok) {
