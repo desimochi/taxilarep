@@ -10,7 +10,7 @@ export default function HtmlPage() {
      console.log(encodedState)
   return (
     <div className="w-full h-screen bg-gray-100">
-      <h1 className="text-4xl font-semibold text-center py-5">Taxila Simulation Game </h1>
+      <h1 className="text-4xl font-semibold text-center py-5">Taxila Simulation Game</h1>
       <iframe
         src={`/game.html?state=${encodedState}&name=${encodedStateName}`}
         className="w-full h-full border-none"
