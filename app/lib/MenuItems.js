@@ -143,7 +143,9 @@ export const menuItems = [
     },
     { label: "Mentorship Student", icon: <NewspaperIcon className="h-5 w-5" />, path: "/faculty/mentorship-assign-student" },
     { label: "Events", icon: <CalendarIcon className="h-5 w-5" />, path: "/events" },
-    { label: "Simulation Game", icon: <Gamepad className="h-5 w-5" />, path: "/simulation/game" },
+      {label : "Simulation Game", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
+            {label:"Startup Simuation",  icon: <Gamepad className="h-5 w-5" />, path:"/simulation/game"},
+          ]},
   ];
 
   export const ITManager = [
@@ -164,7 +166,9 @@ export const menuItems = [
     { label: "Attendance", icon: <UserRoundCheck className="h-5 w-5" />, path: "/student/attendance" },
     { label: "Class Schedule", icon: <BookCopyIcon className="h-5 w-5" />, path: "/student/class-schedule" },
     { label: "Exam Schedule", icon: <PenBox className="h-5 w-5" />, path: "/student/exam-schedule" },
-    { label: "Simulation Game", icon: <Gamepad className="h-5 w-5" />, path: "/simulation/game" },
+     {label : "Simulation Game", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
+            {label:"Startup Simuation",  icon: <Gamepad className="h-5 w-5" />, path:"/simulation/game"},
+          ]},
      { label: "Marks", icon: <DocumentChartBarIcon className="h-5 w-5" />, path: "/student/marks" },
     { label: "Result", icon: <PenBox className="h-5 w-5" />, path: "/exam-components/result/see-result" },
     { label: "Admit Card", icon: <FileAxis3D className="h-5 w-5" />, path: "/student/admit-card" },
