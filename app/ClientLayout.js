@@ -46,6 +46,7 @@ function Layout({ children }) {
 
   const handleLogout = () => {
     localStorage.clear();
+    Cookies.remove("new_user");
     Cookies.remove("user");
     router.push("/login");
   };

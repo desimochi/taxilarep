@@ -37,13 +37,15 @@ export async function POST(req) {
   });
 
   // Optionally expose user cookie client-side (for preloading state)
-  cookieStore.set("user", JSON.stringify(data.data.user), {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    sameSite: "Strict",
-    maxAge: 60 * 60 * 24 * 365 * 10, // 10 years
-  });
+cookieStore.set("user", JSON.stringify(data.data.user), {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  path: "/",
+  sameSite: "Strict",
+  maxAge: 60 * 60 * 24 * 365, // 1 year
+  expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 365), // 1 year
+});
+
 
   // ✅ Send user data in the response to update client-side state
   return new Response(JSON.stringify({
