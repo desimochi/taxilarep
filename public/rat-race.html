@@ -302,7 +302,7 @@ async function saveGameState() {
     const userId = localStorage.getItem("userId")
   if (!gameState.player || !userId) return;
   try {
-    await fetch(`http://localhost:3000/api/game/rat-race?userId=${userId}`, {
+    await fetch(`https://erp.taxila.in/api/game/rat-race?userId=${userId}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId, gameState })
@@ -317,7 +317,7 @@ async function loadGameState() {
  const userId =    localStorage.getItem("userId")
   if (!userId) return null;
   try {
-    const res = await fetch(`http://localhost:3000/api/game/rat-race?userId=${userId}`);
+    const res = await fetch(`https://erp.taxila.in/api/game/rat-race?userId=${userId}`);
     const data = await res.json();
     console.log(data)
     return data || null;
