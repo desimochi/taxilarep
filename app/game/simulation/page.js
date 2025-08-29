@@ -13,7 +13,7 @@ export default function HtmlPage() {
     <div className="w-full h-screen bg-gray-100">
       <h1 className="text-4xl font-semibold text-center pt-5">Taxila Simulation Game </h1>
       <p className="text-center pb-5 text-red-500 underline">
-      <Link href={'/simulation/game/how-to-play'} >How to Play the game</Link>
+      <Link href={'/game/simulation/how-to-play'} >How to Play the game</Link>
       </p>
       <iframe
         src={`/game.html?state=${encodedState}&name=${encodedStateName}`}
