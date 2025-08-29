@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Andaza Apna Apna - 3D UI Concept</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+    <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.157.0/examples/jsm/"
+        }
+    }
+    </script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            background-color: #111827;
+        }
+        #ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            color: white;
+            display: flex;
+            flex-direction: column;
+        }
+        .ui-element {
+            pointer-events: auto;
+        }
+        .keypad-key, .action-button, .bet-choice-btn {
+            transition: background-color 0.2s, transform 0.2s;
+        }
+        .keypad-key:hover, .bet-choice-btn:hover {
+            background-color: rgba(75, 85, 99, 0.8);
+            transform: scale(1.05);
+        }
+        .action-button:hover {
+            transform: scale(1.05);
+        }
+        .action-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .bidding-token {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div id="ui-overlay">
+        <!-- Game State UI will be injected here -->
+    </div>
+    <!-- Resume Game Modal -->
+    <div id="resume-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center pointer-events-auto">
+        <div class="bg-slate-800 p-8 rounded-xl shadow-lg text-center max-w-sm mx-auto border border-slate-700">
+            <h2 class="text-2xl font-bold mb-4 text-white">Welcome Back!</h2>
+            <p class="text-slate-300 mb-6">You have a game in progress. Would you like to resume?</p>
+            <div class="flex justify-center gap-4">
+                <button id="resume-yes-btn" class="action-button ui-element bg-green-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-700">Yes, Resume</button>
+                <button id="resume-no-btn" class="action-button ui-element bg-red-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-700">No, Start New</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Alert Modal -->
+    <div id="custom-alert-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center pointer-events-auto">
+        <div class="bg-red-800 p-8 rounded-xl shadow-lg text-center max-w-sm mx-auto border border-red-700">
+            <h2 id="custom-alert-title" class="text-2xl font-bold mb-4 text-white"></h2>
+            <p id="custom-alert-message" class="text-slate-200 mb-6"></p>
+            <button id="custom-alert-ok-btn" class="action-button ui-element bg-red-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-700">OK</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
+        import { FontLoader } from 'three/addons/loaders/FontLoader.js';
+
+        let scene, camera, renderer, controls;
+        let guessCards = [];
+        let bettingChips = [];
+        let raycaster, mouse;
+        let FONT = null;
+
+        // --- GAME STATE & CONTENT ---
+        let gameState = {
+            phase: 'LOADING',
+            players: [],
+            cases: [],
+            currentRound: 0,
+            playerGuesses: [], // Stores guesses for standard rounds
+            playerFermiInputs: {}, // Stores current input for Fermi variables
+            standardResults: null,
+            fermiResults: null,
+            currentCase: null
+        };
+        let playerInput = ''; // Input for standard guess
+        const SAVE_KEY = 'andazaApnaApnaSaveData';
+
+        // --- SOUND MANAGER ---
+        const soundManager = {
+            isReady: false,
+            synth: null,
+            init() {
+                this.synth = new Tone.Synth().toDestination();
+                this.isReady = true;
+            },
+            playClick() { if (this.isReady) this.synth.triggerAttackRelease("C4", "8n"); },
+            playCorrect() { if (this.isReady) this.synth.triggerAttackRelease("G4", "8n", Tone.now() + 0.1); },
+            playIncorrect() { if (this.isReady) this.synth.triggerAttackRelease("C3", "8n"); },
+            playRoundStart() { if (this.isReady) { this.synth.triggerAttackRelease("C4", "8n", Tone.now()); this.synth.triggerAttackRelease("E4", "8n", Tone.now() + 0.2); this.synth.triggerAttackRelease("G4", "8n", Tone.now() + 0.4); }},
+            playGameOver() { if (this.isReady) { this.synth.triggerAttackRelease("G4", "4n"); this.synth.triggerAttackRelease("C4", "4n", Tone.now() + 0.4); }}
+        };
+        
+        const allCases = [
+            { id: 'case1', standard: { question: "In what year was the Gateway of India's construction completed?", answer: 1924, unit: "Year" }, fermi: { question: "How many individual samosas are sold by street vendors in Delhi every day?", variables: { 'Population of Delhi': { actual: 20000000 }, 'Percentage who eat street food daily (%)': { actual: 25 }, 'Percentage of those who choose samosas (%)': { actual: 30 }, 'Average samosas per buyer': { actual: 2 } }, unit: "Samosas" }, solution_formula: v => v['Population of Delhi'].actual * (v['Percentage who eat street food daily (%)'].actual / 100) * (v['Percentage of those who choose samosas (%)'].actual / 100) * v['Average samosas per buyer'].actual, },
+            { id: 'case2', standard: { question: "What is the total length of the Ganges River in kilometres?", answer: 2525, unit: "km" }, fermi: { question: "What is the total length in kilometers of all autorickshaws in Bengaluru, parked bumper-to-bumper?", variables: { 'Population of Bengaluru': { actual: 13000000 }, 'Autorickshaws per 1000 people': { actual: 15 }, 'Average length of an autorickshaw (metres)': { actual: 2.8 }, 'Metres per kilometer': { actual: 1000 } }, unit: "km" }, solution_formula: v => (v['Population of Bengaluru'].actual / 1000 * v['Autorickshaws per 1000 people'].actual * v['Average length of an autorickshaw (metres)'].actual) / v['Metres per kilometer'].actual, },
+            { id: 'case3', standard: { question: "How many episodes of the TV show 'CID' had aired by the end of 2015?", answer: 1341, unit: "Episodes" }, fermi: { question: "How many litres of fuel are consumed by Zomato/Swiggy delivery partners in a month across India?", variables: { 'Total active delivery partners': { actual: 300000 }, 'Avg. distance travelled per day (km)': { actual: 100 }, 'Avg. fuel efficiency of bikes (km/litre)': { actual: 50 }, 'Avg. working days in a month': { actual: 25 } }, unit: "Litres" }, solution_formula: v => (v['Total active delivery partners'].actual * v['Avg. distance travelled per day (km)'].actual / v['Avg. fuel efficiency of bikes (km/litre)'].actual) * v['Avg. working days in a month'].actual, },
+            { id: 'case4', standard: { question: "In which year did India conduct its first successful nuclear test, code-named 'Smiling Buddha'?", answer: 1974, unit: "Year" }, fermi: { question: "How many cups of chai are consumed in India every single day?", variables: { 'Indian Population': { actual: 1400000000 }, 'Percentage of Tea Drinkers (%)': { actual: 80 }, 'Avg. Cups per Day per Drinker': { actual: 2.5 }, 'Percentage of population that are children (under 10)': { actual: 20 } }, unit: "Cups" }, solution_formula: v => v['Indian Population'].actual * (1 - v['Percentage of population that are children (under 10)'].actual / 100) * (v['Percentage of Tea Drinkers (%)'].actual / 100) * v['Avg. Cups per Day per Drinker'].actual, },
+            { id: 'case5', standard: { question: "What is the height of the Qutub Minar in New Delhi, in metres?", answer: 73, unit: "Metres" }, fermi: { question: "If all the pages from every copy of 'The Times of India' printed on a single Sunday were laid out flat, how many football fields would they cover?", variables: { 'Sunday circulation of TOI': { actual: 2800000 }, 'Avg. pages in a Sunday edition': { actual: 40 }, 'Area of a single page (sq metres)': { actual: 0.25 }, 'Area of a football field (sq metres)': { actual: 7140 } }, unit: "Football Fields" }, solution_formula: v => (v['Sunday circulation of TOI'].actual * v['Avg. pages in a Sunday edition'].actual * v['Area of a single page (sq metres)'].actual) / v['Area of a football field (sq metres)'].actual, },
+        ];
+
+        // --- INITIALIZE THE 3D SCENE ---
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x111827);
+            scene.fog = new THREE.Fog(0x111827, 10, 30);
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 2.5, 6);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.shadowMap.enabled = true;
+            document.body.appendChild(renderer.domElement);
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+            const keyLight = new THREE.DirectionalLight(0xffffff, 1.5);
+            keyLight.position.set(-5, 5, 5);
+            keyLight.castShadow = true;
+            scene.add(keyLight);
+            const fillLight = new THREE.PointLight(0x87CEEB, 2, 20);
+            fillLight.position.set(5, 3, 5);
+            scene.add(fillLight);
+
+            controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.minDistance = 3;
+            controls.maxDistance = 10;
+            controls.maxPolarAngle = Math.PI / 2;
+            controls.target.set(0, 1.5, 0);
+
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+
+            createEnvironment();
+            animate();
+            preloadAssets();
+        }
+
+        // --- ASSET PRELOADING ---
+        function preloadAssets() {
+            const fontLoader = new FontLoader();
+            fontLoader.load('https://cdn.jsdelivr.net/npm/three@0.157.0/examples/fonts/helvetiker_bold.typeface.json', (loadedFont) => {
+                FONT = loadedFont;
+                checkForSavedGame();
+            });
+        }
+
+        // --- CREATE 3D OBJECTS ---
+        function createEnvironment() {
+            const floorGeometry = new THREE.CylinderGeometry(10, 10, 0.2, 64);
+            const floorMaterial = new THREE.MeshStandardMaterial({ color: 0x374151, roughness: 0.8 });
+            const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+            floor.position.y = -0.1;
+            floor.receiveShadow = true;
+            scene.add(floor);
+        }
+        
+        function createGuessCards(guesses) {
+            clearSceneObjectsOfType('guessCard'); // Clear existing cards
+            
+            const isMobile = window.innerWidth / window.innerHeight < 1;
+            const positions = isMobile 
+                ? [{x: 0, y: 2.8, z: 0}, {x: 0, y: 1.5, z: 0}, {x: 0, y: 0.2, z: 0}]
+                : [{x: -3, y: 1.5, z: 0}, {x: 0, y: 1.5, z: 0}, {x: 3, y: 1.5, z: 0}];
+
+            guesses.forEach((guess, i) => {
+                const cardGroup = new THREE.Group();
+                const cardGeom = new THREE.BoxGeometry(1.8, 2.2, 0.1);
+                const cardMat = new THREE.MeshStandardMaterial({ color: 0x374151, roughness: 0.5 });
+                const card = new THREE.Mesh(cardGeom, cardMat);
+                card.castShadow = true;
+                cardGroup.add(card);
+                cardGroup.position.set(positions[i].x, positions[i].y, positions[i].z);
+                
+                if (FONT) {
+                    const nameGeom = new TextGeometry(guess.name, { font: FONT, size: 0.15, height: 0.02 });
+                    nameGeom.center();
+                    const nameMat = new THREE.MeshStandardMaterial({ color: 0x9CA3AF });
+                    const nameMesh = new THREE.Mesh(nameGeom, nameMat);
+                    nameMesh.position.set(0, 0.7, 0.06);
+                    cardGroup.add(nameMesh);
+
+                    const guessGeom = new TextGeometry(guess.value.toString(), { font: FONT, size: 0.5, height: 0.02 });
+                    guessGeom.center();
+                    const guessMat = new THREE.MeshStandardMaterial({ color: 0x3B82F6 });
+                    const guessMesh = new THREE.Mesh(guessGeom, guessMat);
+                    guessMesh.position.set(0, 0, 0.06);
+                    cardGroup.add(guessMesh);
+                }
+                
+                cardGroup.userData = { type: 'guessCard', playerId: i };
+                scene.add(cardGroup);
+                guessCards.push(cardGroup);
+            });
+        }
+        
+        function createBettingChip() {
+            clearSceneObjectsOfType('chip'); // Clear existing chips
+            
+            const chipGeom = new THREE.CylinderGeometry(0.2, 0.2, 0.05, 32);
+            const chipMat = new THREE.MeshStandardMaterial({ color: 0x3B82F6, emissive: 0x3B82F6 });
+            const chip = new THREE.Mesh(chipGeom, chipMat);
+            chip.rotation.x = Math.PI / 2;
+            chip.position.set(0, 1.2, 3.5); // Default position
+            chip.userData = { type: 'chip', isDragging: false };
+            scene.add(chip);
+            bettingChips.push(chip);
+        }
+        
+        function clearSceneObjectsOfType(type) {
+            const objectsToRemove = [];
+            scene.children.forEach(obj => {
+                if (obj.userData.type === type) {
+                    objectsToRemove.push(obj);
+                }
+            });
+            objectsToRemove.forEach(obj => scene.remove(obj));
+            if (type === 'guessCard') guessCards = [];
+            if (type === 'chip') bettingChips = [];
+        }
+
+        // --- UI & GAME STATE MANAGEMENT ---
+        function updateUI() {
+            const ui = document.getElementById('ui-overlay');
+            let topHtml = '';
+            let centerHtml = '';
+            let bottomHtml = '';
+
+            if (['STANDARD_GUESS', 'BETTING_PHASE', 'FERMI_GUESS'].includes(gameState.phase)) {
+                const sortedPlayers = [...gameState.players].sort((a, b) => b.score - a.score);
+                let questionHtml = '';
+                if (gameState.phase === 'STANDARD_GUESS') {
+                    const stdQuestion = gameState.currentCase.standard;
+                    questionHtml = `<div class="w-full max-w-4xl text-center p-4 bg-black/20 rounded-lg mt-4"><h2 class="text-lg md:text-2xl font-bold">Part 1: Standard Sawaal</h2><p class="text-sm md:text-base text-slate-300">${stdQuestion.question}</p></div>`;
+                } else if (gameState.phase === 'BETTING_PHASE') {
+                    questionHtml = `<div class="w-full max-w-4xl text-center p-4 mt-4"><h2 class="text-lg md:text-2xl font-bold">Place Your Bet!</h2><p class="text-sm md:text-base text-slate-300">Drag your chip onto the guess you think is closest.</p></div>`;
+                } else if (gameState.phase === 'FERMI_GUESS') {
+                    const fermiQuestion = gameState.currentCase.fermi;
+                    questionHtml = `<div class="w-full max-w-4xl text-center p-4 bg-black/20 rounded-lg mt-4"><h2 class="text-lg md:text-2xl font-bold">Part 2: Fermi Sawaal</h2><p class="text-sm md:text-base text-slate-300">${fermiQuestion.question}</p></div>`;
+                }
+
+                topHtml = `
+                    <div class="w-full max-w-4xl mx-auto p-3 bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-2xl text-white">
+                        <div class="flex flex-col sm:flex-row justify-between items-center">
+                            <h3 class="text-xl font-bold mb-2 sm:mb-0">Round ${gameState.currentRound} / 10</h3>
+                            <div class="flex gap-x-2 sm:gap-x-4 flex-wrap justify-center">
+                            ${sortedPlayers.map(p => `
+                                <div class="flex items-center">
+                                    <span class="bidding-token mr-2" style="background-color: ${p.isAI ? (p.name === 'Asha' ? '#ef4444' : '#22c55e') : '#3b82f6'};"></span>
+                                    <span class="font-semibold text-sm">${p.name}:</span>
+                                    <span class="font-bold text-blue-400 ml-2 text-sm">${p.score} pts</span>
+                                </div>
+                            `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                    ${questionHtml}
+                `;
+            }
+
+            switch(gameState.phase) {
+                case 'LOADING':
+                    centerHtml = `<div class="text-center"><h1 class="text-4xl font-bold">Loading Assets...</h1></div>`;
+                    break;
+                case 'START_SCREEN':
+                    centerHtml = `
+                        <div class="text-center">
+                            <p class="text-sm font-semibold text-amber-400 mb-4 tracking-widest">Designed at TAXILA BUSINESS SCHOOL</p>
+                            <h1 class="text-4xl md:text-6xl font-bold">Andaza Apna Apna</h1>
+                            <p class="text-lg md:text-xl text-slate-300 mt-2">A 3D Guesstimation Challenge</p>
+                            <button id="start-btn" class="action-button ui-element mt-8 bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg">Start Game</button>
+                        </div>
+                    `;
+                    break;
+                case 'STANDARD_GUESS':
+                    bottomHtml = `
+                        <div class="w-full max-w-sm p-4 bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-2xl">
+                            <div id="input-display" class="w-full text-right text-4xl font-bold p-4 bg-gray-900/50 rounded-lg mb-4 h-16">${playerInput || '0'}</div>
+                            <div class="grid grid-cols-3 gap-2">
+                                ${[1,2,3,4,5,6,7,8,9,'C',0,'OK'].map(key => `
+                                    <button data-key="${key}" class="keypad-key ui-element text-2xl font-bold p-4 rounded-lg bg-gray-700/50">${key}</button>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                    break;
+                case 'STANDARD_RESULTS':
+                    const stdResultText = `The answer was: ${gameState.standardResults.correctAnswer}`;
+                    const stdSortedPlayers = [...gameState.players].sort((a, b) => b.score - a.score);
+                    centerHtml = `
+                        <div class="text-center p-4 sm:p-8 bg-black/50 rounded-xl max-w-md sm:max-w-3xl">
+                            <h2 class="text-2xl sm:text-4xl font-bold">${stdResultText}</h2>
+                            <div class="mt-6 w-full max-w-md mx-auto">
+                                <h3 class="text-xl font-bold mb-4 border-b pb-2">Scores</h3>
+                                <div class="space-y-3">
+                                ${stdSortedPlayers.map(p => `
+                                    <div class="flex justify-between items-center p-2 rounded-lg bg-slate-700/50">
+                                        <span class="font-semibold flex items-center">
+                                            <span class="bidding-token mr-3" style="background-color: ${p.isAI ? (p.name === 'Asha' ? '#ef4444' : '#22c55e') : '#3b82f6'};"></span>
+                                            ${p.name}
+                                        </span>
+                                        <span class="font-bold text-blue-400">${p.score} pts</span>
+                                    </div>
+                                `).join('')}
+                                </div>
+                            </div>
+                            <button id="continue-fermi-btn" class="action-button ui-element mt-8 bg-amber-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg">Continue to Fermi Sawaal</button>
+                        </div>
+                    `;
+                    break;
+                case 'FERMI_GUESS':
+                    const fermiQuestion = gameState.currentCase.fermi;
+                    let variableInputsHtml = Object.keys(fermiQuestion.variables).map(varName => `
+                        <div class="mb-2">
+                            <label class="block text-xs font-medium text-slate-300">${varName}</label>
+                            <input type="number" id="fermi-var-${varName.replace(/\s/g, '-')}"
+                                       class="fermi-input ui-element mt-1 w-full p-2 text-black bg-white/80 border border-slate-600 rounded-lg"
+                                       value="${(gameState.playerFermiInputs && gameState.playerFermiInputs[varName] !== undefined) ? gameState.playerFermiInputs[varName] : ''}">
+                        </div>
+                    `).join('');
+                    bottomHtml = `
+                        <div class="w-full max-w-sm p-4 bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-2xl">
+                            ${variableInputsHtml}
+                            <button id="submit-fermi-btn" class="action-button ui-element w-full mt-4 bg-amber-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-amber-700">Submit Estimates</button>
+                        </div>
+                    `;
+                    break;
+                case 'FERMI_RESULTS':
+                    const fermiResultText = `Calculated Answer: ${gameState.fermiResults.correctAnswer.toFixed(0)} ${gameState.currentCase.fermi.unit}`;
+                    const nextButtonText = gameState.currentRound >= 10 ? 'Finish Game' : 'Next Round';
+                    const fermiSortedPlayers = [...gameState.players].sort((a, b) => b.score - a.score);
+                    centerHtml = `
+                        <div class="text-center p-4 sm:p-8 bg-black/50 rounded-xl max-w-md sm:max-w-3xl">
+                            <h2 class="text-2xl sm:text-4xl font-bold">${fermiResultText}</h2>
+                            <div class="mt-6 w-full max-w-md mx-auto">
+                                <h3 class="text-xl font-bold mb-4 border-b pb-2">Scores</h3>
+                                <div class="space-y-3">
+                                ${fermiSortedPlayers.map(p => `
+                                    <div class="flex justify-between items-center p-2 rounded-lg bg-slate-700/50">
+                                        <span class="font-semibold flex items-center">
+                                            <span class="bidding-token mr-3" style="background-color: ${p.isAI ? (p.name === 'Asha' ? '#ef4444' : '#22c55e') : '#3b82f6'};"></span>
+                                            ${p.name}
+                                        </span>
+                                        <span class="font-bold text-blue-400">${p.score} pts</span>
+                                    </div>
+                                `).join('')}
+                                </div>
+                            </div>
+                            <button id="next-round-btn" class="action-button ui-element mt-8 bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg">${nextButtonText}</button>
+                        </div>
+                    `;
+                    break;
+                case 'GAME_OVER':
+                    const winner = [...gameState.players].sort((a, b) => b.score - a.score)[0];
+                    let announcement = `Congratulations, ${winner.name}! You are the winner!`;
+                    if(winner.name !== 'You') announcement = `Better luck next time! ${winner.name} was the winner.`;
+                    centerHtml = `
+                        <div class="text-center p-8 bg-black/50 rounded-xl max-w-3xl">
+                            <h2 class="text-4xl font-bold">Game Over!</h2>
+                            <p class="text-2xl text-blue-400 mt-2">${announcement}</p>
+                            <button id="play-again-btn" class="action-button ui-element mt-8 bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg">Play Again</button>
+                        </div>
+                    `;
+                    break;
+            }
+            
+            ui.innerHTML = `
+                <div class="absolute top-0 left-0 right-0 p-4 flex justify-center">${topHtml}</div>
+                <div class="absolute inset-0 flex items-center justify-center">${centerHtml}</div>
+                <div class="absolute bottom-0 left-0 right-0 p-4 flex justify-center">${bottomHtml}</div>
+            `;
+
+            // Re-attach event listeners for Fermi inputs if this phase is active
+            if (gameState.phase === 'FERMI_GUESS') {
+                attachFermiInputListeners();
+            }
+        }
+
+        // Function to show custom alert
+        function showAlert(title, message) {
+            document.getElementById('custom-alert-title').textContent = title;
+            document.getElementById('custom-alert-message').textContent = message;
+            document.getElementById('custom-alert-modal').classList.remove('hidden');
+            document.getElementById('custom-alert-ok-btn').onclick = () => {
+                document.getElementById('custom-alert-modal').classList.add('hidden');
+            };
+        }
+
+        // --- GAME LOGIC ---
+        function initializeGame() {
+            gameState = {
+                phase: 'STANDARD_GUESS',
+                players: [
+                    { name: 'You', score: 0, isAI: false, id: 0 },
+                    { name: 'Asha', score: 0, isAI: true, id: 1 },
+                    { name: 'Bala', score: 0, isAI: true, id: 2 }
+                ],
+                cases: [...allCases].sort(() => 0.5 - Math.random()),
+                currentRound: 0,
+                playerGuesses: [],
+                playerFermiInputs: {},
+                standardResults: null,
+                fermiResults: null,
+                currentCase: null
+            };
+            startNewRound();
+        }
+
+        function startNewRound() {
+            clearSceneObjectsOfType('guessCard');
+            clearSceneObjectsOfType('chip');
+            playerInput = '';
+            gameState.playerFermiInputs = {}; // Reset for new round
+            gameState.currentRound++;
+            if (gameState.currentRound > 10 || gameState.cases.length === 0) {
+                gameState.phase = 'GAME_OVER';
+                soundManager.playGameOver();
+                updateUI();
+                return;
+            }
+            gameState.currentCase = gameState.cases.pop();
+            gameState.phase = 'STANDARD_GUESS';
+            // Reset standardResults for the new round
+            gameState.standardResults = null; // THIS IS THE KEY CHANGE
+            soundManager.playRoundStart();
+            updateUI();
+            saveGame(); // Save game state after starting a new round
+        }
+        
+        function scoreStandardPart(betOnPlayerId) {
+            const answer = gameState.currentCase.standard.answer;
+            let closestPlayerId = -1;
+            let smallestDiff = Infinity;
+
+            for (let i = 0; i < gameState.playerGuesses.length; i++) {
+                const diff = Math.abs(gameState.playerGuesses[i].value - answer);
+                if (diff < smallestDiff) {
+                    smallestDiff = diff;
+                    closestPlayerId = i;
+                }
+            }
+            
+            gameState.players.forEach((p, i) => {
+                let scoreDelta = 0;
+                if (i === closestPlayerId) scoreDelta += 10;
+                if (!p.isAI && betOnPlayerId === closestPlayerId) {
+                    scoreDelta += 15;
+                    soundManager.playCorrect();
+                } else if (!p.isAI && betOnPlayerId !== closestPlayerId) {
+                    soundManager.playIncorrect();
+                }
+                p.score += scoreDelta;
+            });
+
+            gameState.standardResults = {
+                betOnPlayerId: betOnPlayerId,
+                closestPlayerId: closestPlayerId,
+                correctAnswer: answer,
+            };
+            saveGame();
+        }
+
+        function scoreFermiPart() {
+            const fullCase = allCases.find(c => c.id === gameState.currentCase.id);
+            const variables = gameState.currentCase.fermi.variables;
+            const finalAnswer = fullCase.solution_formula(variables);
+            gameState.fermiResults = { correctAnswer: finalAnswer, variableWinners: {} };
+
+            // Generate AI variable guesses
+            gameState.players.forEach(p => {
+                if (p.isAI) {
+                    const aiVariableGuesses = {};
+                    const varianceMultiplier = p.id === 1 ? 0.4 : 1.0;
+                    const baseMultiplier = p.id === 1 ? 0.8 : 0.5;
+                    for (const varName in variables) {
+                        const actual = variables[varName].actual;
+                        const variance = (Math.random() * varianceMultiplier) + baseMultiplier;
+                        aiVariableGuesses[varName] = { actual: actual * variance };
+                    }
+                    // Ensure playerGuesses array has enough elements
+                    if (!gameState.playerGuesses[p.id]) {
+                        gameState.playerGuesses[p.id] = { name: p.name, value: 0 }; // Default value, will be overwritten
+                    }
+                    gameState.playerGuesses[p.id].variableGuesses = aiVariableGuesses;
+                }
+            });
+
+            for (const varName in variables) {
+                let closestVarPlayerId = -1;
+                let smallestVarDiff = Infinity;
+                gameState.players.forEach((p, i) => {
+                    const guess = gameState.playerGuesses[i].variableGuesses[varName].actual;
+                    const diff = Math.abs(guess - variables[varName].actual);
+                    if (diff < smallestVarDiff) {
+                        smallestVarDiff = diff;
+                        closestVarPlayerId = i;
+                    }
+                });
+                gameState.fermiResults.variableWinners[varName] = closestVarPlayerId;
+            }
+
+            let closestDerivedPlayerId = -1;
+            let smallestDerivedDiff = Infinity;
+            gameState.players.forEach((p, i) => {
+                const derivedAnswer = fullCase.solution_formula(gameState.playerGuesses[i].variableGuesses);
+                gameState.playerGuesses[i].derivedAnswer = derivedAnswer;
+                const diff = Math.abs(derivedAnswer - finalAnswer);
+                if (diff < smallestDerivedDiff) {
+                    smallestDerivedDiff = diff;
+                    closestDerivedPlayerId = i;
+                }
+            });
+            gameState.fermiResults.closestDerivedPlayerId = closestDerivedPlayerId;
+
+            gameState.players.forEach((p, i) => {
+                let scoreDelta = 0;
+                for (const varName in variables) {
+                    if (gameState.fermiResults.variableWinners[varName] === i) {
+                        scoreDelta += 10;
+                    }
+                }
+                if (closestDerivedPlayerId === i) {
+                    scoreDelta += 15;
+                }
+                p.score += scoreDelta;
+                if (!p.isAI && scoreDelta > 0) soundManager.playCorrect();
+            });
+            saveGame();
+        }
+
+        // Attach listeners for Fermi input fields
+        function attachFermiInputListeners() {
+            document.querySelectorAll('.fermi-input').forEach(input => {
+                input.oninput = (event) => {
+                    const varName = event.target.id.replace('fermi-var-', '').replace(/-/g, ' ');
+                    gameState.playerFermiInputs[varName] = parseFloat(event.target.value);
+                    saveGame(); // Save game state as user types in Fermi variables
+                };
+            });
+        }
+
+        function handleUIClick(event) {
+            const target = event.target;
+            if (!target.classList.contains('ui-element')) return;
+            
+            let playGenericClick = true;
+
+            if (target.id === 'start-btn') {
+                initializeGame();
+                playGenericClick = false; 
+            } else if (target.id === 'next-round-btn') {
+                startNewRound();
+                playGenericClick = false;
+            } else if (target.id === 'play-again-btn') {
+                gameState.phase = 'START_SCREEN';
+                clearSave();
+                updateUI();
+            } else if (target.id === 'continue-fermi-btn') {
+                gameState.phase = 'FERMI_GUESS';
+                clearSceneObjectsOfType('guessCard');
+                clearSceneObjectsOfType('chip');
+                updateUI();
+            } else if (target.id === 'submit-fermi-btn') {
+                const playerVariableGuesses = {};
+                let allValid = true;
+                for (const varName in gameState.currentCase.fermi.variables) {
+                    const input = document.getElementById(`fermi-var-${varName.replace(/\s/g, '-')}`);
+                    const value = parseFloat(input.value);
+                    if (isNaN(value)) {
+                        allValid = false;
+                        break;
+                    }
+                    playerVariableGuesses[varName] = { actual: value };
+                }
+                if (allValid) {
+                    // Ensure playerGuesses array has enough elements
+                    if (!gameState.playerGuesses[0]) {
+                        gameState.playerGuesses[0] = { name: gameState.players[0].name, value: 0 };
+                    }
+                    gameState.playerGuesses[0].variableGuesses = playerVariableGuesses;
+                    scoreFermiPart();
+                    gameState.phase = 'FERMI_RESULTS';
+                    updateUI();
+                } else {
+                    showAlert("Invalid Input", "Please enter a valid number for all variables.");
+                }
+            } else if (target.classList.contains('keypad-key')) {
+                const val = target.dataset.key;
+                if (val === 'OK') {
+                    const pGuess = parseInt(playerInput, 10) || 0;
+                    const ai1Guess = Math.floor(gameState.currentCase.standard.answer * (0.8 + Math.random() * 0.4));
+                    const ai2Guess = Math.floor(gameState.currentCase.standard.answer * (0.5 + Math.random() * 1.0));
+                    
+                    gameState.playerGuesses = [
+                        { name: 'You', value: pGuess },
+                        { name: 'Asha', value: ai1Guess },
+                        { name: 'Bala', value: ai2Guess }
+                    ];
+
+                    createGuessCards(gameState.playerGuesses);
+                    createBettingChip();
+                    
+                    gameState.phase = 'BETTING_PHASE';
+                    updateUI();
+                    saveGame(); // Save game state after standard guesses are submitted
+                } else {
+                    if (val === 'C') {
+                        playerInput = '';
+                    } else {
+                        if (playerInput.length < 10) { // Limit input length
+                           playerInput += val;
+                        }
+                    }
+                    document.getElementById('input-display').textContent = playerInput || '0';
+                    saveGame(); // Save game state as player types standard guess
+                }
+            }
+
+            if (playGenericClick) {
+                soundManager.playClick();
+            }
+        }
+
+    function getUserId() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get("userId") || "guest";
+    }
+        async function saveGame() {
+            const userId = getUserId();
+
+            if (!userId) return; // only exit if no userId found
+ const params = new URLSearchParams(window.location.search);
+ const name =  JSON.parse(decodeURIComponent(params.get("name")));
+            try {
+                const res = await fetch("https://erp.taxila.in//api/game/guesstimations", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ userId, name, gameState }),
+                });
+
+                if (!res.ok) {
+                    console.error("Failed to save game state:", await res.text());
+                } else {
+                    console.log("Game state saved for", userId);
+                }
+            } catch (err) {
+                console.error("Error saving game state:", err);
+            }
+        }
+        // --- PERSISTENCE ---
+        
+
+        async function loadGame() {
+            const userId = getUserId();
+            const res = await fetch(`https://erp.taxila.in/api/game/guesstimations?userId=${userId}`)
+            const savedData = await res.json();
+            
+            if (savedData && Object.keys(savedData).length > 0) { // Check if savedData is not empty
+                gameState = savedData;
+                // Re-link currentCase to the original allCases object to ensure solution_formula works
+                if (gameState.currentCase) {
+                    gameState.currentCase = allCases.find(c => c.id === gameState.currentCase.id);
+                }
+                return true;
+            }
+            return false;
+        }
+
+        async function clearSave() {
+            const userId = getUserId();
+            if (!userId) return; // only exit if no userId found
+
+            try {
+                // Set gameState to an empty object to clear the saved state
+                const emptyGameState = {}; 
+                const res = await fetch("https://erp.taxila.in/api/game/guesstimations", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ userId, gameState: emptyGameState }),
+                });
+
+                if (!res.ok) {
+                    console.error("Failed to clear game state:", await res.text());
+                } else {
+                    console.log("Game state cleared for", userId);
+                }
+            } catch (err) {
+                console.error("Error clearing game state:", err);
+            }
+        }
+        
+        async function checkForSavedGame() {
+            // Await loadGame to ensure it completes before proceeding
+            const gameFound = await loadGame(); 
+            if (gameFound) {
+                document.getElementById('resume-modal').classList.remove('hidden');
+            } else {
+                gameState.phase = 'START_SCREEN';
+                updateUI();
+            }
+        }
+
+        // --- INTERACTION & ANIMATION ---
+        let selectedChip = null;
+        // Global variable for the plane used for pointer interaction, aligned with card's Z position
+        // This plane is effectively the table where cards are.
+        let interactionPlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0); 
+
+        function onPointerDown(event) {
+            if (!soundManager.isReady) {
+                Tone.start();
+                soundManager.init();
+            }
+
+            // Only allow dragging if in BETTING_PHASE and a bet hasn't already been placed for this round
+            if (gameState.phase !== 'BETTING_PHASE' || (gameState.standardResults && gameState.standardResults.betOnPlayerId !== undefined)) {
+                return;
+            }
+            
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(bettingChips);
+
+            if (intersects.length > 0) {
+                selectedChip = intersects[0].object;
+                selectedChip.userData.isDragging = true;
+                controls.enabled = false;
+
+                const intersectionPoint = new THREE.Vector3();
+                raycaster.ray.intersectPlane(interactionPlane, intersectionPoint); // Get mouse's 3D position on z=0 plane
+
+                // Immediately snap chip to hover position directly under the pointer on the card plane
+                selectedChip.position.x = intersectionPoint.x;
+                selectedChip.position.y = intersectionPoint.y + 0.1; // Snap Y to mouse's Y on plane + hover offset
+                selectedChip.position.z = interactionPlane.constant + 0.05; // Snap Z to card plane + visibility offset
+            }
+        }
+
+        function onPointerMove(event) {
+            if (selectedChip && selectedChip.userData.isDragging) {
+                mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+                mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+                raycaster.setFromCamera(mouse, camera);
+
+                const intersectionPoint = new THREE.Vector3();
+                raycaster.ray.intersectPlane(interactionPlane, intersectionPoint);
+                
+                // Update chip position based on the new intersection point.
+                // It's already snapped to the plane's Z in onPointerDown.
+                selectedChip.position.x = intersectionPoint.x;
+                selectedChip.position.y = intersectionPoint.y + 0.1; // Use intersection Y, add hover offset
+                selectedChip.position.z = interactionPlane.constant + 0.05; // Fixed Z (just above cards)
+            }
+        }
+
+        function onPointerUp(event) {
+            if (selectedChip) {
+                // Perform a final raycast to see if the chip was dropped on a card
+                mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+                mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+                raycaster.setFromCamera(mouse, camera);
+
+                // Intersect with all guessCards and their children (text meshes, etc.)
+                const cardIntersects = raycaster.intersectObjects(guessCards, true); 
+
+                let droppedOnCard = false;
+                if (cardIntersects.length > 0) {
+                    // Find the parent card group which has userData.type === 'guessCard'
+                    let intersectedObject = cardIntersects[0].object;
+                    let intersectedCardGroup = null;
+
+                    // Traverse up the parent chain to find the actual card group
+                    while (intersectedObject) {
+                        if (intersectedObject.userData && intersectedObject.userData.type === 'guessCard') {
+                            intersectedCardGroup = intersectedObject;
+                            break;
+                        }
+                        intersectedObject = intersectedObject.parent;
+                    }
+
+                    if (intersectedCardGroup) {
+                        droppedOnCard = true;
+                        // Position the chip on top of the intersected card with a small Z offset for visibility
+                        selectedChip.position.set(intersectedCardGroup.position.x, intersectedCardGroup.position.y + 0.1, intersectedCardGroup.position.z + 0.05);
+                        
+                        const betOnPlayerId = intersectedCardGroup.userData.playerId;
+                        scoreStandardPart(betOnPlayerId);
+
+                        setTimeout(() => {
+                            gameState.phase = 'STANDARD_RESULTS';
+                            updateUI();
+                        }, 500);
+                    }
+                }
+                
+                if (!droppedOnCard) {
+                    selectedChip.position.set(0, 1.2, 3.5); // Return chip to original position
+                }
+
+                selectedChip.userData.isDragging = false;
+                selectedChip = null;
+                controls.enabled = true;
+                saveGame(); // Save game state after betting
+            }
+        }
+        
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // --- START ---
+        init();
+        window.addEventListener('resize', onWindowResize);
+        window.addEventListener('pointerdown', onPointerDown);
+        window.addEventListener('pointermove', onPointerMove);
+        window.addEventListener('pointerup', onPointerUp);
+        document.getElementById('ui-overlay').addEventListener('click', handleUIClick);
+
+        // Resume/Start New Game logic for the modal
+        document.getElementById('resume-yes-btn').addEventListener('click', () => {
+            document.getElementById('resume-modal').classList.add('hidden');
+            // updateUI() will be called after potentially transitioning phase
+
+            // If the game was saved during or after the standard guess submission, recreate 3D cards
+            if (['BETTING_PHASE', 'STANDARD_RESULTS', 'FERMI_GUESS', 'FERMI_RESULTS'].includes(gameState.phase)) {
+                if (gameState.playerGuesses && gameState.playerGuesses.length > 0) {
+                    createGuessCards(gameState.playerGuesses);
+                    // If it was in betting phase, also recreate the chip
+                    if (gameState.phase === 'BETTING_PHASE') {
+                        createBettingChip();
+                        // If the chip was already placed on a card (i.e., standardResults exists for this round)
+                        if (gameState.standardResults && gameState.standardResults.betOnPlayerId !== undefined) {
+                             const betCard = guessCards.find(card => card.userData.playerId === gameState.standardResults.betOnPlayerId);
+                             if (betCard && bettingChips.length > 0) {
+                                 // Position the chip on the correct card with a small Z offset for visibility
+                                 bettingChips[0].position.set(betCard.position.x, betCard.position.y + 0.1, betCard.position.z + 0.05);
+                             }
+                             // Automatically transition to STANDARD_RESULTS if bet already placed to prevent re-betting
+                             gameState.phase = 'STANDARD_RESULTS';
+                        }
+                    }
+                }
+            }
+            // If resuming to FERMI_GUESS, ensure input listeners are attached and values populated
+            if (gameState.phase === 'FERMI_GUESS') {
+                attachFermiInputListeners();
+            }
+            // Finally update UI after all state adjustments for resume
+            updateUI();
+        });
+        document.getElementById('resume-no-btn').addEventListener('click', () => {
+            document.getElementById('resume-modal').classList.add('hidden');
+            clearSave();
+            gameState.phase = 'START_SCREEN';
+            updateUI();
+        });
+
+    </script>
+</body>
+</html>

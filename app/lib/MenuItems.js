@@ -145,6 +145,7 @@ export const menuItems = [
     { label: "Events", icon: <CalendarIcon className="h-5 w-5" />, path: "/events" },
     {label : "Simuation", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Startup Simuation",  icon: <Gamepad className="h-5 w-5" />, path:"/game/simulation"},
+             {label:"Guesstimation",  icon: <Gamepad className="h-5 w-5" />, path:"/game/guesstimations"},
             {label : "Finance", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Rat Race 3d",  icon: <Gamepad className="h-5 w-5" />, path:"/game/rat-race"},
           ]},
@@ -171,8 +172,8 @@ export const menuItems = [
     { label: "Exam Schedule", icon: <PenBox className="h-5 w-5" />, path: "/student/exam-schedule" },
     {label : "Simuation", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Startup Simuation",  icon: <Gamepad className="h-5 w-5" />, path:"/game/simulation"},
+            {label:"Guesstimations",  icon: <Gamepad className="h-5 w-5" />, path:"/game/guesstimations"},
             {label : "Simuation", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
-               {label:"Startup Simuation",  icon: <Gamepad className="h-5 w-5" />, path:"/game/simulation"},
             {label:"Rat Race 3d",  icon: <Gamepad className="h-5 w-5" />, path:"/game/rat-race"},
           ]},
           ]},
