@@ -148,6 +148,7 @@ export const menuItems = [
              {label:"Guesstimation",  icon: <Gamepad className="h-5 w-5" />, path:"/game/guesstimations"},
             {label : "Finance", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Rat Race 3d",  icon: <Gamepad className="h-5 w-5" />, path:"/game/rat-race"},
+            {label:"Project Titan",  icon: <Gamepad className="h-5 w-5" />, path:"/game/titan"},
           ]},
           ]},
   ];
@@ -175,6 +176,7 @@ export const menuItems = [
             {label:"Guesstimations",  icon: <Gamepad className="h-5 w-5" />, path:"/game/guesstimations"},
             {label : "Simuation", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Rat Race 3d",  icon: <Gamepad className="h-5 w-5" />, path:"/game/rat-race"},
+            {label:"Project Titan",  icon: <Gamepad className="h-5 w-5" />, path:"/game/titan"},
           ]},
           ]},
      { label: "Marks", icon: <DocumentChartBarIcon className="h-5 w-5" />, path: "/student/marks" },
