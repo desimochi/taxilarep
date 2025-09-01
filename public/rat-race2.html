@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+=<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -23,7 +23,7 @@
             touch-action: manipulation;
             background-color: #1a110a; /* Darker brown */
             background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.03) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.03) 50%, rgba(255, 255, 255, 0.03) 75%, transparent 75%, transparent),
-                              linear-gradient(-45deg, rgba(0, 0, 0, 0.05) 25%, transparent 25%, transparent 50%, rgba(0, 0, 0, 0.05) 50%, rgba(0, 0, 0, 0.05) 75%, transparent 75%, transparent);
+                            linear-gradient(-45deg, rgba(0, 0, 0, 0.05) 25%, transparent 25%, transparent 50%, rgba(0, 0, 0, 0.05) 50%, rgba(0, 0, 0, 0.05) 75%, transparent 75%, transparent);
             background-size: 60px 60px;
         }
         #game-container {
@@ -154,7 +154,10 @@
     };
 
     // --- SOUND SETUP ---
-    const sounds = {
+const sounds = {
+        click: null,
+    deal: null,
+    failure: null,
         synth: null,
         dice: null,
         eventSynth: null,
@@ -171,15 +174,53 @@
             this.failureSynth = new Tone.Synth({ oscillator: { type: 'square' }, envelope: { attack: 0.01, decay: 0.4, sustain: 0, release: 0.1 } }).toDestination();
             gameState.audioReady = true;
         },
-        playDiceRoll() { if (!gameState.audioReady) return; const now = Tone.now(); this.dice.triggerAttackRelease("8n", now); this.dice.triggerAttackRelease("16n", now + 0.1); this.dice.triggerAttackRelease("16n", now + 0.2); },
-        playDeal() { if (!gameState.audioReady) return; this.synth.triggerAttackRelease(["C4", "E4", "G4"], "8n"); },
-        playDoodad() { if (!gameState.audioReady) return; this.synth.triggerAttackRelease(["C3", "D#3", "F#3"], "8n"); },
-        playPayday() { if (!gameState.audioReady) return; this.synth.triggerAttackRelease("C5", "8n"); },
-        playEvent() { if (!gameState.audioReady) return; this.eventSynth.triggerAttack("C4", Tone.now()); },
-        playSuccess() { if (!gameState.audioReady) return; this.successSynth.triggerAttackRelease("G5", "8n"); },
-        playFailure() { if (!gameState.audioReady) return; this.failureSynth.triggerAttackRelease("C3", "4n"); },
-        playWin() { if (!gameState.audioReady) return; this.synth.triggerAttackRelease(["C4", "E4", "G4", "C5"], "2n"); },
-        playClick() { if (!gameState.audioReady) return; this.synth.triggerAttackRelease("C5", "32n"); }
+    playDiceRoll() {  
+  if (!gameState.audioReady || !this.dice) return;
+  const now = Tone.now();  
+  this.dice.triggerAttackRelease("8n", now);  
+  this.dice.triggerAttackRelease("16n", now + 0.1);  
+  this.dice.triggerAttackRelease("16n", now + 0.2);  
+},
+
+playDeal() {  
+  if (!gameState.audioReady || !this.synth) return;  
+  this.synth.triggerAttackRelease(["C4", "E4", "G4"], "8n");  
+},
+
+playDoodad() {  
+  if (!gameState.audioReady || !this.synth) return;  
+  this.synth.triggerAttackRelease(["C3", "D#3", "F#3"], "8n");  
+},
+
+playPayday() {  
+  if (!gameState.audioReady || !this.synth) return;  
+  this.synth.triggerAttackRelease("C5", "8n");  
+},
+
+playEvent() {  
+  if (!gameState.audioReady || !this.eventSynth) return;  
+  this.eventSynth.triggerAttack("C4", Tone.now());  
+},
+
+playSuccess() {  
+  if (!gameState.audioReady || !this.successSynth) return;  
+  this.successSynth.triggerAttackRelease("G5", "8n");  
+},
+
+playFailure() {  
+  if (!gameState.audioReady || !this.failureSynth) return;  
+  this.failureSynth.triggerAttackRelease("C3", "4n");  
+},
+
+playWin() {  
+  if (!gameState.audioReady || !this.synth) return;  
+  this.synth.triggerAttackRelease(["C4", "E4", "G4", "C5"], "2n");  
+},
+
+playClick() {  
+  if (!gameState.audioReady || !this.synth) return;  
+  this.synth.triggerAttackRelease("C5", "32n");  
+}
     };
 
     // --- DOM ELEMENTS ---
@@ -304,32 +345,107 @@
 
     // --- DATABASE FUNCTIONS ---
 async function saveGameState() {
-    const userId = localStorage.getItem("userId")
-  if (!gameState.player || !userId) return;
-  try {
-    await fetch(`https://erp.taxila.in/api/game/rat-race?userId=${userId}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, gameState })
-    });
-    console.log("Game saved to MongoDB.");
-  } catch (error) {
-    console.error("Error saving game:", error);
-  }
+    const userId = localStorage.getItem("userId");
+    if (!gameState.player || !userId) return;
+
+    // Use exponential backoff for retries
+    const maxRetries = 3;
+    let retries = 0;
+    while (retries < maxRetries) {
+        try {
+            await fetch(`https://erp.taxila.in/api/game/rat-race?userId=${userId}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ userId, gameState })
+            });
+            console.log("Game saved to MongoDB.");
+            return; // Success
+        } catch (error) {
+            console.error(`Error saving game (retry ${retries + 1}):`, error);
+            retries++;
+            await new Promise(resolve => setTimeout(resolve, Math.pow(2, retries) * 1000));
+        }
+    }
+    console.error("Failed to save game after multiple retries.");
 }
 
 async function loadGameState() {
- const userId =    localStorage.getItem("userId")
-  if (!userId) return null;
-  try {
-    const res = await fetch(`https://erp.taxila.in/api/game/rat-race?userId=${userId}`);
-    const data = await res.json();
-    console.log(data)
-    return data || null;
-  } catch (error) {
-    console.error("Error loading game:", error);
+    const userId = localStorage.getItem("userId");
+    if (!userId) return null;
+
+    // Use exponential backoff for retries
+    const maxRetries = 3;
+    let retries = 0;
+    while (retries < maxRetries) {
+        try {
+            const res = await fetch(`https://erp.taxila.in/api/game/rat-race?userId=${userId}`);
+            if (!res.ok) {
+                throw new Error(`HTTP error! status: ${res.status}`);
+            }
+            const data = await res.json();
+            console.log("Loaded saved game from MongoDB:", data);
+            return data || null;
+        } catch (error) {
+            console.error(`Error loading game (retry ${retries + 1}):`, error);
+            retries++;
+            await new Promise(resolve => setTimeout(resolve, Math.pow(2, retries) * 1000));
+        }
+    }
+    console.error("Failed to load game after multiple retries. Starting new game.");
     return null;
-  }
+}
+
+function normalizeGameState(data) {
+    if (!data || !data.player) return null;
+    const player = data.player;
+
+    // Ensure numeric values are of type Number
+    const numericKeys = ['cash', 'salary', 'passiveIncome', 'turn', 'childrenCount', 'skipTurns', 'missedEMIs', 'bankruptcies', 'efficiency', 'cashFlow'];
+    numericKeys.forEach(key => {
+        player[key] = Number(player[key]) || 0;
+    });
+
+    // Ensure nested objects and arrays exist and have correct types
+    if (!player.expenses) player.expenses = {};
+    if (!player.liabilities) player.liabilities = {};
+    if (!player.assets) player.assets = [];
+    if (!player.decisionHistory) player.decisionHistory = [];
+
+    // Correctly normalize liabilities to prevent TypeError
+    for (const key in player.liabilities) {
+        if (typeof player.liabilities[key] === 'number') {
+            const principal = player.liabilities[key];
+            const originalLiab = professions[player.professionName.toLowerCase()].financials.liabilities[key];
+            const interestRate = originalLiab?.interestRate || 12;
+            const emi = calculateEMI(principal, interestRate);
+            player.liabilities[key] = { principal, emi, interestRate };
+        } else if (player.liabilities[key]) {
+            player.liabilities[key].principal = Number(player.liabilities[key].principal) || 0;
+            player.liabilities[key].emi = Number(player.liabilities[key].emi) || 0;
+            player.liabilities[key].interestRate = Number(player.liabilities[key].interestRate) || 0;
+        }
+    }
+
+    for (const key in player.expenses) {
+        player.expenses[key] = Number(player.expenses[key]) || 0;
+    }
+
+    if (!player.liabilities.bankLoan) {
+        player.liabilities.bankLoan = { principal: 0, emi: 0, interestRate: 12 };
+    }
+
+    (player.assets || []).forEach(asset => {
+        asset.cost = Number(asset.cost) || 0;
+        asset.income = Number(asset.income) || 0;
+        asset.shares = Number(asset.shares) || 0;
+    });
+    
+    data.marketCardIndex = Number(data.marketCardIndex) || 0;
+    data.opportunityCardIndex = Number(data.opportunityCardIndex) || 0;
+    data.turnsUntilCycleChange = Number(data.turnsUntilCycleChange) || 7;
+    data.turn = Number(data.turn) || 1;
+
+    return data;
 }
 
     // --- UTILITY & MODAL FUNCTIONS ---
@@ -519,7 +635,7 @@ async function loadGameState() {
             const textGeom = new THREE.PlaneGeometry(spaceSize * 0.9, spaceSize * 0.45);
             const textMesh = new THREE.Mesh(textGeom, textMaterial);
             textMesh.position.copy(spaceMesh.position);
-            textMesh.position.y += 0.11; 
+            textMesh.position.y += 0.11;  
             textMesh.rotation.x = -Math.PI / 2;
             ratRaceGroup.add(textMesh);
         });
@@ -678,8 +794,8 @@ async function loadGameState() {
     
     function analyzePlayerPerformance(player) {
         const analysis = { strengths: [], improvements: [] };
-        const opportunitiesTaken = player.decisionHistory.filter(d => d.type === 'buy').length;
-        const opportunitiesPassed = player.decisionHistory.filter(d => d.type === 'pass').length;
+        const opportunitiesTaken = (player.decisionHistory || []).filter(d => d.type === 'buy').length;
+        const opportunitiesPassed = (player.decisionHistory || []).filter(d => d.type === 'pass').length;
         const totalOpportunities = opportunitiesTaken + opportunitiesPassed;
 
         if (totalOpportunities > 0) {
@@ -690,7 +806,7 @@ async function loadGameState() {
             }
         }
         
-        const loansTaken = player.decisionHistory.filter(d => d.type === 'loan');
+        const loansTaken = (player.decisionHistory || []).filter(d => d.type === 'loan');
         if (loansTaken.length > 3) {
             analysis.improvements.push("<strong>High Leverage:</strong> High leverage can be risky. You relied heavily on bank loans. Aim to use your own cash for smaller investments when possible to keep your expenses low.");
         } else if (loansTaken.length > 0) {
@@ -716,12 +832,12 @@ async function loadGameState() {
             analysis.strengths.push("<strong>Excellent Cash Management:</strong> You successfully avoided bankruptcy, indicating strong control over your finances and cash flow throughout the game.");
         }
 
-        const charityUsed = player.decisionHistory.some(d => d.type === 'charity');
+        const charityUsed = (player.decisionHistory || []).some(d => d.type === 'charity');
         if (!charityUsed) {
             analysis.improvements.push("<strong>Charity Advantage:</strong> You missed the Charity advantage. Donating allows you to roll two dice for a turn, helping you move faster and hit more Pay Days.");
         }
         
-        const failedBusinesses = player.assets.filter(a => a.volatile && a.income < 0).length;
+        const failedBusinesses = (player.assets || []).filter(a => a.volatile && a.income < 0).length;
         if (failedBusinesses > 0) {
             analysis.improvements.push("<strong>Risk of Volatility:</strong> You experienced the risk of volatile assets firsthand. While they offer high rewards, they can also become liabilities. Diversifying your investments can mitigate this risk.");
         }
@@ -819,7 +935,7 @@ async function loadGameState() {
 
         if (availableLoan < loanAmountNeeded) {
             showModal(
-                "Loan Denied", 
+                "Loan Denied",  
                 `You need ${formatCurrency(shortfall)} more for this purchase, but your remaining loan eligibility is only ${formatCurrency(availableLoan)}. You cannot afford this asset right now.`,
                 [{ text: "OK", className: "btn-secondary", action: failureCallback }]
             );
@@ -827,7 +943,7 @@ async function loadGameState() {
         }
 
         const newTotalPrincipal = player.liabilities.bankLoan.principal + loanAmountNeeded;
-        const newTotalEMI = calculateEMI(newTotalPrincipal);
+        const newTotalEMI = calculateEMI(newTotalPrincipal, player.liabilities.bankLoan.interestRate);
 
         const modalHTML = `
             <p class="mb-2">You don't have enough cash. You need <strong>${formatCurrency(shortfall)}</strong> more.</p>
@@ -867,7 +983,7 @@ async function loadGameState() {
 
         const effectiveSalary = Math.round(player.salary * player.efficiency);
         let effectivePassiveIncome = 0;
-        player.assets.forEach(asset => {
+        (player.assets || []).forEach(asset => {
             if (asset.income > 0) {
                 effectivePassiveIncome += Math.round(asset.income * player.efficiency);
             }
@@ -882,10 +998,10 @@ async function loadGameState() {
         playerTurnTitle.style.borderBottomColor = player.color;
         professionNameEl.textContent = player.professionName;
         if (player.efficiency > 1.0) {
-             professionNameEl.innerHTML += ` <span class="text-sm text-green-400">(${Math.round(player.efficiency * 100)}% Eff.)</span>`;
+              professionNameEl.innerHTML += ` <span class="text-sm text-green-400">(${Math.round(player.efficiency * 100)}% Eff.)</span>`;
         }
 
-
+        // Update UI
         cashEl.textContent = formatCurrency(player.cash);
         salaryEl.textContent = formatCurrency(effectiveSalary);
         passiveIncomeEl.textContent = formatCurrency(effectivePassiveIncome);
@@ -894,11 +1010,11 @@ async function loadGameState() {
 
         expensesListEl.innerHTML = '';
         for (const [key, value] of Object.entries(player.expenses)) {
-             if (value === 0) continue;
+              if (value === 0) continue;
             const name = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
             expensesListEl.innerHTML += `<p>${name}: <span class="float-right font-mono">${formatCurrency(value)}</span></p>`;
         }
-         for (const [key, value] of Object.entries(player.liabilities)) {
+          for (const [key, value] of Object.entries(player.liabilities)) {
             if (value.principal > 0) {
                 const name = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()) + " EMI";
                 expensesListEl.innerHTML += `<p>${name}: <span class="float-right font-mono">${formatCurrency(value.emi)}</span></p>`;
@@ -915,7 +1031,7 @@ async function loadGameState() {
         }
         
         assetsListEl.innerHTML = '';
-        player.assets.forEach(asset => {
+        (player.assets || []).forEach(asset => {
             if (asset.type === 'stock') {
                 assetsListEl.innerHTML += `<p>${asset.name}: <span class="float-right font-mono text-blue-400">${formatCurrency(asset.cost)}</span></p>`;
             } else {
@@ -953,10 +1069,11 @@ async function loadGameState() {
         if (name) {
             sounds.playClick();
             const savedData = await loadGameState();
-            if (savedData && savedData.player && savedData.player.name.toLowerCase() === name.toLowerCase()) {
+            const normalizedData = normalizeGameState(savedData);
+            if (normalizedData && normalizedData.player.name.toLowerCase() === name.toLowerCase()) {
                 showModal(`Welcome back, ${name}!`, "Do you want to continue your previous game or start a new one?", [
                     { text: "Continue Game", className: "btn-primary", action: () => {
-                        Object.assign(gameState, savedData);
+                        Object.assign(gameState, normalizedData);
                         startGame();
                     }},
                     { text: "New Game", className: "btn-secondary", action: () => showProfessionSelection(name) }
@@ -995,14 +1112,14 @@ async function loadGameState() {
             name: playerName,
             professionName: professions[key].name,
             color: `#3B82F6`,
-            position: 0, 
-            ftPosition: 0, 
-            childrenCount: 0, 
-            skipTurns: 0, 
-            charityUsed: false, 
-            onFastTrack: false, 
-            isOut: false, 
-            missedEMIs: 0, 
+            position: 0,  
+            ftPosition: 0,  
+            childrenCount: 0,  
+            skipTurns: 0,  
+            charityUsed: false,  
+            onFastTrack: false,  
+            isOut: false,  
+            missedEMIs: 0,  
             cashFlow: 0,
             decisionHistory: [],
             bankruptcies: 0,
@@ -1010,9 +1127,9 @@ async function loadGameState() {
             hasTakenCourse: false,
         };
         if (!newPlayer.liabilities.bankLoan) {
-             newPlayer.liabilities.bankLoan = { principal: 0, emi: 0, interestRate: 12 };
+              newPlayer.liabilities.bankLoan = { principal: 0, emi: 0, interestRate: 12 };
         }
-       
+        
         gameState.player = newPlayer;
 
         professionModal.style.display = 'none';
@@ -1192,11 +1309,11 @@ async function loadGameState() {
         const cashFlow = player.cashFlow;
         player.cash += cashFlow;
         logMessage(`${getPlayerSpan()} received cash flow of ${formatCurrency(cashFlow)}.`, 'success');
-        updateFinancials(); 
+        updateFinancials();  
         
         if (player.cash < 0) {
             handleBankruptcy();
-            return; 
+            return;  
         }
         
         if (player.liabilities.bankLoan.principal > 0) {
@@ -1209,8 +1326,10 @@ async function loadGameState() {
         const player = gameState.player;
         
         let card;
-        if (gameState.turn <= 5) {
-            const beginnerCardIndex = (gameState.player.decisionHistory.filter(d => d.turn <= 5).length) % beginnerOpportunityCards.length;
+        // Use a filter that returns an empty array if decisionHistory is null or undefined
+        const recentDecisions = (gameState.player.decisionHistory || []).filter(d => d.turn <= 5);
+        if (gameState.turn <= 5 && recentDecisions.length < beginnerOpportunityCards.length) {
+            const beginnerCardIndex = recentDecisions.length;
             card = beginnerOpportunityCards[beginnerCardIndex];
         } else {
             card = opportunityCards[gameState.opportunityCardIndex];
@@ -1455,7 +1574,7 @@ async function loadGameState() {
                 const oldEMI = player.liabilities.bankLoan.emi;
                 player.cash -= repayAmount;
                 player.liabilities.bankLoan.principal -= repayAmount;
-                const newEMI = calculateEMI(player.liabilities.bankLoan.principal);
+                const newEMI = calculateEMI(player.liabilities.bankLoan.principal, player.liabilities.bankLoan.interestRate);
                 player.liabilities.bankLoan.emi = newEMI;
 
                 logMessage(`${getPlayerSpan()} repaid ${formatCurrency(repayAmount)}. EMI reduced from ${formatCurrency(oldEMI)} to ${formatCurrency(newEMI)}.`, 'success');
@@ -1504,7 +1623,7 @@ async function loadGameState() {
                 sounds.playSuccess();
                 player.cash += loanAmount;
                 player.liabilities.bankLoan.principal += loanAmount;
-                const newEMI = calculateEMI(player.liabilities.bankLoan.principal);
+                const newEMI = calculateEMI(player.liabilities.bankLoan.principal, player.liabilities.bankLoan.interestRate);
                 player.liabilities.bankLoan.emi = newEMI;
                 
                 logMessage(`${getPlayerSpan()} took a loan of ${formatCurrency(loanAmount)}. Total bank loan is now ${formatCurrency(player.liabilities.bankLoan.principal)} with an EMI of ${formatCurrency(newEMI)}.`, 'event');
@@ -1519,10 +1638,11 @@ async function loadGameState() {
         updateEmiPreview();
     }
     
-    function calculateEMI(principal) {
+    function calculateEMI(principal, interestRate) {
         if (principal <= 0) return 0;
-        const r = 0.12 / 12; // 1% monthly interest
+        const r = (interestRate / 100) / 12; // Monthly interest rate
         const n = 60; // 5 years
+        if (r === 0) return Math.round(principal / n);
         return Math.round((principal * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1));
     }
 
@@ -1534,7 +1654,7 @@ async function loadGameState() {
             const currentPrincipal = player.liabilities.bankLoan.principal || 0;
             const newLoanAmount = parseInt(loanAmountInput.value) || 0;
             const totalPrincipal = currentPrincipal + newLoanAmount;
-            emiPreview.textContent = formatCurrency(calculateEMI(totalPrincipal));
+            emiPreview.textContent = formatCurrency(calculateEMI(totalPrincipal, player.liabilities.bankLoan.interestRate));
         }
     }
 
@@ -1544,7 +1664,7 @@ async function loadGameState() {
         player.bankruptcies++;
         logMessage(`${getPlayerSpan()} is bankrupt!`, 'danger');
 
-        if (player.assets.length === 0) {
+        if ((player.assets || []).length === 0) {
             player.isOut = true;
             playerToken3D.visible = false;
             endTurn();
@@ -1558,7 +1678,7 @@ async function loadGameState() {
         const debt = Math.abs(player.cash);
         let modalText = `<p class="mb-4">You are ${formatCurrency(debt)} in debt. You must sell assets to become solvent.</p>`;
         
-        const buttons = player.assets.map((asset, index) => {
+        const buttons = (player.assets || []).map((asset, index) => {
             const salePrice = Math.round(asset.cost * 0.8);
             return {
                 text: `Sell ${asset.name} (${formatCurrency(salePrice)})`,
@@ -1593,7 +1713,7 @@ async function loadGameState() {
         if (player.cash >= 0) {
             showModal("Solvent Again!", "You sold enough assets to get out of debt.", [{ text: "Continue", className: 'btn-success', action: endTurn }]);
         } else {
-            if (player.assets.length > 0) {
+            if ((player.assets || []).length > 0) {
                 promptToSellAssets();
             } else {
                 player.isOut = true;
@@ -1632,10 +1752,10 @@ async function loadGameState() {
                 break;
             case 'ft-dream':
                 actionTaken = true;
-                 if (gameState.turn < 40) {
-                    showModal("Not Yet!", `You have the money for your dream, but lack the experience. You must play for at least 40 turns to win. You are on turn ${gameState.turn}.`, [{ text: "OK", className: "btn-primary", action: endTurn }]);
-                    return;
-                }
+                  if (gameState.turn < 40) {
+                      showModal("Not Yet!", `You have the money for your dream, but lack the experience. You must play for at least 40 turns to win. You are on turn ${gameState.turn}.`, [{ text: "OK", className: "btn-primary", action: endTurn }]);
+                      return;
+                  }
                 showModal("Your Dream!", `This is it! ${spaceData.text}. <br>Cost: ${formatCurrency(spaceData.cost)}`, [
                     {text: "Buy Dream & Win!", className: 'btn-success', action: () => {
                         if (player.cash >= spaceData.cost) {
@@ -1708,32 +1828,34 @@ async function loadGameState() {
         document.addEventListener('click', initializeAudioOnFirstInteraction);
         document.addEventListener('touchstart', initializeAudioOnFirstInteraction);
 
-        // Initialize Firebase
+        // Try to load existing game state
         try {
-             const params = new URLSearchParams(window.location.search);
-    const userId = JSON.parse(decodeURIComponent(params.get("userId")));
-    localStorage.setItem('userId', userId)
-            if (!userId) {
-        throw new Error("No userId in URL params. Example: game.html?userId=12345");
-    }
-
-    console.log("Game userId:", userId);
-
-    // Try to load existing save
-    const savedData = await loadGameState();
-    if (savedData) {
-        console.log("Loaded saved game from MongoDB:", savedData);
-        Object.assign(gameState, savedData);
-    }
-
+            const params = new URLSearchParams(window.location.search);
+            const userId = params.get("userId");
+            if (userId) {
+                localStorage.setItem('userId', userId);
+            }
         } catch (error) {
-         console.error("MongoDB init failed:", error);
-    playerSetupModal.innerHTML = `
-        <div class="modal-content">
-            <h2 class="text-2xl font-bold mb-4 text-red-500">Connection Error</h2>
-            <p>Could not connect to the database. Your game progress will not be saved.</p>
-        </div>
-    `;
+            console.error("Error with userId from URL:", error);
+        }
+
+        const savedData = await loadGameState();
+        const normalizedData = normalizeGameState(savedData);
+
+        if (normalizedData) {
+            showModal(`Welcome back, ${normalizedData.player.name}!`, "Do you want to continue your previous game or start a new one?", [
+                { text: "Continue Game", className: "btn-primary", action: () => {
+                    Object.assign(gameState, normalizedData);
+                    startGame();
+                }},
+                { text: "New Game", className: "btn-secondary", action: () => {
+                     modal.style.display = 'none';
+                     playerSetupModal.style.display = 'flex';
+                }}
+            ]);
+        } else {
+            console.log("No saved game found, starting new game setup.");
+            playerSetupModal.style.display = 'flex';
         }
 
         beginnerOpportunityCards = [
@@ -1763,8 +1885,8 @@ async function loadGameState() {
             { cardType: 'simple', name: 'Blue Pottery Workshop', cost: 300000, income: 15000, type: 'business', description: `Invest in a Blue Pottery workshop, tapping into Jaipur's rich heritage. Cost is COST for a passive income of ${formatCurrency(15000)}/mo.` },
             { cardType: 'simple', name: 'Tour Guide Service', cost: 100000, income: 5000, type: 'business', description: `Start a small tour guide service for tourists in Jaipur for COST. A low-overhead business generating ${formatCurrency(5000)}/mo.` },
             // Decision-Based Opportunity
-            { 
-                cardType: 'decision', 
+            {  
+                cardType: 'decision',  
                 name: 'Startup Venture',
                 description: 'A friend is starting a new delivery app and needs investors. The potential returns are huge, but so is the risk. How much will you invest?',
                 choices: [
@@ -1775,10 +1897,10 @@ async function loadGameState() {
             }
         ]);
         marketCards = shuffle([
-            { text: `Regulatory changes hit niche businesses hard! A volatile business venture might now be losing money.`, action: (p) => { 
-                const volatileBiz = p.assets.find(a => a.volatile && a.income > 0); 
-                if(volatileBiz) { 
-                    sounds.playFailure(); 
+            { text: `Regulatory changes hit niche businesses hard! A volatile business venture might now be losing money.`, action: (p) => {  
+                const volatileBiz = (p.assets || []).find(a => a.volatile && a.income > 0);  
+                if(volatileBiz) {  
+                    sounds.playFailure();  
                     const lossAmount = volatileBiz.income;
                     p.passiveIncome -= lossAmount; // It was adding to passive, now it's an expense
                     const expenseKey = volatileBiz.name.toLowerCase().replace(/\s+/g, '') + 'Loss';
@@ -1790,35 +1912,40 @@ async function loadGameState() {
                 }
             }},
             { text: `A developer wants your land on Ajmer Road! Sell now for ${formatCurrency(1000000)} profit.`, action: (p) => {
-                const landAsset = p.assets.find(a => a.type === 'land');
+                const landAsset = (p.assets || []).find(a => a.type === 'land');
                 if (landAsset) {
                     sounds.playDeal();
                     const profit = 1000000;
                     p.cash += landAsset.cost + profit;
-                    p.assets = p.assets.filter(a => a !== landAsset);
+                    p.assets = (p.assets || []).filter(a => a !== landAsset);
                     logMessage(`Sold the land for a massive ${formatCurrency(profit)} profit!`, 'success');
                 } else {
                     logMessage("You don't own any land for the developer to buy.", 'info');
                 }
             }},
-            { text: `Market booms! Any 'Reliance Industries' stock you own doubles in value. You can sell now for this price.`, action: (p) => { 
-                const stock = p.assets.find(a => a.company === 'Reliance Industries');
+            { text: `Market booms! Any 'Reliance Industries' stock you own doubles in value. You can sell now for this price.`, action: (p) => {  
+                const stock = (p.assets || []).find(a => a.company === 'Reliance Industries');
                 if(stock) {
                     const profit = stock.cost;
                     showModal("Reliance Soars!", `Your Reliance stock has doubled in value! Sell now for ${formatCurrency(stock.cost + profit)}?`, [
                         { text: "Sell for Profit", className: "btn-success", action: () => {
                             p.cash += stock.cost + profit;
-                            p.assets = p.assets.filter(a => a !== stock);
+                            p.assets = (p.assets || []).filter(a => a !== stock);
                             logMessage(`Sold Reliance for a ${formatCurrency(profit)} profit!`, 'success');
+                            modal.style.display = 'none';
+                            endTurn();
                         }},
-                        { text: "Hold", className: "btn-secondary" }
+                        { text: "Hold", className: "btn-secondary", action: endTurn }
                     ]);
+                } else {
+                     logMessage("You do not own any Reliance Industries stock to sell.", 'info');
+                     endTurn();
                 }
             }},
-            { text: `A real estate buyer wants one of your properties! Sell for a ${formatCurrency(400000)} profit.`, action: (p) => { const prop = p.assets.find(a => a.type === 'real_estate'); if(prop) { sounds.playDeal(); p.cash += prop.cost + 400000; p.passiveIncome -= prop.income; p.assets = p.assets.filter(a => a !== prop); logMessage(`Sold ${prop.name} for a profit!`, 'success'); } else { logMessage("No property to sell.", 'info'); } }},
-            { text: `RBI increases interest rates. Your credit card EMI increases by 20%.`, action: (p) => { if (p.liabilities.creditCard.principal > 0) { sounds.playDoodad(); p.liabilities.creditCard.emi = Math.round(p.liabilities.creditCard.emi * 1.2); logMessage("Your credit card EMI increased.", 'danger'); } }},
-            { text: `New tenant needed for a rental. Pay ${formatCurrency(10000)} in repairs.`, action: (p) => { if(p.assets.some(a => a.type === 'real_estate')) { sounds.playDoodad(); p.cash -= 10000; logMessage(`Paid for rental repairs.`, 'danger'); } else { logMessage("No property to repair.", 'info'); } }},
-            { text: `Your business has a breakthrough! Passive income from it doubles.`, action: (p) => { const biz = p.assets.find(a => a.type === 'business' && a.income > 0); if(biz) { sounds.playDeal(); p.passiveIncome += biz.income; biz.income *= 2; logMessage(`${biz.name} is booming!`, 'success'); } else { logMessage("No business to improve.", 'info'); } }},
+            { text: `A real estate buyer wants one of your properties! Sell for a ${formatCurrency(400000)} profit.`, action: (p) => { const prop = (p.assets || []).find(a => a.type === 'real_estate'); if(prop) { sounds.playDeal(); p.cash += prop.cost + 400000; p.passiveIncome -= prop.income; p.assets = (p.assets || []).filter(a => a !== prop); logMessage(`Sold ${prop.name} for a profit!`, 'success'); } else { logMessage("No property to sell.", 'info'); } }},
+            { text: `RBI increases interest rates. Your credit card EMI increases by 20%.`, action: (p) => { if (p.liabilities.creditCard?.principal > 0) { sounds.playDoodad(); p.liabilities.creditCard.emi = Math.round(p.liabilities.creditCard.emi * 1.2); logMessage("Your credit card EMI increased.", 'danger'); } }},
+            { text: `New tenant needed for a rental. Pay ${formatCurrency(10000)} in repairs.`, action: (p) => { if((p.assets || []).some(a => a.type === 'real_estate')) { sounds.playDoodad(); p.cash -= 10000; logMessage(`Paid for rental repairs.`, 'danger'); } else { logMessage("No property to repair.", 'info'); } }},
+            { text: `Your business has a breakthrough! Passive income from it doubles.`, action: (p) => { const biz = (p.assets || []).find(a => a.type === 'business' && a.income > 0); if(biz) { sounds.playDeal(); p.passiveIncome += biz.income; biz.income *= 2; logMessage(`${biz.name} is booming!`, 'success'); } else { logMessage("No business to improve.", 'info'); } }},
             { text: `Recession hits! If you have less than ${formatCurrency(50000)} cash, you are downsized.`, action: (p) => { if (gameState.marketCycle === 'Recession') { if(p.cash < 50000) { sounds.playFailure(); p.skipTurns = 2; logMessage(`${getPlayerSpan()} was downsized due to the recession!`, 'danger'); } } else { logMessage("Recession fears were overblown... for now.", 'info'); } }}
         ]);
         
@@ -1837,5 +1964,4 @@ async function loadGameState() {
     init();
 </script>
 </body>
-</html>
-
+</html> 
