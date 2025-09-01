@@ -17,7 +17,7 @@ export default function HtmlPage() {
             <Link href="/game/rat-race/leaderboard" class="bg-green-100 text-green-700 px-4 py-1 rounded-sm flex items-center gap-1"> <Award /> See LeaderBoard</Link>
         </div>
       <iframe
-        src={`/rat-race.html?userId=${encodedState}&name=${encodedStateName}`}
+        src={`/rat-race2.html?userId=${encodedState}&name=${encodedStateName}`}
         className="w-full h-full border-none"
       />
     </div>
