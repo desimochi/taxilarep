@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Andaza Apna Apna - Professional Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+    <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.157.0/examples/jsm/"
+        }
+    }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Poppins:wght@300;400;700&display=swap');
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Poppins', sans-serif;
+            background-color: #111827;
+        }
+        h1, h2, h3 {
+            font-family: 'Montserrat', sans-serif;
+        }
+        #ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            color: white;
+            display: flex;
+            flex-direction: column;
+        }
+        .ui-element {
+            pointer-events: auto;
+        }
+        .keypad-key, .action-button, .bet-choice-btn, .difficulty-btn {
+            transition: background-color 0.2s, transform 0.2s;
+        }
+        .keypad-key:hover, .bet-choice-btn:hover, .difficulty-btn:hover {
+            transform: scale(1.05);
+        }
+        .action-button:hover {
+             transform: scale(1.05);
+        }
+        .action-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .certificate-container {
+             background: url('https://placehold.co/1200x800/FFFFFF/FFFFFF?text=BG') no-repeat center center;
+             background-size: cover;
+        }
+        .certificate {
+            border: 8px double #c09a3e;
+            background-color: rgba(255, 255, 255, 0.95);
+            color: #1e293b;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+        }
+    </style>
+</head>
+<body>
+    <div id="ui-overlay">
+        <!-- Game State UI will be injected here -->
+    </div>
+     <!-- Resume Game Modal -->
+    <div id="resume-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center pointer-events-auto z-50">
+        <div class="bg-slate-800 p-8 rounded-xl shadow-lg text-center max-w-sm mx-auto border border-slate-700">
+            <h2 class="text-2xl font-bold mb-4 text-white">Welcome Back!</h2>
+            <p class="text-slate-300 mb-6">You have a game in progress. Would you like to resume?</p>
+            <div class="flex justify-center gap-4">
+                <button id="resume-yes-btn" class="action-button ui-element bg-green-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-700">Yes, Resume</button>
+                <button id="resume-no-btn" class="action-button ui-element bg-red-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-700">No, Start New</button>
+            </div>
+        </div>
+    </div>
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
+        import { FontLoader } from 'three/addons/loaders/FontLoader.js';
+
+        let scene, camera, renderer, controls;
+        let guessCards = [];
+        let bettingChips = [];
+        let raycaster, mouse;
+        let FONT = null;
+
+        // --- GAME STATE & CONTENT ---
+        let gameState = {
+            phase: 'LOADING',
+            difficulty: 'Medium',
+            playerName: 'Player',
+            players: [],
+            cases: [],
+            currentRound: 0,
+            totalRounds: 20,
+        };
+        let playerInput = '';
+        const SAVE_KEY = 'andazaApnaApnaSaveData_Pro';
+
+        // --- SOUND MANAGER ---
+        const soundManager = {
+            isReady: false,
+            synth: null,
+            init() {
+                this.synth = new Tone.Synth().toDestination();
+                this.isReady = true;
+            },
+            playClick() { if (this.isReady) this.synth.triggerAttackRelease("C4", "8n"); },
+            playCorrect() { if (this.isReady) this.synth.triggerAttackRelease("G4", "8n"); },
+            playIncorrect() { if (this.isReady) this.synth.triggerAttackRelease("C3", "8n"); },
+            playRoundStart() { 
+                if (this.isReady) { 
+                    const now = Tone.now();
+                    this.synth.triggerAttackRelease("C4", "8n", now); 
+                    this.synth.triggerAttackRelease("E4", "8n", now + 0.2); 
+                    this.synth.triggerAttackRelease("G4", "8n", now + 0.4); 
+                }
+            },
+            playGameOver() { 
+                if (this.isReady) { 
+                    const now = Tone.now();
+                    this.synth.triggerAttackRelease("G4", "4n", now); 
+                    this.synth.triggerAttackRelease("C4", "4n", now + 0.4); 
+                }
+            }
+        };
+        
+        const allCases = [
+            // 15 Easy
+            { id: 'E1', difficulty: 'Easy', standard: { question: "In what year was the Gateway of India's construction completed?", answer: 1924 }, fermi: { question: "How many samosas are sold in Delhi daily?", variables: { 'Population': 20_000_000, '% eating street food': 25, '% choosing samosas': 30, 'Avg per buyer': 2 } }, solution_formula: v => v['Population'] * (v['% eating street food']/100) * (v['% choosing samosas']/100) * v['Avg per buyer'] },
+            { id: 'E2', difficulty: 'Easy', standard: { question: "How many states are in India?", answer: 28 }, fermi: { question: "How many domestic flights take off in India every day?", variables: { 'Major Airports': 100, 'Avg Flights per Airport': 150, 'Percent Domestic': 80 } }, solution_formula: v => v['Major Airports'] * v['Avg Flights per Airport'] * (v['Percent Domestic']/100) },
+            { id: 'E3', difficulty: 'Easy', standard: { question: "What is the approximate area of India in million sq km?", answer: 3.28 }, fermi: { question: "How many letters are delivered by India Post daily?", variables: { 'Population': 1_400_000_000, 'Letters per person per year': 2, 'Working Days in a Year': 300 } }, solution_formula: v => (v['Population'] * v['Letters per person per year']) / v['Working Days in a Year'] },
+            { id: 'E4', difficulty: 'Easy', standard: { question: "How many IPL cricket teams were there in 2023?", answer: 10 }, fermi: { question: "How many cricket balls are used in a single IPL season?", variables: { 'Total Matches': 74, 'Innings per Match': 2, 'Avg Overs per Innings': 18, 'Balls changed per innings': 2 } }, solution_formula: v => v['Total Matches'] * v['Innings per Match'] * (v['Avg Overs per Innings'] + v['Balls changed per innings']) },
+            { id: 'E5', difficulty: 'Easy', standard: { question: "The movie 'Sholay' was released in which year?", answer: 1975 }, fermi: { question: "How many hours of video are uploaded to YouTube from India every minute?", variables: { 'YT Users in India': 450_000_000, '% who upload daily': 0.1, 'Avg upload length (minutes)': 5, 'Minutes in a day': 1440 } }, solution_formula: v => (v['YT Users in India'] * (v['% who upload daily']/100) * v['Avg upload length (minutes)']) / v['Minutes in a day'] },
+            { id: 'E6', difficulty: 'Easy', standard: { question: "How many paise make one Indian Rupee?", answer: 100 }, fermi: { question: "How many ₹10 notes are in circulation in India?", variables: { 'Total currency value (trillion INR)': 30, '% in ₹10 notes': 0.5 } }, solution_formula: v => (v['Total currency value (trillion INR)'] * 1_000_000_000_000 * (v['% in ₹10 notes']/100)) / 10 },
+            { id: 'E7', difficulty: 'Easy', standard: { question: "India's independence year?", answer: 1947 }, fermi: { question: "How many mangoes are eaten in India during the summer season?", variables: { 'Population': 1_400_000_000, '% who eat mangoes': 70, 'Avg mangoes per person per season': 20 } }, solution_formula: v => v['Population'] * (v['% who eat mangoes']/100) * v['Avg mangoes per person per season'] },
+            { id: 'E8', difficulty: 'Easy', standard: { question: "Number of players in a Kabaddi team on the field?", answer: 7 }, fermi: { question: "How many public buses operate in Mumbai daily?", variables: { 'Mumbai Population': 21_000_000, 'People per bus': 4000 } }, solution_formula: v => v['Mumbai Population'] / v['People per bus'] },
+            { id: 'E9', difficulty: 'Easy', standard: { question: "How many keys are on a standard piano?", answer: 88 }, fermi: { question: "How many students appear for the Class 10 CBSE exams each year?", variables: { 'Total Schools': 28000, 'Avg students per school': 150, '% taking exams': 50 } }, solution_formula: v => v['Total Schools'] * v['Avg students per school'] * (v['% taking exams']/100) },
+            { id: 'E10', difficulty: 'Easy', standard: { question: "How many sides does a hexagon have?", answer: 6 }, fermi: { question: "How many paan shops are there in India?", variables: { 'Towns & Cities': 8000, 'Avg paan shops per town': 100 } }, solution_formula: v => v['Towns & Cities'] * v['Avg paan shops per town'] },
+            { id: 'E11', difficulty: 'Easy', standard: { question: "What year was the first Indian Institute of Technology (IIT) established?", answer: 1951 }, fermi: { question: "How many engineering students graduate in India each year?", variables: { 'Engineering Colleges': 3500, 'Avg students per college': 400 } }, solution_formula: v => v['Engineering Colleges'] * v['Avg students per college'] },
+            { id: 'E12', difficulty: 'Easy', standard: { question: "How many bones in the adult human body?", answer: 206 }, fermi: { question: "How many doctors are there in India?", variables: { 'Population': 1_400_000_000, 'People per doctor': 1000 } }, solution_formula: v => v['Population'] / v['People per doctor'] },
+            { id: 'E13', difficulty: 'Easy', standard: { question: "Boiling point of water in Celsius?", answer: 100 }, fermi: { question: "How many litres of water are used in India for Holi?", variables: { 'Population celebrating': 500_000_000, 'Avg water per person (litres)': 20 } }, solution_formula: v => v['Population celebrating'] * v['Avg water per person (litres)'] },
+            { id: 'E14', difficulty: 'Easy', standard: { question: "How many minutes in a day?", answer: 1440 }, fermi: { question: "How many words does an average news anchor speak during a 30-minute bulletin?", variables: { 'Words per minute': 150, 'Speaking time %': 80 } }, solution_formula: v => v['Words per minute'] * 30 * (v['Speaking time %']/100) },
+            { id: 'E15', difficulty: 'Easy', standard: { question: "Number of Union Territories in India?", answer: 8 }, fermi: { question: "How many coconuts are harvested in Kerala annually?", variables: { 'Coconut trees in Kerala': 100_000_000, 'Avg coconuts per tree per year': 40 } }, solution_formula: v => v['Coconut trees in Kerala'] * v['Avg coconuts per tree per year'] },
+
+            // 20 Medium
+            { id: 'M1', difficulty: 'Medium', standard: { question: "What is the length of the Ganges River in km?", answer: 2525 }, fermi: { question: "How many autorickshaws are in Bengaluru?", variables: { 'Population': 13_000_000, 'Autos per 1000 people': 15, '% active daily': 85 } }, solution_formula: v => (v['Population']/1000) * v['Autos per 1000 people'] * (v['% active daily']/100) },
+            { id: 'M2', difficulty: 'Medium', standard: { question: "How many episodes of 'CID' aired by 2015?", answer: 1341 }, fermi: { question: "How many litres of fuel do Zomato/Swiggy partners use monthly?", variables: { 'Delivery partners': 300_000, 'Avg km/day': 100, 'Avg efficiency (km/L)': 50, 'Working days/month': 25 } }, solution_formula: v => v['Delivery partners'] * (v['Avg km/day'] / v['Avg efficiency (km/L)']) * v['Working days/month'] },
+            { id: 'M3', difficulty: 'Medium', standard: { question: "Year of India's first nuclear test, 'Smiling Buddha'?", answer: 1974 }, fermi: { question: "How many cups of chai are consumed in India daily?", variables: { 'Population': 1_400_000_000, '% non-children': 80, '% who drink tea': 80, 'Avg cups/day': 2.5 } }, solution_formula: v => v['Population'] * (v['% non-children']/100) * (v['% who drink tea']/100) * v['Avg cups/day'] },
+            { id: 'M4', difficulty: 'Medium', standard: { question: "How many languages are officially recognized in the Indian Constitution?", answer: 22 }, fermi: { question: "How many smartphones are currently active in India?", variables: { 'Population': 1_400_000_000, 'Smartphone penetration %': 60, 'Avg phones per user': 1.1 } }, solution_formula: v => v['Population'] * (v['Smartphone penetration %']/100) * v['Avg phones per user'] },
+            { id: 'M5', difficulty: 'Medium', standard: { question: "Height of Qutub Minar in metres?", answer: 73 }, fermi: { question: "How many marriages happen in India in a year?", variables: { 'Population': 1_400_000_000, 'Avg marriage age': 25, 'Avg life expectancy': 70, 'Couples per marriage': 2 } }, solution_formula: v => (v['Population'] / (v['Avg life expectancy'] - 18)) / v['Couples per marriage'] },
+            { id: 'M6', difficulty: 'Medium', standard: { question: "What is the approximate speed of light in km/s?", answer: 300000 }, fermi: { question: "How many kilograms of rice are consumed in India annually?", variables: { 'Population': 1_400_000_000, 'Avg kg per person per year': 100, '% of population that eats rice': 90 } }, solution_formula: v => v['Population'] * v['Avg kg per person per year'] * (v['% of population that eats rice']/100) },
+            { id: 'M7', difficulty: 'Medium', standard: { question: "In what year was the Reserve Bank of India established?", answer: 1935 }, fermi: { question: "What is the total value of all UPI transactions in India in a single day (in Crore INR)?", variables: { 'UPI users': 300_000_000, 'Avg transactions per user per day': 2, 'Avg transaction value (INR)': 500, 'Crore': 10_000_000 } }, solution_formula: v => (v['UPI users'] * v['Avg transactions per user per day'] * v['Avg transaction value (INR)']) / v['Crore'] },
+            { id: 'M8', difficulty: 'Medium', standard: { question: "How many Lok Sabha constituencies are there in India?", answer: 543 }, fermi: { question: "How many tyres are sold for passenger cars in India each year?", variables: { 'Cars in India': 40_000_000, 'Avg tyre life (years)': 4, 'Tyres per car': 4 } }, solution_formula: v => (v['Cars in India'] / v['Avg tyre life (years)']) * v['Tyres per car'] },
+            { id: 'M9', difficulty: 'Medium', standard: { question: "What is the GST rate on most essential goods in India?", answer: 5 }, fermi: { question: "How much revenue does the Indian Railways earn from passenger tickets in a day (in Crore INR)?", variables: { 'Daily passengers': 25_000_000, 'Avg ticket price (INR)': 150, 'Crore': 10_000_000 } }, solution_formula: v => (v['Daily passengers'] * v['Avg ticket price (INR)']) / v['Crore'] },
+            { id: 'M10', difficulty: 'Medium', standard: { question: "How many commercial banks were operating in India in 2023?", answer: 44 }, fermi: { question: "How many software developers are there in India?", variables: { 'Population': 1_400_000_000, '% in working age': 65, '% in IT sector': 2, '% of IT who are developers': 40 } }, solution_formula: v => v['Population'] * (v['% in working age']/100) * (v['% in IT sector']/100) * (v['% of IT who are developers']/100) },
+            { id: 'M11', difficulty: 'Medium', standard: { question: "India's first satellite, Aryabhata, was launched in which year?", answer: 1975 }, fermi: { question: "How many residential electricity meters are installed in India?", variables: { 'Households in India': 300_000_000, '% with electricity': 98 } }, solution_formula: v => v['Households in India'] * (v['% with electricity']/100) },
+            { id: 'M12', difficulty: 'Medium', standard: { question: "What is the distance between Mumbai and Delhi by air (in km)?", answer: 1150 }, fermi: { question: "How many hotel rooms are there in Goa?", variables: { 'Tourists per year': 8_000_000, 'Avg stay (days)': 4, 'Occupancy rate %': 70, 'Days in a year': 365 } }, solution_formula: v => (v['Tourists per year'] * v['Avg stay (days)']) / (v['Days in a year'] * (v['Occupancy rate %']/100)) },
+            { id: 'M13', difficulty: 'Medium', standard: { question: "How many moons does Mars have?", answer: 2 }, fermi: { question: "How many ceiling fans are sold in India annually?", variables: { 'Households': 300_000_000, 'Avg fans per household': 3, 'Avg fan lifespan (years)': 10 } }, solution_formula: v => (v['Households'] * v['Avg fans per household']) / v['Avg fan lifespan (years)'] },
+            { id: 'M14', difficulty: 'Medium', standard: { question: "How many Grand Slam tennis tournaments are there each year?", answer: 4 }, fermi: { question: "How many movie tickets are sold in India in a month?", variables: { 'Population': 1_400_000_000, 'Avg movies watched per person per year': 3, 'Months in a year': 12 } }, solution_formula: v => (v['Population'] * v['Avg movies watched per person per year']) / v['Months in a year'] },
+            { id: 'M15', difficulty: 'Medium', standard: { question: "What is the atomic number of Gold?", answer: 79 }, fermi: { question: "How many kilograms of gold are purchased in India during Diwali?", variables: { 'Households celebrating': 200_000_000, '% buying gold': 5, 'Avg purchase (grams)': 10, 'Grams per kg': 1000 } }, solution_formula: v => (v['Households celebrating'] * (v['% buying gold']/100) * v['Avg purchase (grams)']) / v['Grams per kg'] },
+            { id: 'M16', difficulty: 'Medium', standard: { question: "How many players are on a chess board at the start of a game?", answer: 32 }, fermi: { question: "How many school teachers are there in India?", variables: { 'Students in India': 250_000_000, 'Student-teacher ratio': 30 } }, solution_formula: v => v['Students in India'] / v['Student-teacher ratio'] },
+            { id: 'M17', difficulty: 'Medium', standard: { question: "In what year did the Kargil War take place?", answer: 1999 }, fermi: { question: "How many two-wheelers (bikes, scooters) are there in India?", variables: { 'Households': 300_000_000, '% owning a two-wheeler': 60, 'Avg two-wheelers per household': 1.2 } }, solution_formula: v => v['Households'] * (v['% owning a two-wheeler']/100) * v['Avg two-wheelers per household'] },
+            { id: 'M18', difficulty: 'Medium', standard: { question: "How many members are in the Rajya Sabha?", answer: 245 }, fermi: { question: "How much does ISRO spend in a year (in Crore INR)?", variables: { 'Indian GDP (trillion USD)': 3.5, 'USD to INR': 80, '% of GDP for space': 0.05, 'Trillion to Crore': 100_000 } }, solution_formula: v => v['Indian GDP (trillion USD)'] * v['USD to INR'] * (v['% of GDP for space']/100) * v['Trillion to Crore'] },
+            { id: 'M19', difficulty: 'Medium', standard: { question: "How many tigers were estimated to be in India in the 2022 census?", answer: 3167 }, fermi: { question: "How much milk is produced in India daily (in million litres)?", variables: { 'Cattle population': 300_000_000, '% are milch animals': 40, 'Avg milk per animal (litres/day)': 5 } }, solution_formula: v => (v['Cattle population'] * (v['% are milch animals']/100) * v['Avg milk per animal (litres/day)']) / 1_000_000 },
+            { id: 'M20', difficulty: 'Medium', standard: { question: "How many countries border India?", answer: 6 }, fermi: { question: "How many foreign tourists visit India in a year?", variables: { 'Global tourists annually': 1_200_000_000, 'India\'s share %': 1.5 } }, solution_formula: v => v['Global tourists annually'] * (v['India\'s share %']/100) },
+
+            // 20 Hard
+            { id: 'H1', difficulty: 'Hard', standard: { question: "In what year did Rakesh Sharma become the first Indian in space?", answer: 1984 }, fermi: { question: "How many potholes are there on Mumbai's roads?", variables: { 'Road length (km)': 2000, 'Avg width (m)': 10, 'Potholes per sq km': 500, 'm per km': 1000 } }, solution_formula: v => (v['Road length (km)'] * v['Avg width (m)'] / v['m per km']) * v['Potholes per sq km'] },
+            { id: 'H2', difficulty: 'Hard', standard: { question: "In what year did India win its first Cricket World Cup?", answer: 1983 }, fermi: { question: "How much data (in Petabytes) is consumed daily on mobile phones in India?", variables: { 'Mobile internet users': 800_000_000, 'Avg daily usage/user (GB)': 0.5, 'GB per Petabyte': 1_000_000 } }, solution_formula: v => (v['Mobile internet users'] * v['Avg daily usage/user (GB)']) / v['GB per Petabyte'] },
+            { id: 'H3', difficulty: 'Hard', standard: { question: "The 'Right to Information' Act in India was enacted in which year?", answer: 2005 }, fermi: { question: "How many solar panels are installed on residential rooftops in India?", variables: { 'Households': 300_000_000, '% suitable for solar': 20, '% who have installed': 2, 'Avg panels per installation': 10 } }, solution_formula: v => v['Households'] * (v['% suitable for solar']/100) * (v['% who have installed']/100) * v['Avg panels per installation'] },
+            { id: 'H4', difficulty: 'Hard', standard: { question: "How many amendments have been made to the Indian Constitution as of early 2024?", answer: 106 }, fermi: { question: "What is the total length of all optic fibre cables laid in India (in million km)?", variables: { 'India Area (million sq km)': 3.2, 'Fibre density (km per sq km)': 1.5 } }, solution_formula: v => v['India Area (million sq km)'] * v['Fibre density (km per sq km)'] },
+            { id: 'H5', difficulty: 'Hard', standard: { question: "How many Fundamental Rights are granted by the Indian Constitution?", answer: 6 }, fermi: { question: "How many kilograms of plastic waste are generated in India daily?", variables: { 'Population': 1_400_000_000, 'Avg waste per person (kg/day)': 0.5, '% plastic in waste': 10 } }, solution_formula: v => v['Population'] * v['Avg waste per person (kg/day)'] * (v['% plastic in waste']/100) },
+            { id: 'H6', difficulty: 'Hard', standard: { question: "How many Indians have been awarded the Bharat Ratna as of 2024?", answer: 53 }, fermi: { question: "How many court cases are currently pending in the Indian judicial system?", variables: { 'Judges in India': 25000, 'Avg cases per judge': 1500, 'Pending cases multiplier': 1.5 } }, solution_formula: v => v['Judges in India'] * v['Avg cases per judge'] * v['Pending cases multiplier'] },
+            { id: 'H7', difficulty: 'Hard', standard: { question: "What year was the Chipko movement started?", answer: 1973 }, fermi: { question: "How many trees are there in India?", variables: { 'India Land Area (sq km)': 3_287_000, '% green cover': 24, 'Avg trees per sq km of forest': 50000 } }, solution_formula: v => v['India Land Area (sq km)'] * (v['% green cover']/100) * v['Avg trees per sq km of forest'] },
+            { id: 'H8', difficulty: 'Hard', standard: { question: "What is the year of birth of Dr. B. R. Ambedkar?", answer: 1891 }, fermi: { question: "How much does India spend on healthcare annually as a percentage of its GDP?", variables: { 'Govt spending % GDP': 1.5, 'Private spending % GDP': 3.5 } }, solution_formula: v => v['Govt spending % GDP'] + v['Private spending % GDP'] },
+            { id: 'H9', difficulty: 'Hard', standard: { question: "What is the term length for the President of India?", answer: 5 }, fermi: { question: "How many street dogs are there in Delhi?", variables: { 'Delhi households': 4_000_000, 'Street dogs per 100 households': 5, 'Stray population multiplier': 1.2 } }, solution_formula: v => (v['Delhi households'] / 100) * v['Street dogs per 100 households'] * v['Stray population multiplier'] },
+            { id: 'H10', difficulty: 'Hard', standard: { question: "In what year did Indira Gandhi become Prime Minister for the first time?", answer: 1966 }, fermi: { question: "How many private cars are there in India?", variables: { 'Households': 300_000_000, '% that can afford a car': 15, '% that own a car': 80 } }, solution_formula: v => v['Households'] * (v['% that can afford a car']/100) * (v['% that own a car']/100) },
+            { id: 'H11', difficulty: 'Hard', standard: { question: "In which year did the Green Revolution in India begin?", answer: 1965 }, fermi: { question: "How much agricultural land is there in India (in million hectares)?", variables: { 'Total Land Area (million sq km)': 3.2, 'sq km to hectare': 100, '% arable land': 50 } }, solution_formula: v => v['Total Land Area (million sq km)'] * v['sq km to hectare'] * (v['% arable land']/100) },
+            { id: 'H12', difficulty: 'Hard', standard: { question: "In what year was NITI Aayog established?", answer: 2015 }, fermi: { question: "How many people in India work in the unorganized sector?", variables: { 'Total Workforce': 500_000_000, '% in unorganized sector': 90 } }, solution_formula: v => v['Total Workforce'] * (v['% in unorganized sector']/100) },
+            { id: 'H13', difficulty: 'Hard', standard: { question: "What is the length of the Indian coastline in kilometers?", answer: 7516 }, fermi: { question: "How much remittance does India receive from its diaspora annually (in billion USD)?", variables: { 'Indian diaspora size': 32_000_000, '% who remit': 50, 'Avg annual remittance per person (USD)': 5000 } }, solution_formula: v => (v['Indian diaspora size'] * (v['% who remit']/100) * v['Avg annual remittance per person (USD)']) / 1_000_000_000 },
+            { id: 'H14', difficulty: 'Hard', standard: { question: "How many districts are there in India as of 2023?", answer: 766 }, fermi: { question: "How many ATMs are there in India?", variables: { 'Bank branches': 150000, 'ATMs per branch': 1.5 } }, solution_formula: v => v['Bank branches'] * v['ATMs per branch'] },
+            { id: 'H15', difficulty: 'Hard', standard: { question: "How many verses are there in the Mahabharata?", answer: 100000 }, fermi: { question: "How many Indian startups are founded each year?", variables: { 'Global startups annually': 1_350_000, 'India\'s % share': 10 } }, solution_formula: v => v['Global startups annually'] * (v['India\'s % share']/100) },
+            { id: 'H16', difficulty: 'Hard', standard: { question: "What is the retirement age for Supreme Court judges in India?", answer: 65 }, fermi: { question: "How much tax revenue does the Indian government collect annually (in Lakh Crore INR)?", variables: { 'India GDP (Lakh Crore INR)': 300, 'Tax-to-GDP ratio %': 17 } }, solution_formula: v => v['India GDP (Lakh Crore INR)'] * (v['Tax-to-GDP ratio %']/100) },
+            { id: 'H17', difficulty: 'Hard', standard: { question: "How many caves are there at the Ajanta site?", answer: 30 }, fermi: { question: "How many children in India are out of school?", variables: { 'School-age population': 300_000_000, '% enrolled': 98, '% who drop out': 10 } }, solution_formula: v => v['School-age population'] * (1 - (v['% enrolled']/100) * (1 - v['% who drop out']/100)) },
+            { id: 'H18', difficulty: 'Hard', standard: { question: "In what year did Bachendri Pal climb Mount Everest?", answer: 1984 }, fermi: { question: "How many tons of gold does the Reserve Bank of India hold?", variables: { 'Total Forex Reserves (billion USD)': 600, '% held in gold': 7.5, 'Price of gold per ton (million USD)': 65 } }, solution_formula: v => (v['Total Forex Reserves (billion USD)']*1000 * (v['% held in gold']/100)) / v['Price of gold per ton (million USD)'] },
+            { id: 'H19', difficulty: 'Hard', standard: { question: "In which year was the Bombay Stock Exchange (BSE) established?", answer: 1875 }, fermi: { question: "How many liters of paint are used to paint all commercial aircraft in India annually?", variables: {'Total Aircraft': 800, 'Avg Surface Area (sq m)': 1000, 'Litres per sq m': 0.3, 'Repainting cycle (years)': 7} }, solution_formula: v => (v['Total Aircraft'] * v['Avg Surface Area (sq m)'] * v['Litres per sq m']) / v['Repainting cycle (years)']},
+            { id: 'H20', difficulty: 'Hard', standard: { question: "What is the approximate escape velocity of Earth in km/s?", answer: 11.2 }, fermi: { question: "How much e-waste (in million tons) is generated in India annually?", variables: {'Population': 1400000000, 'Avg devices per person': 2, 'Avg device lifespan (years)': 4, 'Avg device weight (kg)': 0.5, 'kg per ton': 1000} }, solution_formula: v => (v['Population'] * v['Avg devices per person'] / v['Avg device lifespan (years)'] * v['Avg device weight (kg)']) / (v['kg per ton'] * 1000000)},
+        ];
+
+
+        // --- INITIALIZE THE 3D SCENE ---
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x111827);
+            scene.fog = new THREE.Fog(0x111827, 10, 30);
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 2.5, 6);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.shadowMap.enabled = true;
+            document.body.appendChild(renderer.domElement);
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+            const keyLight = new THREE.DirectionalLight(0xffffff, 1.5);
+            keyLight.position.set(-5, 5, 5);
+            keyLight.castShadow = true;
+            scene.add(keyLight);
+            const fillLight = new THREE.PointLight(0x87CEEB, 2, 20);
+            fillLight.position.set(5, 3, 5);
+            scene.add(fillLight);
+
+            controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.minDistance = 3;
+            controls.maxDistance = 10;
+            controls.maxPolarAngle = Math.PI / 2;
+            controls.target.set(0, 1.5, 0);
+
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+
+            createEnvironment();
+            animate();
+            preloadAssets();
+        }
+
+        // --- ASSET PRELOADING ---
+        function preloadAssets() {
+            const fontLoader = new FontLoader();
+            fontLoader.load('https://cdn.jsdelivr.net/npm/three@0.157.0/examples/fonts/helvetiker_bold.typeface.json', (loadedFont) => {
+                FONT = loadedFont;
+                checkForSavedGame();
+            });
+        }
+
+        // --- CREATE 3D OBJECTS ---
+        function createEnvironment() {
+            const floorGeometry = new THREE.CylinderGeometry(10, 10, 0.2, 64);
+            const floorMaterial = new THREE.MeshStandardMaterial({ color: 0x374151, roughness: 0.8 });
+            const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+            floor.position.y = -0.1;
+            floor.receiveShadow = true;
+            scene.add(floor);
+        }
+        
+        function createGuessCards(guesses) {
+            clearSceneObjects();
+            const isMobile = window.innerWidth < 768;
+            const positions = isMobile 
+                ? [{x: 0, y: 3, z: 0}, {x: 0, y: 1.5, z: 0}, {x: 0, y: 0, z: 0}]
+                : [{x: -3, y: 1.5, z: 0}, {x: 0, y: 1.5, z: 0}, {x: 3, y: 1.5, z: 0}];
+
+            guesses.forEach((guess, i) => {
+                const cardGroup = new THREE.Group();
+                const cardGeom = new THREE.BoxGeometry(1.8, 2.2, 0.1);
+                const cardMat = new THREE.MeshStandardMaterial({ color: 0x374151, roughness: 0.5 });
+                const card = new THREE.Mesh(cardGeom, cardMat);
+                card.castShadow = true;
+                cardGroup.add(card);
+                cardGroup.position.set(positions[i].x, positions[i].y, positions[i].z);
+                
+                if (FONT) {
+                    const nameGeom = new TextGeometry(guess.name, { font: FONT, size: 0.15, height: 0.02 });
+                    nameGeom.center();
+                    const nameMat = new THREE.MeshStandardMaterial({ color: 0x9CA3AF });
+                    const nameMesh = new THREE.Mesh(nameGeom, nameMat);
+                    nameMesh.position.set(0, 0.7, 0.06);
+                    cardGroup.add(nameMesh);
+
+                    const guessGeom = new TextGeometry(guess.value.toLocaleString('en-IN'), { font: FONT, size: 0.4, height: 0.02 });
+                    guessGeom.center();
+                    const guessMat = new THREE.MeshStandardMaterial({ color: 0x3B82F6 });
+                    const guessMesh = new THREE.Mesh(guessGeom, guessMat);
+                    guessMesh.position.set(0, 0, 0.06);
+                    cardGroup.add(guessMesh);
+                }
+                
+                cardGroup.userData = { type: 'guessCard', playerId: i };
+                scene.add(cardGroup);
+                guessCards.push(cardGroup);
+            });
+        }
+        
+        function createBettingChip() {
+            bettingChips.forEach(chip => scene.remove(chip));
+            bettingChips = [];
+            
+            const chipGeom = new THREE.CylinderGeometry(0.2, 0.2, 0.05, 32);
+            const chipMat = new THREE.MeshStandardMaterial({ color: 0x3B82F6, emissive: 0x3B82F6 });
+            const chip = new THREE.Mesh(chipGeom, chipMat);
+            chip.rotation.x = Math.PI / 2;
+            chip.position.set(0, 1.2, 3.5);
+            chip.userData = { type: 'chip', isDragging: false };
+            scene.add(chip);
+            bettingChips.push(chip);
+        }
+        
+        function clearSceneObjects() {
+            guessCards.forEach(card => scene.remove(card));
+            guessCards = [];
+            bettingChips.forEach(chip => scene.remove(chip));
+            bettingChips = [];
+        }
+
+        // --- UI & GAME STATE MANAGEMENT ---
+        function updateUI() {
+            const ui = document.getElementById('ui-overlay');
+            let topHtml = '';
+            let centerHtml = '';
+            let bottomHtml = '';
+
+             if (['STANDARD_GUESS', 'BETTING_PHASE', 'FERMI_GUESS'].includes(gameState.phase)) {
+                  const sortedPlayers = [...gameState.players].sort((a, b) => b.score - a.score);
+                  let questionHtml = '';
+                  if (gameState.phase === 'STANDARD_GUESS') {
+                       const stdQuestion = gameState.currentCase.standard;
+                       questionHtml = `<div class="w-full max-w-4xl text-center p-4 bg-black/20 rounded-lg mt-4"><h2 class="text-lg md:text-2xl font-bold">Part 1: Standard Sawaal</h2><p class="text-sm md:text-base text-slate-300 font-light">${stdQuestion.question}</p></div>`;
+                  } else if (gameState.phase === 'BETTING_PHASE') {
+                       questionHtml = `<div class="w-full max-w-4xl text-center p-4 mt-4"><h2 class="text-lg md:text-2xl font-bold">Place Your Bet!</h2><p class="text-sm md:text-base text-slate-300 font-light">Drag your chip onto the guess you think is closest.</p></div>`;
+                  } else if (gameState.phase === 'FERMI_GUESS') {
+                       const fermiQuestion = gameState.currentCase.fermi;
+                       questionHtml = `<div class="w-full max-w-4xl text-center p-4 bg-black/20 rounded-lg mt-4"><h2 class="text-lg md:text-2xl font-bold">Part 2: Fermi Sawaal</h2><p class="text-sm md:text-base text-slate-300 font-light">${fermiQuestion.question}</p></div>`;
+                  }
+
+                  topHtml = `
+                       <div class="w-full max-w-4xl mx-auto p-3 bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-2xl text-white">
+                           <div class="flex flex-col sm:flex-row justify-between items-center">
+                               <h3 class="text-xl font-bold mb-2 sm:mb-0">Round ${gameState.currentRound} / ${gameState.totalRounds}</h3>
+                               <div class="flex gap-x-2 sm:gap-x-4 flex-wrap justify-center">
+                               ${sortedPlayers.map(p => `
+                                   <div class="flex items-center">
+                                       <span class="font-semibold text-sm">${p.name}:</span>
+                                       <span class="font-bold text-blue-400 ml-2 text-sm">${p.score.toLocaleString('en-IN')} pts</span>
+                                   </div>
+                               `).join('')}
+                               </div>
+                           </div>
+                       </div>
+                       ${questionHtml}
+                     `;
+             }
+
+
+            switch(gameState.phase) {
+                case 'LOADING':
+                      centerHtml = `<div class="text-center"><h1 class="text-4xl font-bold">Loading Game...</h1></div>`;
+                    break;
+                case 'START_SCREEN':
+                    centerHtml = `
+                        <div class="text-center p-4">
+                            <p class="text-sm font-semibold text-amber-400 mb-4 tracking-widest">Designed at TAXILA BUSINESS SCHOOL</p>
+                            <h1 class="text-4xl md:text-6xl font-black">Andaza Apna Apna</h1>
+                            <p class="text-lg md:text-xl text-slate-300 mt-2 mb-8 font-light">The Professional Guesstimation Challenge</p>
+                            
+                            <div class="max-w-md mx-auto">
+                                <input id="player-name-input" type="text" placeholder="Enter Your Name" class="ui-element w-full p-3 mb-4 text-center text-black bg-white/90 border border-slate-600 rounded-lg text-lg">
+                                
+                                <h3 class="text-lg text-slate-200 mb-3">Choose Difficulty</h3>
+                                <div class="grid grid-cols-3 gap-3 mb-8">
+                                    <button data-difficulty="Easy" class="difficulty-btn ui-element bg-green-600 text-white font-bold py-3 px-2 rounded-lg">Easy</button>
+                                    <button data-difficulty="Medium" class="difficulty-btn ui-element bg-yellow-600 text-white font-bold py-3 px-2 rounded-lg ring-4 ring-blue-400">Medium</button>
+                                    <button data-difficulty="Hard" class="difficulty-btn ui-element bg-red-600 text-white font-bold py-3 px-2 rounded-lg">Hard</button>
+                                </div>
+                                <button id="start-btn" class="action-button ui-element bg-blue-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg text-xl">Start Game</button>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                case 'STANDARD_GUESS':
+                    bottomHtml = `
+                        <div class="w-full max-w-sm p-4 bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-2xl">
+                            <div id="input-display" class="w-full text-right text-4xl font-bold p-4 bg-gray-900/50 rounded-lg mb-4 h-16">${playerInput || '0'}</div>
+                            <div class="grid grid-cols-3 gap-2">
+                                ${[1,2,3,4,5,6,7,8,9,'C',0,'OK'].map(key => `
+                                    <button data-key="${key}" class="keypad-key ui-element text-2xl font-bold p-4 rounded-lg bg-gray-700/50">${key}</button>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                    break;
+                 case 'STANDARD_RESULTS':
+                     const stdResultText = `The answer was: ${gameState.currentCase.standard.answer.toLocaleString('en-IN')}`;
+                     const stdSortedPlayers = [...gameState.players].sort((a, b) => b.score - a.score);
+                     centerHtml = `
+                          <div class="text-center p-4 sm:p-8 bg-black/50 rounded-xl max-w-md sm:max-w-3xl">
+                              <h2 class="text-2xl sm:text-4xl font-bold">${stdResultText}</h2>
+                               <div class="mt-6 w-full max-w-md mx-auto">
+                                   <h3 class="text-xl font-bold mb-4 border-b pb-2">Scores</h3>
+                                   <div class="space-y-3">
+                                   ${stdSortedPlayers.map(p => `
+                                       <div class="flex justify-between items-center p-2 rounded-lg bg-slate-700/50">
+                                           <span class="font-semibold">${p.name}</span>
+                                           <span class="font-bold text-blue-400">${p.score.toLocaleString('en-IN')} pts</span>
+                                       </div>
+                                   `).join('')}
+                                   </div>
+                               </div>
+                              <button id="continue-fermi-btn" class="action-button ui-element mt-8 bg-amber-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg">Continue to Fermi Sawaal</button>
+                           </div>
+                     `;
+                     break;
+                case 'FERMI_GUESS':
+                    const fermiQuestion = gameState.currentCase.fermi;
+                    let variableInputsHtml = Object.keys(fermiQuestion.variables).map(varName => `
+                        <div class="mb-2">
+                            <label class="block text-xs font-medium text-slate-300 text-left">${varName}</label>
+                            <input type="number" data-var="${varName}" class="fermi-input ui-element mt-1 w-full p-2 text-black bg-white/80 border border-slate-600 rounded-lg">
+                        </div>
+                    `).join('');
+                    bottomHtml = `
+                        <div class="w-full max-w-sm p-4 bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-2xl">
+                            ${variableInputsHtml}
+                            <div id="fermi-error-msg" class="text-red-400 text-sm mt-3 h-5 text-center font-semibold"></div>
+                            <button id="submit-fermi-btn" class="action-button ui-element w-full mt-2 bg-amber-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-amber-700">Submit Estimates</button>
+                        </div>
+                    `;
+                    break;
+                case 'FERMI_RESULTS':
+                      const fermiResultText = `Calculated Answer: ${gameState.fermiResults.correctAnswer.toLocaleString('en-IN', {maximumFractionDigits: 0})}`;
+                      const nextButtonText = gameState.currentRound >= gameState.totalRounds ? 'Finish Game' : 'Next Round';
+                      const fermiSortedPlayers = [...gameState.players].sort((a, b) => b.score - a.score);
+                      centerHtml = `
+                           <div class="text-center p-4 sm:p-8 bg-black/50 rounded-xl max-w-md sm:max-w-3xl">
+                               <h2 class="text-2xl sm:text-4xl font-bold">${fermiResultText}</h2>
+                                <div class="mt-6 w-full max-w-md mx-auto">
+                                    <h3 class="text-xl font-bold mb-4 border-b pb-2">Scores</h3>
+                                    <div class="space-y-3">
+                                    ${fermiSortedPlayers.map(p => `
+                                        <div class="flex justify-between items-center p-2 rounded-lg bg-slate-700/50">
+                                            <span class="font-semibold">${p.name}</span>
+                                            <span class="font-bold text-blue-400">${p.score.toLocaleString('en-IN')} pts</span>
+                                        </div>
+                                    `).join('')}
+                                    </div>
+                                </div>
+                               <button id="next-round-btn" class="action-button ui-element mt-8 bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg">${nextButtonText}</button>
+                            </div>
+                      `;
+                      break;
+                case 'GAME_OVER':
+                    const today = new Date();
+                    const dateString = today.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+
+                    centerHtml = `
+                        <div class="w-full max-w-4xl mx-auto p-4 certificate-container">
+                            <div class="certificate p-6 md:p-8">
+                                <div class="text-center">
+                                    <img src="https://placehold.co/150x50/1e293b/c09a3e?text=TAXILA+BS" alt="Taxila Business School Logo" class="mx-auto mb-4">
+                                    <h1 class="text-3xl md:text-4xl font-black" style="color: #1e3a8a;">Certificate of Appreciation</h1>
+                                    <p class="text-md mt-4 text-slate-600">This certificate is proudly presented to</p>
+                                    <p class="text-4xl md:text-5xl font-bold my-3" style="font-family: 'Playfair Display', serif; color: #c09a3e;">${gameState.playerName}</p>
+                                    <p class="text-md text-slate-600">for the successful completion of the</p>
+                                    <p class="text-2xl font-bold text-slate-800 mt-1">Andaza Apna Apna Guesstimation Challenge</p>
+                                    <p class="text-md mt-4 text-slate-600">demonstrating outstanding analytical and logical reasoning skills on the <span class="font-bold text-slate-800">${gameState.difficulty}</span> difficulty level.</p>
+                                </div>
+                                <div class="flex justify-between items-end mt-8">
+                                    <div class="text-left">
+                                        <p class="text-sm font-bold text-slate-700">SCORE: ${gameState.players[0].score.toLocaleString('en-IN')}</p>
+                                        <p class="text-xs text-slate-500">Date: ${dateString}</p>
+                                    </div>
+                                    <div class="text-center">
+                                        <p class="text-lg italic font-semibold" style="font-family: 'Playfair Display', serif;">Dr. S.S. Bugaliya</p>
+                                        <p class="text-xs text-slate-600 border-t border-slate-400 pt-1">Director, Taxila Business School</p>
+                                    </div>
+                                    <div class="text-right">
+                                         <img src="https://placehold.co/80x80/FFFFFF/c09a3e?text=SEAL" alt="Official Seal" class="mx-auto">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+                    bottomHtml = `
+                         <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mt-4">
+                            <button id="share-linkedin-btn" class="action-button ui-element bg-sky-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg">Share on LinkedIn</button>
+                            <button id="play-again-btn" class="action-button ui-element bg-green-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg">Play Again</button>
+                        </div>
+                    `;
+                    break;
+            }
+            
+            ui.innerHTML = `
+                <div class="absolute top-0 left-0 right-0 p-2 sm:p-4 flex justify-center z-10">${topHtml}</div>
+                <div class="absolute inset-0 flex items-center justify-center">${centerHtml}</div>
+                <div class="absolute bottom-0 left-0 right-0 p-2 sm:p-4 flex justify-center">${bottomHtml}</div>
+            `;
+        }
+
+        // --- GAME LOGIC ---
+        function initializeGame() {
+            const playerNameInput = document.getElementById('player-name-input');
+            gameState.playerName = playerNameInput.value || 'Analyst';
+
+            const difficulties = {
+                'Easy': ['Easy'],
+                'Medium': ['Easy', 'Medium'],
+                'Hard': ['Hard']
+            };
+            const allowedDifficulties = difficulties[gameState.difficulty];
+            const availableCases = allCases.filter(c => allowedDifficulties.includes(c.difficulty));
+            
+            const shuffledCases = [...availableCases].sort(() => 0.5 - Math.random());
+            
+            const maxRounds = 20;
+            gameState.totalRounds = Math.min(maxRounds, shuffledCases.length);
+            if(gameState.totalRounds < maxRounds && allowedDifficulties.length === 1 && availableCases.length < maxRounds){
+                console.warn(`Warning: Not enough unique questions for 20 rounds on ${gameState.difficulty} difficulty. Game will have ${gameState.totalRounds} rounds.`);
+            }
+            gameState.cases = shuffledCases.slice(0, gameState.totalRounds);
+            
+            gameState.players = [
+                { name: gameState.playerName, score: 0, isAI: false, id: 0 },
+                { name: 'Asha', score: 0, isAI: true, id: 1 },
+                { name: 'Bala', score: 0, isAI: true, id: 2 }
+            ];
+            gameState.currentRound = 0;
+            
+            startNewRound();
+        }
+
+        function startNewRound() {
+            clearSceneObjects();
+            playerInput = '';
+            gameState.currentRound++;
+            
+            if (gameState.currentRound > gameState.totalRounds || gameState.cases.length === 0) {
+                 gameState.phase = 'GAME_OVER';
+                 soundManager.playGameOver();
+                 updateUI();
+                 clearSave();
+                 return;
+            }
+            gameState.currentCase = gameState.cases.pop();
+            gameState.phase = 'STANDARD_GUESS';
+            soundManager.playRoundStart();
+            updateUI();
+        }
+        
+        function scoreStandardPart(betOnPlayerId) {
+            const answer = gameState.currentCase.standard.answer;
+
+            gameState.phase = 'STANDARD_RESULTS';
+            
+            let closestPlayerId = -1;
+            if (typeof answer === 'number') {
+                let smallestDiff = Infinity;
+                for (let i = 0; i < gameState.playerGuesses.length; i++) {
+                    const diff = Math.abs(gameState.playerGuesses[i].value - answer);
+                    if (diff < smallestDiff) {
+                        smallestDiff = diff;
+                        closestPlayerId = i;
+                    }
+                }
+            }
+            
+            gameState.players.forEach((p, i) => {
+                let scoreDelta = 0;
+                if (i === closestPlayerId) scoreDelta += 100;
+                if (!p.isAI && betOnPlayerId === closestPlayerId) {
+                    scoreDelta += 150;
+                    soundManager.playCorrect();
+                } else if (!p.isAI && betOnPlayerId !== -1 && betOnPlayerId !== closestPlayerId) {
+                    soundManager.playIncorrect();
+                }
+                p.score += scoreDelta;
+            });
+
+            gameState.standardResults = {
+                betOnPlayerId: betOnPlayerId,
+                closestPlayerId: closestPlayerId,
+                correctAnswer: answer,
+            };
+            saveGame();
+            updateUI();
+        }
+
+        function scoreFermiPart(playerVariableGuesses) {
+            if (!gameState.playerGuesses || gameState.playerGuesses.length === 0) {
+                // Failsafe in case this is called in a bad state.
+                gameState.playerGuesses = [{}, {}, {}];
+            }
+            gameState.playerGuesses[0].variableGuesses = playerVariableGuesses;
+            const fullCase = gameState.currentCase;
+            const variables = fullCase.fermi.variables;
+            const formula = fullCase.solution_formula;
+
+            const sanitizedVariables = {};
+            for (const varName in variables) {
+                sanitizedVariables[varName] = Number(variables[varName]) || 0;
+            }
+            const finalAnswer = formula(sanitizedVariables);
+            
+            gameState.fermiResults = { correctAnswer: finalAnswer };
+
+            gameState.players.forEach(p => {
+                if (p.isAI) {
+                    const aiVariableGuesses = {};
+                    const varianceMultiplier = p.id === 1 ? 0.4 : 1.0; 
+                    const baseMultiplier = p.id === 1 ? 0.8 : 0.5;
+                    for (const varName in variables) {
+                        const actual = variables[varName];
+                        aiVariableGuesses[varName] = actual * (baseMultiplier + (Math.random() * varianceMultiplier));
+                    }
+                    if (gameState.playerGuesses[p.id]) {
+                        gameState.playerGuesses[p.id].variableGuesses = aiVariableGuesses;
+                    }
+                }
+            });
+
+            let closestDerivedPlayerId = -1;
+            let smallestDerivedDiff = Infinity;
+            
+            gameState.players.forEach((p, i) => {
+                const currentGuesses = (gameState.playerGuesses[i] && gameState.playerGuesses[i].variableGuesses) ? gameState.playerGuesses[i].variableGuesses : {};
+                
+                const saneGuesses = {};
+                for (const varName in variables) {
+                    saneGuesses[varName] = Number(currentGuesses[varName]) || 0;
+                }
+                const derivedAnswer = formula(saneGuesses);
+                const diff = Math.abs(derivedAnswer - finalAnswer);
+                
+                if (!isNaN(diff) && diff < smallestDerivedDiff) {
+                    smallestDerivedDiff = diff;
+                    closestDerivedPlayerId = i;
+                }
+            });
+            
+            gameState.players.forEach((p, i) => {
+                let scoreDelta = 0;
+                let percentAccuracyTotal = 0;
+                let varCount = 0;
+                const currentGuesses = (gameState.playerGuesses[i] && gameState.playerGuesses[i].variableGuesses) ? gameState.playerGuesses[i].variableGuesses : {};
+
+                for (const varName in variables) {
+                    const actual = Number(variables[varName]);
+                    const guess = Number(currentGuesses[varName]) || 0; 
+                    
+                    let accuracy = 0;
+                    if (!isNaN(actual) && !isNaN(guess)) {
+                        accuracy = (actual !== 0) ? 100 - (Math.abs(actual - guess) / Math.abs(actual)) * 100 : (guess === 0 ? 100 : 0);
+                    }
+                    percentAccuracyTotal += Math.max(0, accuracy); 
+                    varCount++;
+                }
+                
+                if (varCount > 0) {
+                    const avgAccuracy = percentAccuracyTotal / varCount;
+                    scoreDelta += Math.round(avgAccuracy * 2);
+                }
+
+                if (closestDerivedPlayerId === i) {
+                    scoreDelta += 150;
+                }
+                p.score += scoreDelta;
+                if (!p.isAI && scoreDelta > 0) soundManager.playCorrect();
+            });
+            saveGame();
+        }
+
+        function handleUIClick(event) {
+            const target = event.target.closest('.ui-element');
+            if (!target) return;
+            
+            let playGenericClick = true;
+
+            if (target.id === 'start-btn') {
+                initializeGame();
+                playGenericClick = false; 
+            } else if (target.matches('.difficulty-btn')) {
+                gameState.difficulty = target.dataset.difficulty;
+                document.querySelectorAll('.difficulty-btn').forEach(btn => btn.classList.remove('ring-4', 'ring-blue-400'));
+                target.classList.add('ring-4', 'ring-blue-400');
+            } else if (target.id === 'next-round-btn') {
+                startNewRound();
+                playGenericClick = false;
+            } else if (target.id === 'play-again-btn') {
+                gameState.phase = 'START_SCREEN';
+                clearSave();
+                updateUI();
+            } else if (target.id === 'continue-fermi-btn') {
+                gameState.phase = 'FERMI_GUESS';
+                clearSceneObjects();
+                updateUI();
+            } else if (target.id === 'submit-fermi-btn') {
+                const playerVariableGuesses = {};
+                let allValid = true;
+                const errorMsgEl = document.getElementById('fermi-error-msg');
+                if (errorMsgEl) errorMsgEl.textContent = ''; 
+
+                for (const varName in gameState.currentCase.fermi.variables) {
+                    const input = document.querySelector(`input[data-var="${varName}"]`);
+                    if (input) {
+                        const value = parseFloat(input.value);
+                        if (isNaN(value) || input.value.trim() === '') {
+                            allValid = false;
+                            input.classList.add('border-2', 'border-red-500');
+                        } else {
+                            input.classList.remove('border-2', 'border-red-500');
+                            playerVariableGuesses[varName] = value;
+                        }
+                    } else {
+                        allValid = false; 
+                    }
+                }
+
+                if (allValid) {
+                    scoreFermiPart(playerVariableGuesses);
+                    gameState.phase = 'FERMI_RESULTS';
+                    updateUI();
+                } else {
+                    if (errorMsgEl) {
+                        errorMsgEl.textContent = 'Please fill all fields with numbers.';
+                    }
+                    soundManager.playIncorrect();
+                }
+                playGenericClick = false;
+
+            } else if (target.matches('.keypad-key')) {
+                const val = target.dataset.key;
+                if (val === 'OK') {
+                    playGenericClick = false; 
+                    const answer = gameState.currentCase.standard.answer;
+                    
+                    if(typeof answer !== 'number') {
+                         scoreStandardPart(-1); 
+                         return; 
+                    }
+
+                    const pGuess = parseInt(playerInput, 10) || 0;
+                    const ai1Guess = Math.floor(answer * (0.8 + Math.random() * 0.4));
+                    const ai2Guess = Math.floor(answer * (0.5 + Math.random() * 1.0));
+                    
+                    gameState.playerGuesses = [
+                        { name: gameState.playerName, value: pGuess },
+                        { name: 'Asha', value: ai1Guess },
+                        { name: 'Bala', value: ai2Guess }
+                    ];
+
+                    createGuessCards(gameState.playerGuesses);
+                    createBettingChip();
+                    
+                    gameState.phase = 'BETTING_PHASE';
+                    updateUI();
+                } else {
+                    if (val === 'C') {
+                        playerInput = '';
+                    } else if (playerInput.length < 9) {
+                        playerInput += val;
+                    }
+                    const display = document.getElementById('input-display');
+                    if(display) display.textContent = playerInput || '0';
+                }
+            } else if (target.id === 'share-linkedin-btn') {
+                const playerScore = gameState.players[0].score;
+                const text = `I'm proud to have successfully completed the Andaza Apna Apna Guesstimation Challenge! This was a fantastic exercise in analytical and logical reasoning. My final score was ${playerScore.toLocaleString('en-IN')} on ${gameState.difficulty} mode.\n\nA big thank you to Taxila Business School for creating this engaging and valuable learning tool. Highly recommended for anyone looking to sharpen their business acumen.\n\n#TaxilaBusinessSchool #Guesstimation #CaseStudy #BusinessStrategy #AnalyticalSkills #MBA`;
+                const url = "https://www.taxila.in/"; 
+                const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}&title=${encodeURIComponent("Completed the Guesstimation Challenge!")}&summary=${encodeURIComponent(text)}`;
+                window.open(linkedinUrl, '_blank');
+            }
+
+            if (playGenericClick) {
+                soundManager.playClick();
+            }
+        }
+         function getUserId() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get("userId") || "guest";
+    }
+        // --- PERSISTENCE ---
+      async function saveGame() {
+            const userId = getUserId();
+
+            if (!userId) return; // only exit if no userId found
+ const params = new URLSearchParams(window.location.search);
+ const name =  JSON.parse(decodeURIComponent(params.get("name")));
+            try {
+                const res = await fetch("https://erp.taxila.in/api/game/guesstimations", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ userId, name, gameState }),
+                });
+
+                if (!res.ok) {
+                    console.error("Failed to save game state:", await res.text());
+                } else {
+                    console.log("Game state saved for", userId);
+                }
+            } catch (err) {
+                console.error("Error saving game state:", err);
+            }
+        }
+
+     async function loadGame() {
+            const userId = getUserId();
+            const res = await fetch(`https://erp.taxila.in/api/game/guesstimations?userId=${userId}`)
+            const savedData = await res.json();
+            
+            if (savedData && Object.keys(savedData).length > 0) { // Check if savedData is not empty
+                gameState = savedData;
+                // Re-link currentCase to the original allCases object to ensure solution_formula works
+                if (gameState.currentCase) {
+                    gameState.currentCase = allCases.find(c => c.id === gameState.currentCase.id);
+                }
+                return true;
+            }
+            return false;
+        }
+
+        async function clearSave() {
+            const userId = getUserId();
+            if (!userId) return; // only exit if no userId found
+
+            try {
+                // Set gameState to an empty object to clear the saved state
+                const emptyGameState = {}; 
+                const res = await fetch("https://erp.taxila.in/api/game/guesstimations", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ userId, gameState: emptyGameState }),
+                });
+
+                if (!res.ok) {
+                    console.error("Failed to clear game state:", await res.text());
+                } else {
+                    console.log("Game state cleared for", userId);
+                }
+            } catch (err) {
+                console.error("Error clearing game state:", err);
+            }
+        }
+        
+        async function checkForSavedGame() {
+            // Await loadGame to ensure it completes before proceeding
+            const gameFound = await loadGame(); 
+            if (gameFound) {
+                document.getElementById('resume-modal').classList.remove('hidden');
+            } else {
+                gameState.phase = 'START_SCREEN';
+                updateUI();
+            }
+        }
+
+        // --- INTERACTION & ANIMATION ---
+        let selectedChip = null;
+        let plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -1.5);
+
+        function onPointerDown(event) {
+            if (!soundManager.isReady) {
+                Tone.start();
+                soundManager.init();
+            }
+
+            if (gameState.phase !== 'BETTING_PHASE') return;
+            
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(bettingChips);
+
+            if (intersects.length > 0) {
+                selectedChip = intersects[0].object;
+                selectedChip.userData.isDragging = true;
+                controls.enabled = false;
+            }
+        }
+
+        function onPointerMove(event) {
+            if (selectedChip && selectedChip.userData.isDragging) {
+                mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+                mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+                raycaster.setFromCamera(mouse, camera);
+
+                const intersectionPoint = new THREE.Vector3();
+                raycaster.ray.intersectPlane(plane, intersectionPoint);
+                selectedChip.position.set(intersectionPoint.x, 1.5, intersectionPoint.z);
+            }
+        }
+
+        function onPointerUp(event) {
+            if (selectedChip) {
+                let droppedOnCard = false;
+                for (const card of guessCards) {
+                    const cardPosition = new THREE.Vector3();
+                    card.getWorldPosition(cardPosition);
+                    plane.constant = -cardPosition.y;
+
+                    const distance = selectedChip.position.distanceTo(cardPosition);
+                    
+                    if (distance < 1.5) {
+                        selectedChip.position.set(cardPosition.x, cardPosition.y + 0.2, cardPosition.z);
+                        droppedOnCard = true;
+                        
+                        const betOnPlayerId = card.userData.playerId;
+                        
+                        setTimeout(() => {
+                           scoreStandardPart(betOnPlayerId);
+                        }, 500);
+                        break;
+                    }
+                }
+                
+                if (!droppedOnCard) {
+                    selectedChip.position.set(0, 1.2, 3.5);
+                }
+
+                selectedChip.userData.isDragging = false;
+                selectedChip = null;
+                controls.enabled = true;
+            }
+        }
+        
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            if (gameState.phase === 'BETTING_PHASE' && gameState.playerGuesses) {
+                createGuessCards(gameState.playerGuesses);
+                createBettingChip();
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // --- START ---
+        init();
+        window.addEventListener('resize', onWindowResize);
+        window.addEventListener('pointerdown', onPointerDown);
+        window.addEventListener('pointermove', onPointerMove);
+        window.addEventListener('pointerup', onPointerUp);
+        document.body.addEventListener('click', handleUIClick);
+        document.getElementById('resume-yes-btn').addEventListener('click', () => {
+            document.getElementById('resume-modal').classList.add('hidden');
+            updateUI();
+             if (gameState.phase === 'BETTING_PHASE') {
+                createGuessCards(gameState.playerGuesses);
+                createBettingChip();
+            }
+        });
+        document.getElementById('resume-no-btn').addEventListener('click', () => {
+            document.getElementById('resume-modal').classList.add('hidden');
+            clearSave();
+            gameState.phase = 'START_SCREEN';
+            updateUI();
+        });
+
+    </script>
+</body>
+</html>

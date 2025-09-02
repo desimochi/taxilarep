@@ -18,7 +18,7 @@ export default function HtmlPage() {
             <Link href="/game/guesstimations/leaderboard" className="bg-green-100 text-green-700 px-4 py-1 rounded-sm flex items-center gap-1"> <Award /> See LeaderBoard</Link>
         </div>
       <iframe
-        src={`/guesstimations.html?userId=${encodedState}&name=${encodedStateName}`}
+        src={`/andaza.html?userId=${encodedState}&name=${encodedStateName}`}
         className="w-full h-full border-none"
       />
     </div>
