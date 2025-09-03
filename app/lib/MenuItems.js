@@ -153,7 +153,7 @@ export const menuItems = [
           {label : "Strategy", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Taxila Capital Quest",  icon: <Gamepad className="h-5 w-5" />, path:"/game/quest"},
           ]},
-           {label:"Wordify",  icon: <Gamepad className="h-5 w-5" />, path:"/game/wordify"},
+           {label:"Wordify",  icon: <Gamepad className="h-5 w-5" />, path:"/game/wordfy"},
           ]},
   ];
 
@@ -185,7 +185,7 @@ export const menuItems = [
           {label : "Strategy", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Taxila Capital Quest",  icon: <Gamepad className="h-5 w-5" />, path:"/game/quest"},
           ]},
-           {label:"Wordify",  icon: <Gamepad className="h-5 w-5" />, path:"/game/wordify"},
+           {label:"Wordify",  icon: <Gamepad className="h-5 w-5" />, path:"/game/wordfy"},
           ]},
      { label: "Marks", icon: <DocumentChartBarIcon className="h-5 w-5" />, path: "/student/marks" },
     { label: "Result", icon: <PenBox className="h-5 w-5" />, path: "/exam-components/result/see-result" },
