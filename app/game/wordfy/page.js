@@ -14,8 +14,8 @@ export default function HtmlPage() {
     <div className="w-full h-screen bg-gray-50 py-12 mb-12">
         <h1 className="text-center text-gray-900 font-bold text-4xl mb-4">Project Titan</h1>
      <div className="max-w-7xl mx-auto flex justify-between mb-5">
-            <Link href="/game/wordify/how-to-play" className="bg-yellow-100 text-yellow-700 px-4 py-1 rounded-sm flex items-center gap-1"><HelpCircle /> Game Instructions</Link>
-            <Link href="/game/wordify/leaderboard" className="bg-green-100 text-green-700 px-4 py-1 rounded-sm flex items-center gap-1"> <Award /> See LeaderBoard</Link>
+            <Link href="/game/wordfy/how-to-play" className="bg-yellow-100 text-yellow-700 px-4 py-1 rounded-sm flex items-center gap-1"><HelpCircle /> Game Instructions</Link>
+            <Link href="/game/wordfy/leaderboard" className="bg-green-100 text-green-700 px-4 py-1 rounded-sm flex items-center gap-1"> <Award /> See LeaderBoard</Link>
         </div>
       <iframe
         src={`/Wordify-new.html?userId=${encodedState}&name=${encodedStateName}`}
