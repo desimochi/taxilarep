@@ -143,13 +143,17 @@ export const menuItems = [
     },
     { label: "Mentorship Student", icon: <NewspaperIcon className="h-5 w-5" />, path: "/faculty/mentorship-assign-student" },
     { label: "Events", icon: <CalendarIcon className="h-5 w-5" />, path: "/events" },
-    {label : "Simuation", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
+    {label : "Simuations", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Startup Simuation",  icon: <Gamepad className="h-5 w-5" />, path:"/game/simulation"},
              {label:"Guesstimation",  icon: <Gamepad className="h-5 w-5" />, path:"/game/guesstimations"},
             {label : "Finance", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Rat Race 3d",  icon: <Gamepad className="h-5 w-5" />, path:"/game/rat-race"},
             {label:"Project Titan",  icon: <Gamepad className="h-5 w-5" />, path:"/game/titan"},
           ]},
+          {label : "Strategy", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
+            {label:"Taxila Capital Quest",  icon: <Gamepad className="h-5 w-5" />, path:"/game/quest"},
+          ]},
+           {label:"Wordify",  icon: <Gamepad className="h-5 w-5" />, path:"/game/wordify"},
           ]},
   ];
 
@@ -171,13 +175,17 @@ export const menuItems = [
     { label: "Attendance", icon: <UserRoundCheck className="h-5 w-5" />, path: "/student/attendance" },
     { label: "Class Schedule", icon: <BookCopyIcon className="h-5 w-5" />, path: "/student/class-schedule" },
     { label: "Exam Schedule", icon: <PenBox className="h-5 w-5" />, path: "/student/exam-schedule" },
-    {label : "Simuation", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
+    {label : "Simuations", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Startup Simuation",  icon: <Gamepad className="h-5 w-5" />, path:"/game/simulation"},
-            {label:"Guesstimations",  icon: <Gamepad className="h-5 w-5" />, path:"/game/guesstimations"},
-            {label : "Simuation", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
+             {label:"Guesstimation",  icon: <Gamepad className="h-5 w-5" />, path:"/game/guesstimations"},
+            {label : "Finance", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Rat Race 3d",  icon: <Gamepad className="h-5 w-5" />, path:"/game/rat-race"},
             {label:"Project Titan",  icon: <Gamepad className="h-5 w-5" />, path:"/game/titan"},
           ]},
+          {label : "Strategy", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
+            {label:"Taxila Capital Quest",  icon: <Gamepad className="h-5 w-5" />, path:"/game/quest"},
+          ]},
+           {label:"Wordify",  icon: <Gamepad className="h-5 w-5" />, path:"/game/wordify"},
           ]},
      { label: "Marks", icon: <DocumentChartBarIcon className="h-5 w-5" />, path: "/student/marks" },
     { label: "Result", icon: <PenBox className="h-5 w-5" />, path: "/exam-components/result/see-result" },

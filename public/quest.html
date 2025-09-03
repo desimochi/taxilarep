@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taxila Capital Quest: A Business Simulation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0c0a18;
+            color: #f3f4f6;
+            background-image: radial-gradient(#1e1b3a 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        #game-container { perspective: 2000px; }
+        .card {
+            background-color: rgba(30, 27, 58, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 0.75rem;
+            border: 1px solid rgba(129, 118, 255, 0.3);
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5), inset 0 1px 0 0 rgba(129, 118, 255, 0.2);
+            transform-style: preserve-3d;
+            transition: transform 0.1s ease-out;
+        }
+        .btn {
+            background: linear-gradient(145deg, #5f55d9, #4c44b3);
+            border: 1px solid rgba(129, 118, 255, 0.5);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.2);
+            transition: all 0.2s ease-in-out;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+        }
+        .btn-success { background: linear-gradient(145deg, #55d98d, #44b370); }
+        .btn-danger { background: linear-gradient(145deg, #d95555, #b34444); }
+        .btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.2);
+            filter: brightness(1.1);
+        }
+        .btn:disabled {
+            background: #4a4a6a;
+            cursor: not-allowed;
+            opacity: 0.6;
+            transform: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none; width: 20px; height: 20px; background: #a855f7;
+            cursor: pointer; border-radius: 50%; border: 2px solid #fff; margin-top: -8px; box-shadow: 0 0 10px #a855f7;
+        }
+        .modal-backdrop { background-color: rgba(12, 10, 24, 0.8); backdrop-filter: blur(5px); }
+        .kpi-value { font-size: 1.875rem; font-weight: 700; color: #ffffff; text-shadow: 0 0 10px rgba(168, 85, 247, 0.5); }
+        .kpi-label { font-size: 0.875rem; color: #d1d5db; }
+        .kpi-card { background: linear-gradient(145deg, rgba(30, 27, 58, 0.8), rgba(45, 40, 90, 0.8)); }
+        .disabled-panel { filter: blur(4px) brightness(0.7); pointer-events: none; }
+    </style>
+</head>
+<body class="antialiased">
+    <div id="game-container" class="container mx-auto p-4 md:p-8 max-w-7xl">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-white tracking-tight" style="text-shadow: 0 0 15px rgba(168, 85, 247, 0.6);">Taxila Capital Quest</h1>
+            <p class="text-lg text-gray-300 mt-2">Your 10-Year Journey to Market Leadership</p>
+            <p id="player-name-display" class="text-xl text-purple-300 mt-3 h-7"></p>
+            <p class="text-sm text-gray-500 mt-1">Created at Taxila Business School, Jaipur</p>
+        </header>
+        
+        <div id="game-area" class="hidden">
+            <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+                <div class="card kpi-card p-4 text-center"><div id="year-value" class="kpi-value">1</div><div class="kpi-label">Year</div></div>
+                <div class="card kpi-card p-4 text-center"><div id="cash-value" class="kpi-value">₹4Cr</div><div class="kpi-label">Cash</div></div>
+                <div class="card kpi-card p-4 text-center"><div id="profit-value" class="kpi-value">₹0</div><div class="kpi-label">Prev. Year Profit</div></div>
+                <div class="card kpi-card p-4 text-center"><div id="loan-value" class="kpi-value">₹0</div><div class="kpi-label">Current Loan</div></div>
+                <div class="card kpi-card p-4 text-center col-span-2 lg:col-span-1"><div id="company-value" class="kpi-value">₹8Cr</div><div class="kpi-label">Company Value</div></div>
+            </div>
+
+            <main id="main-content" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-1 flex flex-col gap-8">
+                    <!-- Automation Event Card -->
+                    <div id="automation-card" class="card p-6 border-2 border-yellow-400 hidden">
+                        <h2 id="automation-title" class="text-2xl font-bold mb-3 text-yellow-300">The Automation Crossroads</h2>
+                        <p id="automation-text" class="text-sm text-gray-300 mb-4"></p>
+                        <div id="automation-buttons" class="flex gap-4">
+                            <button id="invest-btn" class="flex-1 btn btn-success text-white font-bold py-2 px-4 rounded-lg text-sm">Invest in Robotics</button>
+                            <button id="no-invest-btn" class="flex-1 btn btn-danger text-white font-bold py-2 px-4 rounded-lg text-sm">Support Workforce</button>
+                        </div>
+                    </div>
+
+                    <div class="card p-6">
+                         <h2 class="text-2xl font-semibold mb-4 text-white">🏦 Jaipur Imperial Bank</h2>
+                         <div class="space-y-4">
+                            <div class="flex justify-between items-center text-gray-300"><span>Annual Interest Rate:</span><span class="font-semibold text-white">15%</span></div>
+                            <div class="flex justify-between items-center text-gray-300"><span>Mandatory Annual Payment:</span><span id="annual-payment" class="font-semibold text-white">₹0</span></div>
+                             <hr class="border-gray-600 my-3">
+                            <div>
+                                <label class="block font-medium mb-2 text-sm">Request Loan (<span id="loan-request-label">₹0</span>)</label>
+                                <input id="loan-request-slider" type="range" min="0" max="0" step="500000" value="0" class="w-full h-2 bg-gray-700 rounded-lg">
+                                <button id="take-loan-btn" class="w-full mt-3 btn text-white font-bold py-2 px-4 rounded-lg text-sm" disabled>Take Loan</button>
+                            </div>
+                         </div>
+                    </div>
+                     <div class="card p-6">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">👥 HR Department</h2>
+                        <div class="space-y-3">
+                           <div class="flex justify-between text-gray-300"><span>Workforce Size:</span><span id="workforce-size" class="font-semibold text-white">0</span></div>
+                           <div class="flex justify-between text-gray-300"><span>Annual Labor Cost:</span><span id="labor-cost" class="font-semibold text-white">₹0</span></div>
+                           <div class="flex justify-between text-gray-300"><span>Productivity Index:</span><span id="productivity-index" class="font-semibold text-white">100%</span></div>
+                        </div>
+                   </div>
+                    <div class="card p-6">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">📈 Market & Economic Outlook</h2>
+                        <div class="space-y-3 text-sm">
+                           <p class="font-semibold text-white">Next Year's Forecast</p>
+                           <div class="flex justify-between text-gray-300"><span>Projected GDP Growth (India):</span><span id="outlook-gdp" class="font-semibold text-white">7.0%</span></div>
+                           <div class="flex justify-between text-gray-300"><span>Consumer Confidence Index:</span><span id="outlook-confidence" class="font-semibold text-white">100</span></div>
+                           <div class="flex justify-between text-gray-300"><span>Inflation Forecast:</span><span id="outlook-inflation" class="font-semibold text-white">4.5%</span></div>
+                           <hr class="border-gray-700 my-2">
+                           <p class="font-semibold text-white">Last Year's Performance</p>
+                           <div class="flex justify-between text-gray-400"><span>Total Market Size:</span><span id="mi-market-size" class="font-semibold text-white">0</span></div>
+                           <div class="flex justify-between text-gray-400"><span>Your Market Share:</span><span id="mi-market-share" class="font-semibold text-white">0%</span></div>
+                           <p class="font-semibold text-white mt-2">Apex Innovations Report</p>
+                           <div class="flex justify-between text-gray-400"><span>Quality Index:</span><span id="mi-comp-quality" class="font-semibold text-white">0.90</span></div>
+                           <div class="flex justify-between text-gray-400"><span>Marketing Budget:</span><span id="mi-comp-marketing" class="font-semibold text-white">₹0</span></div>
+                        </div>
+                   </div>
+                   <div class="card p-6">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">📊 Cumulative Financials</h2>
+                        <div class="space-y-2 text-sm">
+                           <div class="flex justify-between text-gray-300"><span>Total Revenue:</span><span id="fs-revenue" class="font-semibold text-white">₹0</span></div>
+                           <hr class="border-gray-700 my-1">
+                           <div class="flex justify-between text-gray-400"><span>Total COGS:</span><span id="fs-cogs" class="font-semibold text-white">₹0</span></div>
+                           <div class="flex justify-between text-gray-400"><span>Total Labor Cost:</span><span id="fs-labor" class="font-semibold text-white">₹0</span></div>
+                           <div class="flex justify-between text-gray-400"><span>Total Marketing:</span><span id="fs-marketing" class="font-semibold text-white">₹0</span></div>
+                           <div class="flex justify-between text-gray-400"><span>Total R&D:</span><span id="fs-rd" class="font-semibold text-white">₹0</span></div>
+                           <div class="flex justify-between text-gray-400"><span>Total Depreciation:</span><span id="fs-depreciation" class="font-semibold text-white">₹0</span></div>
+                           <div class="flex justify-between text-gray-400"><span>Total Interest:</span><span id="fs-interest" class="font-semibold text-white">₹0</span></div>
+                           <hr class="border-gray-600 my-2">
+                           <div class="flex justify-between text-lg"><strong>Overall Profit/Loss:</strong><strong id="fs-net-profit" class="font-bold text-white">₹0</strong></div>
+                        </div>
+                   </div>
+                    <div class="card p-6">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">🏆 Hall of Fame</h2>
+                        <div id="leaderboard-container" class="space-y-2 text-sm text-gray-300 overflow-y-auto h-40"><p>Loading your past triumphs...</p></div>
+                    </div>
+                    <div class="card p-6 flex-grow">
+                        <h2 class="text-2xl font-semibold mb-4 text-white">Yearly Log</h2>
+                        <div id="log-container" class="space-y-2 text-sm text-gray-400 overflow-y-auto h-64 pr-2"></div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-2 card p-6 md:p-8" id="decision-panel">
+                    <h2 class="text-3xl font-bold mb-2 text-white">Decision Time</h2>
+                    <p class="text-gray-400 mb-6">Allocate your capital for the upcoming year.</p>
+                    <div class="space-y-6">
+                        <div><label class="block font-medium">R&D Investment (<span id="rd-label">₹0</span>)</label><input id="rd-slider" type="range" min="0" max="20000000" step="400000" value="0" class="w-full h-2 bg-gray-700 rounded-lg"></div>
+                        <div><label class="block font-medium">Marketing Spend (<span id="marketing-label">₹0</span>)</label><input id="marketing-slider" type="range" min="0" max="20000000" step="400000" value="0" class="w-full h-2 bg-gray-700 rounded-lg"></div>
+                        <div><label class="block font-medium">Production Volume (<span id="production-label">0 Units</span>)</label><input id="production-slider" type="range" min="0" max="20000" step="100" value="0" class="w-full h-2 bg-gray-700 rounded-lg"></div>
+                        <div><label class="block font-medium">Capital Investment (<span id="capital-label">₹0</span>)</label><input id="capital-slider" type="range" min="0" max="20000000" step="800000" value="0" class="w-full h-2 bg-gray-700 rounded-lg"></div>
+                        <div><label class="block font-medium">HR Training Investment (<span id="hr-label">₹0</span>)</label><input id="hr-slider" type="range" min="0" max="10000000" step="200000" value="0" class="w-full h-2 bg-gray-700 rounded-lg"></div>
+                        <div><label class="block font-medium">Additional Loan Repayment (<span id="repayment-label">₹0</span>)</label><input id="repayment-slider" type="range" min="0" max="0" step="100000" value="0" class="w-full h-2 bg-gray-700 rounded-lg"></div>
+                    </div>
+                    <div class="mt-8 pt-6 border-t border-purple-800">
+                        <div class="flex justify-between items-center text-lg mb-2"><span>Production & Labor Cost:</span><span id="production-labor-cost" class="font-bold">₹0</span></div>
+                        <div class="flex justify-between items-center text-lg mb-4"><span>Total Yearly Spend:</span><span id="total-spend" class="font-bold">₹0</span></div>
+                        <div class="flex justify-between items-center text-lg mb-4"><span>Remaining Cash:</span><span id="remaining-cash" class="font-bold text-green-400">₹40,000,000</span></div>
+                        <button id="end-year-btn" class="w-full mt-4 btn text-white font-bold py-3 px-4 rounded-lg text-lg">Finalize Decisions & End Year</button>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div id="modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
+        <div id="modal-content" class="card max-w-lg w-full p-8 text-center">
+            <h2 id="modal-title" class="text-3xl font-bold mb-4"></h2>
+            <p id="modal-text" class="text-gray-300 mb-6"></p>
+            <input type="text" id="player-name-input" placeholder="Enter your name, CEO" class="w-full bg-gray-900 border-purple-700 text-white rounded-lg p-3 mb-4 text-center">
+            <p id="modal-score" class="text-2xl font-semibold my-4 text-purple-400"></p>
+            <div id="modal-buttons" class="flex flex-col sm:flex-row gap-4 justify-center">
+                 <button id="modal-button-1" class="btn text-white font-bold py-2 px-6 rounded-lg">Play Again</button>
+                 <button id="download-notes-btn" class="btn btn-success text-white font-bold py-2 px-6 rounded-lg hidden">Download Analysis</button>
+                 <button id="download-cert-btn" class="btn btn-success text-white font-bold py-2 px-6 rounded-lg hidden">Download Certificate</button>
+            </div>
+             <button id="share-linkedin-btn" class="btn mt-4 w-full sm:w-auto text-white font-bold py-2 px-6 rounded-lg hidden" style="background-color: #0077B5;">Share on LinkedIn</button>
+        </div>
+    </div>
+    
+    <script type="module">
+        let audioCtx;function initAudio(){if(!audioCtx)try{audioCtx=new(window.AudioContext||window.webkitAudioContext)}catch(e){console.error("Web Audio API not supported")}}function playNote(f,t,s,d,v=.8){if(!audioCtx)return;const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g),g.connect(audioCtx.destination),o.type=t,o.frequency.setValueAtTime(f,audioCtx.currentTime);const n=audioCtx.currentTime;g.gain.setValueAtTime(0,n+s),g.gain.linearRampToValueAtTime(v,n+s+.01),g.gain.exponentialRampToValueAtTime(1e-4,n+s+d),o.start(n+s),o.stop(n+s+d)}const sounds={click:()=>playNote(1200,"sine",0,.1,.5),slider:()=>playNote(300,"sine",0,.05,.2),success:()=>{playNote(523.25,"triangle",0,.2,.6),playNote(659.25,"triangle",.08,.2,.6),playNote(783.99,"triangle",.16,.2,.6),playNote(987.77,"triangle",.24,.3,.6)},loss:()=>{playNote(130.81,"sawtooth",0,.5,.6),playNote(155.56,"sawtooth",0,.5,.6)},gameOver:()=>{playNote(73.42,"square",0,1.5,.7),playNote(69.3,"square",.1,1.4,.7)},event:()=>playNote(880,"triangle",0,.3,.7),loan:()=>playNote(600,'sine',0,0.15,0.6)};const playSound=s=>{if(audioCtx&&"suspended"!==audioCtx.state&&sounds[s])sounds[s]()};
+        
+        const D = { gc:document.getElementById('game-container'), mc:document.getElementById('main-content'), ga:document.getElementById('game-area'), pnd:document.getElementById('player-name-display'), yv:document.getElementById('year-value'), cv:document.getElementById('cash-value'), pv:document.getElementById('profit-value'), lv:document.getElementById('loan-value'), cov:document.getElementById('company-value'), ap:document.getElementById('annual-payment'), lrl:document.getElementById('loan-request-label'), lrs:document.getElementById('loan-request-slider'), tlb:document.getElementById('take-loan-btn'), lc:document.getElementById('leaderboard-container'), log:document.getElementById('log-container'), dp:document.getElementById('decision-panel'), rds:document.getElementById('rd-slider'), rdl:document.getElementById('rd-label'), ms:document.getElementById('marketing-slider'), ml:document.getElementById('marketing-label'), ps:document.getElementById('production-slider'), pl:document.getElementById('production-label'), cs:document.getElementById('capital-slider'), cl:document.getElementById('capital-label'), hrs:document.getElementById('hr-slider'), hrl:document.getElementById('hr-label'), reps:document.getElementById('repayment-slider'), repl:document.getElementById('repayment-label'), plcost:document.getElementById('production-labor-cost'), ts:document.getElementById('total-spend'), rc:document.getElementById('remaining-cash'), eyb:document.getElementById('end-year-btn'), modal:document.getElementById('modal'), mt:document.getElementById('modal-title'), mtxt:document.getElementById('modal-text'), mscore:document.getElementById('modal-score'), mb1:document.getElementById('modal-button-1'), pni:document.getElementById('player-name-input'), wsize:document.getElementById('workforce-size'), lcost:document.getElementById('labor-cost'), pindex:document.getElementById('productivity-index'), acard: document.getElementById('automation-card'), atitle: document.getElementById('automation-title'), atext: document.getElementById('automation-text'), abtns: document.getElementById('automation-buttons'), investBtn: document.getElementById('invest-btn'), noInvestBtn: document.getElementById('no-invest-btn'), fsRevenue: document.getElementById('fs-revenue'), fsCogs: document.getElementById('fs-cogs'), fsLabor: document.getElementById('fs-labor'), fsMarketing: document.getElementById('fs-marketing'), fsRd: document.getElementById('fs-rd'), fsDepreciation: document.getElementById('fs-depreciation'), fsInterest: document.getElementById('fs-interest'), fsNetProfit: document.getElementById('fs-net-profit'), miMarketSize: document.getElementById('mi-market-size'), miMarketShare: document.getElementById('mi-market-share'), miCompQuality: document.getElementById('mi-comp-quality'), miCompMarketing: document.getElementById('mi-comp-marketing'), outlookGdp: document.getElementById('outlook-gdp'), outlookConfidence: document.getElementById('outlook-confidence'), outlookInflation: document.getElementById('outlook-inflation'), downloadNotesBtn: document.getElementById('download-notes-btn'), downloadCertBtn: document.getElementById('download-cert-btn'), shareLinkedinBtn: document.getElementById('share-linkedin-btn') };
+        let gameState = {}; const MAX_YEARS=10,STORAGE_COST=400,LOAN_INTEREST=.15,DEPRECIATION=0.05,LOAN_TERM=5,EMPLOYEE_COST=100000, SEVERANCE_MULTIPLIER=0.25;
+        let UNITS_PER_EMPLOYEE = 100;
+        let userId = 'guest_user';
+        const API_ENDPOINT = 'https://erp.taxila.in/api/game/quest';
+
+        function initGame(savedState = null) {
+            if (savedState && savedState.playerName) {
+                gameState = savedState;
+                addLogMessage(`Game loaded successfully. Welcome back, CEO ${gameState.playerName}.`);
+            } else {
+                gameState = { year: 1, cash: 40000000, lastYearProfit: 0, lastYearWorkforce: 0, companyValue: 80000000, productQuality: 1, unitCost: 4e3, unitPrice: 8e3, inventory: 0, machineryValue: 4e7, playerName: savedState?.playerName || "CEO", loanTerms: [], competitor: { quality: .9, marketing: 2e6 }, competitorLastYear: { quality: .9, marketing: 2e6 }, productivity: 1.0, automationOffered: false, automated: false, cumulativeStatement: { revenue: 0, cogs: 0, labor: 0, marketing: 0, rd: 0, depreciation: 0, interest: 0, netProfit: 0, capEx: 0, hr: 0 }, lastYearMarketSize: 0, lastYearMarketShare: 0, thisYearDepreciation: 0, thisYearInterest: 0, gdpGrowth: 0.07, consecutiveLosses: 0 };
+                addLogMessage(`Welcome, CEO ${gameState.playerName}. Let's get to work.`);
+            }
+            UNITS_PER_EMPLOYEE = gameState.automated ? 200 : 100;
+            D.log.innerHTML = ``;
+            D.acard.classList.add('hidden');
+            D.dp.classList.remove('disabled-panel');
+            updateFinancialStatement(); updateMarketOutlook(); updateUI(), resetSliders(), updateCalculations(), startYear();
+        }
+        
+        const formatCurrency = v => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(v);
+        
+        function updateUI() {
+            const totalLoan = gameState.loanTerms.reduce((sum, loan) => sum + loan.principal, 0);
+            const totalAnnualPayment = gameState.loanTerms.reduce((sum, loan) => sum + loan.annualPayment, 0);
+            D.yv.textContent = gameState.year; D.cv.textContent = formatCurrency(gameState.cash); D.pv.textContent = formatCurrency(gameState.lastYearProfit); D.lv.textContent = formatCurrency(totalLoan); D.cov.textContent = formatCurrency(gameState.companyValue); D.ap.textContent = formatCurrency(totalAnnualPayment); D.pnd.textContent = `CEO: ${gameState.playerName}`; D.pindex.textContent = `${(gameState.productivity*100).toFixed(0)}%`;
+            const maxLoan = Math.floor((.5 * gameState.companyValue - totalLoan) / 5e5) * 5e5;
+            D.lrs.max = Math.max(0, maxLoan); D.reps.max = Math.min(gameState.cash, totalLoan);
+            const maxSpend = Math.min(2e7, gameState.cash);
+            D.rds.max = D.ms.max = D.cs.max = maxSpend; D.hrs.max = Math.min(1e7, gameState.cash);
+            const maxProd = Math.floor(gameState.cash / gameState.unitCost);
+            D.ps.max = Math.min(2e4, maxProd);
+        }
+
+        function resetSliders() { [D.rds, D.ms, D.ps, D.cs, D.reps, D.lrs, D.hrs].forEach(s => { if(s) s.value = 0; }); }
+
+        function updateCalculations() {
+            const rd=parseInt(D.rds.value), mkt=parseInt(D.ms.value), prod=parseInt(D.ps.value), cap=parseInt(D.cs.value), hr=parseInt(D.hrs.value), repayment=parseInt(D.reps.value), loanRequest=parseInt(D.lrs.value);
+            D.rdl.textContent=formatCurrency(rd); D.ml.textContent=formatCurrency(mkt); D.pl.textContent=`${prod.toLocaleString()} Units`; D.cl.textContent=formatCurrency(cap); D.hrl.textContent=formatCurrency(hr); D.repl.textContent=formatCurrency(repayment);
+            const workforce = Math.ceil(prod / (UNITS_PER_EMPLOYEE * gameState.productivity));
+            const laborCost = workforce * EMPLOYEE_COST;
+            const pCost = prod * gameState.unitCost;
+            D.wsize.textContent = workforce.toLocaleString(); D.lcost.textContent = formatCurrency(laborCost); D.plcost.textContent = formatCurrency(pCost + laborCost);
+            const tSpend=rd+mkt+pCost+laborCost+cap+hr+repayment;
+            D.ts.textContent=formatCurrency(tSpend);
+            const remCash=gameState.cash-tSpend;
+            D.rc.textContent=formatCurrency(remCash);
+            remCash<0?(D.rc.classList.replace("text-green-400","text-red-400"),D.eyb.disabled=!0,D.eyb.classList.add("opacity-50")):(D.rc.classList.replace("text-red-400","text-green-400"),D.eyb.disabled=!1,D.eyb.classList.remove("opacity-50"));
+            D.lrl.textContent=formatCurrency(loanRequest); D.tlb.disabled=0===loanRequest;
+        }
+        
+        const addLogMessage = (msg, type="info") => { const p=document.createElement("p"); let pre="ℹ️"; "success" === type ? (p.className = "text-green-400", pre = "✅") : "warning" === type ? (p.className = "text-yellow-400", pre = "⚠️") : "danger" === type && (p.className = "text-red-400", pre = "🔥"), p.innerHTML = `<strong>Year ${gameState.year}:</strong> ${pre} ${msg}`, D.log.prepend(p); };
+
+        function updateFinancialStatement() {
+            const stmt = gameState.cumulativeStatement;
+            D.fsRevenue.textContent = formatCurrency(stmt.revenue); D.fsCogs.textContent = formatCurrency(stmt.cogs); D.fsLabor.textContent = formatCurrency(stmt.labor); D.fsMarketing.textContent = formatCurrency(stmt.marketing); D.fsRd.textContent = formatCurrency(stmt.rd); D.fsDepreciation.textContent = formatCurrency(stmt.depreciation); D.fsInterest.textContent = formatCurrency(stmt.interest); D.fsNetProfit.textContent = formatCurrency(stmt.netProfit);
+            if (stmt.netProfit >= 0) { D.fsNetProfit.classList.remove('text-red-400'); D.fsNetProfit.classList.add('text-green-400'); } else { D.fsNetProfit.classList.remove('text-green-400'); D.fsNetProfit.classList.add('text-red-400'); }
+        }
+
+        function updateMarketOutlook() {
+            D.miMarketSize.textContent = gameState.lastYearMarketSize.toLocaleString();
+            D.miMarketShare.textContent = `${(gameState.lastYearMarketShare * 100).toFixed(1)}%`;
+            D.miCompQuality.textContent = gameState.competitorLastYear.quality.toFixed(2);
+            D.miCompMarketing.textContent = formatCurrency(gameState.competitorLastYear.marketing);
+            // Forecast for next year
+            gameState.gdpGrowth = Math.random() * 0.05 + 0.04; // 4% to 9%
+            const consumerConfidence = Math.floor(Math.random() * 40 + 75); // 75 to 115
+            const inflation = Math.random() * 0.03 + 0.035; // 3.5% to 6.5%
+            D.outlookGdp.textContent = `${(gameState.gdpGrowth * 100).toFixed(1)}%`;
+            D.outlookConfidence.textContent = consumerConfidence;
+            D.outlookInflation.textContent = `${(inflation * 100).toFixed(1)}%`;
+        }
+
+        function endYear() {
+            playSound("click"); D.eyb.disabled = true;
+            const rd=parseInt(D.rds.value), mkt=parseInt(D.ms.value), prod=parseInt(D.ps.value), cap=parseInt(D.cs.value), hr=parseInt(D.hrs.value), repayment=parseInt(D.reps.value);
+            const workforce = Math.ceil(prod / (UNITS_PER_EMPLOYEE * gameState.productivity));
+            gameState.lastYearWorkforce = workforce;
+            const laborCost = workforce * EMPLOYEE_COST;
+            const pCost = prod * gameState.unitCost;
+            const totalSpend = rd+mkt+pCost+laborCost+cap+hr+repayment;
+            if (totalSpend > gameState.cash) return;
+            gameState.cash -= totalSpend;
+            if(hr>0){gameState.productivity+=hr/2e7; addLogMessage(`Training boosted productivity to ${ (gameState.productivity*100).toFixed(0) }%`,"success")}
+            if(repayment>0){let rem=repayment;gameState.loanTerms.sort((a,b)=>a.termRemaining-b.termRemaining);for(const l of gameState.loanTerms){const p=Math.min(l.principal,rem);l.principal-=p;rem-=p;if(rem<=0)break}gameState.loanTerms=gameState.loanTerms.filter(l=>l.principal>0);addLogMessage(`Paid extra ${formatCurrency(repayment)} on loans.`,"success")}
+            const pStr=mkt*.7+gameState.productQuality*3e6,cStr=gameState.competitor.marketing*.7+gameState.competitor.quality*3e6;
+            gameState.lastYearMarketShare = pStr/(pStr+cStr);
+            const baseDemand = 10000 * (1 + gameState.gdpGrowth);
+            const tDemand=baseDemand+Math.floor((Math.random()-.2)*2000);
+            gameState.lastYearMarketSize = tDemand;
+            const demand=Math.floor(tDemand*gameState.lastYearMarketShare);
+            addLogMessage(`Market demand was ${tDemand.toLocaleString()}. Your share: ${(100*gameState.lastYearMarketShare).toFixed(1)}%.`);
+            const available=gameState.inventory+prod,sold=Math.min(demand,available),revenue=sold*gameState.unitPrice,sCost=(available-sold)*STORAGE_COST;
+            gameState.inventory=available-sold,gameState.cash+=revenue,gameState.cash-=sCost;
+            const netProfit=revenue-pCost-laborCost-rd-mkt-sCost-cap-hr - gameState.thisYearDepreciation - gameState.thisYearInterest;
+            gameState.lastYearProfit=netProfit;
+            
+            if (netProfit < 0) {
+                gameState.consecutiveLosses++;
+                addLogMessage("Warning from the Board: The board is concerned about this year's loss. Performance must improve.", 'danger');
+                if (gameState.consecutiveLosses >= 2) {
+                    endGame('terminated');
+                    return;
+                }
+            } else {
+                gameState.consecutiveLosses = 0;
+            }
+
+            const stmt = gameState.cumulativeStatement;
+            stmt.revenue += revenue; stmt.cogs += pCost; stmt.labor += laborCost; stmt.marketing += mkt; stmt.rd += rd;
+            stmt.depreciation += gameState.thisYearDepreciation; stmt.interest += gameState.thisYearInterest; stmt.netProfit += netProfit; stmt.capEx += cap; stmt.hr += hr;
+            updateFinancialStatement();
+
+            gameState.machineryValue+=cap,cap>0&&(gameState.unitCost=Math.max(2e3,gameState.unitCost-cap/4e6)),rd>0&&(gameState.productQuality+=rd/16e6),gameState.unitPrice=Math.round(8e3*Math.sqrt(gameState.productQuality)),addLogMessage(`Produced ${prod.toLocaleString()}. Market could absorb ${demand.toLocaleString()}.`),addLogMessage(`Sold ${sold.toLocaleString()} units for ${formatCurrency(revenue)}.`,"success"),sCost>0&&addLogMessage(`Paid ${formatCurrency(sCost)} in storage fees.`,"warning"),netProfit>0?(addLogMessage(`Net profit: ${formatCurrency(netProfit)}.`,"success"),playSound("success")):(addLogMessage(`Net loss: ${formatCurrency(netProfit)}.`,"danger"),playSound("loss"));
+            
+            saveInProgressGame(gameState);
+
+            gameState.year++,gameState.year>MAX_YEARS?endGame(true):startYear();
+        }
+        
+        function startYear() {
+            const depreciationAmount = gameState.machineryValue * DEPRECIATION;
+            gameState.machineryValue -= depreciationAmount;
+            gameState.thisYearDepreciation = depreciationAmount;
+            let totalInterestPaid = 0;
+            let totalMandatoryPayment = 0;
+            gameState.loanTerms.forEach(loan => {
+                const interestForYear = loan.principal * LOAN_INTEREST;
+                totalInterestPaid += interestForYear;
+                const principalPaid = loan.annualPayment - interestForYear;
+                loan.principal -= principalPaid;
+                loan.termRemaining--;
+                totalMandatoryPayment += loan.annualPayment;
+            });
+            gameState.thisYearInterest = totalInterestPaid;
+            gameState.loanTerms = gameState.loanTerms.filter(l => l.termRemaining > 0 && l.principal > 1);
+            if(totalMandatoryPayment > 0) { gameState.cash -= totalMandatoryPayment; addLogMessage(`Paid ${formatCurrency(totalMandatoryPayment)} in mandatory loan payments.`, 'warning'); }
+            addLogMessage(`Machinery depreciated by ${formatCurrency(depreciationAmount)}.`, 'warning');
+            if (gameState.cash < 0) { handleBankruptcy(); return; }
+            
+            gameState.competitorLastYear = {...gameState.competitor};
+            updateMarketOutlook();
+
+            if (gameState.year === 3 && !gameState.automationOffered) {
+                automationEvent.trigger();
+            }
+            const totalLoan = gameState.loanTerms.reduce((sum, loan) => sum + loan.principal, 0);
+            gameState.companyValue = gameState.cash + gameState.machineryValue + gameState.inventory * gameState.unitCost + 2 * gameState.lastYearProfit - totalLoan;
+            updateUI(), resetSliders(), updateCalculations();
+        }
+        
+        function handleBankruptcy() {
+            endGame(false);
+        }
+
+        const automationEvent = {
+            trigger: () => {
+                gameState.automationOffered = true;
+                D.acard.classList.remove('hidden');
+                D.dp.classList.add('disabled-panel');
+                
+                if (gameState.lastYearWorkforce > 0) {
+                    const investmentCost = gameState.cash * 0.5;
+                    const severanceWorkforce = Math.ceil(gameState.lastYearWorkforce * 0.5);
+                    const severanceCost = severanceWorkforce * EMPLOYEE_COST * SEVERANCE_MULTIPLIER;
+                    const totalCost = investmentCost + severanceCost;
+                    D.atitle.textContent = "The Automation Crossroads";
+                    D.atext.innerHTML = `A firm offers to automate your factory for <strong class="text-yellow-300">${formatCurrency(investmentCost)}</strong> (50% of current cash). This will double employee productivity but requires laying off <strong>${severanceWorkforce}</strong> workers, costing <strong class="text-yellow-300">${formatCurrency(severanceCost)}</strong> in severance. <br><strong>Total Cost: ${formatCurrency(totalCost)}</strong>.`;
+                    D.investBtn.style.display = 'block';
+                    D.noInvestBtn.textContent = 'Support Workforce';
+                    D.investBtn.disabled = gameState.cash < totalCost;
+                } else {
+                    D.atitle.textContent = "Automation Opportunity Missed";
+                    D.atext.innerHTML = `A robotics firm made an automation offer, but since you had no workforce last year, there are no efficiencies to be gained. The offer has been withdrawn.`;
+                    D.investBtn.style.display = 'none';
+                    D.noInvestBtn.textContent = 'Acknowledge & Continue';
+                }
+            }
+        };
+        
+        function resolveAutomation(invest) {
+            if (gameState.lastYearWorkforce > 0 && invest) {
+                const investmentCost = gameState.cash * 0.5;
+                const severanceWorkforce = Math.ceil(gameState.lastYearWorkforce * 0.5);
+                const severanceCost = severanceWorkforce * EMPLOYEE_COST * SEVERANCE_MULTIPLIER;
+                const totalCost = investmentCost + severanceCost;
+                gameState.cash -= totalCost;
+                UNITS_PER_EMPLOYEE *= 2;
+                gameState.automated = true;
+                addLogMessage(`A difficult choice. Invested in robotics, boosting efficiency. Paid ${formatCurrency(severanceCost)} in severance.`, 'warning');
+            } else if (gameState.lastYearWorkforce > 0 && !invest) {
+                addLogMessage("You chose to support your workforce over automation for now.", 'success');
+            } else {
+                 addLogMessage("Acknowledged the missed automation opportunity.", "info");
+            }
+            D.acard.classList.add('hidden');
+            D.dp.classList.remove('disabled-panel');
+            updateUI();
+            updateCalculations();
+        }
+        
+        function takeLoan(amount, isEmergency = false) {
+            if (amount <= 0) return;
+            const P = amount, r = LOAN_INTEREST, n = LOAN_TERM, annualPayment = P * r / (1 - Math.pow(1 + r, -n));
+            gameState.cash += amount;
+            gameState.loanTerms.push({ principal: amount, termRemaining: LOAN_TERM, annualPayment: annualPayment });
+            addLogMessage(isEmergency ? `Took emergency loan of ${formatCurrency(amount)}.` : `Secured new loan of ${formatCurrency(amount)}.`, isEmergency ? 'danger' : 'success');
+            D.lrs.value = 0; playSound('loan'); updateUI(); updateCalculations();
+        }
+        
+        function showModal(title, text, score="", btn1Txt, cb1=null) { 
+            D.mt.textContent=title; D.mtxt.textContent=text; D.mscore.textContent=score; D.pni.style.display="none"; 
+            D.mb1.textContent=btn1Txt;
+            D.mb1.onclick = cb1;
+            D.downloadNotesBtn.classList.add('hidden');
+            D.downloadCertBtn.classList.add('hidden');
+            D.shareLinkedinBtn.classList.add('hidden');
+            D.modal.classList.remove("hidden"); 
+            const existingBtn = D.modal.querySelector('#modal-buttons button:nth-child(2)');
+            if (existingBtn) existingBtn.remove();
+        }
+         function getUserId() {
+                const params = new URLSearchParams(window.location.search);
+                return params.get("userId") || "guest";
+            }
+        async function saveInProgressGame(gameState) {
+            const userId = getUserId()
+             const nameParam = new URLSearchParams(window.location.search).get("name");
+               const name = nameParam ? JSON.parse(decodeURIComponent(nameParam)) : 'Player';
+               gameState.playerName = name
+             try {
+                const response = await fetch(`${API_ENDPOINT}?userId=${userId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: userId, name: gameState.playerName, gameState: gameState })
+                });
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                console.log("Game state saved successfully.");
+            } catch (error) {
+                console.error("Error saving game state: ", error);
+            }
+        }
+        
+        async function saveFinalResult(result) {
+               const userId = getUserId()
+             const nameParam = new URLSearchParams(window.location.search).get("name");
+               const name = nameParam ? JSON.parse(decodeURIComponent(nameParam)) : 'Player';
+               gameState.playerName = name
+            try {
+                const response = await fetch(`${API_ENDPOINT}?userId=${userId}&isFinal=true`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: userId, name: gameState.playerName, gameState: gameState })
+                });
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                console.log("Final game result saved successfully.");
+            } catch (error) {
+                console.error("Error saving final game result: ", error);
+            }
+        }
+
+        async function loadGameData(){
+            const userId = getUserId()
+            try {
+                const response = await fetch(`${API_ENDPOINT}?userId=${userId}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                // A robust check for a saved game state
+                if (data && data.gameState) {
+                    console.log("Game data loaded successfully:", data);
+                    return data;
+                } else {
+                    console.log("No saved game found for this user.");
+                    return null;
+                }
+            } catch (error) {
+                console.error("Error loading game data: ", error);
+                return null;
+            }
+        }
+
+        async function loadLeaderboardData(){
+            try {
+                const response = await fetch(`${API_ENDPOINT}?leaderboard=true`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                if (Array.isArray(data)) {
+                    console.log("Leaderboard data loaded successfully:", data);
+                    return data;
+                } else {
+                    console.log("No leaderboard data found.");
+                    return [];
+                }
+            } catch (error) {
+                console.error("Error loading leaderboard data: ", error);
+                return [];
+            }
+        }
+
+        function generateAnalyticalNotes() {
+            const { playerName, cumulativeStatement: stmt, finalCompanyValue, year, automated, lastYearMarketShare, productivity } = gameState;
+            const totalSpend = stmt.marketing + stmt.rd + stmt.capEx + stmt.hr;
+            const marketingRatio = totalSpend > 0 ? (stmt.marketing / totalSpend * 100).toFixed(1) : 0;
+            const rdRatio = totalSpend > 0 ? (stmt.rd / totalSpend * 100).toFixed(1) : 0;
+            const capExRatio = totalSpend > 0 ? (stmt.capEx / totalSpend * 100).toFixed(1) : 0;
+            const hrRatio = totalSpend > 0 ? (stmt.hr / totalSpend * 100).toFixed(1) : 0;
+            let summary = `CEO ${playerName} adopted a strategy focused on `;
+            if (rdRatio > 35) summary += `long-term innovation through heavy R&D.`;
+            else if (marketingRatio > 35) summary += `aggressive market capture via high marketing spend.`;
+            else if (capExRatio > 35) summary += `operational efficiency with major capital investment.`;
+            else summary += `a balanced approach across all business functions.`;
+            let automationAnalysis = `In Year 3, you were faced with the "Automation Crossroads." You chose to **${automated ? 'invest in robotics' : 'support your workforce'}**. `;
+            if (automated) automationAnalysis += `This was a significant capital outlay but permanently doubled employee productivity, likely leading to substantial labor cost savings in the later years of your tenure.`;
+            else automationAnalysis += `This preserved capital and morale in the short-term but meant facing higher labor costs as you scaled production, requiring a greater focus on HR training to remain competitive.`;
+            return `# CEO Performance Review: ${playerName}\n**Date:** ${new Date().toLocaleDateString('en-IN')}\n**Tenure:** ${year-1} Years\n\n## Executive Summary\n${summary}\nThis resulted in a final company valuation of **${formatCurrency(finalCompanyValue)}**.\n\n## Performance Scorecard\n| Metric | Final Value |\n|---|---|\n| Company Value | ${formatCurrency(finalCompanyValue)} |\n| Overall Profit/Loss | ${formatCurrency(stmt.netProfit)} |\n| Final Market Share | ${(lastYearMarketShare * 100).toFixed(1)}% |\n| Final Productivity Index | ${(productivity * 100).toFixed(0)}% |\n\n## Strategic Analysis\n### Investment Profile (Cumulative Spend)\n- **Marketing:** ${formatCurrency(stmt.marketing)} (${marketingRatio}%)\n- **R&D:** ${formatCurrency(stmt.rd)} (${rdRatio}%)\n- **Capital (Machinery):** ${formatCurrency(stmt.capEx)} (${capExRatio}%)\n- **HR Training:** ${formatCurrency(stmt.hr)} (${hrRatio}%)\n\n### The Automation Crossroads (Year 3)\n${automationAnalysis}\n\n## Key Takeaways\n* **Strength:** Your primary strength was in **${rdRatio > 30 ? 'product innovation' : marketingRatio > 30 ? 'market aggression' : 'cost management'}**.\n* **Area for Improvement:** For your next tenure, consider focusing more on **${hrRatio < 10 ? 'employee productivity through training' : capExRatio < 15 ? 'long-term cost reduction via capital investment' : 'balancing short-term sales with long-term R&D'}**.\n\nA commendable performance, CEO. The board looks forward to your next venture.`;
+        }
+
+        function downloadFile(content, fileName, contentType) {
+            const blob = new Blob([content], { type: contentType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function generateCertificateSVG(isAchievement) {
+            const { playerName, finalCompanyValue, year } = gameState;
+            const date = new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
+            const certId = `TCQ-${Date.now().toString().slice(-6)}`;
+            
+            const title = isAchievement ? "Certificate of Achievement" : "Certificate of Participation";
+            const line1 = isAchievement ? "for successfully completing the Taxila Capital Quest business simulation, serving as CEO" : "for participating in the Taxila Capital Quest business simulation and bravely";
+            const line2 = isAchievement ? `and achieving a final company valuation of` : `navigating the complexities of corporate leadership for ${year-1} years.`;
+            const line3 = isAchievement ? `<text x="400" y="410" font-size="24" text-anchor="middle" fill="#333" font-weight="bold">${formatCurrency(finalCompanyValue)}</text>` : '';
+            
+            return `
+                <svg width="800" height="600" xmlns="http://www.w3.org/2000/svg" style="background-color: #f3f4f6; font-family: 'Inter', sans-serif;">
+                    <rect x="10" y="10" width="780" height="580" fill="none" stroke="#5f55d9" stroke-width="10"/>
+                    <rect x="20" y="20" width="760" height="560" fill="none" stroke="#a855f7" stroke-width="3"/>
+                    <text x="400" y="80" font-size="28" text-anchor="middle" fill="#0c0a18" font-weight="bold">TAXILA BUSINESS SCHOOL</text>
+                    <text x="400" y="140" font-size="48" text-anchor="middle" fill="#0c0a18" font-weight="bold">${title}</text>
+                    <text x="400" y="200" font-size="20" text-anchor="middle" fill="#333">This certificate is proudly presented to</text>
+                    <text x="400" y="270" font-size="40" text-anchor="middle" fill="#5f55d9" font-weight="bold">${playerName}</text>
+                    <line x1="150" y1="290" x2="650" y2="290" stroke="#a855f7" stroke-width="2"/>
+                    <text x="400" y="340" font-size="20" text-anchor="middle" fill="#333">${line1}</text>
+                    <text x="400" y="370" font-size="20" text-anchor="middle" fill="#333">${line2}</text>
+                    ${line3}
+                    <text x="100" y="520" font-size="16" text-anchor="start" fill="#333">${date}</text>
+                    <text x="400" y="520" font-size="16" text-anchor="middle" fill="#333" font-family="cursive">Dr. A. F. Mathew</text>
+                    <line x1="300" y1="530" x2="500" y2="530" stroke="#333" stroke-width="1"/>
+                    <text x="400" y="550" font-size="12" text-anchor="middle" fill="#555">Director, Taxila Business School</text>
+                    <text x="700" y="520" font-size="12" text-anchor="end" fill="#777">ID: ${certId}</text>
+                </svg>
+            `;
+        }
+
+        function downloadCertificate(isAchievement) {
+            const svgText = generateCertificateSVG(isAchievement);
+            const svgBlob = new Blob([svgText], {type: 'image/svg+xml;charset=utf-8'});
+            const svgUrl = URL.createObjectURL(svgBlob);
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = 800; canvas.height = 600;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                URL.revokeObjectURL(svgUrl);
+                const pngUrl = canvas.toDataURL('image/png');
+                const a = document.createElement('a');
+                a.href = pngUrl;
+                a.download = `${isAchievement ? 'Certificate_Achievement' : 'Certificate_Participation'}_TCQ_${gameState.playerName}.png`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            };
+            img.src = svgUrl;
+        }
+
+        function shareOnLinkedIn(isAchievement) {
+            const { playerName, finalCompanyValue, year } = gameState;
+            let text = '';
+            if (isAchievement) {
+                text = `I'm excited to share that I've successfully completed the Taxila Capital Quest business simulation! I led a company for ${year-1} years and achieved a final valuation of ${formatCurrency(finalCompanyValue)}. This was a fantastic exercise in strategic decision-making across finance, marketing, and HR.`;
+            } else {
+                text = `I've completed the Taxila Capital Quest business simulation! A fantastic and challenging learning experience in strategic management, navigating tough corporate decisions for ${year-1} years. Highly recommend for anyone interested in business strategy.`;
+            }
+            const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent('https://taxila.in/')}&summary=${encodeURIComponent(text + ' #BusinessSimulation #StrategicManagement #LeadershipDevelopment #TaxilaBusinessSchool')}`;
+            window.open(url, '_blank');
+        }
+
+        function endGame(reason){
+            const totalLoan = gameState.loanTerms.reduce((sum, loan) => sum + loan.principal, 0);
+            const finalCompanyValue = (reason === true) ? gameState.cash + gameState.machineryValue + gameState.inventory * gameState.unitCost + 2 * gameState.lastYearProfit - totalLoan : 0;
+            gameState.finalCompanyValue = finalCompanyValue; // Store for analysis
+            let title,text,score,result;
+
+            if (reason === true) {
+                title="10 Years Complete!", text=`Congratulations, ${gameState.playerName}! Consider sharing your achievement with your network.`, score=`Final Company Value: ${formatCurrency(finalCompanyValue)}`, playSound("success");
+                result = {playerName: gameState.playerName, finalCompanyValue: finalCompanyValue, yearsSurvived: MAX_YEARS, userId: userId};
+            } else if (reason === 'terminated') {
+                 title="CEO IS TERMINATED BY THE BOARD", text=`After two consecutive years of losses, the board has lost confidence in your leadership.`, score=`You were terminated after ${gameState.year-1} years.`, playSound("gameOver");
+                result = {playerName: gameState.playerName, finalCompanyValue: 0, yearsSurvived: gameState.year-1, userId: userId};
+            }
+            else { // Bankruptcy
+                title="Game Over!", text=`Tough break, ${gameState.playerName}. The company went bankrupt.`, score=`You survived for ${gameState.year-1} years.`, playSound("gameOver");
+                result = {playerName: gameState.playerName, finalCompanyValue: 0, yearsSurvived: gameState.year-1, userId: userId};
+            }
+            saveFinalResult(result);
+            D.pni.value = '';
+            D.pni.style.display = 'block';
+            showModal("Welcome!", "Enter your name to start a new journey.", "", "Start New Game", () => D.mb1.dispatchEvent(new Event("startgame")));
+            
+            D.downloadNotesBtn.classList.remove('hidden');
+            D.shareLinkedinBtn.classList.remove('hidden');
+
+            if (reason === true) {
+                D.downloadCertBtn.textContent = 'Download Achievement';
+                D.downloadCertBtn.onclick = () => downloadCertificate(true);
+                D.shareLinkedinBtn.onclick = () => shareOnLinkedIn(true);
+                D.downloadCertBtn.classList.remove('hidden');
+            } else {
+                D.downloadCertBtn.textContent = 'Download Participation Cert.';
+                D.downloadCertBtn.onclick = () => downloadCertificate(false);
+                D.shareLinkedinBtn.onclick = () => shareOnLinkedIn(false);
+                D.downloadCertBtn.classList.remove('hidden');
+            }
+        }
+        
+        function displayScores(scores){
+            if (!D.lc) return;
+            if (!Array.isArray(scores)) {
+                console.error("Leaderboard data is not an array:", scores);
+                D.lc.innerHTML = "<p>No past games found or an error occurred.</p>";
+                return;
+            }
+            D.lc.innerHTML="",scores.length===0?D.lc.innerHTML="<p>No past games found.</p>":(scores.sort((a,b)=>b.finalCompanyValue-a.finalCompanyValue),scores.slice(0,5).forEach((s,i)=>{const e=document.createElement("div");e.className="leaderboard-entry",e.innerHTML=`<span class="font-semibold">${i+1}. ${s.playerName}</span><span class="text-purple-300">${formatCurrency(s.finalCompanyValue)}</span>`,D.lc.appendChild(e)}))
+        }
+        
+        [D.rds,D.ms,D.ps,D.cs,D.reps,D.lrs,D.hrs].forEach(s=>{ if(s) s.addEventListener("input",()=>{updateCalculations(),playSound("slider")})});
+        D.tlb.addEventListener('click', () => takeLoan(parseInt(D.lrs.value)));
+        D.eyb.addEventListener("click",endYear);
+        D.investBtn.addEventListener('click', () => resolveAutomation(true));
+        D.noInvestBtn.addEventListener('click', () => resolveAutomation(false));
+        D.downloadNotesBtn.addEventListener('click', () => downloadFile(generateAnalyticalNotes(), `TCQ_Analysis_${gameState.playerName}.md`, 'text/markdown'));
+        D.mb1.addEventListener("startgame",()=>{
+            const playerName=D.pni.value.trim();
+            if(playerName !== "") {
+                gameState.playerName=playerName;
+                initAudio();
+                if(audioCtx && audioCtx.state === "suspended") {
+                    audioCtx.resume();
+                }
+                playSound("click");
+                D.modal.classList.add("hidden");
+                D.ga.classList.remove("hidden");
+                initGame(null); // Explicitly start a new game
+            } else {
+                D.pni.style.borderColor="red";
+                setTimeout(()=>D.pni.style.borderColor="",1e3);
+            }
+        });
+        D.pni.addEventListener("keypress",e=>{"Enter"===e.key&&D.mb1.dispatchEvent(new Event("startgame"))});
+        
+        window.onload = async () => {
+            let localUserId = localStorage.getItem('userId');
+            if (!localUserId) {
+                localUserId = `guest_${crypto.randomUUID()}`;
+                localStorage.setItem('userId', localUserId);
+            }
+            userId = localUserId;
+
+            const savedGameData = await loadGameData();
+            const allScores = await loadLeaderboardData();
+            displayScores(allScores);
+            
+            if (savedGameData && savedGameData.gameState) {
+                showModal('Welcome Back!', `Welcome back, CEO ${savedGameData.gameState.playerName}! Do you want to continue your last game or start a new one?`, '', 'Continue Game', () => {
+                    initAudio();
+                    if(audioCtx && audioCtx.state === "suspended") {
+                        audioCtx.resume();
+                    }
+                    playSound("click");
+                    D.modal.classList.add("hidden");
+                    D.ga.classList.remove("hidden");
+                    initGame(savedGameData.gameState);
+                });
+                
+                const newGameBtn = document.createElement('button');
+                newGameBtn.textContent = 'Start New Game';
+                newGameBtn.className = 'btn text-white font-bold py-2 px-6 rounded-lg';
+                newGameBtn.onclick = () => {
+                    D.pni.value = '';
+                    D.pni.style.display = 'block';
+                    D.mt.textContent="Welcome!";
+                    D.mtxt.textContent="Enter your name to start a new journey.";
+                    D.mscore.textContent="";
+                    D.mb1.textContent="Start New Game";
+                    D.mb1.onclick=()=>D.mb1.dispatchEvent(new Event("startgame"));
+                    D.downloadNotesBtn.classList.add('hidden');
+                    D.downloadCertBtn.classList.add('hidden');
+                    D.shareLinkedinBtn.classList.add('hidden');
+                    const existingNewGameBtn = D.modal.querySelector('#modal-buttons button:nth-child(2)');
+                    if (existingNewGameBtn) existingNewGameBtn.remove();
+                };
+                D.modal.querySelector('#modal-buttons').appendChild(newGameBtn);
+            } else {
+                showModal('Welcome!', "Enter your name to begin.", '', 'Start Game', () => D.mb1.dispatchEvent(new Event('startgame')));
+                D.pni.style.display = 'block';
+            }
+        };
+    </script>
+</body>
+</html>

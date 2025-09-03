@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Titan: Aether Corp. Simulation (Hybrid)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tone@14.7.77/build/Tone.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 300;
+            transition: background-color 0.5s ease;
+            background-color: #0f172a; /* slate-900 */
+            color: #cbd5e1; /* slate-300 */
+            perspective: 2000px;
+        }
+        .bankrupt-bg {
+            background-color: #4c1d22;
+        }
+        .panel-3d {
+            background: linear-gradient(145deg, #1f2937, #111827);
+            border-radius: 0.75rem;
+            border: 1px solid #374151;
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+            transform: rotateY(-7deg) rotateX(5deg) translateZ(0);
+            box-shadow:
+                -2px 2px 4px rgba(0,0,0,0.2),
+                -5px 5px 15px rgba(0,0,0,0.3),
+                -10px 10px 30px rgba(0,0,0,0.4),
+                inset 1px -1px 2px rgba(255, 255, 255, 0.05);
+        }
+        .panel-3d:hover {
+            transform: rotateY(0deg) rotateX(0deg) scale(1.03) translateZ(20px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+        }
+        .table-cell {
+            padding: 0.5rem 0.75rem;
+            text-align: right;
+            border-bottom: 1px solid #374151;
+            font-variant-numeric: tabular-nums;
+        }
+        .table-header {
+            padding: 0.5rem 0.75rem;
+            text-align: left;
+            font-weight: 500;
+            border-bottom: 2px solid #475569;
+            color: #e2e8f0;
+        }
+        .metric-card {
+            background-color: #1e293b;
+            border: 1px solid #374151;
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+        .metric-card:hover {
+            transform: translateY(-4px);
+            background-color: #334155;
+        }
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+        }
+        .modal-content {
+            background-color: #1e293b;
+            color: #e2e8f0;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            border: 1px solid #475569;
+            max-width: 90%;
+            width: 700px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5), 0 10px 10px -5px rgba(0,0,0,0.4);
+        }
+        input[type="range"] {
+            -webkit-appearance: none; appearance: none;
+            width: 100%; height: 8px;
+            background: #334155;
+            border-radius: 5px; outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 20px; height: 20px;
+            background: #6366f1;
+            cursor: pointer; border-radius: 50%;
+            border: 2px solid #e2e8f0;
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 20px; height: 20px;
+            background: #6366f1;
+            cursor: pointer; border-radius: 50%;
+            border: 2px solid #e2e8f0;
+        }
+        /* Chart.js Global Settings */
+        Chart.defaults.color = '#94a3b8';
+        Chart.defaults.borderColor = '#334155';
+    </style>
+</head>
+<body class="text-slate-300">
+
+    <div id="app" class="container mx-auto p-4 md:p-8">
+
+        <!-- Header -->
+        <header class="shadow-lg rounded-lg p-6 mb-8 panel-3d">
+            <div class="flex flex-wrap justify-between items-center gap-4">
+                <div>
+                    <h1 class="text-3xl font-bold text-white">Project Titan</h1>
+                    <p class="text-md text-slate-400">Advanced Corporate Finance Simulation</p>
+                    <p class="text-sm text-indigo-400 font-semibold mt-1">Game Designed at Taxila Business School</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-lg font-semibold">Year: <span id="current-year">0</span></p>
+                    <p class="text-lg font-semibold">TSR: <span id="tsr-score" class="text-white">100.00</span></p>
+                    <p id="tsr-category" class="text-md font-bold mt-1">Poor</p>
+                </div>
+            </div>
+            <!-- CEO Notice Banner -->
+            <div id="ceo-notice-banner" class="hidden w-full text-center bg-yellow-400 border border-yellow-500 text-yellow-900 font-bold p-2 rounded-lg mt-4">
+                CEO UNDER NOTICE BY THE BOARD
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            <!-- Left Column: Scenarios & Decisions -->
+            <div class="lg:col-span-1 space-y-8">
+                <div id="scenario-container" class="p-6 panel-3d">
+                    <h2 class="text-xl font-bold mb-4 border-b border-slate-600 pb-2 text-slate-200">Current Situation</h2>
+                    <div id="scenario-content">
+                        <h3 id="scenario-title" class="text-lg font-semibold text-indigo-400">Welcome, Finance Team</h3>
+                        <p id="scenario-description" class="mt-2 text-slate-400">
+                            You are the new corporate finance team for Aether Corp. Your first task is to build a 5-year financial forecast. Review the historical data and input your initial assumptions for Year 1. Your goal is to maximize Total Shareholder Return (TSR).
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Warning Box -->
+                <div id="warning-box-container" class="bg-red-900/50 border-t-4 border-red-500 p-4 rounded-lg shadow-md hidden">
+                    <h3 class="text-lg font-bold text-red-300 mb-2 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                        Warnings
+                    </h3>
+                    <div id="warnings" class="space-y-1 pl-8"></div>
+                </div>
+
+                <div id="decision-panel" class="p-6 panel-3d">
+                    <h2 class="text-xl font-bold mb-4 border-b border-slate-600 pb-2 text-slate-200">Decision Inputs</h2>
+                    <div id="decision-inputs" class="space-y-6"></div>
+                    <button id="submit-button" class="mt-6 w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-300 transform hover:scale-105">
+                        Finalize Decisions & Write Strategy
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right Column: Financials & Logs -->
+            <div class="lg:col-span-2 space-y-8">
+                <div class="p-6 panel-3d">
+                    <h2 class="text-xl font-bold mb-4 text-slate-200">Key Metrics Dashboard</h2>
+                    <div id="metrics-dashboard" class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center"></div>
+                </div>
+
+                <div class="p-6 panel-3d">
+                    <h2 class="text-xl font-bold mb-4 text-slate-200">Performance Charts</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <h3 class="font-semibold text-center mb-2 text-slate-400">TSR Performance</h3>
+                            <canvas id="tsr-chart"></canvas>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-center mb-2 text-slate-400">Revenue by Division</h3>
+                            <canvas id="revenue-chart"></canvas>
+                         </div>
+                         <div class="md:col-span-2">
+                            <h3 class="font-semibold text-center mb-2 text-slate-400">Key Ratios</h3>
+                            <canvas id="ratios-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-6 panel-3d">
+                    <h2 class="text-xl font-bold mb-4 text-slate-200">Financial Statements (₹ in Millions)</h2>
+                     <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr>
+                                    <th class="table-header">Metric</th>
+                                    <th class="table-cell font-semibold">Y0</th>
+                                    <th class="table-cell font-semibold">Y1</th>
+                                    <th class="table-cell font-semibold">Y2</th>
+                                    <th class="table-cell font-semibold">Y3</th>
+                                    <th class="table-cell font-semibold">Y4</th>
+                                    <th class="table-cell font-semibold">Y5</th>
+                                    <th class="table-cell font-semibold">Y6</th>
+                                    <th class="table-cell font-semibold">Y7</th>
+                                    <th class="table-cell font-semibold">Y8</th>
+                                    <th class="table-cell font-semibold">Y9</th>
+                                    <th class="table-cell font-semibold">Y10</th>
+                                </tr>
+                            </thead>
+                            <tbody id="financials-table" class="text-slate-400"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="p-6 panel-3d">
+                    <h2 class="text-xl font-bold mb-4 text-slate-200">Event Log & Performance Summary</h2>
+                    <div id="event-log" class="space-y-3 h-64 overflow-y-auto pr-2"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Strategy Modal -->
+    <div id="strategy-modal" class="modal-overlay hidden">
+        <div id="strategy-modal-content" class="modal-content"></div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div id="game-over-modal" class="modal-overlay hidden">
+        <div class="modal-content text-center">
+            <h2 id="modal-title" class="text-2xl font-bold mb-4"></h2>
+            <div id="modal-message" class="mb-6"></div>
+            <div class="bg-slate-700 p-4 rounded-lg mb-6">
+                <p class="text-lg font-semibold text-slate-300">Final TSR Score:</p>
+                <p id="final-tsr" class="text-4xl font-bold text-indigo-400"></p>
+                <p id="final-tsr-category" class="text-2xl font-bold mt-2"></p>
+            </div>
+             <div id="certificate-section" class="hidden mt-6 pt-6 border-t border-slate-600">
+                <h3 class="text-xl font-bold text-white">Congratulations!</h3>
+                <p class="text-slate-400 mt-1 mb-4">You've earned a certificate for your strong performance.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <button id="download-certificate-btn" class="w-full bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-500 transition-all duration-300 transform hover:scale-105">
+                        Download Certificate
+                    </button>
+                    <button id="linkedin-share-btn" class="w-full bg-[#0077B5] text-white font-bold py-3 px-4 rounded-lg hover:bg-[#005E92] transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 2h-17A1.5 1.5 0 002 3.5v17A1.5 1.5 0 003.5 22h17a1.5 1.5 0 001.5-1.5v-17A1.5 1.5 0 0020.5 2zM8 19H5v-9h3v9zM6.5 8.25A1.75 1.75 0 116.5 4.75a1.75 1.75 0 010 3.5zM19 19h-3v-4.74c0-1.42-.6-1.93-1.38-1.93A1.67 1.67 0 0013 14.19V19h-3v-9h2.9v1.3a3.11 3.11 0 012.7-1.4c1.55 0 3.1 1.16 3.1 3.99V19z"></path></svg>
+                        Share on LinkedIn
+                    </button>
+                </div>
+            </div>
+            <div id="memo-download-section" class="hidden mt-6 pt-6 border-t border-slate-600">
+                 <h3 class="text-xl font-bold text-white">Post-Simulation Review</h3>
+                 <p class="text-slate-400 mt-1 mb-4">Download a report of your annual strategy memos.</p>
+                 <button id="download-memos-btn" class="w-full bg-slate-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-slate-400 transition-all duration-300 transform hover:scale-105">
+                    Download Strategy Memos
+                </button>
+            </div>
+            <button id="start-stage-2-btn" class="hidden mt-4 w-full bg-purple-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-purple-500 transition-all duration-300 transform hover:scale-105">
+                Begin Stage 2: Higher Difficulty
+            </button>
+            <button id="restart-button" class="mt-6 w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-500">
+                Restart Simulation
+            </button>
+        </div>
+    </div>
+    
+    <canvas id="certificate-canvas" width="1200" height="800" class="hidden"></canvas>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+        // --- DOM ELEMENT REFERENCES ---
+        const appEl = document.getElementById('app');
+        const bodyEl = document.querySelector('body');
+        const currentYearEl = document.getElementById('current-year');
+        const tsrScoreEl = document.getElementById('tsr-score');
+        const tsrCategoryEl = document.getElementById('tsr-category');
+        const scenarioTitleEl = document.getElementById('scenario-title');
+        const scenarioDescriptionEl = document.getElementById('scenario-description');
+        const decisionInputsEl = document.getElementById('decision-inputs');
+        const metricsDashboardEl = document.getElementById('metrics-dashboard');
+        const financialsTableEl = document.getElementById('financials-table');
+        const eventLogEl = document.getElementById('event-log');
+        const submitButton = document.getElementById('submit-button');
+        const gameOverModal = document.getElementById('game-over-modal');
+        const modalTitleEl = document.getElementById('modal-title');
+        const modalMessageEl = document.getElementById('modal-message');
+        const finalTsrEl = document.getElementById('final-tsr');
+        const finalTsrCategoryEl = document.getElementById('final-tsr-category');
+        const restartButton = document.getElementById('restart-button');
+        const startStage2Btn = document.getElementById('start-stage-2-btn');
+        const warningBoxContainer = document.getElementById('warning-box-container');
+        const warningsEl = document.getElementById('warnings');
+        const strategyModal = document.getElementById('strategy-modal');
+        const strategyModalContent = document.getElementById('strategy-modal-content');
+        const certificateSection = document.getElementById('certificate-section');
+        const downloadCertificateBtn = document.getElementById('download-certificate-btn');
+        const linkedinShareBtn = document.getElementById('linkedin-share-btn');
+        const memoDownloadSection = document.getElementById('memo-download-section');
+        const downloadMemosBtn = document.getElementById('download-memos-btn');
+        const canvas = document.getElementById('certificate-canvas');
+        const ceoNoticeBanner = document.getElementById('ceo-notice-banner');
+
+        // --- GAME & FIREBASE STATE ---
+        let state = {};
+        let tempDecisions = {};
+        let tempStrategyMemo = { notes: '', q1: '', a1: '', q2: '', a2: '' };
+        let newWarningThisYear = false;
+        let audioInitialized = false;
+        const INITIAL_MARKET_CAP = 50 * 200;
+        
+        // --- HELPER FUNCTIONS ---
+        function getUserId() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get("userId") || "guest";
+        }
+        
+        async function initializeState() {
+            const userId = getUserId();
+            if (!userId) {
+                logEvent("No user ID found. Starting new game.", "red");
+                return;
+            }
+            try {
+                const res = await fetch(`https://erp.taxila.in/api/game/titan?userId=${userId}`, {
+                    method: "GET",
+                });
+                const data = await res.json();
+                if (res.ok && data) {
+                    const parsedState = data;
+                    parsedState.charts = {};
+                    state = parsedState;
+                    logEvent("Previous game state loaded.", "blue");
+                    render();
+                    return;
+                } else {
+                    logEvent("No saved state found. Starting new simulation.", "red");
+                }
+            } catch (e) {
+                console.error("Failed to load state:", e);
+                logEvent("Failed to load previous game state. Starting a new simulation.", "red");
+            }
+
+            // If no saved state, initialize a new game
+            state = {
+                playerName: 'Player',
+                currentStage: 1, currentYear: 0, tsr: 100.0, stockPrice: 50.0,
+                sharesOutstanding: 200, dividendsPaid: 0, covenantBreached: false, valuationMultiple: 8.0,
+                ceoOnNotice: false, simulationFailed: false, failureReasons: [], strategyMemos: [],
+                charts: {}, financials: {},
+                events: {
+                    rdProjectAccepted: false, maDealDone: false, integrationFailed: false,
+                    divestitureDone: false, activistDefeated: false,
+                }, log: [],
+            };
+            state.financials[0] = {
+                divisions: { software: { revenue: 5000, cogs: 1000, sga: 500 }, electronics: { revenue: 4000, cogs: 3200, sga: 400 }, renewables: { revenue: 1000, cogs: 800, sga: 600 },},
+                revenue: 10000, cogs: 5000, sga: 1500, depreciation: 500, interestExpense: 100, taxRate: 0.25, cash: 1000, accountsReceivable: 1200, inventory: 800, ppe: 5000, goodwill: 0, accountsPayable: 700,
+                debt: { termLoan: { balance: 1000, rate: 0.04, amortization: 100 }, seniorNotes: { balance: 1000, rate: 0.06, amortization: 0 }},
+                longTermDebt: 2000, commonStock: 2000, retainedEarnings: 2800, capex: 600, dividends: 100, fcf: 0,
+            };
+            for (let i = 1; i <= 10; i++) { state.financials[i] = JSON.parse(JSON.stringify(state.financials[0]));}
+            state.tsrHistory = Array(11).fill(null);
+            state.tsrHistory[0] = 100.0;
+            render();
+        }
+        
+        async function saveState() {
+            const userId = getUserId();
+            const params = new URLSearchParams(window.location.search);
+ const name =  JSON.parse(decodeURIComponent(params.get("name")));
+            if(!userId) {
+                return null;
+            }
+            try {
+                const stateToSave = { ...state };
+                delete stateToSave.charts;
+                const res = await fetch("https://erp.taxila.in/api/game/titan", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ userId, name, payload: stateToSave }),
+                });
+            } catch (e) {
+                console.error("Failed to save state:", e);
+                logEvent('Warning: Failed to save game progress.', 'red');
+            }
+        }
+
+        // --- SOUND ENGINE ---
+        const sounds = {
+            click: null, slider: null, success: null, warning: null, failure: null, download: null
+        };
+
+        async function playSound(soundName) {
+            if (typeof Tone === 'undefined') { return; }
+            if (!audioInitialized) {
+                try {
+                    await Tone.start();
+                    sounds.click = new Tone.Synth({ oscillator: { type: 'triangle' }, envelope: { attack: 0.005, decay: 0.1, sustain: 0.05, release: 0.1 } }).toDestination();
+                    sounds.slider = new Tone.Synth({ oscillator: { type: 'sine' }, envelope: { attack: 0.001, decay: 0.05, sustain: 0, release: 0.1 } }).toDestination();
+                    sounds.success = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'fmsine' }, envelope: { attack: 0.05, decay: 0.2, sustain: 0.2, release: 0.5 } }).toDestination();
+                    sounds.warning = new Tone.Synth({ oscillator: { type: 'square' }, envelope: { attack: 0.01, decay: 0.2, sustain: 0.1, release: 0.2 } }).toDestination();
+                    sounds.failure = new Tone.Synth({ oscillator: { type: 'fatsawtooth' }, envelope: { attack: 0.1, decay: 1, sustain: 0.1, release: 1 } }).toDestination();
+                    sounds.download = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'sine' }, envelope: { attack: 0.01, decay: 0.1, sustain: 0.1, release: 0.2 } }).toDestination();
+                    audioInitialized = true;
+                } catch (e) { console.error("Audio context could not be started:", e); return; }
+            }
+            switch (soundName) {
+                case 'click': sounds.click?.triggerAttackRelease('C5', '8n'); break;
+                case 'slider': sounds.slider?.triggerAttackRelease('C2', '16n'); break;
+                case 'success': sounds.success?.triggerAttackRelease(['C4', 'E4', 'G4', 'C5'], '8n'); break;
+                case 'warning': sounds.warning?.triggerAttackRelease('A2', '4n'); break;
+                case 'failure': sounds.failure?.triggerAttackRelease('A1', '1n'); break;
+                case 'download': sounds.download?.triggerAttackRelease(['C5', 'G5'], '16n'); break;
+                default: console.warn(`Sound not found: ${soundName}`);
+            }
+        }
+        
+        function formatINR(value) {
+            if (typeof value !== 'number' || isNaN(value)) return 'N/A';
+            return `₹${Math.round(value).toLocaleString('en-IN')}`;
+        }
+
+        function runFinancialModel(year, decisions) {
+            const prevFin = state.financials[year - 1];
+            const currentFin = JSON.parse(JSON.stringify(prevFin));
+            ['software', 'electronics', 'renewables'].forEach(div => {
+                if (parseFloat(decisions[`${div}_growth`]) === 0) {
+                    const penalty = div === 'software' ? -5 : (div === 'electronics' ? -8 : -10);
+                    decisions[`${div}_growth`] = penalty;
+                    const msg = `Negligence: ${div.charAt(0).toUpperCase() + div.slice(1)} division revenue collapsing (${penalty}% growth).`;
+                    if (year === state.currentYear) { logEvent(msg, 'red'); showWarning(msg); }
+                }
+                if (parseFloat(decisions[`${div}_cogs`]) === 0) {
+                    const prevCogsMargin = prevFin.divisions[div].revenue > 0 ? prevFin.divisions[div].cogs / prevFin.divisions[div].revenue : 0.5;
+                    decisions[`${div}_cogs`] = (prevCogsMargin * 1.10) * 100;
+                    const msg = `Negligence: ${div.charAt(0).toUpperCase() + div.slice(1)} COGS margin worsened to ${decisions[`${div}_cogs`].toFixed(1)}%.`;
+                    if (year === state.currentYear) { logEvent(msg, 'red'); showWarning(msg); }
+                }
+                if (parseFloat(decisions[`${div}_sgaMargin`]) === 0) {
+                    const prevSgaMargin = prevFin.divisions[div].revenue > 0 ? prevFin.divisions[div].sga / prevFin.divisions[div].revenue : 0.1;
+                    decisions[`${div}_sgaMargin`] = (prevSgaMargin * 1.05) * 100;
+                    const msg = `Negligence: ${div.charAt(0).toUpperCase() + div.slice(1)} SG&A margin bloated to ${decisions[`${div}_sgaMargin`].toFixed(1)}%.`;
+                    if (year === state.currentYear) { logEvent(msg, 'red'); showWarning(msg); }
+                }
+            });
+            let mandatoryRepayment = 0;
+            currentFin.debt.termLoan.balance = prevFin.debt.termLoan.balance - prevFin.debt.termLoan.amortization;
+            mandatoryRepayment += prevFin.debt.termLoan.amortization;
+            currentFin.debt.seniorNotes.balance = prevFin.debt.seniorNotes.balance;
+            let interestRateModifier = state.covenantBreached ? 0.04 : 0;
+            const termLoanInterest = currentFin.debt.termLoan.balance * (currentFin.debt.termLoan.rate + interestRateModifier);
+            const seniorNotesInterest = currentFin.debt.seniorNotes.balance * (currentFin.debt.seniorNotes.rate + interestRateModifier);
+            currentFin.interestExpense = termLoanInterest + seniorNotesInterest;
+            currentFin.revenue = 0; currentFin.cogs = 0; currentFin.sga = 0;
+            ['software', 'electronics', 'renewables'].forEach(div => {
+                const divRevenue = prevFin.divisions[div].revenue * (1 + parseFloat(decisions[`${div}_growth`]) / 100);
+                const divCogs = divRevenue * (parseFloat(decisions[`${div}_cogs`]) / 100);
+                const divSga = divRevenue * (parseFloat(decisions[`${div}_sgaMargin`]) / 100);
+                currentFin.divisions[div] = { revenue: divRevenue, cogs: divCogs, sga: divSga };
+                currentFin.revenue += divRevenue; currentFin.cogs += divCogs; currentFin.sga += divSga;
+            });
+            let totalCapex = 0;
+            ['software', 'electronics', 'renewables'].forEach(div => { totalCapex += currentFin.divisions[div].revenue * (parseFloat(decisions[`${div}_capexMargin`]) / 100); });
+            currentFin.capex = totalCapex;
+            currentFin.depreciation = prevFin.ppe * 0.1;
+            currentFin.ppe = prevFin.ppe + currentFin.capex - currentFin.depreciation;
+            handleYearSpecificLogic(year, decisions, currentFin, prevFin);
+            const isStage2 = year > 5;
+            const marketShock = (Math.random() - 0.4) * (isStage2 ? 0.10 : 0.05);
+            currentFin.revenue *= (1 + marketShock);
+            if (year === state.currentYear) logEvent(`A random market shock adjusted revenue by ${(marketShock * 100).toFixed(2)}%.`, 'gray');
+            const grossProfit = currentFin.revenue - currentFin.cogs;
+            const ebitda = grossProfit - currentFin.sga;
+            const ebit = ebitda - currentFin.depreciation;
+            const ebt = ebit - currentFin.interestExpense;
+            const taxes = ebt > 0 ? ebt * currentFin.taxRate : 0;
+            const netIncome = ebt - taxes;
+            currentFin.accountsReceivable = 0; currentFin.inventory = 0; currentFin.accountsPayable = 0;
+            ['software', 'electronics', 'renewables'].forEach(div => {
+                currentFin.accountsReceivable += (currentFin.divisions[div].revenue / 365) * parseFloat(decisions[`${div}_dso`]);
+                currentFin.inventory += (currentFin.divisions[div].cogs / 365) * parseFloat(decisions[`${div}_dio`]);
+                currentFin.accountsPayable += (currentFin.divisions[div].cogs / 365) * parseFloat(decisions[`${div}_dpo`]);
+            });
+            const wcChange = (currentFin.accountsReceivable - prevFin.accountsReceivable) + (currentFin.inventory - prevFin.inventory) - (currentFin.accountsPayable - prevFin.accountsPayable);
+            currentFin.dividends = state.covenantBreached ? 0 : parseFloat(decisions.dividends);
+            if(state.covenantBreached && year === state.currentYear) {
+                const msg = `Covenant breached! Dividends frozen for Year ${year}.`;
+                logEvent(msg, 'red'); showWarning(msg);
+            }
+            const shareRepurchases = parseFloat(decisions.repurchases);
+            let sharesBoughtBack = state.stockPrice > 0 ? shareRepurchases / state.stockPrice : 0;
+            const nopat = ebit * (1 - currentFin.taxRate);
+            currentFin.fcf = nopat + currentFin.depreciation - currentFin.capex - wcChange;
+            const cff = -mandatoryRepayment - currentFin.dividends - shareRepurchases;
+            const netCashFlow = currentFin.fcf + currentFin.interestExpense * (1 - currentFin.taxRate) + cff;
+            currentFin.cash = prevFin.cash + netCashFlow;
+            currentFin.retainedEarnings = prevFin.retainedEarnings + netIncome - currentFin.dividends;
+            currentFin.longTermDebt = currentFin.debt.termLoan.balance + currentFin.debt.seniorNotes.balance;
+            const assets = currentFin.cash + currentFin.accountsReceivable + currentFin.inventory + currentFin.ppe + currentFin.goodwill;
+            const liabilities = currentFin.accountsPayable + currentFin.longTermDebt;
+            const equity = currentFin.commonStock + currentFin.retainedEarnings;
+            currentFin.cash -= (assets - (liabilities + equity));
+            state.financials[year] = currentFin;
+            if (year === state.currentYear) {
+                const revenueGrowth = prevFin.revenue > 0 ? currentFin.revenue / prevFin.revenue - 1 : 0;
+                const ebitdaMargin = currentFin.revenue > 0 ? ebitda / currentFin.revenue : 0;
+                const debtToEbitda = ebitda > 0 ? currentFin.longTermDebt / ebitda : 999;
+                let baseMultiple = 8.0;
+                baseMultiple += (revenueGrowth - 0.02) * 20;
+                baseMultiple += (ebitdaMargin - 0.30) * 15;
+                 if (isStage2) {
+                    baseMultiple -= Math.max(0, debtToEbitda - 2.0) * 0.75;
+                    if (revenueGrowth < 0) baseMultiple += revenueGrowth * 30;
+                } else {
+                    baseMultiple -= Math.max(0, debtToEbitda - 2.5) * 0.5;
+                }
+                state.valuationMultiple = Math.max(4.0, Math.min(12.0, baseMultiple));
+                let enterpriseValue = ebitda > 0 ? ebitda * state.valuationMultiple : Math.max(0, currentFin.ppe * 0.5);
+                if (ebitda <= 0) { logEvent(`EBITDA is negative! Valuation based on asset liquidation value.`, 'red'); showWarning(msg); }
+                const marketCap = enterpriseValue - currentFin.longTermDebt + currentFin.cash;
+                state.sharesOutstanding -= sharesBoughtBack;
+                state.stockPrice = state.sharesOutstanding > 0 ? Math.max(0.01, marketCap / state.sharesOutstanding) : 0;
+                state.dividendsPaid += currentFin.dividends;
+                const currentTotalValue = (state.stockPrice * state.sharesOutstanding) + state.dividendsPaid;
+                state.tsr = 100 * (currentTotalValue / INITIAL_MARKET_CAP);
+                state.tsrHistory[year] = state.tsr;
+                const covenantLimit = isStage2 ? 3.5 : 4.0;
+                if (debtToEbitda > covenantLimit) {
+                    if (!state.covenantBreached) {
+                        const msg = `COVENANT BREACH! Debt/EBITDA is ${debtToEbitda.toFixed(2)}x (Limit: ${covenantLimit}x). Interest rates will rise next year.`;
+                        logEvent(msg, 'red'); showWarning(msg);
+                    }
+                    state.covenantBreached = true;
+                } else { state.covenantBreached = false; }
+                if (state.simulationFailed) state.tsr = 0;
+                logEvent(`Year ${year} complete. Net Income: ${formatINR(netIncome)}M. New Stock Price: ₹${state.stockPrice.toFixed(2)}.`);
+            }
+        }
+
+        function handleYearSpecificLogic(year, decisions, currentFin, prevFin) {
+             if (year === 2 && decisions.rdInvestment > 0) {
+                state.events.rdProjectAccepted = true;
+                const investment = parseFloat(decisions.rdInvestment);
+                currentFin.capex += investment;
+                currentFin.debt.termLoan.balance += investment;
+                if(year === state.currentYear) logEvent(`Invested ${formatINR(investment)}M in R&D, financed with Term Loan debt.`, 'blue');
+            }
+            if (year > 2 && state.events.rdProjectAccepted) {
+                const payoff = (Math.random() > 0.5) ? 1.20 : 0.85;
+                currentFin.divisions.renewables.revenue *= payoff;
+                if(year === state.currentYear) logEvent(`Renewables R&D project outcome: revenue modifier of ${payoff.toFixed(2)}x.`, payoff > 1 ? 'green' : 'red');
+            }
+            if (year === 3 && decisions.maDeal === 'yes') {
+                state.events.maDealDone = true;
+                if (Math.random() > 0.6) state.events.integrationFailed = true;
+                const dealSize = 2500, goodwill = 1000, cashPortion = parseFloat(decisions.maCash) / 100;
+                const cashPaid = dealSize * cashPortion;
+                const stockPaidValue = dealSize * (1-cashPortion);
+                const sharesIssued = state.stockPrice > 0 ? stockPaidValue / state.stockPrice : 0;
+                currentFin.goodwill = prevFin.goodwill + goodwill;
+                currentFin.cash -= cashPaid;
+                if (year === state.currentYear) { state.sharesOutstanding += sharesIssued; }
+                currentFin.divisions.electronics.revenue += 1500;
+                currentFin.divisions.electronics.cogs += 800;
+                if(year === state.currentYear) logEvent(`Acquired competitor for ${formatINR(dealSize)}M (${(cashPortion*100).toFixed(0)}% cash). Issued ${sharesIssued.toFixed(1)}M new shares.`, 'blue');
+            }
+            if (year === 4 && state.events.maDealDone && state.events.integrationFailed) {
+                currentFin.sga += 200;
+                const msg = `M&A Integration Failed! Incurred ${formatINR(200)}M in unexpected costs (higher SG&A).`;
+                if(year === state.currentYear) { logEvent(msg, 'red'); showWarning(msg); }
+            }
+            if (year === 4 && decisions.divestiture === 'yes') {
+                state.events.divestitureDone = true;
+                const softwareEbitda = prevFin.divisions.software.revenue - prevFin.divisions.software.cogs - prevFin.divisions.software.sga;
+                const salePrice = softwareEbitda * 7;
+                currentFin.cash += salePrice;
+                currentFin.divisions.software = { revenue: 0, cogs: 0, sga: 0 };
+                if(year === state.currentYear) logEvent(`Divested Software division for ${formatINR(salePrice)}M.`, 'blue');
+            }
+            if (year === 5 && state.events.divestitureDone) {
+                 currentFin.sga += 100;
+                 const msg = `Divestiture Dis-synergies: Incurred ${formatINR(100)}M in ongoing higher corporate overhead.`;
+                 if(year === state.currentYear) { logEvent(msg, 'red'); showWarning(msg); }
+            }
+            if (year === 5 && decisions.activistResponse === 'fight') {
+                if (Math.random() > 0.5) {
+                    if(year === state.currentYear) {
+                        state.valuationMultiple *= 0.75;
+                        const msg = `Activist Battle Lost! The board is replaced and the market has lost confidence. (Valuation Multiple -25%)`;
+                        logEvent(msg, 'red'); showWarning(msg);
+                    }
+                } else {
+                    state.events.activistDefeated = true;
+                    if(year === state.currentYear) logEvent(`Activist Battle Won! You successfully defended the company's strategy.`, 'green');
+                }
+            }
+            if (year === 6) {
+                currentFin.revenue *= 0.95;
+                if (year === state.currentYear) logEvent('Economic Downturn: Market-wide recession reduces revenue potential.', 'red');
+            }
+            if (year === 7 && decisions.supplyChainResponse) {
+                switch(decisions.supplyChainResponse) {
+                    case 'absorb': currentFin.divisions.electronics.cogs *= 1.25; if (year === state.currentYear) logEvent('Supply Crisis: You absorbed the higher costs, crushing electronics margins.', 'red'); break;
+                    case 'invest': currentFin.sga += 300; if (year === state.currentYear) logEvent('Supply Crisis: You invested heavily to find new suppliers, increasing SG&A.', 'blue'); break;
+                    case 'raise_price': currentFin.divisions.electronics.revenue *= 0.90; if (year === state.currentYear) logEvent('Supply Crisis: You raised prices, but lost 10% of electronics revenue.', 'red'); break;
+                }
+            }
+            if (year === 8) {
+                const hostileBidPrice = state.stockPrice * 1.20;
+                if (year === state.currentYear) {
+                    logEvent(`HOSTILE BID: A rival has bid ₹${hostileBidPrice.toFixed(2)} per share. You must exceed this price to survive.`, 'red');
+                    state.hostileBidPrice = hostileBidPrice;
+                }
+            }
+            if (year === 9 && decisions.esgInvestment) {
+                const esgInvest = parseFloat(decisions.esgInvestment);
+                if (esgInvest > 0) {
+                    currentFin.capex += esgInvest;
+                    if (year === state.currentYear) { state.valuationMultiple += 1.5; logEvent(`ESG Mandate: You invested ${formatINR(esgInvest)}M, boosting investor confidence and your valuation multiple.`, 'green');}
+                } else {
+                    if (year === state.currentYear) { state.valuationMultiple -= 2.0; logEvent(`ESG Mandate: Failure to invest has damaged investor confidence, reducing your valuation multiple.`, 'red');}
+                }
+            }
+            if (year === 10 && decisions.techDisruptionResponse) {
+                switch(decisions.techDisruptionResponse) {
+                    case 'invest': currentFin.capex += 1500; currentFin.divisions.software.revenue *= 0.7; if (year === state.currentYear) logEvent('Tech Disruption: You invested heavily in the new platform, sacrificing current software revenue.', 'blue'); break;
+                    case 'manage': currentFin.divisions.software.revenue *= 0.5; if (year === state.currentYear) logEvent('Tech Disruption: You managed the decline, but software revenue has collapsed.', 'red'); break;
+                }
+            }
+        }
+
+        function getTsrCategory(score) {
+            if (score <= 1) return { text: 'Bankrupt', color: 'text-red-500' };
+            if (score <= 100) return { text: 'Poor', color: 'text-red-400' };
+            if (score <= 500) return { text: 'Average', color: 'text-yellow-400' };
+            if (score <= 1000) return { text: 'Good', color: 'text-blue-400' };
+            return { text: 'Excellent', color: 'text-emerald-400' };
+        }
+
+        function render() {
+            currentYearEl.textContent = state.currentYear;
+            tsrScoreEl.textContent = state.tsr.toFixed(2);
+            const category = getTsrCategory(state.tsr);
+            tsrCategoryEl.textContent = category.text;
+            tsrCategoryEl.className = `text-md font-bold mt-1 ${category.color}`;
+            bodyEl.classList.toggle('bankrupt-bg', category.text === 'Poor' || category.text === 'Bankrupt' || state.simulationFailed);
+            ceoNoticeBanner.classList.toggle('hidden', !state.ceoOnNotice || state.simulationFailed);
+            renderDashboard();
+            renderFinancials();
+            renderDecisionPanel();
+            renderScenario();
+            renderCharts();
+        }
+
+        function renderDashboard() {
+            const fin = state.financials[state.currentYear];
+            const ebitda = fin.revenue - fin.cogs - fin.sga;
+            const debtToEbitda = ebitda > 0 ? fin.longTermDebt / ebitda : 999;
+            const ebit = ebitda - fin.depreciation;
+            const totalCapital = fin.longTermDebt + fin.commonStock + fin.retainedEarnings;
+            const roic = totalCapital > 0 ? ebit * (1 - fin.taxRate) / totalCapital : 0;
+            metricsDashboardEl.innerHTML = `
+                ${createMetricCard('EV/EBITDA', `${state.valuationMultiple.toFixed(1)}x`, 'Valuation Multiple')}
+                ${createMetricCard('Debt/EBITDA', `${debtToEbitda.toFixed(2)}x`, `Covenant: < ${(state.currentStage === 1 ? 4.0 : 3.5)}x`, debtToEbitda > (state.currentStage === 1 ? 4.0 : 3.5))}
+                ${createMetricCard('ROIC', `${(roic * 100).toFixed(1)}%`, 'Return on Invested Capital')}
+                ${createMetricCard('Share Price', `₹${state.stockPrice.toFixed(2)}`, `${state.sharesOutstanding.toFixed(1)}M Shares`)}
+            `;
+        }
+        
+        function createMetricCard(title, value, subtitle, isWarning = false) {
+            return `
+                <div class="metric-card rounded-lg p-3">
+                    <p class="text-sm text-slate-400">${title}</p>
+                    <p class="text-2xl font-bold ${isWarning ? 'text-red-400' : 'text-white'}">${value}</p>
+                    <p class="text-xs text-slate-500">${subtitle}</p>
+                </div>`;
+        }
+
+        function renderFinancials() {
+            financialsTableEl.innerHTML = '';
+            const metrics = [
+                { label: 'Revenue', derived: fin => fin.revenue, header: true }, { label: 'COGS', derived: fin => -fin.cogs },
+                { label: 'Gross Profit', derived: fin => fin.revenue - fin.cogs, header: true }, { label: 'SG&A', derived: fin => -fin.sga },
+                { label: 'EBITDA', derived: fin => fin.revenue - fin.cogs - fin.sga, header: true }, { label: 'Depreciation', derived: fin => -fin.depreciation },
+                { label: 'EBIT', derived: fin => fin.revenue - fin.cogs - fin.sga - fin.depreciation, header: true }, { label: 'Interest Expense', derived: fin => -fin.interestExpense },
+                { label: 'Net Income', derived: fin => (fin.revenue - fin.cogs - fin.sga - fin.depreciation - fin.interestExpense) * (1-fin.taxRate), header: true }, { label: '---', derived: () => '' },
+                { label: 'Cash', derived: fin => fin.cash, header: true }, { label: 'Total Debt', derived: fin => fin.longTermDebt, header: true },
+                { label: 'Total Equity', derived: fin => fin.commonStock + fin.retainedEarnings, header: true }, { label: '---', derived: () => '' }, { label: 'FCF', derived: fin => fin.fcf, header: true },
+            ];
+            metrics.forEach(metric => {
+                const row = document.createElement('tr');
+                if (metric.header) row.classList.add('bg-slate-700/50');
+                let rowHtml = `<td class="table-header ${metric.header ? 'font-bold text-slate-300' : ''}">${metric.label}</td>`;
+                for (let i = 0; i <= 10; i++) {
+                    const fin = state.financials[i];
+                    rowHtml += `<td class="table-cell">${fin && metric.derived ? formatINR(metric.derived(fin)) : ''}</td>`;
+                }
+                row.innerHTML = rowHtml;
+                financialsTableEl.appendChild(row);
+            });
+        }
+        
+        function renderScenario() {
+            const year = state.currentYear + 1;
+            let title = '', description = '';
+            switch (year) {
+                case 1: title = "Year 1: Foundational Forecast"; description = "Set your divisional growth and margin assumptions. Also define your working capital and capital allocation policies. This model will be the foundation for all future decisions."; break;
+                case 2: title = "Year 2: Capital Budgeting"; description = "A disruptive technology opportunity has emerged in Renewables. You can invest heavily in R&D, but it must be debt-financed, impacting your credit metrics. Model the project's impact and decide."; break;
+                case 3: title = "Year 3: Mergers & Acquisitions"; description = "A competitor in Consumer Electronics is an acquisition target. Determine the financing mix (cash vs. stock) and model the impact on your balance sheet, share count, and synergies. Beware of integration risk."; break;
+                case 4: title = "Year 4: LBO & Divestiture"; description = "A PE firm has offered to buy the Software division. Analyze the deal. If you sell, you will face 'dis-synergies' that raise corporate costs. Your decision will fundamentally reshape the company."; break;
+                case 5: title = "Year 5: Activist Investor"; description = "An activist is demanding a radical restructuring. Fighting them is risky; losing the proxy battle will severely damage your market valuation. Decide whether to fight or acquiesce."; break;
+                case 6: title = "Year 6: Economic Downturn"; description = "A global recession has hit. Consumer spending is down, and achieving growth is difficult. Focus on cost control and maintaining margins to weather the storm."; break;
+                case 7: title = "Year 7: Supply Chain Crisis"; description = "A geopolitical conflict has disrupted key suppliers for your Electronics division, causing a significant spike in COGS. You must decide whether to absorb the cost, find new suppliers (costly), or pass the price hike to consumers (risky)."; break;
+                case 8: title = "Year 8: Hostile Takeover Bid"; description = "A large rival has launched a hostile takeover bid at a 20% premium to your current share price. To defend the company, you must drive the stock price above their offer, or the board will be forced to sell. Failure means game over."; break;
+                case 9: title = "Year 9: ESG Mandate"; description = "Major institutional investors are demanding significant ESG investment in your Renewables division. This will require heavy CapEx with uncertain returns but will boost your valuation multiple. Ignoring it will cause your multiple to plummet as investors divest."; break;
+                case 10: title = "Year 10: Technological Disruption"; description = "A startup has unveiled a new technology that threatens to make your core Software product obsolete within a few years. You must decide whether to make a massive, risky investment to build a competing platform or manage the decline of your cash cow."; break;
+                default: title = "Simulation Complete"; description = "Review your 10-year performance.";
+            }
+            scenarioTitleEl.textContent = title;
+            scenarioDescriptionEl.textContent = description;
+        }
+
+        function renderDecisionPanel() {
+            const year = state.currentYear + 1;
+            decisionInputsEl.innerHTML = '';
+            let inputsHtml = '';
+            if (year > 0 && year <= 10) {
+                ['Software', 'Electronics', 'Renewables'].forEach(div => {
+                    const divId = div.toLowerCase();
+                    inputsHtml += `<div class="pt-4 border-t border-slate-700"><h4 class="font-bold text-slate-300">${div} Division</h4></div>`;
+                    inputsHtml += createSliderInput(`${divId}_growth`, 'Revenue Growth (%)', 0, -10, 20, 0.5);
+                    inputsHtml += createSliderInput(`${divId}_cogs`, 'COGS (% Rev)', 0, 0, 110, 0.5);
+                    inputsHtml += createSliderInput(`${divId}_sgaMargin`, 'SG&A (% Rev)', 0, 0, 25, 0.1);
+                    inputsHtml += createSliderInput(`${divId}_capexMargin`, 'CapEx (% Rev)', 0, 0, 15, 0.5);
+                    inputsHtml += createSliderInput(`${divId}_dso`, 'Accts. Receivable (DSO)', 0, 0, 90, 1);
+                    inputsHtml += createSliderInput(`${divId}_dio`, 'Inventory (DIO)', 0, 0, 90, 1);
+                    inputsHtml += createSliderInput(`${divId}_dpo`, 'Accts. Payable (DPO)', 0, 0, 90, 1);
+                });
+                inputsHtml += '<div class="pt-4 border-t border-slate-700"><h4 class="font-bold text-slate-300">Corporate Capital Allocation (₹M)</h4></div>';
+                inputsHtml += createSliderInput('dividends', 'Dividends Paid', 0, 0, 500, 10);
+                inputsHtml += createSliderInput('repurchases', 'Share Repurchases', 0, 0, 500, 10);
+            }
+            switch (year) {
+                case 2: inputsHtml += '<div class="pt-4 border-t border-slate-700"><h4 class="font-bold text-slate-300">Strategic Decisions</h4></div>'; inputsHtml += createSliderInput('rdInvestment', 'R&D Project Investment (₹M)', 0, 0, 1000, 50); break;
+                case 3: inputsHtml += '<div class="pt-4 border-t border-slate-700"><h4 class="font-bold text-slate-300">Strategic Decisions</h4></div>'; inputsHtml += createRadioInput('maDeal', 'Acquire Competitor?', [{label: 'Yes', value: 'yes'}, {label: 'No', value: 'no'}]); inputsHtml += createSliderInput('maCash', 'M&A Cash % of Funding', 0, 0, 100, 5); break;
+                case 4: inputsHtml += '<div class="pt-4 border-t border-slate-700"><h4 class="font-bold text-slate-300">Strategic Decisions</h4></div>'; inputsHtml += createRadioInput('divestiture', 'Sell Software Division?', [{label: 'Yes', value: 'yes'}, {label: 'No', value: 'no'}]); break;
+                case 5: inputsHtml += '<div class="pt-4 border-t border-slate-700"><h4 class="font-bold text-slate-300">Strategic Decisions</h4></div>'; inputsHtml += createRadioInput('activistResponse', 'Response to Activist?', [{label: 'Accept Demands', value: 'accept'}, {label: 'Fight', value: 'fight'}]); break;
+                case 7: inputsHtml += '<div class="pt-4 border-t border-slate-700"><h4 class="font-bold text-slate-300">Strategic Decisions</h4></div>'; inputsHtml += createRadioInput('supplyChainResponse', 'Supply Chain Strategy', [{label: 'Absorb Costs', value: 'absorb'}, {label: 'New Suppliers (Costly)', value: 'invest'}, {label: 'Raise Prices', value: 'raise_price'}]); break;
+                case 9: inputsHtml += '<div class="pt-4 border-t border-slate-700"><h4 class="font-bold text-slate-300">Strategic Decisions</h4></div>'; inputsHtml += createSliderInput('esgInvestment', 'ESG Investment (₹M)', 0, 0, 2000, 100); break;
+                case 10: inputsHtml += '<div class="pt-4 border-t border-slate-700"><h4 class="font-bold text-slate-300">Strategic Decisions</h4></div>'; inputsHtml += createRadioInput('techDisruptionResponse', 'Disruption Response', [{label: 'Invest in New Tech', value: 'invest'}, {label: 'Manage Decline', value: 'manage'}]); break;
+            }
+            decisionInputsEl.innerHTML = inputsHtml;
+            document.querySelectorAll('input[type="range"]').forEach(slider => {
+                const output = document.getElementById(slider.id + '-value');
+                output.textContent = slider.value;
+                slider.addEventListener('input', e => { output.textContent = e.target.value; });
+                slider.addEventListener('change', () => playSound('slider'));
+            });
+        }
+
+        function createSliderInput(id, label, defaultValue, min, max, step) {
+            return `<div class="space-y-1"><label for="${id}" class="block text-sm font-medium text-slate-400">${label}: <span id="${id}-value" class="font-bold text-indigo-400">${defaultValue}</span></label><input type="range" id="${id}" name="${id}" min="${min}" max="${max}" value="${defaultValue}" step="${step}"></div>`;
+        }
+
+        function createRadioInput(id, label, options) {
+            let optionsHtml = options.map((opt, index) => `<div><input type="radio" id="${id}-${opt.value}" name="${id}" value="${opt.value}" ${index === 0 ? 'checked' : ''} class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 bg-slate-700 border-slate-500"><label for="${id}-${opt.value}" class="ml-3 block text-sm font-medium text-slate-300">${opt.label}</label></div>`).join('');
+            return `<div><label class="block text-sm font-medium text-slate-400">${label}</label><div class="mt-2 flex space-x-4">${optionsHtml}</div></div>`;
+        }
+        
+        function logEvent(message, color = 'slate') {
+            const p = document.createElement('p');
+            const time = `Y${state.currentYear}:`;
+            p.innerHTML = `<span class="font-semibold">${time}</span> ${message}`;
+            const colors = { green: 'text-green-400', red: 'text-red-400', blue: 'text-blue-400', gray: 'text-slate-500 italic' };
+            if (colors[color]) p.className = colors[color];
+            eventLogEl.appendChild(p);
+            eventLogEl.scrollTop = eventLogEl.scrollHeight;
+        }
+
+        function showWarning(message) {
+            if (!newWarningThisYear) { newWarningThisYear = true; }
+            state.failureReasons.push(`(Y${state.currentYear}) ${message}`);
+            warningBoxContainer.classList.remove('hidden');
+            const p = document.createElement('p');
+            p.className = 'text-sm text-red-300 font-medium';
+            p.textContent = `• ${message}`;
+            warningsEl.appendChild(p);
+        }
+
+        function handleSubmit() {
+            playSound('click');
+            if (state.currentYear >= 10 || state.simulationFailed) return;
+            tempDecisions = {};
+            decisionInputsEl.querySelectorAll('input').forEach(input => {
+                if (input.type === 'radio') {
+                    if (input.checked) tempDecisions[input.name] = input.value;
+                } else { tempDecisions[input.id] = input.value; }
+            });
+            showStrategyModal();
+        }
+
+        function showStrategyModal() {
+            strategyModal.classList.remove('hidden');
+            strategyModalContent.innerHTML = `
+                <h2 class="text-2xl font-bold mb-4 text-white">Year ${state.currentYear + 1} Strategy Memo</h2>
+                <p class="text-slate-400 mb-4">Justify your key assumptions and strategic decisions. The board requires a detailed rationale (25-50 words).</p>
+                <textarea id="strategy-notes" class="w-full h-48 p-2 border bg-slate-700 border-slate-600 rounded-md text-slate-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+                <div id="word-count-container" class="text-right mt-2 font-medium text-sm text-slate-400">Word Count: <span id="word-count">0</span> / 50</div>
+                <div class="mt-6 flex justify-end">
+                    <button id="submit-strategy-btn" class="bg-indigo-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-indigo-500 disabled:bg-slate-600 disabled:cursor-not-allowed" disabled>Submit Strategy</button>
+                </div>`;
+            const strategyNotes = document.getElementById('strategy-notes');
+            const wordCountEl = document.getElementById('word-count');
+            const wordCountContainer = document.getElementById('word-count-container');
+            const submitStrategyBtn = document.getElementById('submit-strategy-btn');
+            strategyNotes.addEventListener('input', () => {
+                const words = strategyNotes.value.trim().split(/\s+/).filter(Boolean);
+                const wordCount = words.length;
+                wordCountEl.textContent = wordCount;
+                wordCountContainer.classList.remove('text-red-400', 'text-green-400', 'text-slate-400');
+                if (wordCount >= 25 && wordCount <= 50) {
+                    submitStrategyBtn.disabled = false;
+                    wordCountContainer.classList.add('text-green-400');
+                } else {
+                    submitStrategyBtn.disabled = true;
+                    wordCountContainer.classList.add(wordCount > 50 ? 'text-red-400' : 'text-slate-400');
+                }
+            });
+            submitStrategyBtn.addEventListener('click', () => {
+                playSound('click');
+                tempStrategyMemo.notes = strategyNotes.value;
+                showQAModal();
+            });
+        }
+
+        function showQAModal() {
+            const questions = generateQuestions(tempDecisions);
+            tempStrategyMemo.q1 = questions[0];
+            tempStrategyMemo.q2 = questions[1];
+            strategyModalContent.innerHTML = `
+                <h2 class="text-2xl font-bold mb-4 text-white">Board Review</h2>
+                <p class="text-slate-400 mb-6">The board has reviewed your memo and has the following questions. Please provide concise answers.</p>
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-md font-semibold text-slate-300 mb-2">${questions[0]}</label>
+                        <textarea id="answer1" class="w-full h-24 p-2 border bg-slate-700 border-slate-600 rounded-md text-slate-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-md font-semibold text-slate-300 mb-2">${questions[1]}</label>
+                        <textarea id="answer2" class="w-full h-24 p-2 border bg-slate-700 border-slate-600 rounded-md text-slate-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end">
+                    <button id="submit-answers-btn" class="bg-green-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-500">Finalize and Advance Year</button>
+                </div>`;
+            document.getElementById('submit-answers-btn').addEventListener('click', () => {
+                playSound('click');
+                tempStrategyMemo.a1 = document.getElementById('answer1').value;
+                tempStrategyMemo.a2 = document.getElementById('answer2').value;
+                advanceYear();
+            });
+        }
+
+        function generateQuestions(decisions) {
+            const year = state.currentYear + 1;
+            let potentialQuestions = [];
+            if (parseFloat(decisions.dividends) > 150) { potentialQuestions.push(`You chose to pay a significant dividend of ${formatINR(decisions.dividends)}M. Why is returning this capital to shareholders the best use of funds right now?`);}
+            if (parseFloat(decisions.repurchases) > 150) { potentialQuestions.push(`You allocated ${formatINR(decisions.repurchases)}M to share buybacks. How does this create more value than reinvesting in the business or paying down debt?`);}
+            if (parseFloat(decisions.software_capexMargin) < 5) { potentialQuestions.push(`Your CapEx for the Software division is low. How do you plan to maintain your asset base and drive future growth?`); }
+            if (parseFloat(decisions.renewables_growth) > 15) { potentialQuestions.push(`You are forecasting aggressive growth of ${decisions.renewables_growth}% for the Renewables division. What market factors support this optimism, and how will you fund this growth?`); }
+            if (year === 2 && parseFloat(decisions.rdInvestment) > 500) { potentialQuestions.push(`Your ${formatINR(decisions.rdInvestment)}M R&D investment is a major gamble. What is the expected IRR, and what is your contingency plan if the project fails?`);}
+            if (year === 3 && decisions.maDeal === 'yes') { potentialQuestions.push(`Regarding the acquisition, what are the top 3 integration risks you are most concerned about, and how will you mitigate them?`); potentialQuestions.push(`You are funding ${decisions.maCash}% of the acquisition with cash. Why was this the optimal financing mix versus using more stock or debt?`); }
+            if (year === 4 && decisions.divestiture === 'yes') { potentialQuestions.push(`Selling the profitable Software division is a bold move. How will the remaining company replace its stable cash flows?`); }
+            if (year === 5 && decisions.activistResponse === 'fight') { potentialQuestions.push(`Fighting the activist investor could be costly and distracting. What is the core flaw in their argument that you believe the market is overlooking?`); }
+            potentialQuestions.push(`What is the single biggest external risk to your forecast for next year, and how is your strategy positioned to handle it?`);
+            potentialQuestions.push(`Which of your three divisions do you believe has the most long-term potential, and why?`);
+            return potentialQuestions.slice(0, 2);
+        }
+        
+        function advanceYear() {
+            strategyModal.classList.add('hidden');
+            state.strategyMemos.push(JSON.parse(JSON.stringify(tempStrategyMemo)));
+            warningsEl.innerHTML = '';
+            warningBoxContainer.classList.add('hidden');
+            newWarningThisYear = false;
+            state.currentYear++;
+            runFinancialModel(state.currentYear, tempDecisions);
+
+            if (state.currentYear === 8 && state.hostileBidPrice) {
+                if (state.stockPrice < state.hostileBidPrice) {
+                    state.simulationFailed = true;
+                    logEvent(`TAKEOVER COMPLETE: Your stock price of ₹${state.stockPrice.toFixed(2)} failed to surpass the hostile bid of ₹${state.hostileBidPrice.toFixed(2)}. The company has been sold.`, 'red');
+                } else {
+                    logEvent(`TAKEOVER DEFENDED: Your stock price of ₹${state.stockPrice.toFixed(2)} surpassed the bid. You remain independent!`, 'green');
+                }
+            }
+
+            if (newWarningThisYear) {
+                playSound('warning');
+                if (state.currentYear <= 2 || (state.currentStage === 2 && state.currentYear <= 7)) {
+                    state.ceoOnNotice = true;
+                    logEvent(`Board Warning Issued: The board has noted these failures and expects immediate corrective action.`, 'red');
+                } else if (state.ceoOnNotice) {
+                    state.simulationFailed = true;
+                    logEvent(`FINAL WARNING: Failure to correct course has led to a loss of confidence from the board.`, 'red');
+                } else {
+                    state.ceoOnNotice = true;
+                    logEvent(`Board Warning Issued: The board has noted these failures and expects immediate corrective action.`, 'red');
+                }
+            } else { playSound('success'); }
+            
+            const futureDecisions = JSON.parse(JSON.stringify(tempDecisions));
+            for (let i = state.currentYear + 1; i <= 10; i++) { runFinancialModel(i, futureDecisions); }
+            
+            if (state.currentYear >= 10 || (state.currentYear >=5 && state.currentStage === 1) || state.simulationFailed) {
+                 endGame();
+            } else {
+                 saveState();
+            }
+            render();
+        }
+        
+        function endGame() {
+            submitButton.disabled = true;
+            submitButton.textContent = 'Simulation Complete';
+            submitButton.classList.add('bg-slate-700', 'cursor-not-allowed', 'hover:scale-100');
+            if (state.simulationFailed) {
+                state.tsr = 0; playSound('failure');
+            }
+            finalTsrEl.textContent = state.tsr.toFixed(2);
+            const category = getTsrCategory(state.tsr);
+            finalTsrCategoryEl.textContent = category.text;
+            finalTsrCategoryEl.className = `text-2xl font-bold mt-2 ${category.color}`;
+            memoDownloadSection.classList.remove('hidden');
+
+            startStage2Btn.classList.add('hidden');
+            certificateSection.classList.add('hidden');
+
+            const canGetCertificate = category.text === 'Good' || category.text === 'Excellent';
+
+            if (state.simulationFailed) {
+                modalTitleEl.textContent = 'Performance Review: FAILED';
+                modalTitleEl.classList.add('text-red-400');
+                const reasonsHtml = [...new Set(state.failureReasons)].map(reason => `<li class="text-slate-300">${reason}</li>`).join('');
+                modalMessageEl.innerHTML = `<p class="text-2xl font-bold text-red-500">CEO TERMINATED</p><p class="mt-2 text-slate-400">The board has lost confidence due to repeated failures. The following critical errors were noted:</p><ul class="mt-4 text-left list-disc list-inside bg-red-900/50 p-4 rounded-md">${reasonsHtml}</ul>`;
+            } else if (state.currentStage === 1 && state.currentYear === 5) {
+                modalTitleEl.textContent = 'Stage 1 Complete!';
+                if (canGetCertificate) {
+                    modalMessageEl.innerHTML = `<p class="text-slate-300">You have successfully completed the first 5 years with a ${category.text} rating. You have unlocked a certificate and can now proceed to Stage 2 for a greater challenge.</p>`;
+                    startStage2Btn.classList.remove('hidden');
+                    certificateSection.classList.remove('hidden');
+                    playSound('success');
+                } else {
+                    modalMessageEl.innerHTML = `<p class="text-slate-300">You have completed the first 5 years. Improve your TSR score to 'Good' or 'Excellent' to unlock the next stage.</p>`;
+                }
+            } else {
+                modalTitleEl.textContent = 'Simulation Complete!';
+                modalMessageEl.innerHTML = `<p class="text-slate-300">You have completed the simulation. Review your final performance below.</p>`;
+                if (canGetCertificate) {
+                    certificateSection.classList.remove('hidden');
+                    playSound('success');
+                }
+            }
+            gameOverModal.classList.remove('hidden');
+        }
+
+        function startStage2() {
+            playSound('success');
+            state.currentStage = 2;
+            logEvent('========================================', 'gray');
+            logEvent('STAGE 2 INITIATED: Higher Difficulty', 'blue');
+            logEvent('Market conditions have become more volatile, and lenders have tightened covenants to 3.5x Debt/EBITDA.', 'blue');
+            logEvent('========================================', 'gray');
+            gameOverModal.classList.add('hidden');
+            submitButton.disabled = false;
+            submitButton.textContent = 'Finalize Decisions & Write Strategy';
+            submitButton.classList.remove('bg-slate-700', 'cursor-not-allowed', 'hover:scale-100');
+            state.ceoOnNotice = false; // Reset notice for the new stage
+            saveState();
+            render();
+        }
+
+        function generateCertificate(name) {
+            const ctx = canvas.getContext('2d');
+            const date = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+            ctx.fillStyle = '#fdfbf6';
+            ctx.fillRect(0, 0, 1200, 800);
+            ctx.strokeStyle = '#0a2351';
+            ctx.lineWidth = 20;
+            ctx.strokeRect(10, 10, 1180, 780);
+            ctx.strokeStyle = '#c9ab72';
+            ctx.lineWidth = 5;
+            ctx.strokeRect(30, 30, 1140, 740);
+            ctx.textAlign = 'center';
+            ctx.font = 'bold 70px "Poppins", sans-serif';
+            ctx.fillStyle = '#0a2351';
+            ctx.fillText('Certificate of Achievement', 600, 150);
+            ctx.font = '300 30px "Poppins", sans-serif';
+            ctx.fillText('This certificate is proudly presented to', 600, 220);
+            ctx.font = '500 80px "Poppins", sans-serif';
+            ctx.fillStyle = '#c9ab72';
+            ctx.fillText(name, 600, 340);
+            ctx.font = '300 30px "Poppins", sans-serif';
+            ctx.fillStyle = '#0a2351';
+            ctx.fillText('for successfully completing the', 600, 420);
+            ctx.font = 'bold 32px "Poppins", sans-serif';
+            ctx.fillText('Project Titan: Advanced Financial Modeling Simulation', 600, 470);
+            ctx.font = '300 30px "Poppins", sans-serif';
+            const category = getTsrCategory(state.tsr).text;
+            ctx.fillText(`with a ${category} final TSR of ${state.tsr.toFixed(2)}`, 600, 520);
+            ctx.font = '300 24px "Poppins", sans-serif';
+            ctx.fillText(date, 350, 650);
+            ctx.fillText('Director, Taxila Business School', 850, 650);
+            ctx.strokeStyle = '#0a2351'; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(250, 620); ctx.lineTo(450, 620);
+            ctx.moveTo(750, 620); ctx.lineTo(950, 620); ctx.stroke();
+            ctx.fillStyle = '#0a2351'; ctx.beginPath();
+            ctx.moveTo(570, 700); ctx.lineTo(600, 750); ctx.lineTo(630, 700);
+            ctx.closePath(); ctx.fill();
+            ctx.font = 'bold 20px "Poppins", sans-serif';
+            ctx.fillText('TAXILA', 600, 770);
+        }
+
+        function downloadCertificate() {
+            playSound('download');
+            const name = state.playerName;
+            if (!name) return;
+            generateCertificate(name);
+            const link = document.createElement('a');
+            link.download = `Taxila_Project_Titan_Certificate_${name.replace(/\s/g, '_')}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+        
+        function shareOnLinkedIn() {
+            playSound('click');
+            const tsr = state.tsr.toFixed(2);
+            const category = getTsrCategory(state.tsr).text;
+            const text = `I'm excited to share that I successfully completed the Project Titan advanced financial simulation, achieving a TSR of ${tsr} (${category})! This challenging game by Taxila Business School tested my skills in corporate finance, M&A, and strategic decision-making. #CorporateFinance #BusinessSimulation #TaxilaBusinessSchool #ProjectTitan`;
+            const linkedInUrl = `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent('https://www.taxila.in/')}&title=${encodeURIComponent('Excelled in the Project Titan Financial Simulation!')}&summary=${encodeURIComponent(text)}&source=${encodeURIComponent('Taxila Business School')}`;
+            window.open(linkedInUrl, '_blank');
+        }
+
+        function downloadMemos() {
+            playSound('download');
+            let content = "Project Titan: Strategy Memo Compilation\n\n";
+            state.strategyMemos.forEach((memo, index) => {
+                content += `========================================\n`;
+                content += `YEAR ${index + 1} STRATEGY\n`;
+                content += `========================================\n\n`;
+                content += `MEMO:\n${memo.notes}\n\n`;
+                content += `BOARD QUESTIONS & RESPONSES:\n`;
+                content += `Q1: ${memo.q1}\nA1: ${memo.a1}\n\n`;
+                content += `Q2: ${memo.q2}\nA2: ${memo.a2}\n\n\n`;
+            });
+            const blob = new Blob([content], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.download = 'Project_Titan_Strategy_Memos.txt';
+            link.href = window.URL.createObjectURL(blob);
+            link.click();
+        }
+
+        async function restartGame() {
+            playSound('click');
+            gameOverModal.classList.add('hidden');
+            
+            submitButton.disabled = false;
+            submitButton.textContent = 'Finalize Decisions & Write Strategy';
+            submitButton.classList.remove('bg-slate-700', 'cursor-not-allowed', 'hover:scale-100');
+            bodyEl.classList.remove('bankrupt-bg');
+            warningsEl.innerHTML = '';
+            warningBoxContainer.classList.add('hidden');
+            
+            // Clear current state and save a blank state to reset
+            state = {};
+            await saveState(); 
+            
+            // Reinitialize the game from scratch
+            initializeState();
+
+            eventLogEl.innerHTML = '';
+            logEvent('Simulation restarted. Good luck!', 'blue');
+            render();
+        }
+
+        function renderCharts() {
+            const labels = ['Y0','Y1', 'Y2', 'Y3', 'Y4', 'Y5', 'Y6', 'Y7', 'Y8', 'Y9', 'Y10'];
+            const tsrData = state.tsrHistory.map((tsr, i) => i <= state.currentYear ? tsr : null);
+            while (tsrData.length < labels.length) tsrData.push(null);
+            const datasets = { software: [], electronics: [], renewables: [] };
+            const ratios = { evEbitda: [], debtEbitda: [] };
+            for (let i = 0; i <= 10; i++) {
+                const fin = state.financials[i];
+                if (i > 0 && i <= state.currentYear) {
+                    const ebitda = fin.revenue - fin.cogs - fin.sga;
+                    ratios.debtEbitda[i] = ebitda > 0 ? fin.longTermDebt / ebitda : null;
+                    ratios.evEbitda[i] = state.valuationMultiple;
+                } else { ratios.debtEbitda[i] = null; ratios.evEbitda[i] = null; }
+                if(fin) {
+                    datasets.software.push(i <= state.currentYear ? fin.divisions.software.revenue : null);
+                    datasets.electronics.push(i <= state.currentYear ? fin.divisions.electronics.revenue : null);
+                    datasets.renewables.push(i <= state.currentYear ? fin.divisions.renewables.revenue : null);
+                }
+            }
+            if(state.charts.tsrChart) state.charts.tsrChart.destroy();
+            state.charts.tsrChart = new Chart(document.getElementById('tsr-chart'), { type: 'line', data: { labels, datasets: [{ label: 'TSR Index', data: tsrData, borderColor: '#818cf8', backgroundColor: 'rgba(99, 102, 241, 0.2)', fill: true, tension: 0.3 }]}});
+            if(state.charts.revenueChart) state.charts.revenueChart.destroy();
+            state.charts.revenueChart = new Chart(document.getElementById('revenue-chart'), { type: 'bar', data: { labels, datasets: [ { label: 'Software', data: datasets.software, backgroundColor: '#60a5fa' }, { label: 'Electronics', data: datasets.electronics, backgroundColor: '#34d399' }, { label: 'Renewables', data: datasets.renewables, backgroundColor: '#facc15' } ]}, options: { scales: { x: { stacked: true }, y: { stacked: true } } }});
+            if(state.charts.ratiosChart) state.charts.ratiosChart.destroy();
+            state.charts.ratiosChart = new Chart(document.getElementById('ratios-chart'), { type: 'bar', data: { labels, datasets: [{ label: 'EV/EBITDA', data: ratios.evEbitda, type: 'line', borderColor: '#a78bfa', yAxisID: 'y1',}, { label: 'Debt/EBITDA', data: ratios.debtEbitda, backgroundColor: '#f87171', yAxisID: 'y',}]}, options: { scales: { y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'Debt/EBITDA (x)' } }, y1: { type: 'linear', display: true, position: 'right', title: { display: true, text: 'EV/EBITDA (x)' }, grid: { drawOnChartArea: false } }}}});
+        }
+        
+        submitButton.addEventListener('click', handleSubmit);
+        restartButton.addEventListener('click', restartGame);
+        startStage2Btn.addEventListener('click', startStage2);
+        downloadCertificateBtn.addEventListener('click', downloadCertificate);
+        linkedinShareBtn.addEventListener('click', shareOnLinkedIn);
+        downloadMemosBtn.addEventListener('click', downloadMemos);
+
+        initializeState();
+        
+    });
+    </script>
+</body>
+</html>

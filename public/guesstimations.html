@@ -669,7 +669,7 @@
  const params = new URLSearchParams(window.location.search);
  const name =  JSON.parse(decodeURIComponent(params.get("name")));
             try {
-                const res = await fetch("https://erp.taxila.in//api/game/guesstimations", {
+                const res = await fetch("https://erp.taxila.in/api/game/guesstimations", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ userId, name, gameState }),
