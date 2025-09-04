@@ -150,6 +150,9 @@ export const menuItems = [
             {label:"Rat Race 3d",  icon: <Gamepad className="h-5 w-5" />, path:"/game/rat-race"},
             {label:"Project Titan",  icon: <Gamepad className="h-5 w-5" />, path:"/game/titan"},
           ]},
+          {label : "Sales and Marketing", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
+            {label:"Sector Shaker",  icon: <Gamepad className="h-5 w-5" />, path:"/game/sector-shaker"},
+          ]},
           {label : "Strategy", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Taxila Capital Quest",  icon: <Gamepad className="h-5 w-5" />, path:"/game/quest"},
           ]},
@@ -181,6 +184,9 @@ export const menuItems = [
             {label : "Finance", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Rat Race 3d",  icon: <Gamepad className="h-5 w-5" />, path:"/game/rat-race"},
             {label:"Project Titan",  icon: <Gamepad className="h-5 w-5" />, path:"/game/titan"},
+          ]},
+          {label : "Sales and Marketing", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
+            {label:"Sector Shaker",  icon: <Gamepad className="h-5 w-5" />, path:"/game/sector-shaker"},
           ]},
           {label : "Strategy", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Taxila Capital Quest",  icon: <Gamepad className="h-5 w-5" />, path:"/game/quest"},

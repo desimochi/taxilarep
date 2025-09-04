@@ -1,0 +1,2052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sector Shaker - The India Challenge</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- html2canvas for certificate download -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a; /* Slate 900 */
+            /* Add a subtle gradient for depth */
+            background-image: radial-gradient(circle at top, #1e293b, #0f172a);
+        }
+
+        /* Add perspective to card containers for 3D hover effect */
+        #sector-grid {
+            perspective: 1000px;
+        }
+
+        .sector-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3), 0 1px 3px rgba(0,0,0,0.2);
+            transform-style: preserve-3d;
+        }
+
+        .sector-card:hover {
+            transform: translateY(-10px) rotateX(10deg);
+            box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.3), 0 10px 10px -5px rgba(99, 102, 241, 0.2);
+        }
+
+        /* 3D effect for main panels */
+        .main-panel {
+             background-color: #1e293b; /* Slate 800 */
+             border-radius: 1.5rem; /* rounded-3xl */
+             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 2px 4px 0 rgba(255, 255, 255, 0.05);
+             border-top: 1px solid rgba(255, 255, 255, 0.1);
+             transition: transform 0.3s ease;
+        }
+
+        /* General 3D button styling */
+        .btn-3d {
+            border-radius: 0.5rem;
+            font-weight: bold;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+            transform-style: preserve-3d;
+        }
+        .btn-3d:before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 100%;
+            border-radius: 0.5rem;
+            transform: translateZ(-1px) translateY(4px);
+            transition: transform 0.1s ease;
+        }
+
+        .btn-3d:hover {
+            transform: translateY(-2px);
+        }
+        .btn-3d:active {
+            transform: translateY(2px);
+        }
+        .btn-3d:active:before {
+            transform: translateZ(-1px) translateY(2px);
+        }
+
+        /* Color variations for 3D buttons */
+        .btn-indigo { background-color: #4f46e5; }
+        .btn-indigo:before { background-color: #3730a3; }
+        .btn-green { background-color: #16a34a; }
+        .btn-green:before { background-color: #14532d; }
+        .btn-yellow { background-color: #d97706; }
+        .btn-yellow:before { background-color: #92400e; }
+        .btn-red { background-color: #dc2626; }
+        .btn-red:before { background-color: #991b1b; }
+         .btn-cyan { background-color: #0891b2; }
+        .btn-cyan:before { background-color: #164e63; }
+         .btn-slate { background-color: #475569; }
+        .btn-slate:before { background-color: #1e293b; }
+
+        h1 {
+            text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e293b; /* Slate 800 */
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4f46e5; /* Indigo 600 */
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6366f1; /* Indigo 500 */
+        }
+
+        .modal-overlay {
+            transition: opacity 0.3s ease-in-out;
+        }
+        .modal-content {
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.75);
+        }
+        /* Custom styles for range sliders */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 8px;
+            background: #334155; /* Slate 700 */
+            border-radius: 5px;
+            outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #6366f1; /* Indigo 500 */
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid #e0e7ff; /* Indigo 100 */
+            box-shadow: 0 0 5px rgba(99, 102, 241, 0.8);
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #6366f1;
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid #e0e7ff;
+        }
+         #certificate-container {
+            font-family: 'Times New Roman', serif;
+            background-color: #f1f5f9; /* Slate 100 */
+            color: #1e293b; /* Slate 800 */
+            border: 10px solid #4338ca; /* Indigo 700 */
+             box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+         }
+    </style>
+</head>
+<body class="text-gray-200">
+
+    <div class="container mx-auto p-4 md:p-8">
+
+        <!-- Header -->
+        <header class="text-center mb-8 md:mb-12">
+            <h1 class="text-4xl md:text-6xl font-extrabold text-white tracking-wider">Sector Shaker</h1>
+            <p class="text-lg md:text-xl text-indigo-400 mt-2">The India Sales Challenge</p>
+            <p id="sim-date-header" class="text-sm text-slate-500 mt-1">Created at Taxila Business School, Jaipur (Sim Date: Sep 2025)</p>
+            <p id="year-timer-display" class="text-xl text-yellow-300 mt-4 font-mono hidden"></p>
+        </header>
+
+        <!-- Phase 1: Sector Selection -->
+        <div id="phase1-sector-selection">
+            <h2 class="text-2xl font-bold mb-6 text-center text-white">Phase 1: Choose Your Battlefield</h2>
+            <div id="sector-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+                <!-- Sector cards will be injected here by JavaScript -->
+            </div>
+             <div class="mt-8 text-center space-x-4">
+                 <button id="load-game-initial" class="relative btn-3d btn-slate">Load Saved Game</button>
+                 <button id="show-celebration-test" class="relative btn-3d btn-green mt-2">Show Celebration Screen</button>
+             </div>
+        </div>
+
+        <!-- Phase 2: Market Intelligence & Company Creation -->
+        <div id="phase2-main-interface" class="hidden mt-8 fade-in">
+            <button id="back-to-sectors" class="relative btn-3d btn-indigo mb-6">
+                &larr; Choose Another Sector
+            </button>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+                <!-- Market Intelligence Display -->
+                <div id="market-intelligence" class="lg:col-span-3 main-panel p-6">
+                    <h3 class="text-3xl font-bold text-white mb-1" id="sector-title"></h3>
+                    <p class="text-indigo-400 mb-4" id="sector-potential"></p>
+                    <p class="text-slate-400 mb-6 text-sm" id="sector-trends"></p>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left text-slate-300">
+                            <thead class="text-xs text-indigo-300 uppercase bg-slate-700">
+                                <tr>
+                                    <th scope="col" class="px-4 py-3">Company</th>
+                                    <th scope="col" class="px-4 py-3">Turnover (FY24)</th>
+                                    <th scope="col" class="px-4 py-3">Market Share</th>
+                                    <th scope="col" class="px-4 py-3">USPs</th>
+                                    <th scope="col" class="px-4 py-3 text-center">Projection</th>
+                                </tr>
+                            </thead>
+                            <tbody id="company-table-body">
+                                <!-- Company rows will be injected here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Company Creation Form -->
+                <div id="company-creation" class="lg:col-span-2 main-panel p-6">
+                    <h3 class="text-2xl font-bold text-white mb-4">Create Your Venture</h3>
+                    <form id="player-company-form">
+                        <div class="mb-4">
+                            <label for="company-name" class="block mb-2 text-sm font-medium text-slate-300">Company Name</label>
+                            <input type="text" id="company-name" class="bg-slate-700 border border-slate-600 text-white text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5" placeholder="e.g., Nexus Innovations" required>
+                        </div>
+                        <div class="mb-4">
+                            <label for="usp1" class="block mb-2 text-sm font-medium text-slate-300">Unique Selling Proposition 1</label>
+                            <input type="text" id="usp1" class="bg-slate-700 border border-slate-600 text-white text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5" placeholder="What makes you unique?" required>
+                        </div>
+                        <div class="mb-4">
+                            <label for="usp2" class="block mb-2 text-sm font-medium text-slate-300">Unique Selling Proposition 2</label>
+                            <input type="text" id="usp2" class="bg-slate-700 border border-slate-600 text-white text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5" placeholder="What's your second advantage?" required>
+                        </div>
+                        <div class="mb-6">
+                            <label for="usp3" class="block mb-2 text-sm font-medium text-slate-300">Unique Selling Proposition 3</label>
+                            <input type="text" id="usp3" class="bg-slate-700 border border-slate-600 text-white text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5" placeholder="And your third killer feature?" required>
+                        </div>
+                        <button type="submit" class="w-full relative btn-3d btn-green text-sm">Launch Company & Get AI Evaluation</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Phase 3: AI Evaluation Result -->
+        <div id="ai-evaluation-result" class="hidden mt-8 fade-in">
+             <div class="main-panel p-6 md:p-8 max-w-4xl mx-auto border-t-4 border-green-500">
+                 <h2 class="text-3xl font-extrabold text-center text-white">Launch Assessment Complete!</h2>
+                 <div class="text-center my-6">
+                     <p class="text-lg text-slate-400">Welcome to the market,</p>
+                     <p id="result-company-name" class="text-4xl font-bold text-indigo-400"></p>
+                 </div>
+                
+                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-8 text-center">
+                     <div class="bg-slate-900 p-4 rounded-lg">
+                         <p class="text-sm uppercase text-slate-400">Initial Annual Turnover</p>
+                         <p id="result-turnover" class="text-3xl font-bold text-green-400"></p>
+                     </div>
+                     <div class="bg-slate-900 p-4 rounded-lg">
+                         <p class="text-sm uppercase text-slate-400">Initial Market Share</p>
+                         <p id="result-market-share" class="text-3xl font-bold text-green-400"></p>
+                     </div>
+                 </div>
+
+                 <div class="mt-6">
+                     <h4 class="text-lg font-semibold text-white mb-2">Analyst's Remarks:</h4>
+                     <div id="result-remarks" class="text-slate-300 bg-slate-700 p-4 rounded-lg space-y-2">
+                         <!-- Remarks injected here -->
+                     </div>
+                 </div>
+                
+                 <div class="mt-8 text-center">
+                     <button id="go-to-battlefield-btn" class="relative btn-3d btn-indigo text-lg">View Battlefield &rarr;</button>
+                 </div>
+             </div>
+        </div>
+
+        <!-- Phase 4: Marketing Strategy -->
+        <div id="phase4-marketing-strategy" class="hidden mt-8 fade-in">
+            <div class="main-panel p-6 md:p-8 max-w-4xl mx-auto border-t-4 border-yellow-500">
+                <!-- Allocation Section -->
+                <div id="marketing-allocation-section">
+                    <h2 class="text-3xl font-extrabold text-center text-white">Marketing Strategy</h2>
+                    <p class="text-center text-slate-400 mt-2">Allocate your budget to acquire and convert leads.</p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-8 text-center bg-slate-900 p-4 rounded-lg">
+                        <div>
+                            <p class="text-sm uppercase text-slate-400">Total Marketing Budget</p>
+                            <p id="total-marketing-budget" class="text-3xl font-bold text-yellow-400"></p>
+                        </div>
+                        <div>
+                            <p class="text-sm uppercase text-slate-400">Remaining Budget</p>
+                            <p id="remaining-marketing-budget" class="text-3xl font-bold text-green-400"></p>
+                        </div>
+                    </div>
+
+                    <div id="marketing-channels" class="space-y-8">
+                        <!-- Digital Marketing -->
+                        <div class="bg-slate-700 p-4 rounded-lg">
+                            <div class="flex justify-between items-center mb-2">
+                                <label for="digital-slider" class="font-semibold text-white">Digital Marketing</label>
+                                <span id="digital-budget-display" class="font-mono text-indigo-300">₹ 0 Cr</span>
+                            </div>
+                            <input type="range" id="digital-slider" min="0" max="100" value="0" step="0.1" class="w-full">
+                            <div class="grid grid-cols-2 text-center mt-3">
+                                <div>
+                                    <p class="text-sm text-slate-400">Estimated Leads</p>
+                                    <p id="digital-leads-display" class="text-xl font-bold text-green-400">0</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-slate-400">Est. Conversions (20%)</p>
+                                    <p id="digital-conversions-display" class="text-xl font-bold text-teal-400">0</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Print Media -->
+                         <div class="bg-slate-700 p-4 rounded-lg">
+                            <div class="flex justify-between items-center mb-2">
+                                <label for="print-slider" class="font-semibold text-white">Print Media Marketing</label>
+                                <span id="print-budget-display" class="font-mono text-indigo-300">₹ 0 Cr</span>
+                            </div>
+                            <input type="range" id="print-slider" min="0" max="100" value="0" step="0.1" class="w-full">
+                            <div class="grid grid-cols-2 text-center mt-3">
+                                <div>
+                                    <p class="text-sm text-slate-400">Estimated Leads</p>
+                                    <p id="print-leads-display" class="text-xl font-bold text-green-400">0</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-slate-400">Est. Conversions (10%)</p>
+                                    <p id="print-conversions-display" class="text-xl font-bold text-teal-400">0</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Direct to Customer -->
+                         <div class="bg-slate-700 p-4 rounded-lg">
+                            <div class="flex justify-between items-center mb-2">
+                                <label for="direct-slider" class="font-semibold text-white">Direct to Customer (Events/Comms)</label>
+                                <span id="direct-budget-display" class="font-mono text-indigo-300">₹ 0 Cr</span>
+                            </div>
+                            <input type="range" id="direct-slider" min="0" max="100" value="0" step="0.1" class="w-full">
+                            <div class="grid grid-cols-2 text-center mt-3">
+                                <div>
+                                    <p class="text-sm text-slate-400">Estimated Leads</p>
+                                    <p id="direct-leads-display" class="text-xl font-bold text-green-400">0</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-slate-400">Est. Conversions (20%)</p>
+                                    <p id="direct-conversions-display" class="text-xl font-bold text-teal-400">0</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 text-center">
+                        <button id="assign-budget-btn" class="relative btn-3d btn-green text-lg">Assign Budget & Calculate Results</button>
+                    </div>
+                </div>
+                <!-- Results Section (Initially Hidden) -->
+                <div id="marketing-results-section" class="hidden">
+                    <h2 class="text-3xl font-extrabold text-center text-white">Campaign Results</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-8 text-center bg-slate-900 p-4 rounded-lg">
+                        <div>
+                            <p class="text-sm uppercase text-slate-400">Total Leads Acquired</p>
+                            <p id="total-leads-result" class="text-3xl font-bold text-green-400"></p>
+                        </div>
+                        <div>
+                            <p class="text-sm uppercase text-slate-400">Est. New Customers</p>
+                            <p id="total-customers-result" class="text-3xl font-bold text-teal-400"></p>
+                        </div>
+                    </div>
+
+                    <div class="mt-6">
+                        <h4 class="text-lg font-semibold text-white mb-2">Craft Your Marketing Message</h4>
+                        <p class="text-sm text-slate-400 mb-3">Your conversion rate depends on how well this message aligns with your USPs and the market leader's. (Max 250 characters)</p>
+                        <textarea id="marketing-message" class="w-full bg-slate-700 border border-slate-600 text-white text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 p-3" rows="4" maxlength="250" placeholder="e.g., Experience the future with our innovative solutions. Special launch offer inside!"></textarea>
+                        <div class="text-right text-sm text-slate-400 mt-1" id="char-counter">0 / 250</div>
+                    </div>
+
+                    <div class="mt-8 text-center">
+                        <button id="send-message-btn" class="relative btn-3d btn-indigo text-lg">Send Message & Finalize Campaign</button>
+                    </div>
+                </div>
+                 <!-- Follow-up Section (Initially Hidden) -->
+                <div id="marketing-followup-section" class="hidden">
+                    <h2 class="text-3xl font-extrabold text-center text-white">Initial Campaign Report</h2>
+
+                    <div class="text-center my-6">
+                        <button id="view-battlefield-before-survey-btn" class="relative btn-3d btn-slate">View Battlefield Status</button>
+                    </div>
+
+                    <!-- Results Display -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 my-8 text-center bg-slate-900 p-4 rounded-lg">
+                        <div>
+                            <p class="text-sm uppercase text-slate-400">New Customers Gained</p>
+                            <p id="customers-gained-result" class="text-3xl font-bold text-teal-400"></p>
+                        </div>
+                        <div>
+                            <p class="text-sm uppercase text-slate-400">Value of New Customers</p>
+                            <p id="customers-value-result" class="text-3xl font-bold text-green-400"></p>
+                        </div>
+                        <div>
+                            <p class="text-sm uppercase text-slate-400">Remaining Leads</p>
+                            <p id="remaining-leads-result" class="text-3xl font-bold text-yellow-400"></p>
+                        </div>
+                    </div>
+
+                    <!-- Player Choices -->
+                    <div class="mt-6">
+                        <h4 class="text-lg font-semibold text-white mb-2">Next Step: Handle Remaining Leads</h4>
+                        <p class="text-sm text-slate-400 mb-4">You have leads that didn't convert. Choose a strategy to engage them further. This will add to your total marketing spend.</p>
+                        <div class="grid grid-cols-1 gap-6">
+                            <!-- Survey Option -->
+                            <div class="bg-slate-700 p-4 rounded-lg text-center">
+                                <h5 class="font-bold text-white">Conduct Survey</h5>
+                                <p class="text-xs text-slate-400 my-2">Gather valuable market data on why they didn't convert. This could inform future strategy.</p>
+                                <p class="text-sm font-semibold text-yellow-400 mb-3" id="survey-cost-display">Cost: ₹200 / Lead</p>
+                                <button onclick="window.handleFollowupChoice('survey')" class="w-full relative btn-3d btn-indigo">Select Survey</button>
+                            </div>
+                            <!-- NEW Targeted Message Option -->
+                            <div class="bg-slate-700 p-4 rounded-lg">
+                                <h5 class="font-bold text-white text-center">Send Targeted Follow-up Message</h5>
+                                <p class="text-xs text-slate-400 my-2 text-center">Draft a new message and choose how many remaining leads to target. Each message costs ₹150.</p>
+                                
+                                <div class="my-4 text-left">
+                                    <label for="targeted-leads-slider" class="block text-sm font-medium text-slate-300">Leads to Target: <span id="targeted-leads-display" class="font-mono text-indigo-300">0</span></label>
+                                    <input type="range" id="targeted-leads-slider" min="0" value="0" step="1" class="w-full mt-1">
+                                </div>
+
+                                <div class="my-4 text-left">
+                                    <label for="targeted-message" class="block text-sm font-medium text-slate-300">Your Message (Max 200 Chars)</label>
+                                    <textarea id="targeted-message" class="w-full bg-slate-900 border border-slate-600 text-white text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 p-2 mt-1" rows="3" maxlength="200" placeholder="Craft a message targeting the market leader's weaknesses..."></textarea>
+                                    <div class="text-right text-xs text-slate-400 mt-1" id="targeted-char-counter">0 / 200</div>
+                                </div>
+
+                                <p class="text-md font-semibold text-yellow-400 mb-3 text-center" id="targeted-cost-display">Total Cost: ₹ 0 Cr</p>
+                                <button id="send-targeted-message-btn" class="w-full relative btn-3d btn-indigo">Launch Targeted Campaign</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Phase 4b: Survey Creation -->
+        <div id="phase4b-survey" class="hidden mt-8 fade-in">
+            <div class="main-panel p-6 md:p-8 max-w-4xl mx-auto border-t-4 border-cyan-500">
+                <!-- Survey Form Section -->
+                <div id="survey-form-section">
+                    <h2 class="text-3xl font-extrabold text-center text-white">Create Your Market Survey</h2>
+                    <p class="text-center text-slate-400 mt-2">Frame seven questions to understand why leads didn't convert. Effective questions matching market USPs yield better insights.</p>
+                    <form id="survey-form" class="mt-8 space-y-4">
+                        <div class="grid grid-cols-1 gap-4">
+                            <!-- Questions will be generated here by JS -->
+                        </div>
+                        <div class="mt-8 text-center">
+                            <button id="analyze-survey-btn" type="submit" class="relative btn-3d btn-cyan text-lg">Analyze Survey</button>
+                        </div>
+                    </form>
+                </div>
+                <!-- Survey Analysis/Progress Section -->
+                <div id="survey-analysis-section" class="hidden text-center">
+                    <h2 class="text-3xl font-extrabold text-center text-white">Analyzing Responses...</h2>
+                    <p class="text-center text-slate-400 mt-2">Our AI is simulating market responses. Please wait.</p>
+                    <div class="w-full bg-slate-700 rounded-full h-4 mt-8">
+                        <div id="survey-progress-bar" class="bg-cyan-500 h-4 rounded-full" style="width: 0%; transition: width 0.5s ease-in-out;"></div>
+                    </div>
+                    <p id="survey-timer" class="mt-2 text-cyan-400 font-mono">30s remaining</p>
+                </div>
+                <!-- Survey Results Section -->
+                <div id="survey-results-section" class="hidden">
+                    <h2 class="text-3xl font-extrabold text-center text-white">Survey Insights</h2>
+                    <div id="survey-results-grid" class="mt-6 space-y-3">
+                        <!-- Results go here -->
+                    </div>
+                    <div class="mt-8 text-center">
+                        <button id="draft-new-communication-btn" class="relative btn-3d btn-green text-lg">Draft New Communication</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Phase 4c: Follow-up Communication -->
+        <div id="phase4c-communication" class="hidden mt-8 fade-in">
+            <div class="main-panel p-6 md:p-8 max-w-4xl mx-auto border-t-4 border-green-500">
+                <!-- Follow-up Draft Section -->
+                <div id="followup-draft-section">
+                    <h2 class="text-3xl font-extrabold text-center text-white">Draft Follow-up Message</h2>
+                    <p class="text-center text-slate-400 mt-2">Use your survey insights to craft a targeted message for the remaining leads. (Max 200 characters)</p>
+                    <div class="mt-6">
+                        <textarea id="followup-message" class="w-full bg-slate-700 border border-slate-600 text-white text-sm rounded-lg focus:ring-green-500 focus:border-green-500 p-3" rows="4" maxlength="200" placeholder="e.g., Based on your feedback, we're now offering [feature]..."></textarea>
+                        <div class="text-right text-sm text-slate-400 mt-1" id="followup-char-counter">0 / 200</div>
+                    </div>
+                    <div class="mt-8 text-center">
+                        <button id="send-followup-btn" class="relative btn-3d btn-green text-lg">Send Message & See Results</button>
+                    </div>
+                </div>
+                <!-- Follow-up Results Section -->
+                <div id="followup-results-section" class="hidden">
+                    <h2 class="text-3xl font-extrabold text-center text-white">Follow-up Campaign Complete</h2>
+                    <div class="my-6 bg-slate-900 p-6 rounded-lg max-w-sm mx-auto text-center">
+                         <p class="text-sm uppercase text-slate-400">New Customers from Follow-up</p>
+                         <p id="followup-customers-result" class="text-4xl font-bold text-teal-400"></p>
+                    </div>
+                    <!-- Final Push Section -->
+                    <div id="final-push-decision" class="mt-8 text-center bg-slate-700 p-4 rounded-lg">
+                        <h4 class="text-lg font-semibold text-white">Launch a Final Push Campaign?</h4>
+                        <p class="text-sm text-slate-400 my-2">This is your last chance to convert the remaining leads with one more targeted message.</p>
+                        <p class="text-md font-semibold text-yellow-400 mb-4" id="final-push-cost">Cost: ₹100 / Lead</p>
+                        <div class="space-x-4">
+                             <button id="launch-final-push-btn" class="relative btn-3d btn-green">Yes, Proceed</button>
+                             <button id="skip-final-push-btn" class="relative btn-3d btn-slate">No, View Battlefield</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Phase 4d: Final Push -->
+        <div id="phase4d-final-push" class="hidden mt-8 fade-in">
+             <div class="main-panel p-6 md:p-8 max-w-4xl mx-auto border-t-4 border-red-500">
+                <!-- Final Push Draft -->
+                <div id="final-push-draft-section">
+                    <h2 class="text-3xl font-extrabold text-center text-white">Final Push Message</h2>
+                    <p class="text-center text-slate-400 mt-2">Craft a compelling message targeting your USPs and the market leader's weaknesses. (Max 150 characters)</p>
+                     <div class="mt-6">
+                        <textarea id="final-push-message" class="w-full bg-slate-700 border border-slate-600 text-white text-sm rounded-lg focus:ring-red-500 focus:border-red-500 p-3" rows="3" maxlength="150" placeholder="e.g., Still undecided? Get an exclusive 20% off our [USP] feature, unlike anything [Competitor] offers."></textarea>
+                        <div class="text-right text-sm text-slate-400 mt-1" id="final-push-char-counter">0 / 150</div>
+                    </div>
+                    <div class="mt-8 text-center">
+                        <button id="send-final-push-btn" class="relative btn-3d btn-red text-lg">Send Final Message</button>
+                    </div>
+                </div>
+                 <!-- Final Push Results -->
+                <div id="final-push-results-section" class="hidden text-center">
+                    <h2 class="text-3xl font-extrabold text-center text-white">Final Push Complete</h2>
+                    <div class="my-8 bg-slate-900 p-6 rounded-lg max-w-sm mx-auto">
+                         <p class="text-sm uppercase text-slate-400">New Customers from Final Push</p>
+                         <p id="final-push-customers-result" class="text-4xl font-bold text-teal-400"></p>
+                    </div>
+                     <div class="mt-8 text-center">
+                        <button id="view-final-battlefield-btn-2" class="relative btn-3d btn-indigo text-lg">View Final Battlefield &rarr;</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Phase 5: The Battlefield -->
+        <div id="phase5-battlefield" class="hidden mt-8 fade-in">
+            <h2 class="text-3xl font-bold text-center text-white mb-2">Battlefield</h2>
+            <p id="battlefield-sector-name" class="text-center text-indigo-400 mb-6"></p>
+
+            <div id="battlefield-stats" class="mb-8 bg-slate-800 p-4 rounded-xl max-w-3xl mx-auto text-center border border-slate-700">
+                <!-- Customer stats will be injected here -->
+            </div>
+
+            <div id="battlefield-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Competitor cards will be generated here -->
+            </div>
+             <div class="mt-12 text-center space-x-4">
+                 <button id="proceed-to-marketing-btn" class="relative btn-3d btn-yellow">Set Marketing Strategy</button>
+                 <button id="return-to-marketing-followup-btn" class="hidden relative btn-3d btn-yellow">Return to Survey Options</button>
+                 <button id="next-year-btn" class="hidden relative btn-3d btn-green">Go to Year 2</button>
+                 <button id="save-game-btn" class="hidden relative btn-3d btn-cyan">Save Game</button>
+                 <button id="start-new-game" class="relative btn-3d btn-indigo">Start a New Venture</button>
+             </div>
+        </div>
+
+        <!-- End Game Screen -->
+        <div id="end-game-screen" class="hidden mt-8 fade-in">
+            <div class="main-panel p-6 md:p-8 max-w-4xl mx-auto text-center border-t-4 border-yellow-500">
+                <h2 id="end-game-title" class="text-4xl font-extrabold text-white">Simulation Complete!</h2>
+                <p class="text-yellow-400 text-2xl font-semibold mt-2" id="end-game-subtitle"></p>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 my-8 text-center bg-slate-900 p-4 rounded-lg">
+                    <div>
+                        <p class="text-sm uppercase text-slate-400">Initial Turnover</p>
+                        <p id="final-initial-turnover" class="text-2xl font-bold text-slate-300"></p>
+                    </div>
+                    <div>
+                        <p class="text-sm uppercase text-slate-400">Final Turnover</p>
+                        <p id="final-turnover" class="text-3xl font-bold text-green-400"></p>
+                    </div>
+                    <div>
+                        <p class="text-sm uppercase text-slate-400">Growth Multiple</p>
+                        <p id="final-growth" class="text-3xl font-bold text-green-400"></p>
+                    </div>
+                </div>
+
+                <!-- Certificate -->
+                <div id="certificate-wrapper" class="my-8">
+                    <h3 class="text-lg font-semibold text-white mb-4">Your Certificate of Achievement</h3>
+                    <div id="certificate-container" class="p-6 relative max-w-2xl mx-auto">
+                        <!-- Certificate will be generated here by JS -->
+                    </div>
+                </div>
+
+                <div class="mt-8 flex justify-center items-center gap-4 flex-wrap">
+                    <button id="download-certificate-btn" class="relative btn-3d btn-green">Download Certificate</button>
+                    <button id="share-linkedin-btn" class="relative btn-3d" style="background-color: #0077b5;"><span style="color:#004163; position:absolute; left:0; top:0; height:100%; width:100%; transform: translateZ(-1px) translateY(4px); border-radius: 0.5rem;"></span>Share on LinkedIn</button>
+                    <button id="play-again-btn" class="relative btn-3d btn-indigo">Play Again</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    
+    <!-- Projection Modal -->
+    <div id="projection-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 modal-overlay">
+        <div class="modal-content bg-slate-800 rounded-2xl shadow-xl w-full max-w-md p-6 border-t-4 border-indigo-500 transform scale-95 opacity-0">
+            <div class="flex justify-between items-center mb-4">
+                <h3 id="modal-company-name" class="text-2xl font-bold text-white"></h3>
+                <button id="close-modal-btn" class="text-slate-400 hover:text-white text-3xl leading-none">&times;</button>
+            </div>
+            <p class="text-sm text-indigo-400 mb-1">5-Year Projected Turnover</p>
+            <p id="modal-cagr" class="text-xs text-slate-400 mb-4"></p>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left text-slate-300">
+                    <thead class="text-xs text-indigo-300 uppercase bg-slate-700">
+                        <tr>
+                            <th class="px-4 py-2">Year</th>
+                            <th class="px-4 py-2">Projected Turnover (₹ Crore)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="projection-table-body">
+                        <!-- Projection data goes here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Targeted Campaign Results Modal -->
+    <div id="targeted-results-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 modal-overlay">
+        <div class="modal-content bg-slate-800 rounded-2xl shadow-xl w-full max-w-md p-6 border-t-4 border-green-500 transform scale-95 opacity-0 text-center">
+            <h3 class="text-2xl font-bold text-white">Targeted Campaign Results</h3>
+            <p id="targeted-results-text" class="text-slate-300 my-6 text-lg"></p>
+            <button id="modal-view-battlefield-btn" class="relative btn-3d btn-indigo">View Updated Battlefield</button>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmation-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 modal-overlay">
+        <div class="modal-content bg-slate-800 rounded-2xl shadow-xl w-full max-w-md p-6 border-t-4 border-yellow-500 transform scale-95 opacity-0 text-center">
+            <h3 class="text-2xl font-bold text-white">Confirm Campaign Launch</h3>
+            <p id="confirmation-text" class="text-slate-300 my-6 text-lg"></p>
+            <div class="space-x-4">
+                <button id="confirm-btn" class="relative btn-3d btn-green">Confirm</button>
+                <button id="cancel-btn" class="relative btn-3d btn-slate">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Congratulations Overlay -->
+    <div id="congrats-overlay" class="hidden fixed inset-0 bg-green-600/95 flex items-center justify-center p-4 z-[100] fade-in">
+        <h2 class="text-5xl md:text-7xl font-extrabold text-white text-center animate-pulse">Congratulations, You are a Great Leader!</h2>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="notification-toast" class="hidden fixed bottom-5 right-5 bg-green-500 text-white py-2 px-4 rounded-lg shadow-lg fade-in">
+        <p id="notification-text"></p>
+    </div>
+
+
+    <script type="module">
+  const API_ENDPOINT = 'https://erp.taxila.in/api/game/sectorshaker';
+
+function getUserId() {
+                const params = new URLSearchParams(window.location.search);
+                return params.get("userId") || "guest";
+            }
+        // --- END FIREBASE SETUP ---
+        const initialMarketData = {
+            "Automobile": {
+                potential: "₹15 Trillion ($180 Billion)", totalCustomers: "120 Million", baseCustomers: 120000000, sectorCAGR: 7, avgSpendingPower: 125000,
+                costPerLead: { digital: 2000, print: 8000, direct: 15000 },
+                conversionRates: { digital: 0.20, print: 0.10, direct: 0.20 },
+                trends: "Key Trends: Massive shift towards Electric Vehicles (EVs), connected car technology, and shared mobility. Strong government push for local manufacturing (PLI schemes).",
+                companies: [
+                    { name: "Maruti Suzuki India", turnover: "₹1.35 Trillion", baseTurnover: 135000, cagr: 8, share: "~42%", marketingBudgetPct: 4, usps: "1. Unmatched sales & service network. 2. High fuel efficiency in ICE models. 3. Strong brand trust in the budget segment." },
+                    { name: "Hyundai Motor India", turnover: "₹60,000 Crore", baseTurnover: 60000, cagr: 10, share: "~15%", marketingBudgetPct: 5, usps: "1. Feature-rich, stylish designs. 2. Wide portfolio from hatchbacks to SUVs. 3. Strong export hub from India." },
+                    { name: "Tata Motors", turnover: "₹1.14 Trillion (PV)", baseTurnover: 114000, cagr: 22, share: "~14%", marketingBudgetPct: 6, usps: "1. Market leader in the EV segment (Nexon, Tiago EV). 2. Focus on high safety ratings (5-star GNCAP). 3. Modern design language." },
+                    { name: "Mahindra & Mahindra", turnover: "₹90,000 Crore (Auto)", baseTurnover: 90000, cagr: 18, share: "~9%", marketingBudgetPct: 5, usps: "1. Dominance in the large SUV segment (Scorpio-N, XUV700). 2. Rugged and reliable vehicle engineering. 3. Aggressive EV product pipeline." },
+                    { name: "Kia India", turnover: "₹30,000 Crore", baseTurnover: 30000, cagr: 15, share: "~7%", marketingBudgetPct: 7, usps: "1. Cutting-edge design and technology. 2. Strong appeal to younger demographics. 3. Rapidly expanded product line." }
+                ]
+            },
+            "BFSI": {
+                potential: "₹35 Trillion ($420 Billion)", totalCustomers: "700 Million", baseCustomers: 700000000, sectorCAGR: 12, avgSpendingPower: 50000,
+                costPerLead: { digital: 800, print: 3000, direct: 6000 },
+                conversionRates: { digital: 0.20, print: 0.10, direct: 0.20 },
+                trends: "Key Trends: Digital payments explosion (UPI), rise of fintech startups, focus on financial inclusion, and neo-banking.",
+                companies: [
+                    { name: "HDFC Bank", turnover: "₹2.1 Trillion (Interest)", baseTurnover: 210000, cagr: 15, share: "~11% (Assets)", marketingBudgetPct: 4, usps: "1. Largest private sector bank by assets. 2. Strong retail and corporate banking arms. 3. High brand trust and stability." },
+                    { name: "State Bank of India", turnover: "₹4.7 Trillion (Interest)", baseTurnover: 470000, cagr: 10, share: "~23% (Assets)", marketingBudgetPct: 3, usps: "1. India's largest bank with massive reach. 2. Backed by the government, perceived as safest. 3. Leader in digital banking (YONO app)." },
+                    { name: "ICICI Bank", turnover: "₹1.8 Trillion (Interest)", baseTurnover: 180000, cagr: 14, share: "~9% (Assets)", marketingBudgetPct: 5, usps: "1. Pioneer in digital banking and technology adoption. 2. Strong focus on retail and SME lending. 3. Wide range of financial products." },
+                    { name: "Bajaj Finance", turnover: "₹41,000 Crore", baseTurnover: 41000, cagr: 25, share: "N/A (NBFC)", marketingBudgetPct: 8, usps: "1. Dominant in consumer durable financing. 2. Extensive partner network and quick loan approvals. 3. Diversified into various lending products." },
+                    { name: "Paytm", turnover: "₹7,990 Crore", baseTurnover: 7990, cagr: 30, share: "N/A (Fintech)", marketingBudgetPct: 15, usps: "1. Super-app with payments, commerce, and financial services. 2. Massive user base and brand recognition. 3. Pioneer of the QR code payment system in India." }
+                ]
+            },
+            "E-commerce": {
+                potential: "₹12.5 Trillion ($150 Billion)", totalCustomers: "600 Million", baseCustomers: 600000000, sectorCAGR: 14, avgSpendingPower: 20833,
+                costPerLead: { digital: 250, print: 5000, direct: 10000 },
+                conversionRates: { digital: 0.20, print: 0.10, direct: 0.20 },
+                trends: "Key Trends: Rise of quick-commerce, social commerce, D2C brand integration, and expansion into Tier-2 and Tier-3 cities.",
+                companies: [
+                    { name: "Flipkart", turnover: "₹56,000 Crore", baseTurnover: 56000, cagr: 18, share: "~38%", marketingBudgetPct: 15, usps: "1. Strong foothold in electronics and fashion. 2. Excellent supply chain and logistics (Ekart). 3. Pioneer of major online sales events (Big BillionDays)." },
+                    { name: "Amazon India", turnover: "₹22,000 Crore", baseTurnover: 22000, cagr: 16, share: "~35%", marketingBudgetPct: 18, usps: "1. Vast selection and fast delivery with Prime. 2. Global brand trust and customer service standards. 3. Strong ecosystem (AWS, Prime Video, etc.)." },
+                    { name: "Myntra", turnover: "₹4,300 Crore", baseTurnover: 4300, cagr: 20, share: "~5% (Fashion)", marketingBudgetPct: 20, usps: "1. India's largest dedicated fashion e-commerce platform. 2. Curated collection of top brands. 3. Focus on user experience and fashion content." },
+                    { name: "Meesho", turnover: "₹5,700 Crore", baseTurnover: 5700, cagr: 40, share: "~7%", marketingBudgetPct: 25, usps: "1. Leader in social commerce and reseller model. 2. Focus on unbranded, low-cost products for Tier-2/3 cities. 3. Empowering small entrepreneurs." },
+                    { name: "Nykaa", turnover: "₹5,100 Crore", baseTurnover: 5100, cagr: 35, share: "N/A (Beauty)", marketingBudgetPct: 22, usps: "1. Dominant in the online beauty and personal care market. 2. Content-led commerce with tutorials and reviews. 3. Strong portfolio of premium and owned brands." }
+                ]
+            },
+             "EdTech": {
+                potential: "₹2.5 Trillion ($30 Billion)", totalCustomers: "300 Million", baseCustomers: 300000000, sectorCAGR: 18, avgSpendingPower: 8333,
+                costPerLead: { digital: 600, print: 4000, direct: 8000 },
+                conversionRates: { digital: 0.20, print: 0.10, direct: 0.20 },
+                trends: "Key Trends: Hybrid (online + offline) learning models, focus on skill development and upskilling, K-12 consolidation, and use of AI for personalized learning paths.",
+                companies: [
+                    { name: "BYJU'S", turnover: "₹10,000 Crore", baseTurnover: 10000, cagr: 5, share: "~35%", marketingBudgetPct: 30, usps: "1. Comprehensive K-12 learning app with engaging video content. 2. Aggressive acquisition strategy (Aakash, Great Learning). 3. Strong brand recognition and celebrity endorsements." },
+                    { name: "Unacademy", turnover: "₹900 Crore", baseTurnover: 900, cagr: 15, share: "~10%", marketingBudgetPct: 40, usps: "1. Leader in test preparation for competitive exams (UPSC, JEE). 2. Vast network of educators on its platform. 3. Diversifying into offline centers and new categories." },
+                    { name: "upGrad", turnover: "₹1,200 Crore", baseTurnover: 1200, cagr: 25, share: "~8%", marketingBudgetPct: 35, usps: "1. Focus on higher education and upskilling for working professionals. 2. Partnerships with top global universities. 3. Strong career support and placement assistance." },
+                    { name: "Physics Wallah", turnover: "₹800 Crore", baseTurnover: 800, cagr: 50, share: "~7%", marketingBudgetPct: 20, usps: "1. Highly affordable and accessible test prep content. 2. Cult-like following around its founder, Alakh Pandey. 3. Rapid expansion into offline and other exam categories." },
+                    { name: "Simplilearn", turnover: "₹700 Crore", baseTurnover: 700, cagr: 22, share: "~5%", marketingBudgetPct: 28, usps: "1. Focus on digital economy skills and certifications (Data Science, Cloud). 2. Bootcamp-style learning model. 3. Strong partnerships with enterprises for corporate training." }
+                ]
+            },
+            "FMCG": {
+                potential: "₹14 Trillion ($168 Billion)", totalCustomers: "1 Billion", baseCustomers: 1000000000, sectorCAGR: 6, avgSpendingPower: 14000,
+                costPerLead: { digital: 100, print: 500, direct: 1000 },
+                conversionRates: { digital: 0.20, print: 0.10, direct: 0.20 },
+                trends: "Key Trends: Growth in rural markets, premiumization in urban areas, rise of D2C brands, and focus on health & wellness products.",
+                companies: [
+                    { name: "Hindustan Unilever", turnover: "₹59,500 Crore", baseTurnover: 59500, cagr: 9, share: "~12%", marketingBudgetPct: 12, usps: "1. Massive portfolio of iconic brands. 2. Unparalleled distribution network. 3. Masterful marketing and consumer insights." },
+                    { name: "ITC Limited", turnover: "₹70,000 Crore (Non-cig)", baseTurnover: 70000, cagr: 10, share: "~10%", marketingBudgetPct: 8, usps: "1. Dominance in tobacco funds diversification. 2. Strong presence in packaged foods. 3. 'Triple Bottom Line' focus on sustainability." },
+                    { name: "Nestlé India", turnover: "₹19,000 Crore", baseTurnover: 19000, cagr: 12, share: "~7%", marketingBudgetPct: 11, usps: "1. Iconic brands with strong moats (Maggi, Nescafé). 2. Focus on nutrition, health, and wellness. 3. Swiss quality standards and R&D backing." },
+                    { name: "Britannia Industries", turnover: "₹16,500 Crore", baseTurnover: 16500, cagr: 11, share: "~6%", marketingBudgetPct: 9, usps: "1. Market leader in the bakery segment (biscuits). 2. Strong brand loyalty built over decades. 3. Innovation in product variants." },
+                    { name: "Reliance Retail", turnover: "₹2.6 Trillion", baseTurnover: 260000, cagr: 25, share: "~18%", marketingBudgetPct: 7, usps: "1. Dominant omnichannel presence. 2. Aggressive pricing and private label strategy. 3. Deep integration with the Reliance ecosystem." }
+                ]
+            },
+            "IT Services": {
+                potential: "₹20 Trillion ($240 Billion)", totalCustomers: "5 Million (Businesses)", baseCustomers: 5000000, sectorCAGR: 10, avgSpendingPower: 4000000,
+                costPerLead: { digital: 10000, print: 25000, direct: 50000 },
+                conversionRates: { digital: 0.20, print: 0.10, direct: 0.20 },
+                trends: "Key Trends: High demand for AI/ML integration, cloud computing, cybersecurity, and digital transformation services.",
+                companies: [
+                    { name: "Tata Consultancy (TCS)", turnover: "₹2.41 Trillion", baseTurnover: 241000, cagr: 12, share: "~15%", marketingBudgetPct: 1.5, usps: "1. Immense scale and global delivery capability. 2. Strong relationships with Fortune 500 clients. 3. Broad service portfolio." },
+                    { name: "Infosys", turnover: "₹1.53 Trillion", baseTurnover: 153000, cagr: 14, share: "~9%", marketingBudgetPct: 2, usps: "1. Leader in digital transformation consulting. 2. Strong brand recognition and corporate governance. 3. Investment in AI platforms (Topaz)." },
+                    { name: "HCL Technologies", turnover: "₹1.09 Trillion", baseTurnover: 109000, cagr: 13, share: "~7%", marketingBudgetPct: 1.8, usps: "1. Expertise in engineering and R&D services. 2. Strong focus on infrastructure management. 3. Flexible engagement models." },
+                    { name: "Wipro", turnover: "₹90,486 Crore", baseTurnover: 90486, cagr: 9, share: "~5%", marketingBudgetPct: 2, usps: "1. Focus on integrated cloud & digital solutions. 2. Strong presence in the Americas and Europe. 3. Strengthened financial consulting." },
+                    { name: "Tech Mahindra", turnover: "₹51,996 Crore", baseTurnover: 51996, cagr: 11, share: "~3%", marketingBudgetPct: 2.2, usps: "1. Deep expertise in the telecom sector. 2. Focus on emerging tech framework. 3. BPO and customer experience management." }
+                ]
+            },
+            "Pharmaceuticals": {
+                potential: "₹11 Trillion ($130 Billion)", totalCustomers: "1.2 Billion", baseCustomers: 1200000000, sectorCAGR: 8, avgSpendingPower: 9167,
+                costPerLead: { digital: 1500, print: 4000, direct: 8000 },
+                conversionRates: { digital: 0.20, print: 0.10, direct: 0.20 },
+                trends: "Key Trends: 'Pharmacy of the world' - strong generics exports, focus on biosimilars, rise of telemedicine and digital health platforms.",
+                companies: [
+                    { name: "Sun Pharmaceutical", turnover: "₹43,880 Crore", baseTurnover: 43880, cagr: 8, share: "~8%", marketingBudgetPct: 8, usps: "1. India's largest pharma company by market cap. 2. Strong presence in specialty therapeutics. 3. Extensive global footprint, especially in the US." },
+                    { name: "Dr. Reddy's Labs", turnover: "₹27,000 Crore", baseTurnover: 27000, cagr: 10, share: "~6%", marketingBudgetPct: 9, usps: "1. Leader in Active Pharmaceutical Ingredients (APIs). 2. Strong focus on R&D and innovation. 3. Diversified portfolio in generics & biosimilars." },
+                    { name: "Cipla", turnover: "₹25,450 Crore", baseTurnover: 25450, cagr: 9, share: "~5%", marketingBudgetPct: 10, usps: "1. Leader in respiratory and inhalation drugs. 2. Strong ethical marketing and doctor network. 3. Commitment to affordable healthcare." },
+                    { name: "Apollo Hospitals", turnover: "₹16,600 Crore", baseTurnover: 16600, cagr: 15, share: "~4%", marketingBudgetPct: 6, usps: "1. Largest hospital chain in India. 2. Integrated healthcare model (hospitals, pharmacies). 3. Pioneer in adopting medical technology." },
+                    { name: "Serum Institute", turnover: "N/A", baseTurnover: 20000, cagr: 12, share: "N/A", marketingBudgetPct: 3, usps: "1. World's largest vaccine manufacturer by volume. 2. Crucial role in global immunization programs. 3. Unmatched scale and cost-efficiency." }
+                ]
+            },
+            "Real Estate": {
+                potential: "₹80 Trillion ($1 Trillion by 2030)", totalCustomers: "80 Million", baseCustomers: 80000000, sectorCAGR: 9, avgSpendingPower: 1000000,
+                costPerLead: { digital: 5000, print: 20000, direct: 50000 },
+                conversionRates: { digital: 0.20, print: 0.10, direct: 0.20 },
+                trends: "Key Trends: Growth in affordable and mid-segment housing, high demand for Grade A office spaces, rise of warehousing and logistics parks, and technology adoption (proptech).",
+                companies: [
+                    { name: "DLF", turnover: "₹6,000 Crore", baseTurnover: 6000, cagr: 10, share: "N/A", marketingBudgetPct: 5, usps: "1. India's largest real estate developer by market cap. 2. Strong presence in luxury residential and prime commercial properties. 3. Large, well-located land bank." },
+                    { name: "Macrotech (Lodha)", turnover: "₹9,500 Crore", baseTurnover: 9500, cagr: 12, share: "N/A", marketingBudgetPct: 6, usps: "1. Leader in residential sales in India. 2. Strong brand in the Mumbai Metropolitan Region (MMR). 3. Focus on large-scale township development." },
+                    { name: "Godrej Properties", turnover: "₹3,000 Crore", baseTurnover: 3000, cagr: 18, share: "N/A", marketingBudgetPct: 7, usps: "1. Part of the trusted Godrej Group. 2. Asset-light model through joint ventures. 3. Strong focus on sustainability and green buildings." },
+                    { name: "Prestige Group", turnover: "₹8,500 Crore", baseTurnover: 8500, cagr: 15, share: "N/A", marketingBudgetPct: 6, usps: "1. Leading developer in South India. 2. Diversified portfolio across residential, commercial, and retail. 3. Reputation for on-time project delivery." },
+                    { name: "Embassy REIT", turnover: "₹3,500 Crore", baseTurnover: 3500, cagr: 8, share: "N/A (REIT)", marketingBudgetPct: 1, usps: "1. India's first publicly listed Real Estate Investment Trust. 2. Portfolio of high-quality office parks leased to MNCs. 3. Provides stable rental income and dividends to investors." }
+                ]
+            },
+            "Renewable Energy": {
+                potential: "₹4.5 Trillion ($54 Billion)", totalCustomers: "2 Million (B2B & B2C)", baseCustomers: 2000000, sectorCAGR: 15, avgSpendingPower: 2250000,
+                costPerLead: { digital: 8000, print: 20000, direct: 40000 },
+                conversionRates: { digital: 0.20, print: 0.10, direct: 0.20 },
+                trends: "Key Trends: Solar power dominance, growth in wind-solar hybrid projects, emergence of green hydrogen, and battery storage solutions.",
+                companies: [
+                     { name: "Adani Green Energy", turnover: "₹7,735 Crore", baseTurnover: 7735, cagr: 25, share: "~18%", marketingBudgetPct: 3, usps: "1. Largest renewable portfolio in India. 2. Aggressive expansion and rapid execution. 3. Strong vertical integration with solar manufacturing." },
+                     { name: "Tata Power Renewable", turnover: "₹8,000 Crore", baseTurnover: 8000, cagr: 20, share: "~15%", marketingBudgetPct: 4, usps: "1. Strong brand trust and engineering legacy. 2. Presence across utility-scale, rooftop, and EV charging. 3. Focus on sustainable practices." },
+                     { name: "ReNew Power", turnover: "₹8,900 Crore", baseTurnover: 8900, cagr: 18, share: "~12%", marketingBudgetPct: 3.5, usps: "1. One of the earliest and largest IPOs in the sector. 2. Diversified portfolio across wind and solar. 3. Strong financial backing." },
+                     { name: "JSW Energy", turnover: "₹10,330 Crore", baseTurnover: 10330, cagr: 16, share: "~8%", marketingBudgetPct: 2.5, usps: "1. Rapidly transitioning from thermal to renewable power. 2. Focus on hydro and energy storage solutions. 3. Part of a large industrial group." },
+                     { name: "NTPC Renewable", turnover: "N/A", baseTurnover: 5000, cagr: 28, share: "~7%", marketingBudgetPct: 2, usps: "1. Backed by India's largest power utility (PSU). 2. Ambitious government-mandated targets. 3. Access to prime land and grid infrastructure." }
+                ]
+            },
+            "Telecommunications": {
+                potential: "₹5 Trillion ($60 Billion)", totalCustomers: "1 Billion", baseCustomers: 1000000000, sectorCAGR: 5, avgSpendingPower: 5000,
+                costPerLead: { digital: 400, print: 2000, direct: 3000 },
+                conversionRates: { digital: 0.20, print: 0.10, direct: 0.20 },
+                trends: "Key Trends: 5G rollout and adoption, rising average revenue per user (ARPU), fiber-to-the-home (FTTH) expansion, and telcos becoming digital service providers.",
+                companies: [
+                    { name: "Reliance Jio", turnover: "₹1.03 Trillion", baseTurnover: 103000, cagr: 15, share: "~45%", marketingBudgetPct: 6, usps: "1. Largest subscriber base with extensive 4G/5G network. 2. Disruptive pricing strategy. 3. Integrated digital ecosystem (Jio apps)." },
+                    { name: "Bharti Airtel", turnover: "₹1.4 Trillion", baseTurnover: 140000, cagr: 12, share: "~35%", marketingBudgetPct: 7, usps: "1. Strong brand loyalty and premium customer base. 2. Focus on quality of service and higher ARPU. 3. Growing enterprise and digital services (Airtel Thanks)." },
+                    { name: "Vodafone Idea (Vi)", turnover: "₹42,000 Crore", baseTurnover: 42000, cagr: 2, share: "~18%", marketingBudgetPct: 5, usps: "1. Focus on retaining high-value customers. 2. Strong brand recall in certain circles. 3. Actively seeking fundraising and network upgrades." },
+                    { name: "BSNL", turnover: "₹19,000 Crore", baseTurnover: 19000, cagr: 3, share: "~2%", marketingBudgetPct: 2, usps: "1. Government-owned with extensive rural and remote area coverage. 2. Most affordable landline and fiber plans. 3. Perceived reliability due to PSU status." },
+                    { name: "Tata Communications", turnover: "₹18,000 Crore", baseTurnover: 18000, cagr: 8, share: "N/A (B2B)", marketingBudgetPct: 3, usps: "1. Global leader in enterprise network solutions. 2. Owns one of the world's largest subsea fiber networks. 3. Focus on IoT, cloud, and security services for businesses." }
+                ]
+            },
+            "Tourism & Hospitality": {
+                potential: "₹3 Trillion ($36 Billion)", totalCustomers: "80 Million (Annual Footfall)", baseCustomers: 80000000, sectorCAGR: 12, avgSpendingPower: 37500,
+                costPerLead: { digital: 500, print: 2500, direct: 4000 },
+                conversionRates: { digital: 0.20, print: 0.10, direct: 0.20 },
+                trends: "Key Trends: Experiential travel, luxury heritage hotels, growth in MICE (Meetings, Incentives, Conferences, Exhibitions) in Jaipur, wellness retreats, and leveraging digital platforms for bookings.",
+                companies: [
+                    { name: "Taj Hotels (IHCL)", turnover: "₹5,500 Crore", baseTurnover: 5500, cagr: 15, share: "~15%", marketingBudgetPct: 10, usps: "1. Iconic palace hotel portfolio (Rambagh, Lake Palace). 2. Unmatched luxury and service standards. 3. Strong brand legacy and loyalty program." },
+                    { name: "Oberoi Group (EIH)", turnover: "₹2,500 Crore", baseTurnover: 2500, cagr: 16, share: "~12%", marketingBudgetPct: 12, usps: "1. Focus on ultra-luxury experiences (Vanyavilas, Udaivilas). 2. High employee-to-guest ratio for personalized service. 3. Award-winning properties and design." },
+                    { name: "MakeMyTrip", turnover: "₹6,000 Crore", baseTurnover: 6000, cagr: 22, share: "N/A (OTA)", marketingBudgetPct: 18, usps: "1. Dominant online market share for travel bookings. 2. Wide range of services from flights to hotels and experiences. 3. Strong technology platform and mobile app." },
+                    { name: "Rajasthan Tourism (RTDC)", turnover: "₹800 Crore", baseTurnover: 800, cagr: 8, share: "~5%", marketingBudgetPct: 6, usps: "1. Properties in prime, strategic locations across the state. 2. Promotes cultural events like the Pushkar Fair. 3. Offers budget-friendly travel options." },
+                    { name: "OYO Rooms", turnover: "₹5,000 Crore", baseTurnover: 5000, cagr: 18, share: "N/A (Aggregator)", marketingBudgetPct: 20, usps: "1. Leader in the budget hotel aggregation space. 2. Standardized experience at low price points. 3. Strong tech backbone for booking and operations." }
+                ]
+            }
+        };
+        
+        let marketData = JSON.parse(JSON.stringify(initialMarketData)); // Create a deep copy to modify during gameplay
+        
+        let selectedSector = null;
+        let playerCompany = null;
+        let marketingCampaign = {};
+        let confirmationCallback = null;
+        let currentYear = 1;
+        let yearTimerInterval = null;
+        let timeLeftInYear = 3600; // 60 minutes * 60 seconds
+
+        const yearlyUSPs = {
+            "Year 2": {
+                "Automobile": {
+                    "Maruti Suzuki India": "1. AI-powered predictive maintenance alerts in all models. 2. Leader in hybrid powertrain technology. 3. Fully integrated connected car ecosystem.",
+                    "Hyundai Motor India": "1. Level 2 ADAS (Advanced Driver-Assistance Systems) standard. 2. Subscription-based ownership models. 3. In-house EV battery manufacturing.",
+                    "Tata Motors": "1. 600km+ range EV models launched. 2. Hydrogen fuel-cell vehicle prototype. 3. Carbon-neutral manufacturing plants.",
+                    "Mahindra & Mahindra": "1. 'Born Electric' platform of global EVs launched. 2. All-terrain autonomous driving mode. 3. In-car AR display technology.",
+                    "Kia India": "1. Direct-to-consumer (D2C) online sales platform. 2. Vehicle-to-grid (V2G) charging technology. 3. AI-based personalized cabin experience."
+                },
+                "BFSI": {
+                    "HDFC Bank": "1. AI-driven personalized financial advisory service. 2. Fully automated digital mortgage approvals. 3. Neo-banking subsidiary for Gen-Z.",
+                    "State Bank of India": "1. Blockchain for secure trade finance. 2. AI chatbot handling 80% of customer queries. 3. CBDC (Digital Rupee) integration.",
+                    "ICICI Bank": "1. Metaverse banking branch for virtual consultations. 2. IoT-enabled insurance products. 3. Open banking API platform for fintechs.",
+                    "Bajaj Finance": "1. 'Super App' with integrated e-commerce and lending. 2. Real-time credit scoring using AI. 3. Subscription-based financing for services.",
+                    "Paytm": "1. Expansion into wealth management with robo-advisory. 2. ONDC platform integration for hyperlocal commerce. 3. International UPI remittance services."
+                },
+                "E-commerce": {
+                    "Flipkart": "1. AI-powered voice search and checkout. 2. Drone delivery pilot in Tier-2 cities. 3. Live-stream shopping integration.",
+                    "Amazon India": "1. 'Just Walk Out' technology in physical stores. 2. AI-driven supply chain optimization. 3. 3D product visualization using AR.",
+                    "Myntra": "1. Virtual try-on for apparel and accessories. 2. AI-based personal stylist subscriptions. 3. Sustainable fashion marketplace.",
+                    "Meesho": "1. Hyperlocal group buying feature. 2. AI-based trend forecasting for resellers. 3. Integrated logistics for micro-entrepreneurs.",
+                    "Nykaa": "1. AI-powered skin analysis and product recommendation. 2. Hyper-personalized beauty subscription boxes. 3. Expansion into men's grooming and wellness."
+                },
+                "EdTech": { "BYJU'S": "1. Adaptive learning paths powered by AI. 2. Introduction of AR/VR modules for science. 3. Hybrid 'Phygital' learning centers.", "Unacademy": "1. AI-proctored online examination system. 2. Gamified learning with leaderboards and rewards. 3. Peer-to-peer doubt-solving platform.", "upGrad": "1. AI-driven career path recommendation engine. 2. Partnership with companies for job-guaranteed programs. 3. Blockchain-based digital credentials.", "Physics Wallah": "1. Vernacular language AI teaching assistants. 2. Low-cost educational tablets with preloaded content. 3. Community-based learning platform.", "Simplilearn": "1. AI-powered virtual labs for hands-on practice. 2. Corporate training using AR simulations. 3. Skills-based hiring platform integration." },
+                "FMCG": { "Hindustan Unilever": "1. AI-driven demand forecasting for hyperlocal inventory. 2. D2C personalized product subscription service. 3. Smart, connected packaging with refill models.", "ITC Limited": "1. Blockchain for supply chain transparency ('farm-to-fork'). 2. AI-powered 'super app' for rural distribution. 3. Launch of plant-based protein products.", "Nestlé India": "1. Personalized nutrition plans based on health data. 2. Smart vending machines with cashless payment. 3. Focus on sustainable and recyclable packaging.", "Britannia Industries": "1. AI-optimized production lines for zero waste. 2. Launch of functional foods with health benefits. 3. D2C platform for customized gift packs.", "Reliance Retail": "1. Fully automated 'dark stores' for quick commerce. 2. Metaverse shopping experience for JioMart. 3. AI-powered dynamic pricing across all stores." },
+                "IT Services": { "Tata Consultancy (TCS)": "1. Quantum computing consulting services launched. 2. Generative AI-powered code generation platform. 3. Specialised Industrial Metaverse solutions.", "Infosys": "1. AI-driven autonomous enterprise management platform. 2. Green data center and sustainable tech consulting. 3. Cybersecurity services using AI threat hunting.", "HCL Technologies": "1. 5G engineering services for smart factories. 2. AI-powered automation for legacy system modernization. 3. Cloud-native security and observability platform.", "Wipro": "1. Decentralized Finance (DeFi) consulting practice. 2. AI-driven talent upskilling and reskilling platform. 3. Edge computing solutions for IoT.", "Tech Mahindra": "1. Metaverse-as-a-Service (MaaS) platform. 2. Blockchain-based solutions for secure digital identity. 3. AI-powered network automation for 5G." },
+                "Pharmaceuticals": { "Sun Pharmaceutical": "1. AI-accelerated drug discovery platform. 2. 3D-printed personalized medicines. 3. Digital therapeutics (DTx) apps for chronic diseases.", "Dr. Reddy's Labs": "1. Continuous manufacturing process using IoT. 2. AI-powered clinical trial management. 3. Launch of gene therapy R&D unit.", "Cipla": "1. Smart inhalers with connected app for dose tracking. 2. Drone delivery of medicines to remote areas. 3. AI-based chatbot for patient support.", "Apollo Hospitals": "1. AI-assisted diagnostics for radiology and pathology. 2. Robotic surgery centers of excellence. 3. Tele-ICU services for remote patient monitoring.", "Serum Institute": "1. mRNA vaccine development and manufacturing platform. 2. AI-driven pandemic forecasting models. 3. Global vaccine supply chain using blockchain." },
+                "Real Estate": { "DLF": "1. Smart home automation as standard in all properties. 2. AI-powered building energy management systems. 3. Tokenization of commercial real estate assets.", "Macrotech (Lodha)": "1. Use of 3D printing for construction. 2. VR-enabled virtual property tours. 3. Sustainable, net-zero-energy townships.", "Godrej Properties": "1. AI-driven construction project management. 2. IoT sensors for predictive maintenance in buildings. 3. 'Green lease' agreements for commercial properties.", "Prestige Group": "1. Proptech platform for seamless buying/selling. 2. Co-living and co-working spaces with flexible leases. 3. Smart parking solutions in all projects.", "Embassy REIT": "1. AI-powered smart office solutions for tenants. 2. Green building certifications for entire portfolio. 3. Data analytics for optimizing space utilization." },
+                "Renewable Energy": { "Adani Green Energy": "1. AI-powered wind and solar farm optimization. 2. Green hydrogen production facility commissioned. 3. Integrated battery storage solutions at scale.", "Tata Power Renewable": "1. Peer-to-peer (P2P) solar energy trading platform. 2. Smart grid management using AI. 3. Floating solar power projects.", "ReNew Power": "1. AI-based predictive maintenance for wind turbines. 2. Round-the-clock (RTC) renewable energy supply. 3. Expansion into energy storage manufacturing.", "JSW Energy": "1. Hybrid wind-solar-storage projects. 2. Pumped hydro storage capacity expansion. 3. Green ammonia production for export.", "NTPC Renewable": "1. Large-scale offshore wind power projects. 2. Carbon capture and utilization (CCU) technology. 3. National green hydrogen mobility network." },
+                "Telecommunications": { "Reliance Jio": "1. 5G-powered private networks for enterprises. 2. Satellite-based broadband services (JioSpaceFiber). 3. AI-driven network slicing for custom services.", "Bharti Airtel": "1. Edge computing services for low-latency applications. 2. IoT solutions for smart cities and agriculture. 3. Cloud gaming and immersive entertainment platform.", "Vodafone Idea (Vi)": "1. Focus on 5G for enterprise and IoT use cases. 2. Partnership with OTTs for bundled content. 3. Upgraded network with Open RAN technology.", "BSNL": "1. Government-funded 4G/5G network rollout. 2. Fiber-to-the-home (FTTH) expansion in rural areas. 3. Secure network for government communications.", "Tata Communications": "1. Global private 5G network-as-a-service. 2. Secure Access Service Edge (SASE) platform. 3. IoT connectivity management platform." },
+                "Tourism & Hospitality": { "Taj Hotels (IHCL)": "1. AI-powered hyper-personalization of guest experience. 2. Sustainable, zero-carbon hotel operations. 3. App-based seamless check-in and room control.", "Oberoi Group (EIH)": "1. Robotic process automation (RPA) for back-office tasks. 2. VR tours of properties and destinations. 3. Wellness and holistic health retreat programs.", "MakeMyTrip": "1. AI-powered travel planning and itinerary generation. 2. Generative AI trip assistant 'TripGPT'. 3. Blockchain for secure booking and identity verification.", "Rajasthan Tourism (RTDC)": "1. AR-enhanced mobile app for heritage sites. 2. Digital promotion of offbeat destinations. 3. Online ticketing for all monuments and palaces.", "OYO Rooms": "1. AI-driven dynamic pricing and revenue management. 2. IoT-enabled smart rooms for energy efficiency. 3. Self-service check-in/out kiosks." }
+            },
+            "Year 3": {
+                "Automobile": { "Maruti Suzuki India": "1. Solid-state battery EVs in testing (800km+ range). 2. Vehicle-to-Grid (V2G) tech standard. 3. AI-driven predictive maintenance network.", "Hyundai Motor India": "1. Level 3 autonomous driving pilot program. 2. On-demand feature subscriptions. 3. Circular economy model for battery recycling.", "Tata Motors": "1. Launch of premium EV sub-brand 'Avinya'. 2. Solar-integrated panoramic roofs. 3. AI co-pilot for voice assistance.", "Mahindra & Mahindra": "1. EV partnership with global tech giant. 2. Modular EV platform for multiple body styles. 3. Advanced driver monitoring systems.", "Kia India": "1. Purpose-Built Vehicle (PBV) for last-mile delivery. 2. AR-based owner's manual. 3. NFT-based digital vehicle passports." },
+            },
+            "Year 4": {
+                 "Automobile": { "Maruti Suzuki India": "1. Fully autonomous taxi fleet pilot in major cities. 2. 10-minute rapid charging technology. 3. Swappable battery ecosystem for 2-wheelers.", "Hyundai Motor India": "1. Urban Air Mobility (UAM) vehicle prototype. 2. In-car health monitoring systems. 3. Blockchain for secure vehicle data.", "Tata Motors": "1. First consumer hydrogen vehicle available. 2. AI-designed lightweight composite materials. 3. V2X (Vehicle-to-Everything) communication.", "Mahindra & Mahindra": "1. Electric tractor and farm equipment launch. 2. AI-powered personalized driving dynamics. 3. Biometric vehicle access and startup.", "Kia India": "1. Customizable interiors with modular components. 2. AI-based holographic in-car assistant. 3. Gamification of driving experience." },
+            },
+            "Year 5": {
+                "Automobile": { "Maruti Suzuki India": "1. Subscription-based 'Mobility as a Service' platform launch. 2. Mass-market hydrogen fuel-cell car. 3. AI-managed traffic flow integration.", "Hyundai Motor India": "1. Commercial launch of flying taxis in select cities. 2. Brain-computer interface for vehicle control. 3. Fully autonomous cross-country drive completed.", "Tata Motors": "1. Self-healing body panels on luxury models. 2. AI co-pilot standard in all models. 3. Global leader in EV battery recycling.", "Mahindra & Mahindra": "1. Fully autonomous off-road adventure vehicles. 2. AI-powered platform for shared farm equipment. 3. Personalized insurance based on driving data.", "Kia India": "1. 'Living space' autonomous vehicle concept launch. 2. Emotional recognition AI for cabin adjustments. 3. Full integration with smart city infrastructure." },
+            }
+        };
+
+
+        // --- Audio Manager ---
+        const audioManager = {
+            audioCtx: null,
+            isInitialized: false,
+
+            init() {
+                if (this.isInitialized || this.audioCtx) return;
+                try {
+                    this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    this.isInitialized = true;
+                } catch (e) {
+                    console.error("Web Audio API is not supported in this browser");
+                }
+            },
+
+            // Generic function to play a sound based on type
+            playSound(type, options = {}) {
+                if (!this.isInitialized || !this.audioCtx) return;
+                if(this.audioCtx.state === 'suspended') {
+                    this.audioCtx.resume();
+                }
+
+                const now = this.audioCtx.currentTime;
+                const gainNode = this.audioCtx.createGain();
+                gainNode.connect(this.audioCtx.destination);
+                
+                switch(type) {
+                    case 'click':
+                        this.createTone(2000, 0.05, 'triangle', gainNode, now, 0.5, 0.04);
+                        break;
+                    case 'select':
+                        this.createTone(440, 0.1, 'sine', gainNode, now, 0.4, 0.08);
+                        break;
+                    case 'success':
+                        this.createTone(523.25, 0.1, 'sine', gainNode, now, 0.3, 0.1); // C5
+                        this.createTone(659.25, 0.1, 'sine', gainNode, now + 0.1, 0.3, 0.1); // E5
+                        this.createTone(783.99, 0.1, 'sine', gainNode, now + 0.2, 0.3, 0.1); // G5
+                        break;
+                    case 'notification':
+                        this.createTone(880, 0.15, 'sine', gainNode, now, 0.3, 0.1);
+                        break;
+                    case 'error':
+                        this.createTone(150, 0.2, 'square', gainNode, now, 0.2, 0.15);
+                        break;
+                    case 'newYear':
+                        this.createTone(783.99, 0.2, 'triangle', gainNode, now, 0.4, 0.15); // G5
+                        this.createTone(1046.50, 0.3, 'triangle', gainNode, now + 0.2, 0.4, 0.2); // C6
+                        break;
+                    case 'triumph':
+                         this.createTone(523.25, 0.1, 'sine', gainNode, now, 0.4, 0.5); // C5
+                         this.createTone(659.25, 0.1, 'sine', gainNode, now + 0.1, 0.4, 0.4); // E5
+                         this.createTone(783.99, 0.1, 'sine', gainNode, now + 0.2, 0.4, 0.3); // G5
+                         this.createTone(1046.50, 0.5, 'sine', gainNode, now + 0.3, 0.5, 0.2); // C6
+                        break;
+                }
+            },
+            
+            createTone(freq, duration, type, gainNode, startTime, startVol, endDur) {
+                 const oscillator = this.audioCtx.createOscillator();
+                 oscillator.type = type;
+                 oscillator.frequency.setValueAtTime(freq, startTime);
+                 gainNode.gain.setValueAtTime(startVol, startTime);
+                 gainNode.gain.exponentialRampToValueAtTime(0.0001, startTime + endDur);
+                 oscillator.connect(gainNode);
+                 oscillator.start(startTime);
+                 oscillator.stop(startTime + duration);
+            },
+
+            // Public methods for specific sounds
+            click() { this.playSound('click'); },
+            select() { this.playSound('select'); },
+            success() { this.playSound('success'); },
+            notification() { this.playSound('notification'); },
+            error() { this.playSound('error'); },
+            newYear() { this.playSound('newYear'); },
+            triumph() { this.playSound('triumph'); },
+        };
+        
+        // --- Firebase Functions ---
+        
+        async function saveGameState() {
+            const userId = getUserId()
+            const nameParam = new URLSearchParams(window.location.search).get("name");
+               const name = nameParam ? JSON.parse(decodeURIComponent(nameParam)) : 'Player';
+            if (!userId) {
+                console.error("User not authenticated, cannot save game.");
+                showNotification("Error: Not signed in.", true);
+                return;
+            }
+            
+            const gameState = {
+                currentYear,
+                selectedSector,
+                playerCompany,
+                marketDataState: marketData,
+                timeLeftInYear
+            };
+
+            try {
+        const res = await fetch(`${API_ENDPOINT}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId, name, gameState })
+        });
+        const data = await res.json();
+        showNotification("Game saved successfully!");
+        return data;
+    } catch (err) {
+        console.error("Error saving game:", err);
+        showNotification("Failed to save game");
+    }
+        }
+
+        async function loadGameState() {
+             const userId = getUserId()
+            if (!userId) {
+                console.error("User not authenticated, cannot load game.");
+                 showNotification("Error: Not signed in.", true);
+                return;
+            }
+try {
+        const res = await fetch(`${API_ENDPOINT}?userId=${userId}`);
+        const data = await res.json();
+        if (data.gameState) {
+            const savedState = data.gameState
+            currentYear = savedState.currentYear;
+                    selectedSector = savedState.selectedSector;
+                    playerCompany = savedState.playerCompany;
+                    marketData = savedState.marketDataState;
+                    timeLeftInYear = savedState.timeLeftInYear || 3600
+            showNotification("Game loaded successfully!");
+             showBattlefield();
+        } else {
+            showNotification("No saved game found.");
+        }
+    } catch (err) {
+        console.error("Error loading game:", err);
+        showNotification("Failed to load game");
+    }
+        }
+
+        function showNotification(message, isError = false) {
+            isError ? audioManager.error() : audioManager.notification();
+            const toast = document.getElementById('notification-toast');
+            const text = document.getElementById('notification-text');
+            
+            text.textContent = message;
+            toast.className = `fixed bottom-5 right-5 text-white py-2 px-4 rounded-lg shadow-lg fade-in ${isError ? 'bg-red-500' : 'bg-green-500'}`;
+            toast.classList.remove('hidden');
+
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+
+        // --- Authentication Listener ---
+       
+
+        // --- App Initialization ---
+        async function initializeAppLogic() {
+
+            // Initialize Audio on first user interaction
+            document.body.addEventListener('click', () => audioManager.init(), { once: true });
+            
+            // Setup UI and event listeners
+            const sectorGrid = document.getElementById('sector-grid');
+            const sortedSectors = Object.keys(marketData).sort();
+
+            for (const sectorName of sortedSectors) {
+                const card = document.createElement('div');
+                card.className = 'sector-card cursor-pointer bg-slate-800 p-4 rounded-lg text-center';
+                card.innerHTML = `<h3 class="font-bold text-white">${sectorName}</h3>`;
+                card.onclick = () => showPhase2(sectorName);
+                sectorGrid.appendChild(card);
+            }
+
+            const surveyFormGrid = document.querySelector('#survey-form .grid');
+            for (let i = 1; i <= 7; i++) {
+                const questionDiv = document.createElement('div');
+                questionDiv.innerHTML = `
+                    <label for="q${i}" class="block mb-1 text-sm font-medium text-slate-400">Question ${i}</label>
+                    <textarea id="q${i}" rows="2" class="bg-slate-900 border border-slate-700 text-white text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5" placeholder="Ask about customer preferences, pain points, or competitor features..."></textarea>
+                `;
+                surveyFormGrid.appendChild(questionDiv);
+            }
+
+            document.querySelectorAll('button').forEach(button => {
+                button.addEventListener('click', () => audioManager.click());
+            });
+
+            document.getElementById('back-to-sectors').addEventListener('click', showPhase1);
+            document.getElementById('player-company-form').addEventListener('submit', handleCompanyCreation);
+            
+            document.getElementById('go-to-battlefield-btn').addEventListener('click', () => {
+                timeLeftInYear = 3600; // Reset for Year 1
+                showBattlefield();
+            });
+
+            document.getElementById('proceed-to-marketing-btn').addEventListener('click', showPhase4_Marketing);
+            document.getElementById('assign-budget-btn').addEventListener('click', handleAssignBudget);
+            document.getElementById('send-message-btn').addEventListener('click', handleSendMessage);
+            document.getElementById('start-new-game').addEventListener('click', showPhase1);
+            document.getElementById('close-modal-btn').addEventListener('click', hideProjectionModal);
+            document.getElementById('analyze-survey-btn').addEventListener('click', handleAnalyzeSurvey);
+            document.getElementById('draft-new-communication-btn').addEventListener('click', showFollowupDraft);
+            document.getElementById('send-followup-btn').addEventListener('click', handleSendFollowup);
+            
+            document.getElementById('launch-final-push-btn').addEventListener('click', showFinalPushScreen);
+            document.getElementById('skip-final-push-btn').addEventListener('click', () => showBattlefield(false, true));
+            document.getElementById('send-final-push-btn').addEventListener('click', handleSendFinalPush);
+            document.getElementById('view-final-battlefield-btn-2').addEventListener('click', () => showBattlefield(false, true));
+            document.getElementById('view-battlefield-before-survey-btn').addEventListener('click', () => showBattlefield(true));
+            document.getElementById('return-to-marketing-followup-btn').addEventListener('click', returnToMarketingFollowup);
+            document.getElementById('next-year-btn').addEventListener('click', advanceToNextYear);
+            document.getElementById('play-again-btn').addEventListener('click', showPhase1);
+            document.getElementById('download-certificate-btn').addEventListener('click', downloadCertificate);
+            document.getElementById('share-linkedin-btn').addEventListener('click', shareOnLinkedIn);
+            document.getElementById('show-celebration-test').addEventListener('click', showCelebrationTest);
+
+            
+            document.getElementById('projection-modal').addEventListener('click', (e) => {
+                if (e.target.id === 'projection-modal') hideProjectionModal();
+            });
+            ['digital-slider', 'print-slider', 'direct-slider'].forEach(id => {
+                document.getElementById(id).addEventListener('input', updateMarketingDisplays);
+            });
+            document.getElementById('marketing-message').addEventListener('input', updateCharCounter);
+            document.getElementById('followup-message').addEventListener('input', () => {
+                const textarea = document.getElementById('followup-message');
+                const counter = document.getElementById('followup-char-counter');
+                const currentLength = textarea.value.length;
+                counter.textContent = `${currentLength} / 200`;
+                counter.classList.toggle('text-red-500', currentLength > 200);
+            });
+             document.getElementById('final-push-message').addEventListener('input', () => {
+                const textarea = document.getElementById('final-push-message');
+                const counter = document.getElementById('final-push-char-counter');
+                const currentLength = textarea.value.length;
+                counter.textContent = `${currentLength} / 150`;
+                counter.classList.toggle('text-red-500', currentLength > 150);
+            });
+
+            document.getElementById('targeted-leads-slider').addEventListener('input', updateTargetedCampaignDisplay);
+            document.getElementById('targeted-message').addEventListener('input', () => {
+                const textarea = document.getElementById('targeted-message');
+                const counter = document.getElementById('targeted-char-counter');
+                counter.textContent = `${textarea.value.length} / 200`;
+            });
+            document.getElementById('send-targeted-message-btn').addEventListener('click', handleSendTargetedMessage);
+            document.getElementById('modal-view-battlefield-btn').addEventListener('click', () => {
+                hideTargetedResultsModal();
+                showBattlefield(false, true); // Go to battlefield and end the round
+            });
+            document.getElementById('confirm-btn').addEventListener('click', () => {
+                if (confirmationCallback) {
+                    confirmationCallback();
+                }
+                hideConfirmationModal();
+            });
+            document.getElementById('cancel-btn').addEventListener('click', hideConfirmationModal);
+            
+            document.getElementById('save-game-btn').addEventListener('click', saveGameState);
+            document.getElementById('load-game-initial').addEventListener('click', loadGameState);
+        }
+        
+        document.addEventListener('DOMContentLoaded', initializeAppLogic);
+
+        function showCelebrationTest() {
+            audioManager.triumph();
+            const overlay = document.getElementById('congrats-overlay');
+            overlay.classList.remove('hidden');
+            
+            // Hide it after a few seconds so the user isn't stuck
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+            }, 4000); // Same duration as the real one
+        }
+
+        // --- Year Timer Functions ---
+        function updateTimerDisplay() {
+            const timerDisplay = document.getElementById('year-timer-display');
+            if (timeLeftInYear <= 0) {
+                timerDisplay.textContent = "Year End";
+                return;
+            }
+            // 12 months in 60 minutes -> 1 month = 5 minutes = 300 seconds
+            const monthsLeft = Math.floor(timeLeftInYear / 300);
+            const secondsIntoMonth = timeLeftInYear % 300;
+            // 30 days in 5 minutes -> 1 day = 10 seconds
+            const daysLeft = Math.floor(secondsIntoMonth / 10);
+            
+            timerDisplay.textContent = `Time Remaining in Year: ${monthsLeft} Months, ${daysLeft} Days`;
+        }
+
+        function startYearTimer() {
+            if (yearTimerInterval) clearInterval(yearTimerInterval); // Always clear before starting
+            document.getElementById('year-timer-display').classList.remove('hidden');
+            updateTimerDisplay(); // Show current time immediately
+
+            yearTimerInterval = setInterval(() => {
+                timeLeftInYear--;
+                updateTimerDisplay();
+                if (timeLeftInYear <= 0) {
+                    clearInterval(yearTimerInterval);
+                    yearTimerInterval = null;
+                    showNotification(`Year ${currentYear} has ended. Advancing to the next year.`);
+                    setTimeout(advanceToNextYear, 2000); 
+                }
+            }, 1000);
+        }
+
+        function pauseYearTimer() {
+            if (yearTimerInterval) {
+                clearInterval(yearTimerInterval);
+                yearTimerInterval = null;
+            }
+        }
+
+
+        // --- Page Navigation and State Management ---
+
+        function showBattlefield(fromFollowup = false, isEndOfRound = false) {
+            pauseYearTimer(); // Pause any timers from other screens
+            ['phase1-sector-selection', 'phase2-main-interface', 'ai-evaluation-result', 'phase4-marketing-strategy', 'phase4b-survey', 'phase4c-communication', 'phase4d-final-push', 'end-game-screen'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById('phase5-battlefield').classList.remove('hidden');
+            startYearTimer();
+
+            const proceedBtn = document.getElementById('proceed-to-marketing-btn');
+            const returnBtn = document.getElementById('return-to-marketing-followup-btn');
+            const nextYearBtn = document.getElementById('next-year-btn');
+            
+            proceedBtn.classList.add('hidden');
+            returnBtn.classList.add('hidden');
+            nextYearBtn.classList.add('hidden');
+            document.getElementById('save-game-btn').classList.remove('hidden');
+
+            if (fromFollowup) {
+                returnBtn.classList.remove('hidden');
+            } else if (isEndOfRound) {
+                if (currentYear >= 5) {
+                    showEndGameScreen();
+                    return;
+                }
+                nextYearBtn.classList.remove('hidden');
+                nextYearBtn.textContent = `Go to Year ${currentYear + 1}`;
+                nextYearBtn.disabled = false;
+                nextYearBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                proceedBtn.classList.remove('hidden');
+                proceedBtn.textContent = `Set Year ${currentYear} Marketing Strategy`;
+            }
+
+            document.getElementById('battlefield-sector-name').textContent = `${selectedSector} Sector - Year ${currentYear}`;
+            document.getElementById('sim-date-header').textContent = `Created at Taxila Business School, Jaipur (Sim Date: Sep ${2024 + currentYear})`;
+
+
+            const sectorData = marketData[selectedSector];
+            
+            const competitors = sectorData.companies;
+            let totalMarketTurnover = 0;
+            competitors.forEach(c => {
+                totalMarketTurnover += c.baseTurnover;
+            });
+
+            const acquiredTurnoverInCrores = ((playerCompany.finalCustomers || 0) * sectorData.avgSpendingPower) / 10000000;
+            const playerCurrentTurnover = playerCompany.baseTurnover + acquiredTurnoverInCrores;
+            totalMarketTurnover += playerCurrentTurnover;
+
+            if (totalMarketTurnover > 0) {
+                const newMarketShare = (playerCurrentTurnover / totalMarketTurnover) * 100;
+                playerCompany.share = `${newMarketShare.toFixed(4)}%`;
+            }
+
+            const statsContainer = document.getElementById('battlefield-stats');
+            const formatNumber = (num) => {
+                if(!num) return '0';
+                if (num >= 1000000000) return (num / 1000000000).toFixed(2) + ' B';
+                if (num >= 1000000) return (num / 1000000).toFixed(2) + ' M';
+                if (num >= 1000) return (num/1000).toLocaleString('en-IN') + ' K';
+                return num.toLocaleString('en-IN');
+            };
+            const est_year = 2024 + currentYear;
+            const proj_year = 2025 + currentYear;
+            
+            if (sectorData.baseCustomers && typeof sectorData.sectorCAGR !== 'undefined') {
+                statsContainer.innerHTML = `
+                    <h4 class="text-lg font-semibold text-white mb-3">Sector Market Dynamics</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+                        <div><p class="text-3xl font-bold text-green-400">${formatNumber(sectorData.baseCustomers)}</p><p class="text-xs text-slate-400">Est. Customers (${est_year})</p></div>
+                        <div><p class="text-3xl font-bold text-yellow-400">₹ ${sectorData.avgSpendingPower.toLocaleString('en-IN')}</p><p class="text-xs text-slate-400">Avg. Spend (p.a.)</p></div>
+                        <div><p class="text-3xl font-bold text-green-300">${formatNumber(sectorData.baseCustomers * (1 + sectorData.sectorCAGR / 100))}</p><p class="text-xs text-slate-400">Proj. Customers (${proj_year})</p></div>
+                    </div>
+                    <p class="text-xs text-indigo-400 mt-4">Sector Growth Rate (CAGR): <strong>${sectorData.sectorCAGR}%</strong></p>`;
+            }
+            const allCompanies = [...marketData[selectedSector].companies, playerCompany];
+            const grid = document.getElementById('battlefield-grid');
+            grid.innerHTML = '';
+
+            allCompanies.sort((a,b) => b.baseTurnover - a.baseTurnover).forEach(company => {
+                const card = document.createElement('div');
+                const isPlayerCard = company.isPlayer;
+                let marketingBudgetCrore, newCustomersHTML = '', acquiredTurnoverHTML = '';
+                let displayTurnover = company.turnover; 
+
+                if (isPlayerCard) {
+                    marketingBudgetCrore = company.totalMarketingSpend || (currentYear > 1 ? 0 : company.baseTurnover * (company.marketingBudgetPct / 100));
+                    
+                    const acquiredTurnover = (company.finalCustomers || 0) * sectorData.avgSpendingPower;
+                    const acquiredTurnoverInCroresCard = acquiredTurnover / 10000000;
+                    
+                    if (acquiredTurnoverInCroresCard > 0) {
+                         const totalTurnoverInCrores = company.baseTurnover + acquiredTurnoverInCroresCard;
+                         displayTurnover = `₹ ${totalTurnoverInCrores.toLocaleString('en-IN', {maximumFractionDigits: 2})} Cr`;
+                         acquiredTurnoverHTML = `<div class="flex justify-between items-center"><span class="text-slate-400">Acquired Turnover</span><span class="font-semibold font-mono text-green-400">₹ ${acquiredTurnoverInCroresCard.toFixed(2)} Cr</span></div>`;
+                    } else {
+                        displayTurnover = `₹ ${company.baseTurnover.toLocaleString('en-IN', {maximumFractionDigits: 2})} Cr`;
+                    }
+                    
+                    if (company.finalCustomers) {
+                        newCustomersHTML = `<div class="flex justify-between items-center"><span class="text-slate-400">Total New Customers</span><span class="font-semibold font-mono text-teal-400">${company.finalCustomers.toLocaleString('en-IN')}</span></div>`;
+                    }
+                } else {
+                     marketingBudgetCrore = (company.baseTurnover * (company.marketingBudgetPct / 100));
+                }
+
+                card.className = `bg-slate-800 rounded-2xl p-5 shadow-lg flex flex-col border-2 ${isPlayerCard ? 'border-indigo-500' : 'border-slate-700'}`;
+                card.innerHTML = `
+                    <div class="flex-grow">
+                        <h3 class="font-bold text-xl truncate ${isPlayerCard ? 'text-indigo-400' : 'text-white'}">${company.name}</h3>
+                        <p class="text-xs ${isPlayerCard ? 'text-indigo-400 font-semibold' : 'text-slate-500'} mb-3">${isPlayerCard ? 'Your Company' : 'Established Player'}</p>
+                        <div class="space-y-3 text-sm my-4">
+                            <div class="flex justify-between items-center"><span class="text-slate-400">Total Turnover</span><span class="font-semibold font-mono">${displayTurnover}</span></div>
+                            ${acquiredTurnoverHTML}
+                            <div class="flex justify-between items-center"><span class="text-slate-400">Marketing Spend</span><span class="font-semibold font-mono text-yellow-400">₹ ${marketingBudgetCrore.toLocaleString('en-IN', {maximumFractionDigits: 2})} Cr</span></div>
+                            <div class="flex justify-between items-center"><span class="text-slate-400">Market Share</span><span class="font-semibold font-mono">${company.share}</span></div>
+                            ${newCustomersHTML}
+                        </div>
+                        <div>
+                             <p class="text-xs text-slate-500 mb-1">Key Differentiator:</p>
+                             <p class="text-xs text-slate-300">${isPlayerCard ? company.usps[0] : company.usps.split('.')[0]}</p>
+                        </div>
+                    </div>`;
+                grid.appendChild(card);
+            });
+
+            window.scrollTo(0, 0);
+        }
+
+        async function advanceToNextYear() {
+            pauseYearTimer(); // Pause immediately
+            audioManager.newYear();
+
+            if (currentYear >= 5) {
+                showEndGameScreen();
+                return;
+            }
+            
+            currentYear++;
+            timeLeftInYear = 3600; // Reset time for the new year
+            const sectorData = marketData[selectedSector];
+            const currentYearKey = `Year ${currentYear}`;
+            const currentYearUSPs = yearlyUSPs[currentYearKey];
+
+            sectorData.baseCustomers = Math.round(sectorData.baseCustomers * (1 + sectorData.sectorCAGR / 100));
+
+            sectorData.companies.forEach(company => {
+                company.baseTurnover *= (1 + company.cagr / 100);
+                company.turnover = `₹ ${company.baseTurnover.toLocaleString('en-IN', {maximumFractionDigits:0})} Cr`;
+                if(currentYearUSPs && currentYearUSPs[selectedSector] && currentYearUSPs[selectedSector][company.name]) {
+                    company.usps = currentYearUSPs[selectedSector][company.name];
+                }
+            });
+
+            const acquiredTurnover = (playerCompany.finalCustomers || 0) * sectorData.avgSpendingPower / 10000000;
+            playerCompany.baseTurnover += acquiredTurnover;
+            playerCompany.baseTurnover *= (1 + playerCompany.cagr / 100);
+            playerCompany.turnover = `₹ ${playerCompany.baseTurnover.toLocaleString('en-IN', {maximumFractionDigits: 2})} Cr`;
+            
+            playerCompany.finalCustomers = 0;
+            playerCompany.totalMarketingSpend = 0;
+            marketingCampaign = {};
+            
+            displaySectorInfo(selectedSector); 
+            await saveGameState(); 
+            showBattlefield(false, false); 
+        }
+
+        function showPhase1() {
+            pauseYearTimer();
+            timeLeftInYear = 3600;
+            document.getElementById('year-timer-display').classList.add('hidden');
+            document.getElementById('phase1-sector-selection').classList.remove('hidden');
+            ['phase2-main-interface', 'ai-evaluation-result', 'phase4-marketing-strategy', 'phase4b-survey', 'phase4c-communication', 'phase4d-final-push', 'phase5-battlefield', 'end-game-screen'].forEach(id => {
+                 document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById('player-company-form').reset();
+            playerCompany = null;
+            marketingCampaign = {};
+            currentYear = 1; 
+            marketData = JSON.parse(JSON.stringify(initialMarketData)); // Reset market data
+            window.scrollTo(0, 0);
+        }
+
+        function showPhase2(sectorName) {
+            audioManager.select();
+            pauseYearTimer();
+            selectedSector = sectorName;
+            displaySectorInfo(sectorName);
+            document.getElementById('phase1-sector-selection').classList.add('hidden');
+            document.getElementById('phase2-main-interface').classList.remove('hidden');
+            ['ai-evaluation-result', 'phase4-marketing-strategy', 'phase4b-survey', 'phase4c-communication', 'phase4d-final-push', 'phase5-battlefield'].forEach(id => {
+                 document.getElementById(id).classList.add('hidden');
+            });
+            window.scrollTo(0, 0);
+        }
+        
+        function showPhase3() {
+            audioManager.success();
+            pauseYearTimer();
+            document.getElementById('phase2-main-interface').classList.add('hidden');
+            document.getElementById('ai-evaluation-result').classList.remove('hidden');
+            window.scrollTo(0, 0);
+        }
+
+        function showPhase4_Marketing() {
+            pauseYearTimer();
+            document.getElementById('phase5-battlefield').classList.add('hidden');
+            document.getElementById('phase4-marketing-strategy').classList.remove('hidden');
+            document.getElementById('marketing-allocation-section').classList.remove('hidden');
+            document.getElementById('marketing-results-section').classList.add('hidden');
+            document.getElementById('marketing-followup-section').classList.add('hidden');
+            
+            const totalBudget = playerCompany.baseTurnover * (playerCompany.marketingBudgetPct / 100);
+            
+            document.getElementById('total-marketing-budget').textContent = `₹ ${totalBudget.toFixed(2)} Cr`;
+            
+            ['digital-slider', 'print-slider', 'direct-slider'].forEach(id => {
+                const slider = document.getElementById(id);
+                slider.max = totalBudget.toFixed(2);
+                slider.value = 0;
+            });
+            
+            updateMarketingDisplays();
+            window.scrollTo(0, 0);
+        }
+
+        function updateMarketingDisplays() {
+            const totalBudget = parseFloat(document.getElementById('digital-slider').max);
+            const digitalVal = parseFloat(document.getElementById('digital-slider').value);
+            const printVal = parseFloat(document.getElementById('print-slider').value);
+            const directVal = parseFloat(document.getElementById('direct-slider').value);
+
+            document.getElementById('digital-budget-display').textContent = `₹ ${digitalVal.toFixed(2)} Cr`;
+            document.getElementById('print-budget-display').textContent = `₹ ${printVal.toFixed(2)} Cr`;
+            document.getElementById('direct-budget-display').textContent = `₹ ${directVal.toFixed(2)} Cr`;
+
+            const totalAllocated = digitalVal + printVal + directVal;
+            const remaining = totalBudget - totalAllocated;
+
+            const remainingDisplay = document.getElementById('remaining-marketing-budget');
+            remainingDisplay.textContent = `₹ ${remaining.toFixed(2)} Cr`;
+            
+            const assignBtn = document.getElementById('assign-budget-btn');
+            const isOverBudget = remaining < 0;
+            remainingDisplay.classList.toggle('text-green-400', !isOverBudget);
+            remainingDisplay.classList.toggle('text-red-500', isOverBudget);
+            assignBtn.disabled = isOverBudget;
+            assignBtn.classList.toggle('opacity-50', isOverBudget);
+            assignBtn.classList.toggle('cursor-not-allowed', isOverBudget);
+            
+            const cpl = marketData[selectedSector].costPerLead;
+            const rates = marketData[selectedSector].conversionRates;
+
+            const digitalLeads = (digitalVal * 10000000) / cpl.digital;
+            const printLeads = (printVal * 10000000) / cpl.print;
+            const directLeads = (directVal * 10000000) / cpl.direct;
+            
+            document.getElementById('digital-leads-display').textContent = Math.floor(digitalLeads).toLocaleString('en-IN');
+            document.getElementById('print-leads-display').textContent = Math.floor(printLeads).toLocaleString('en-IN');
+            document.getElementById('direct-leads-display').textContent = Math.floor(directLeads).toLocaleString('en-IN');
+            
+            document.getElementById('digital-conversions-display').textContent = Math.floor(digitalLeads * rates.digital).toLocaleString('en-IN');
+            document.getElementById('print-conversions-display').textContent = Math.floor(printLeads * rates.print).toLocaleString('en-IN');
+            document.getElementById('direct-conversions-display').textContent = Math.floor(directLeads * rates.direct).toLocaleString('en-IN');
+        }
+        
+        function handleAssignBudget() {
+            audioManager.success();
+            const cpl = marketData[selectedSector].costPerLead;
+            const rates = marketData[selectedSector].conversionRates;
+            
+            const digitalVal = parseFloat(document.getElementById('digital-slider').value);
+            const printVal = parseFloat(document.getElementById('print-slider').value);
+            const directVal = parseFloat(document.getElementById('direct-slider').value);
+            
+            const digitalLeads = (digitalVal * 10000000) / cpl.digital;
+            const printLeads = (printVal * 10000000) / cpl.print;
+            const directLeads = (directVal * 10000000) / cpl.direct;
+            
+            marketingCampaign.totalLeads = Math.floor(digitalLeads + printLeads + directLeads);
+            marketingCampaign.allocatedBudget = digitalVal + printVal + directVal;
+            const totalCustomers = Math.floor(digitalLeads * rates.digital) + Math.floor(printLeads * rates.print) + Math.floor(directLeads * rates.direct);
+
+            document.getElementById('total-leads-result').textContent = marketingCampaign.totalLeads.toLocaleString('en-IN');
+            document.getElementById('total-customers-result').textContent = totalCustomers.toLocaleString('en-IN');
+            
+            document.getElementById('marketing-allocation-section').classList.add('hidden');
+            document.getElementById('marketing-results-section').classList.remove('hidden');
+        }
+
+        function calculateSimilarity(message, usps) {
+            const stopWords = new Set(['a', 'an', 'the', 'and', 'or', 'in', 'on', 'is', 'of', 'for', 'to', 'with', 'it', 'by', 'our', 'we', 'you', 's']);
+            const cleanText = (text) => text.toLowerCase().replace(/[.,!?;:]/g, '').split(/\s+/).filter(word => word.length > 1 && !stopWords.has(word));
+            const messageWords = new Set(cleanText(message));
+            if(messageWords.size === 0) return 0;
+            
+            const uspWords = new Set(cleanText(usps.join(' ')));
+            if (uspWords.size === 0) return 0;
+
+            let intersectionSize = 0;
+            messageWords.forEach(word => { if (uspWords.has(word)) intersectionSize++; });
+            return Math.min(100, (intersectionSize / messageWords.size) * 100);
+        }
+
+        function handleSendMessage() {
+            const message = document.getElementById('marketing-message').value;
+            const allUSPs = [playerCompany.usps, ...marketData[selectedSector].companies.map(c => c.usps)].flat();
+            const similarityScore = calculateSimilarity(message, allUSPs);
+            const finalConversionRate = (similarityScore >= 70) ? 0.60 : 0.60 * (similarityScore / 70);
+
+            marketingCampaign.finalCustomers = Math.floor(marketingCampaign.totalLeads * finalConversionRate);
+            playerCompany.finalCustomers = marketingCampaign.finalCustomers;
+            marketingCampaign.messagingCostInCrore = (marketingCampaign.totalLeads * 100) / 10000000;
+            marketingCampaign.remainingLeads = marketingCampaign.totalLeads - marketingCampaign.finalCustomers;
+            const newCustomersValue = marketingCampaign.finalCustomers * marketData[selectedSector].avgSpendingPower;
+
+            document.getElementById('customers-gained-result').textContent = marketingCampaign.finalCustomers.toLocaleString('en-IN');
+            document.getElementById('customers-value-result').textContent = `₹ ${(newCustomersValue / 10000000).toFixed(2)} Cr`;
+            document.getElementById('remaining-leads-result').textContent = marketingCampaign.remainingLeads.toLocaleString('en-IN');
+            
+            const targetedLeadsSlider = document.getElementById('targeted-leads-slider');
+            targetedLeadsSlider.max = marketingCampaign.remainingLeads;
+            targetedLeadsSlider.value = 0;
+            updateTargetedCampaignDisplay(); 
+
+            document.getElementById('marketing-results-section').classList.add('hidden');
+            document.getElementById('marketing-followup-section').classList.remove('hidden');
+        }
+
+        function handleFollowupChoice(choice) {
+            if (choice === 'survey') {
+                const surveyCost = (marketingCampaign.remainingLeads * 200) / 10000000;
+                playerCompany.totalMarketingSpend = marketingCampaign.allocatedBudget + marketingCampaign.messagingCostInCrore + surveyCost;
+                
+                pauseYearTimer();
+                document.getElementById('phase4-marketing-strategy').classList.add('hidden');
+                document.getElementById('phase4b-survey').classList.remove('hidden');
+                document.getElementById('survey-form-section').classList.remove('hidden');
+                document.getElementById('survey-analysis-section').classList.add('hidden');
+                document.getElementById('survey-results-section').classList.add('hidden');
+                document.getElementById('survey-form').reset();
+            }
+        }
+        window.handleFollowupChoice = handleFollowupChoice;
+
+        function handleAnalyzeSurvey(event) {
+            event.preventDefault();
+            document.getElementById('survey-form-section').classList.add('hidden');
+            document.getElementById('survey-analysis-section').classList.remove('hidden');
+            
+            let timeLeft = 30;
+            const progressBar = document.getElementById('survey-progress-bar');
+            const timerDisplay = document.getElementById('survey-timer');
+            progressBar.style.width = '0%';
+
+            const interval = setInterval(() => {
+                timeLeft--;
+                const progress = ((30 - timeLeft) / 30) * 100;
+                progressBar.style.width = `${progress}%`;
+                timerDisplay.textContent = `${timeLeft}s remaining`;
+                if (timeLeft <= 0) {
+                    clearInterval(interval);
+                    timerDisplay.textContent = 'Analysis complete!';
+                }
+            }, 1000);
+
+            setTimeout(() => {
+                const surveyResults = performSurveyAnalysis();
+                displaySurveyResults(surveyResults);
+                document.getElementById('survey-analysis-section').classList.add('hidden');
+                document.getElementById('survey-results-section').classList.remove('hidden');
+            }, 30000);
+        }
+
+        function performSurveyAnalysis() {
+            const questions = Array.from({length: 7}, (_, i) => document.getElementById(`q${i+1}`).value.trim());
+            const allUSPText = [playerCompany.usps, ...marketData[selectedSector].companies.map(c => c.usps)].flat().join(' ');
+            const stopWords = new Set(['a', 'an', 'the', 'and', 'or', 'in', 'on', 'is', 'of', 'for', 'to', 'with', 'it', 'by', 'our', 'we', 'you', 's', '1', '2', '3']);
+            const uspKeywords = new Set(allUSPText.toLowerCase().replace(/[.,!?;:()]/g, '').split(/\s+/).filter(word => word.length > 2 && !stopWords.has(word)));
+            
+            const askedQuestions = new Set();
+            marketingCampaign.surveyResults = questions.map(q => {
+                const qLower = q.toLowerCase();
+                if (q === '' || askedQuestions.has(qLower)) {
+                    if (q !== '') askedQuestions.add(qLower);
+                    return { question: q, yesPercent: 0, reason: q === '' ? 'Empty' : 'Duplicate' };
+                }
+                askedQuestions.add(qLower);
+                const matchFound = [...new Set(qLower.replace(/[.,!?;:()]/g, '').split(/\s+/))].some(word => uspKeywords.has(word));
+                return { question: q, yesPercent: matchFound ? Math.floor(Math.random() * 21) + 60 : 0, reason: matchFound ? 'Relevant' : 'Not relevant' };
+            });
+            return marketingCampaign.surveyResults;
+        }
+
+        function displaySurveyResults(results) {
+            const grid = document.getElementById('survey-results-grid');
+            grid.innerHTML = '';
+            results.forEach((res, index) => {
+                const resultDiv = document.createElement('div');
+                resultDiv.className = 'bg-slate-700 p-3 rounded-lg flex justify-between items-center';
+                const reasonHTML = res.reason !== 'Relevant' ? `<span class="text-xs font-mono px-2 py-1 rounded-full ${res.reason === 'Duplicate' ? 'bg-red-500 text-white' : 'bg-slate-600 text-slate-400'}">${res.reason}</span>` : '';
+                resultDiv.innerHTML = `
+                    <div><p class="text-slate-300 text-sm">Q${index+1}: ${res.question || '<em>No question asked</em>'}</p></div>
+                    <div class="flex items-center space-x-4">
+                        ${reasonHTML}
+                        <p class="font-bold text-lg w-20 text-right ${res.yesPercent >= 60 ? 'text-green-400' : 'text-yellow-400'}">${res.yesPercent}% Yes</p>
+                    </div>`;
+                grid.appendChild(resultDiv);
+            });
+        }
+
+        function showFollowupDraft() {
+            pauseYearTimer();
+            document.getElementById('phase4b-survey').classList.add('hidden');
+            document.getElementById('phase4c-communication').classList.remove('hidden');
+            document.getElementById('followup-draft-section').classList.remove('hidden');
+            document.getElementById('followup-results-section').classList.add('hidden');
+            document.getElementById('followup-message').value = '';
+            document.getElementById('followup-char-counter').textContent = '0 / 200';
+        }
+
+        function calculateFollowupEffectiveness(message, surveyResults) {
+            const successfulQuestions = surveyResults.filter(r => r.yesPercent >= 80);
+            if (successfulQuestions.length === 0) return 0;
+
+            const stopWords = new Set(['a', 'an', 'the', 'and', 'or', 'in', 'on', 'is', 'of', 'for', 'to', 'with', 'it', 'by', 'our', 'we', 'you', 's', 'what', 'why', 'how', 'did', 'do']);
+            const cleanText = (text) => text.toLowerCase().replace(/[.,!?;:()]/g, '').split(/\s+/).filter(word => word.length > 2 && !stopWords.has(word));
+            
+            const successfulKeywords = new Set();
+            successfulQuestions.forEach(res => cleanText(res.question).forEach(kw => successfulKeywords.add(kw)));
+
+            if (successfulKeywords.size === 0) return 0;
+            const messageKeywords = new Set(cleanText(message));
+            if (messageKeywords.size === 0) return 0;
+            let matchCount = 0;
+            messageKeywords.forEach(word => { if (successfulKeywords.has(word)) matchCount++; });
+            return Math.min(100, (matchCount / messageKeywords.size) * 100);
+        }
+
+        function handleSendFollowup() {
+            const followupMessage = document.getElementById('followup-message').value;
+            const matchPercentage = calculateFollowupEffectiveness(followupMessage, marketingCampaign.surveyResults);
+            let newCustomers = (matchPercentage >= 90) ? Math.floor(marketingCampaign.remainingLeads * 0.70) : 0;
+            
+            marketingCampaign.finalCustomers += newCustomers;
+            marketingCampaign.remainingLeads -= newCustomers;
+            playerCompany.finalCustomers = marketingCampaign.finalCustomers;
+            
+            document.getElementById('followup-customers-result').textContent = newCustomers.toLocaleString('en-IN');
+            
+            const finalPushCost = (marketingCampaign.remainingLeads * 100) / 10000000;
+            document.getElementById('final-push-cost').innerHTML = `Cost: ₹100 / Lead <span class="text-slate-400">(Total: ₹${finalPushCost.toFixed(2)} Cr)</span>`;
+
+            document.getElementById('followup-draft-section').classList.add('hidden');
+            document.getElementById('followup-results-section').classList.remove('hidden');
+        }
+
+        function showFinalPushScreen() {
+            pauseYearTimer();
+            document.getElementById('phase4c-communication').classList.add('hidden');
+            document.getElementById('phase4d-final-push').classList.remove('hidden');
+            document.getElementById('final-push-draft-section').classList.remove('hidden');
+            document.getElementById('final-push-results-section').classList.add('hidden');
+            document.getElementById('final-push-message').value = '';
+            document.getElementById('final-push-char-counter').textContent = '0 / 150';
+        }
+
+        function handleSendFinalPush() {
+            const finalMessage = document.getElementById('final-push-message').value;
+            const bestSellerUSPs = marketData[selectedSector].companies[0].usps;
+            const targetUSPs = [...playerCompany.usps, bestSellerUSPs];
+            
+            const resemblance = calculateSimilarity(finalMessage, targetUSPs);
+            let newCustomers = 0;
+            if (resemblance >= 80) {
+                newCustomers = Math.floor(marketingCampaign.remainingLeads * 0.50);
+            }
+
+            const finalPushCostInCrore = (marketingCampaign.remainingLeads * 100) / 10000000;
+            playerCompany.totalMarketingSpend += finalPushCostInCrore;
+
+            marketingCampaign.finalCustomers += newCustomers;
+            playerCompany.finalCustomers = marketingCampaign.finalCustomers;
+            marketingCampaign.remainingLeads -= newCustomers;
+
+            document.getElementById('final-push-customers-result').textContent = newCustomers.toLocaleString('en-IN');
+            document.getElementById('final-push-draft-section').classList.add('hidden');
+            document.getElementById('final-push-results-section').classList.remove('hidden');
+        }
+
+        function updateTargetedCampaignDisplay() {
+            const slider = document.getElementById('targeted-leads-slider');
+            const leadsCount = parseInt(slider.value);
+            document.getElementById('targeted-leads-display').textContent = leadsCount.toLocaleString('en-IN');
+
+            const cost = leadsCount * 150;
+            const costInCrore = cost / 10000000;
+            document.getElementById('targeted-cost-display').textContent = `Total Cost: ₹ ${costInCrore.toFixed(4)} Cr`;
+        }
+
+        function handleSendTargetedMessage() {
+            const targetedLeads = parseInt(document.getElementById('targeted-leads-slider').value);
+            if (targetedLeads === 0) return;
+            
+            const costInCrore = (targetedLeads * 150) / 10000000;
+            
+            showConfirmationModal(
+                `This campaign will target ${targetedLeads.toLocaleString('en-IN')} leads and cost ₹${costInCrore.toFixed(4)} Cr. Do you want to proceed?`,
+                () => {
+                    executeTargetedCampaign(targetedLeads);
+                }
+            );
+        }
+
+        function executeTargetedCampaign(targetedLeads) {
+            const message = document.getElementById('targeted-message').value;
+            const costInCrore = (targetedLeads * 150) / 10000000;
+
+            const bestSellerUSPs = marketData[selectedSector].companies[0].usps;
+            const resemblance = calculateSimilarity(message, [bestSellerUSPs]);
+
+            let newCustomers = 0;
+            if (resemblance >= 80) {
+                newCustomers = Math.floor(targetedLeads * 0.20);
+            }
+            
+            if (!playerCompany.totalMarketingSpend) {
+                playerCompany.totalMarketingSpend = marketingCampaign.allocatedBudget + marketingCampaign.messagingCostInCrore;
+            }
+            playerCompany.totalMarketingSpend += costInCrore;
+            
+            playerCompany.finalCustomers += newCustomers;
+            marketingCampaign.finalCustomers += newCustomers;
+            marketingCampaign.remainingLeads -= targetedLeads; 
+
+            document.getElementById('targeted-results-text').textContent = `Your campaign targeting ${targetedLeads.toLocaleString('en-IN')} leads resulted in ${newCustomers.toLocaleString('en-IN')} new customers!`;
+            showTargetedResultsModal();
+        }
+
+        function showTargetedResultsModal() {
+            const modal = document.getElementById('targeted-results-modal');
+            const modalContent = modal.querySelector('.modal-content');
+            
+            document.getElementById('phase4-marketing-strategy').classList.add('hidden');
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modalContent.classList.remove('scale-95', 'opacity-0');
+            }, 10);
+        }
+
+        function hideTargetedResultsModal() {
+            const modal = document.getElementById('targeted-results-modal');
+            const modalContent = modal.querySelector('.modal-content');
+            modal.classList.add('opacity-0');
+            modalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+        
+        function showConfirmationModal(text, callback) {
+            document.getElementById('confirmation-text').textContent = text;
+            confirmationCallback = callback;
+            const modal = document.getElementById('confirmation-modal');
+            const modalContent = modal.querySelector('.modal-content');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modalContent.classList.remove('scale-95', 'opacity-0');
+            }, 10);
+        }
+
+        function hideConfirmationModal() {
+            const modal = document.getElementById('confirmation-modal');
+            const modalContent = modal.querySelector('.modal-content');
+            modal.classList.add('opacity-0');
+            modalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                confirmationCallback = null;
+            }, 300);
+        }
+
+        function updateCharCounter() {
+            const textarea = document.getElementById('marketing-message');
+            const counter = document.getElementById('char-counter');
+            counter.textContent = `${textarea.value.length} / 250`;
+            counter.classList.toggle('text-red-500', textarea.value.length > 250);
+        }
+
+        function returnToMarketingFollowup() {
+            document.getElementById('phase5-battlefield').classList.add('hidden');
+            document.getElementById('phase4-marketing-strategy').classList.remove('hidden');
+            
+            document.getElementById('marketing-allocation-section').classList.add('hidden');
+            document.getElementById('marketing-results-section').classList.add('hidden');
+            document.getElementById('marketing-followup-section').classList.remove('hidden');
+
+            window.scrollTo(0, 0);
+        }
+        
+        function displaySectorInfo(sectorName) {
+            const data = marketData[sectorName];
+            if (!data) return;
+
+            document.getElementById('sector-title').textContent = sectorName + " Sector";
+            document.getElementById('sector-potential').textContent = `Projected Market Size (2025): ${data.potential}`;
+            document.getElementById('sector-trends').textContent = data.trends;
+
+            const tableBody = document.getElementById('company-table-body');
+            tableBody.innerHTML = ''; 
+            data.companies.forEach(company => {
+                const row = document.createElement('tr');
+                row.className = 'bg-slate-800 border-b border-slate-700 hover:bg-slate-700';
+                row.innerHTML = `
+                    <td class="px-4 py-3 font-medium text-white whitespace-nowrap">${company.name}</td>
+                    <td class="px-4 py-3">${company.turnover}</td>
+                    <td class="px-4 py-3">${company.share}</td>
+                    <td class="px-4 py-3 text-xs text-slate-400">${company.usps}</td>
+                    <td class="px-4 py-3 text-center"><button class="bg-indigo-600 text-white px-2 py-1 text-xs rounded-md hover:bg-indigo-700 transition-colors" onclick='window.showProjectionModal(${JSON.stringify(company)})'>View</button></td>`;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function showProjectionModal(company) {
+            const modal = document.getElementById('projection-modal');
+            const modalContent = modal.querySelector('.modal-content');
+            document.getElementById('modal-company-name').textContent = company.name;
+            document.getElementById('modal-cagr').textContent = `Based on a simulated ${company.cagr}% CAGR.`;
+            
+            const tableBody = document.getElementById('projection-table-body');
+            tableBody.innerHTML = '';
+            
+            let yearTurnover = company.baseTurnover;
+            for (let i = 1; i <= 5; i++) {
+                yearTurnover *= (1 + company.cagr/100);
+                const row = document.createElement('tr');
+                row.className = 'border-b border-slate-700';
+                row.innerHTML = `<td class="px-4 py-2">${(2024 + currentYear) + i}</td><td class="px-4 py-2 font-mono">${Math.round(yearTurnover).toLocaleString('en-IN')}</td>`;
+                tableBody.appendChild(row);
+            }
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modalContent.classList.remove('scale-95', 'opacity-0');
+            }, 10);
+        }
+        window.showProjectionModal = showProjectionModal;
+
+
+        function hideProjectionModal() {
+            const modal = document.getElementById('projection-modal');
+            const modalContent = modal.querySelector('.modal-content');
+            modal.classList.add('opacity-0');
+            modalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => { modal.classList.add('hidden'); }, 300);
+        }
+
+        function handleCompanyCreation(event) {
+            event.preventDefault();
+            const companyName = document.getElementById('company-name').value;
+            const usps = [document.getElementById('usp1').value, document.getElementById('usp2').value, document.getElementById('usp3').value];
+            const evaluation = aiEvaluation(selectedSector, usps);
+            
+            playerCompany = {
+                name: companyName,
+                turnover: `₹ ${evaluation.turnover.toLocaleString('en-IN')} Crore`,
+                baseTurnover: evaluation.turnover,
+                initialTurnover: evaluation.turnover, // Store initial turnover
+                cagr: evaluation.cagr,
+                share: `${evaluation.marketShare.toFixed(4)}%`,
+                usps: usps,
+                isPlayer: true,
+                marketingBudgetPct: evaluation.marketingBudgetPct
+            };
+
+            document.getElementById('result-company-name').textContent = companyName;
+            document.getElementById('result-turnover').textContent = `₹${evaluation.turnover.toLocaleString('en-IN')} Crore`;
+            document.getElementById('result-market-share').textContent = `${evaluation.marketShare.toFixed(4)}%`;
+            
+            const remarksContainer = document.getElementById('result-remarks');
+            remarksContainer.innerHTML = '';
+            evaluation.remarks.forEach(remark => {
+                const p = document.createElement('p');
+                p.textContent = `• ${remark}`;
+                remarksContainer.appendChild(p);
+            });
+
+            showPhase3();
+        }
+
+        function aiEvaluation(sector, usps) {
+            let score = 0;
+            const remarks = [];
+            const lowerCaseUsps = usps.map(u => u.toLowerCase());
+
+            const techKeywords = ["ai", "blockchain", "iot", "data-driven", "automation", "platform", "saas", "ml"];
+            const sustainabilityKeywords = ["sustainable", "eco-friendly", "green", "renewable", "circular", "ev", "battery"];
+            const businessModelKeywords = ["subscription", "d2c", "hyperlocal", "on-demand", "marketplace", "omnichannel"];
+            const customerFocusKeywords = ["personalized", "customized", "experience", "community", "instant", "quick-commerce"];
+            const genericKeywords = ["quality", "service", "best", "good", "reliable", "cheap", "affordable"];
+            
+            lowerCaseUsps.forEach((usp, index) => {
+                let uspScore = 0;
+                let specific = false;
+                
+                techKeywords.forEach(k => { if(usp.includes(k)) { uspScore += 15; specific = true; } });
+                sustainabilityKeywords.forEach(k => { if(usp.includes(k)) { uspScore += 15; specific = true; } });
+                businessModelKeywords.forEach(k => { if(usp.includes(k)) { uspScore += 12; specific = true; } });
+                customerFocusKeywords.forEach(k => { if(usp.includes(k)) { uspScore += 10; specific = true; } });
+                genericKeywords.forEach(k => { if(usp.includes(k)) { uspScore -= 5; } });
+                
+                if (usp.length > 50) {
+                    uspScore += 10;
+                    remarks.push(`USP #${index + 1} is detailed and shows strong strategic thought.`);
+                } else if (usp.length < 20) {
+                    uspScore -= 5;
+                    remarks.push(`USP #${index + 1} is a bit generic. Try to add more specific details for a stronger market impact.`);
+                }
+                
+                if (specific && !remarks.some(r => r.includes(`USP #${index + 1}`))) {
+                    remarks.push(`USP #${index + 1} targets a key modern trend, which is a significant advantage.`);
+                }
+                
+                score += Math.max(0, uspScore);
+            });
+
+            const finalScore = Math.min(100, Math.max(0, score));
+            let turnover, marketShare, cagr, marketingBudgetPct;
+
+            // NEW LOGIC: Calculate turnover based on market size and USP score
+            const sectorData = marketData[sector];
+            const establishedMarketSize = sectorData.companies.reduce((sum, company) => sum + company.baseTurnover, 0);
+
+            if (finalScore > 80) {
+                // Disruptive: Capture a higher initial market share (0.3% to 0.5%)
+                marketShare = 0.3 + ((finalScore - 80) / 20) * 0.2; 
+                cagr = 30 + Math.round((finalScore - 80) / 2); // 30-40%
+                marketingBudgetPct = 15;
+                remarks.push("Your USPs are highly innovative and disruptive. You are well-positioned for rapid growth.");
+            } else if (finalScore > 50) {
+                // Solid: Capture a moderate market share (0.1% to 0.3%)
+                marketShare = 0.1 + ((finalScore - 50) / 30) * 0.2; 
+                cagr = 20 + Math.round((finalScore - 50) / 3); // 20-30%
+                marketingBudgetPct = 10;
+                remarks.push("A solid strategy. Your company addresses clear market needs and has a strong foundation for steady growth.");
+            } else {
+                // Conventional: Capture a smaller initial market share (0.01% to 0.1%)
+                marketShare = 0.01 + (finalScore / 50) * 0.09; 
+                cagr = 10 + Math.round(finalScore / 5); // 10-20%
+                marketingBudgetPct = 7;
+                remarks.push("A conventional approach. You will face stiff competition. Focus on execution will be key.");
+            }
+
+            // Calculate turnover based on the market share of the established market
+            turnover = (marketShare / 100) * establishedMarketSize;
+            
+            return { turnover: Math.round(turnover), marketShare, cagr, remarks, marketingBudgetPct };
+        }
+        
+        // --- End Game Functions ---
+        function showEndGameScreen() {
+            pauseYearTimer();
+            audioManager.triumph();
+            ['phase5-battlefield'].forEach(id => document.getElementById(id).classList.add('hidden'));
+            
+            const sectorData = marketData[selectedSector];
+            const acquiredTurnover = (playerCompany.finalCustomers || 0) * sectorData.avgSpendingPower / 10000000;
+            const finalTurnover = playerCompany.baseTurnover + acquiredTurnover;
+            const initialTurnover = playerCompany.initialTurnover;
+            const growthMultiple = finalTurnover / initialTurnover;
+
+            let title = "Dedicated Participant";
+            let subtitle = "You've successfully navigated the market!";
+            if (growthMultiple >= 10) {
+                title = "Extraordinary Leader";
+                subtitle = "A truly exceptional performance!";
+            } else if (growthMultiple >= 2) {
+                title = "Excellent Leader";
+                subtitle = "Congratulations on an impressive growth journey!";
+            }
+            
+            const showResults = () => {
+                document.getElementById('congrats-overlay').classList.add('hidden');
+                document.getElementById('end-game-screen').classList.remove('hidden');
+                
+                document.getElementById('end-game-subtitle').textContent = subtitle;
+                document.getElementById('final-initial-turnover').textContent = `₹ ${initialTurnover.toFixed(2)} Cr`;
+                document.getElementById('final-turnover').textContent = `₹ ${finalTurnover.toFixed(2)} Cr`;
+                document.getElementById('final-growth').textContent = `${growthMultiple.toFixed(2)}x`;
+                
+                generateCertificate(playerCompany.name, title, finalTurnover);
+            };
+
+            if (growthMultiple >= 2) {
+                document.getElementById('congrats-overlay').classList.remove('hidden');
+                setTimeout(showResults, 4000);
+            } else {
+                showResults();
+            }
+        }
+        
+        function generateCertificate(playerName, title, finalTurnover) {
+            const container = document.getElementById('certificate-container');
+            const today = new Date();
+            const dateStr = today.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+
+            container.innerHTML = `
+                <div class="text-center">
+                    <h2 class="text-3xl font-bold text-indigo-800" style="font-family: 'Garamond', serif;">Certificate of Achievement</h2>
+                    <p class="mt-4 text-lg">This certificate is proudly presented to</p>
+                    <p class="text-4xl font-bold text-slate-900 my-4" style="font-family: 'Brush Script MT', cursive;">${playerName}</p>
+                    <p class="mt-4 text-lg">for successfully completing the <strong>Sector Shaker: India Sales Challenge</strong> and achieving the title of</p>
+                    <p class="text-3xl font-bold text-indigo-700 my-4">${title}</p>
+                    <p class="mt-2 text-md">by growing their company to a final turnover of <strong>₹${finalTurnover.toFixed(2)} Crores</strong> in a five-year simulation.</p>
+                </div>
+                <div class="mt-12 flex justify-between items-center">
+                     <div class="text-center">
+                        <p class="text-sm font-bold border-t-2 border-slate-700 pt-2">Prof. S. K. Singh</p>
+                        <p class="text-xs">Director, Taxila Business School</p>
+                    </div>
+                    <div class="text-center">
+                        <p class="text-sm">Date: ${dateStr}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function downloadCertificate() {
+            const certificate = document.getElementById('certificate-container');
+            html2canvas(certificate, { scale: 3 }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `Sector_Shaker_Certificate_${playerCompany.name.replace(/\s/g, '_')}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        }
+        
+        function shareOnLinkedIn() {
+            const finalTurnover = playerCompany.baseTurnover + ((playerCompany.finalCustomers || 0) * marketData[selectedSector].avgSpendingPower / 10000000);
+            const growthMultiple = finalTurnover / playerCompany.initialTurnover;
+            let title = "Dedicated Participant";
+            if (growthMultiple >= 10) title = "Extraordinary Leader";
+            else if (growthMultiple >= 2) title = "Excellent Leader";
+            
+            const shareText = `I've been recognized as an "${title}" in the Sector Shaker: India Sales Challenge! I grew my company, ${playerCompany.name}, to a turnover of ₹${finalTurnover.toFixed(2)} Crores in a 5-year business simulation. A great learning experience from Taxila Business School.`;
+            const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent('https://taxila.in/')}&summary=${encodeURIComponent(shareText)}`;
+            window.open(url, '_blank');
+        }
+
+
+    </script>
+</body>
+</html>
