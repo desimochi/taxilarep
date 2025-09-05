@@ -8,7 +8,7 @@ export const GlobalProvider = ({ children }) => {
   const [state, setState] = useState(null);
 
   useEffect(() => {
-    const cookieUser = Cookies.get("user");
+    const cookieUser = Cookies.get("new_user");
     if (cookieUser) {
       try {
         setState(JSON.parse(cookieUser));

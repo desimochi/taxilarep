@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Netritva Shakti: The C-Suite LeaderShip Challenge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Lato', sans-serif;
+            background-color: #1e1b4b; /* indigo-950 */
+            background-image: linear-gradient(145deg, #1e1b4b 0%, #312e81 100%),
+                              url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%233730a3' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2-H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        h1, h2, h3, .font-heading {
+            font-family: 'Poppins', sans-serif;
+        }
+        .card-3d {
+            background-color: rgba(30, 27, 75, 0.6); /* Darker, more solid feel */
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            border-left: 1px solid rgba(255, 255, 255, 0.08);
+            border-right: 1px solid rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(12px);
+            border-radius: 1rem;
+            box-shadow: 0px 20px 40px rgba(0, 0, 0, 0.4), 
+                        inset 0px 1px 1px rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .card-3d:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 50%);
+            pointer-events: none;
+        }
+        .card-3d:hover {
+            transform: translateY(-10px) scale(1.03) perspective(1000px) rotateX(1deg);
+            box-shadow: 0px 25px 50px rgba(0, 0, 0, 0.5), 0 0 20px rgba(94, 234, 212, 0.1);
+        }
+        .inset-display {
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 0.5rem;
+            box-shadow: inset 0px 3px 6px rgba(0,0,0,0.6);
+            padding: 0.5rem 0.75rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .progress-bar-bg {
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 9999px;
+            overflow: hidden;
+            box-shadow: inset 0px 1px 3px rgba(0,0,0,0.5);
+        }
+        .progress-bar {
+            transition: width 0.5s ease-in-out, background-color 0.5s ease-in-out;
+            box-shadow: 0px 0px 10px rgba(255,255,255,0.3);
+        }
+        .modal-backdrop {
+            background-color: rgba(10, 10, 20, 0.8);
+            backdrop-filter: blur(5px);
+        }
+        .option-button-3d {
+             background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+             border: 1px solid rgba(255, 255, 255, 0.15);
+             border-bottom: 2px solid rgba(0,0,0,0.3);
+             transition: all 0.2s ease-in-out;
+        }
+        .option-button-3d:not(:disabled):hover {
+            border-color: #5eead4; /* teal-300 */
+            background-color: rgba(20, 184, 166, 0.3);
+            transform: scale(1.03);
+            box-shadow: 0 0 15px rgba(20, 184, 166, 0.4);
+        }
+         .option-button-3d:not(:disabled):active {
+            transform: scale(1.01);
+            border-bottom-width: 1px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
+        }
+        .button-3d {
+            border: 1px solid rgba(255,255,255,0.2);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+            transition: all 0.2s ease;
+            background-image: linear-gradient(to top, #14b8a6, #2dd4bf);
+            border-bottom: 3px solid #0f766e;
+        }
+        .button-3d:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(20, 184, 166, 0.5);
+            background-image: linear-gradient(to top, #0d9488, #14b8a6);
+        }
+        .button-3d:active {
+            transform: scale(1.03) translateY(1px);
+            border-bottom-width: 2px;
+        }
+        .score-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.3));
+        }
+        .score-circle-bg {
+             stroke: rgba(255,255,255,0.1);
+        }
+        .score-circle-fg {
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+            stroke-dasharray: 440;
+            stroke-dashoffset: 440;
+            transition: stroke-dashoffset 1s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="text-slate-200">
+
+    <div id="game-container" class="container mx-auto p-4 max-w-7xl">
+        <header class="text-center mb-6">
+            <h1 class="text-4xl md:text-5xl font-bold text-white tracking-wider">नेतृत्व शक्ति (Netritva Shakti)</h1>
+            <p id="player-title-display" class="text-md md:text-lg text-slate-400 mt-2">SVP, Astromee</p>
+            <p class="text-sm text-slate-500 mt-4">Created at Taxila Business School Jaipur.</p>
+        </header>
+
+        <div class="flex flex-col lg:flex-row gap-6">
+            <!-- Left Panel: Stats & Team -->
+            <aside class="w-full lg-w-1/3 space-y-6">
+                 <!-- Core Metrics -->
+                <div class="card-3d p-5">
+                    <h2 class="text-xl font-bold text-white border-b border-slate-600 pb-2 mb-4">Division Scorecard</h2>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center inset-display">
+                            <span class="font-semibold text-slate-300"><i class="fa-solid fa-calendar-week mr-2 text-indigo-400"></i>Quarter</span>
+                            <span id="quarter-display" class="px-3 py-1 bg-indigo-600 text-white rounded-full text-sm font-bold shadow-lg">1</span>
+                        </div>
+                        <div class="flex justify-between items-center inset-display">
+                            <span class="font-semibold text-slate-300"><i class="fa-solid fa-wallet mr-2 text-teal-400"></i>Budget</span>
+                            <span id="budget-display" class="font-bold text-teal-300">₹2.50 Crore</span>
+                        </div>
+                         <div class="flex justify-between items-center inset-display">
+                            <span class="font-semibold text-slate-300"><i class="fa-solid fa-chart-pie mr-2 text-fuchsia-400"></i>Market Share</span>
+                            <span id="market-share-display" class="font-bold text-fuchsia-400">25%</span>
+                        </div>
+                        <div class="flex justify-between items-center inset-display">
+                            <span class="font-semibold text-slate-300"><i class="fa-solid fa-star mr-2 text-amber-400"></i>Leadership Score</span>
+                            <span id="leadership-score-current" class="font-bold text-amber-400">0</span>
+                        </div>
+                    </div>
+                </div>
+                 <!-- Projects -->
+                <div class="card-3d p-5">
+                    <h2 class="text-xl font-bold text-white mb-3">Flagship Projects</h2>
+                     <div class="space-y-3">
+                        <div>
+                             <p class="text-sm font-semibold text-slate-300 mb-1">Project Agni (Legacy)</p>
+                             <div class="progress-bar-bg w-full h-5">
+                                 <div id="project-agni-bar" class="progress-bar h-full bg-orange-500 rounded-full flex items-center justify-center text-white text-xs font-bold">0%</div>
+                            </div>
+                        </div>
+                         <div>
+                             <p class="text-sm font-semibold text-slate-300 mb-1">Project Vayu (New)</p>
+                             <div class="progress-bar-bg w-full h-5">
+                                 <div id="project-vayu-bar" class="progress-bar h-full bg-sky-500 rounded-full flex items-center justify-center text-white text-xs font-bold">0%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Stakeholders -->
+                <div class="card-3d p-5">
+                    <h2 class="text-xl font-bold text-white mb-4">C-Suite Alignment</h2>
+                    <div id="stakeholder-container" class="space-y-3"></div>
+                </div>
+                 <!-- Team Status -->
+                <div class="card-3d p-5">
+                    <h2 class="text-xl font-bold text-white mb-4">Key Personnel</h2>
+                    <div id="team-status-container" class="space-y-4"></div>
+                </div>
+            </aside>
+
+            <!-- Right Panel: Main Content -->
+            <main class="w-full lg:w-2/3">
+                <div id="main-panel" class="card-3d p-6 min-h-[500px] flex flex-col justify-between">
+                       <!-- This area will be dynamically filled -->
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="welcome-modal" class="fixed inset-0 z-50 flex items-center justify-center modal-backdrop p-4">
+        <div class="card-3d max-w-lg w-full p-8 text-center fade-in">
+            <h2 class="text-3xl font-bold text-white mb-4 font-heading">Welcome to The C-Suite LeaderShip Chellenge</h2>
+            <div id="loading-message" class="text-slate-400 mb-4 hidden">Loading game...</div>
+            <div class="my-6">
+                <label for="player-name-input" class="block text-sm font-medium text-slate-300 mb-2">Please enter your name:</label>
+                <input type="text" id="player-name-input" class="w-full px-4 py-2 border border-slate-500 rounded-lg bg-slate-900/50 text-white focus:ring-teal-500 focus:border-teal-500 shadow-inner" placeholder="e.g., Aarav Sharma">
+                <p id="name-error" class="text-red-400 text-sm mt-1 hidden">A name is required.</p>
+            </div>
+            <p class="text-slate-300 mb-6">As the new SVP, your final score will be an average of your project success, team morale, and C-Suite alignment. Lead wisely.</p>
+            <button id="start-game-button" class="w-full bg-teal-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-teal-500 button-3d">Begin Simulation</button>
+        </div>
+    </div>
+
+    <div id="event-modal" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop p-4">
+        <div class="card-3d max-w-lg w-full p-8 fade-in">
+            <h2 id="event-title" class="text-2xl font-bold text-amber-300 mb-4 font-heading"></h2>
+            <p id="event-description" class="text-slate-300 mb-2"></p>
+            <p id="event-effect" class="text-amber-400 font-semibold mb-6"></p>
+            <button id="acknowledge-event-button" class="w-full bg-amber-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-amber-500 button-3d">Acknowledge</button>
+        </div>
+    </div>
+    
+    <div id="end-game-modal" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop p-4 overflow-y-auto">
+        <div class="card-3d max-w-5xl w-full p-8 my-8 text-center fade-in">
+            <h2 class="text-3xl font-bold text-white mb-2 font-heading">Leadership Scoreboard</h2>
+            <p id="end-game-review-title" class="text-lg text-slate-400 mb-6"></p>
+            
+            <div class="flex flex-col lg:flex-row gap-6 items-center">
+                <!-- Left: Score & Stats -->
+                <div class="lg:w-1/3 w-full flex flex-col items-center">
+                    <h3 class="font-bold text-white text-xl mb-4">Final Score</h3>
+                    <div class="score-circle">
+                        <svg class="w-full h-full" viewBox="0 0 150 150">
+                            <circle class="score-circle-bg" cx="75" cy="75" r="70" stroke-width="10" fill="none"></circle>
+                            <circle id="score-circle-fg" class="score-circle-fg" cx="75" cy="75" r="70" stroke-width="10" fill="none" stroke="url(#scoreGradient)"></circle>
+                            <defs>
+                                <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" stop-color="#ef4444" />
+                                    <stop offset="50%" stop-color="#f59e0b" />
+                                    <stop offset="100%" stop-color="#10b981" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <div class="absolute flex flex-col items-center z-10">
+                            <span id="leadership-score-display" class="text-5xl font-bold text-white">0</span>
+                            <span class="text-sm text-slate-400">/ 100</span>
+                        </div>
+                    </div>
+                     <p id="leadership-tier" class="mt-4 text-xl font-semibold"></p>
+                     <div id="final-stats-grid" class="space-y-2 mt-6 w-full text-sm"></div>
+                </div>
+
+                <!-- Right: Graph -->
+                <div class="lg:w-2/3 w-full">
+                    <h3 class="font-bold text-white text-xl mb-4">Performance Over Time</h3>
+                    <div class="h-80"><canvas id="endGameChart"></canvas></div>
+                </div>
+            </div>
+
+            <div id="leadership-profile" class="bg-slate-900/50 p-6 rounded-lg shadow-inner mt-8">
+                <h3 id="profile-title" class="text-2xl font-bold text-teal-300"></h3>
+                <p id="profile-description" class="text-slate-300 mt-2"></p>
+            </div>
+            <button id="restart-game-button" class="mt-8 w-1/2 mx-auto bg-teal-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-teal-500 button-3d">Run Simulation Again</button>
+        </div>
+    </div>
+
+<script>
+// --- AUDIO SETUP ---
+let audioReady = false;
+const synth = new Tone.Synth().toDestination();
+const pluckSynth = new Tone.PluckSynth().toDestination();
+const metalSynth = new Tone.MetalSynth({
+	frequency  : 150,
+	envelope  : {
+		attack  : 0.001 ,
+		decay  : 0.2 ,
+		release  : 0.01
+	}  ,
+	harmonicity  : 3.1 ,
+	modulationIndex  : 32 ,
+	resonance  : 2000 ,
+	octaves  : 1.5
+}).toDestination();
+
+
+function playStartSound() {
+    if (!audioReady) return;
+    const now = Tone.now();
+    pluckSynth.triggerAttackRelease("C4", "8n", now);
+    pluckSynth.triggerAttackRelease("E4", "8n", now + 0.2);
+    pluckSynth.triggerAttackRelease("G4", "8n", now + 0.4);
+}
+
+function playDecisionSound() {
+    if (!audioReady) return;
+    synth.triggerAttackRelease("C3", "8n");
+}
+
+function playEventSound() {
+    if (!audioReady) return;
+    metalSynth.triggerAttackRelease("C5", "16n", Tone.now());
+}
+
+function playNegativeEventSound() {
+    if (!audioReady) return;
+    synth.triggerAttackRelease("G#2", "8n");
+}
+
+function playEndGameSound() {
+    if (!audioReady) return;
+    const now = Tone.now();
+    pluckSynth.triggerAttackRelease("C5", "4n", now);
+    pluckSynth.triggerAttackRelease("G4", "4n", now + 0.2);
+    pluckSynth.triggerAttackRelease("E4", "4n", now + 0.4);
+    pluckSynth.triggerAttackRelease("C4", "4n", now + 0.6);
+}
+
+
+// --- CONSTANTS ---
+const EVENTS_PER_QUARTER = 2; // Ask 2 random questions per quarter
+
+// --- GAME STATE ---
+const initialGameState = () => ({
+    playerName: 'SVP',
+    currentQuarter: 1,
+    quarterlyScenarioIndex: 0,
+    eventIndexInQuarter: 0,
+    budget: 25000000, // 2.5 Crore
+    marketShare: 25,
+    projectAgniProgress: 0,
+    projectVayuProgress: 0,
+    kpis: { morale: 50, productivity: 50, innovation: 50 },
+    team: [
+        { name: 'Anaya Sharma', role: 'Lead Engineer', morale: 50, burnout: 10, icon: 'fa-helmet-safety', active: true },
+        { name: 'Vikram Singh', role: 'Product Manager', morale: 60, burnout: 5, icon: 'fa-clipboard-list', active: true },
+        { name: 'Priya Rao', role: 'R&D Lead', morale: 70, burnout: 5, icon: 'fa-flask-vial', active: true },
+    ],
+    stakeholders: {
+        ceo: { name: 'Priya Kapoor, CEO', satisfaction: 50, icon: 'fa-chess-queen', focus: 'Growth' },
+        cfo: { name: 'Rohan Mehta, CFO', satisfaction: 50, icon: 'fa-sack-dollar', focus: 'Profitability' },
+        cto: { name: 'Siddharth Iyer, CTO', satisfaction: 50, icon: 'fa-microchip', focus: 'Innovation' },
+    },
+    eventDeck: shuffleArray([...marketEvents]),
+    history: []
+});
+
+// --- API ENDPOINT ---
+const API_ENDPOINT = 'https://erp.taxila.in/api/game/netrvita';
+
+// --- DOM ELEMENTS ---
+const welcomeModal = document.getElementById('welcome-modal');
+const eventModal = document.getElementById('event-modal');
+const endGameModal = document.getElementById('end-game-modal');
+const startGameButton = document.getElementById('start-game-button');
+const restartGameButton = document.getElementById('restart-game-button');
+const acknowledgeEventButton = document.getElementById('acknowledge-event-button');
+const mainPanel = document.getElementById('main-panel');
+const nameInput = document.getElementById('player-name-input');
+const nameError = document.getElementById('name-error');
+const loadingMessage = document.getElementById('loading-message');
+let endGameChart = null;
+let gameState;
+
+// --- UTILITY FUNCTIONS ---
+function formatINR(value) {
+    if (Math.abs(value) >= 10000000) return `₹${(value / 10000000).toFixed(2)} Crore`;
+    if (Math.abs(value) >= 100000) return `₹${(value / 100000).toFixed(2)} Lakh`;
+    return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value);
+}
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
+
+const kpiConfig = {
+    morale: { name: 'Team Morale' },
+    productivity: { name: 'Productivity' },
+    innovation: { name: 'Innovation' },
+};
+
+// --- GAME DATA (EVENTS & SCENARIOS) ---
+const marketEvents = [
+    { title: "Economic Boom", type: "Market Pulse", description: "The national economy is surging, increasing investor confidence and available capital.", effectText: "+₹50 Lakh Budget, +5 CEO Satisfaction", effects: { budget: 5000000, stakeholders: { ceo: 5 } } },
+    { title: "Recession Fears", type: "Market Pulse", description: "Economic forecasts are grim, leading to budget tightening across the industry.", effectText: "-₹30 Lakh Budget, +5 CFO Satisfaction", effects: { budget: -3000000, stakeholders: { cfo: 5 } } },
+    { title: "Competitor Stumbles", type: "Market Pulse", description: "Your main competitor recalls a flagship product, opening up a market opportunity.", effectText: "+3% Market Share", effects: { marketShare: 3 } },
+    { title: "New Government Regulation", type: "Market Pulse", description: "New compliance standards require immediate, costly changes to your development process.", effectText: "-₹40 Lakh Budget, -5 Productivity", effects: { budget: -4000000, kpis: { productivity: -5 } } },
+    { title: "AI Breakthrough", type: "Market Pulse", description: "A new AI development model is released, creating huge opportunities for innovation.", effectText: "+10 Innovation, +5 CTO Satisfaction", effects: { kpis: { innovation: 10 }, stakeholders: { cto: 5 } } },
+    { title: "Key Supplier Bankrupt", type: "Market Shock", description: "The primary supplier for Agni's microprocessors has declared bankruptcy. Finding and vetting a new supplier will be costly and time-consuming.", effectText: "-₹60 Lakh Budget, -10 Project Agni Progress, -5 Productivity", effects: { budget: -6000000, projectAgniProgress: -10, kpis: { productivity: -5 } } },
+    { title: "Whistleblower Email", type: "Ethical Dilemma", description: "You receive an anonymous email alleging a junior engineer bypassed a minor, but required, quality check to meet a deadline. It's unverified and has spread as a rumor.", effectText: "-5 Team Morale (due to mistrust). Your next decision will be crucial.", effects: { kpis: { morale: -5 } } },
+    { title: "Urgent Marketing Demo", type: "C-Suite Directive", description: "The CMO needs a functional demo for the annual tech summit next month. It's not on the roadmap and will require significant overtime from Anaya's team.", effectText: "This puts you in a tight spot between departments.", effects: { teamEffects: { 'Anaya Sharma': { burnout: 15 } } } },
+    { title: "Poaching Attempt", type: "Talent War", description: "A top competitor is actively recruiting junior members of Priya Rao's R&D team with high salary offers, causing unrest.", effectText: "-10 R&D Team Morale. Requires a strategic response to retain talent.", effects: { teamEffects: { 'Priya Rao': { morale: -10 } } } },
+    { title: "Negative Press", type: "Reputation Crisis", description: "A popular tech blog has published a skeptical article about Project Agni's potential, calling it 'over-hyped.' The C-Suite is concerned.", effectText: "-5 to all Stakeholder Satisfaction.", effects: { stakeholders: { ceo: -5, cfo: -5, cto: -5 } } },
+    { title: "Hostile Takeover Rumor", type: "Corporate Crisis", description: "A global conglomerate is rumored to be considering a hostile takeover of Astromee. The CEO demands all divisions cut 'non-essential' R&D to boost short-term profitability and make the company a less attractive target.", effectText: "-15 Team Morale, -10 All Stakeholder Satisfaction.", effects: { kpis: { morale: -15 }, stakeholders: { ceo: -10, cfo: -10, cto: -10 } } },
+    { title: "'Shadow IT' Discovery", type: "Internal Politics", description: "The CTO discovers Vikram's team is using an unsanctioned (but effective) SaaS tool, creating a security risk. He is furious about the breach of protocol.", effectText: "-15 CTO Satisfaction, +5 Productivity. You must handle the fallout.", effects: { stakeholders: { cto: -15 }, kpis: { productivity: 5 } } },
+    { title: "Public Talent Loss", type: "Reputation Crisis", description: "A competitor has hired away a high-performing engineer from Anaya's team and is celebrating the 'poach' on social media. Your team's confidence is shaken.", effectText: "-10 Team Morale, -10 Innovation, -5 Market Share.", effects: { kpis: { morale: -10, innovation: -10 }, marketShare: -5 } },
+    { title: "Budget Showdown", type: "Internal Politics", description: "The CFO announces a mandatory 15% budget cut for either your Tech Division or the Sales Division. The CEO will decide based on your justification.", effectText: "Your next decision is critical. Prepare to defend your budget.", effects: {} },
+    { title: "Personal Crisis", type: "Ethical Dilemma", description: "Vikram Singh, your Product Manager, confides in you about a serious family health issue. His performance is slipping, and he's requested a temporary reduction in duties.", effectText: "-10 Productivity. Your handling of this will define your leadership.", effects: { kpis: { productivity: -10 } } },
+    { title: "Unexpected Tax Audit", type: "Financial Crisis", description: "The finance department flags an unexpected and rigorous tax audit for your division. This will require significant time from your team to prepare documentation.", effectText: "-10 Productivity for one quarter, -5 CFO satisfaction.", effects: { kpis: { productivity: -10 }, stakeholders: { cfo: -5 } } },
+    { title: "VC Interest", type: "Market Opportunity", description: "A prominent venture capitalist expresses interest in spinning off Project Agni as a new company with you as CEO. The CEO of Astromee is aware and watching your loyalty.", effectText: "+15 CEO satisfaction if you reaffirm commitment, -15 if you explore it.", effects: {} },
+    { title: "Currency Fluctuation", type: "Market Pulse", description: "A sharp fluctuation in the rupee increases the cost of your imported hardware components.", effectText: "-₹50 Lakh Budget.", effects: { budget: -5000000 } },
+    { title: "Stock Market Rally", type: "Market Pulse", description: "Astromee's stock price soars after a positive earnings report, creating a wave of optimism and loosening the purse strings.", effectText: "+₹75 Lakh Budget, +5 All Stakeholder Satisfaction.", effects: { budget: 7500000, stakeholders: { ceo: 5, cfo: 5, cto: 5 } } },
+    { title: "Green Tech Grant", type: "Market Opportunity", description: "The government announces a substantial grant for projects incorporating sustainable technology. Pivoting parts of Agni could qualify, but would cause delays.", effectText: "A choice between innovation and schedule.", effects: { kpis: { innovation: 5 } } },
+    { title: "Sabbatical Request", type: "Team Dynamic", description: "Priya Rao, your R&D Lead, requests a 3-month sabbatical for personal development, starting next quarter. Her absence will create a leadership vacuum.", effectText: "-10 Innovation if approved without a plan. Tests your succession planning.", effects: {} },
+    { title: "Internal Promotion Gap", type: "Team Dynamic", description: "You promoted a star performer, which was great for morale, but now their old team is struggling without their expertise.", effectText: "-10 Productivity, +5 Morale.", effects: { kpis: { productivity: -10, morale: 5 } } },
+    { title: "Viral Culture Post", type: "Reputation Boost", description: "An employee's post about your supportive management style goes viral internally. It's a huge morale boost.", effectText: "+15 Team Morale, +5 Productivity.", effects: { kpis: { morale: 15, productivity: 5 } } },
+    { title: "Team Conflict", type: "Internal Politics", description: "Anaya (Engineering) and Vikram (Product) have a major public disagreement over Agni's technical direction, causing a rift in the team.", effectText: "-10 Morale, -5 Productivity. Requires immediate mediation.", effects: { kpis: { morale: -10, productivity: -5 } } },
+    { title: "Upskilling Demand", type: "C-Suite Directive", description: "The CTO wants the entire division to undergo an expensive, mandatory certification in a new technology stack.", effectText: "-₹80 Lakh Budget, +10 Innovation, +10 CTO Satisfaction.", effects: { budget: -8000000, kpis: { innovation: 10 }, stakeholders: { cto: 10 } } },
+    { title: "Burnout Survey Results", type: "Corporate Crisis", description: "The annual employee survey shows high levels of burnout specifically in your division. The C-Suite wants an action plan.", effectText: "-10 All Stakeholder Satisfaction until addressed.", effects: { stakeholders: { ceo: -10, cfo: -10, cto: -10 } } },
+    { title: "Cloud Provider Outage", type: "Operational Challenge", description: "Your main cloud service provider suffers a major, day-long outage, halting all development and testing.", effectText: "-15 Productivity, -5 Project Agni Progress.", effects: { kpis: { productivity: -15 }, projectAgniProgress: -5 } },
+    { title: "Technical Debt Reckoning", type: "Operational Challenge", description: "Anaya reports that accumulated technical debt is slowing down new feature development to a crawl. Refactoring will take a full quarter.", effectText: "A choice: -20 Productivity now, or a permanent -5 Productivity later.", effects: {} },
+    { title: "Competing Tech Standard", type: "Market Shock", description: "A new open-source technology standard is rapidly being adopted by competitors, potentially making Agni's core architecture obsolete in a year.", effectText: "-15 Innovation, -10 CTO Satisfaction. A major strategic threat.", effects: { kpis: { innovation: -15 }, stakeholders: { cto: -10 } } },
+    { title: "Hackathon Success", type: "Innovation Boost", description: "A team in your division wins the company hackathon with a brilliant idea that could be integrated into Project Agni.", effectText: "+15 Innovation, +10 Team Morale.", effects: { kpis: { innovation: 15, morale: 10 } } },
+    { title: "Agni Stress Test Failure", type: "Operational Challenge", description: "Project Agni fails a crucial performance stress test, revealing a fundamental flaw that will be very expensive to fix.", effectText: "-₹1 Crore Budget, -10 Project Agni Progress, -10 CTO Satisfaction.", effects: { budget: -10000000, projectAgniProgress: -10, stakeholders: { cto: -10 } } },
+    { title: "Conference Invitation", type: "Reputation Boost", description: "You are invited to give a keynote speech at India's largest tech conference. It's a great opportunity but will take you away from the office.", effectText: "+10 CEO Satisfaction, +5 Market Share, -5 Productivity.", effects: { stakeholders: { ceo: 10 }, marketShare: 5, kpis: { productivity: -5 } } },
+    { title: "CEO's Pet Project", type: "Internal Politics", description: "The CEO asks you to 'loan' two of your best engineers to her new pet project, which is unrelated to your division's goals.", effectText: "A classic political test. Saying no will displease the CEO.", effects: {} },
+    { title: "Government Interest", type: "Market Opportunity", description: "A high-ranking government official expresses interest in a private briefing on Project Agni for a potential 'Digital India' initiative.", effectText: "+15 CEO Satisfaction, +5 Market Share.", effects: { stakeholders: { ceo: 15 }, marketShare: 5 } },
+    { title: "Negative Analyst Report", type: "Reputation Crisis", description: "A powerful industry analyst gives Astromee a 'sell' rating, specifically citing your division's 'lack of groundbreaking innovation.'", effectText: "-10 Market Share, -10 CEO Satisfaction, -10 CFO Satisfaction.", effects: { marketShare: -10, stakeholders: { ceo: -10, cfo: -10 } } },
+    { title: "Data Privacy Scare", type: "Ethical Dilemma", description: "A security researcher flags a minor, non-critical data exposure in an old version of Agni. It's not public, but requires a costly audit and patch.", effectText: "-₹70 Lakh budget, tests your integrity.", effects: { budget: -7000000, stakeholders: { cto: 5 } } },
+    { title: "Strategic Partnership Offer", type: "Market Opportunity", description: "A major hardware vendor offers a co-development partnership on Project Vayu. It will accelerate progress but means sharing future revenue and some control.", effectText: "A strategic choice between speed and autonomy.", effects: { projectVayuProgress: 10 } },
+    { title: "Internal Process Overhaul", type: "Operational Challenge", description: "A C-suite-mandated shift to Agile development is causing chaos and resistance. The team's productivity has plummeted during the transition.", effectText: "-15 Productivity, +5 Innovation. How do you manage this change?", effects: { kpis: { productivity: -15, innovation: 5 } } },
+    { title: "Key Employee Relocation", type: "Team Dynamic", description: "Vikram Singh, your key product manager, must relocate for family reasons. Setting him up for effective remote work will be a significant one-time cost.", effectText: "A test of flexibility. Cost is -₹50 Lakh.", effects: { budget: -5000000, teamEffects: { 'Vikram Singh': { morale: 20 } } } },
+    { title: "Culture Clash", type: "Team Dynamic", description: "New, aggressive hires are clashing with your established team members, creating a 'move fast' vs. 'get it right' conflict that is hurting morale.", effectText: "-15 Team Morale. Requires delicate cultural leadership.", effects: { kpis: { morale: -15 } } },
+];
+
+const scenarios = [
+    // --- YEAR 1 ---
+    { 
+        title: "Q1: The Inherited Strategy",
+        description: "Your team is skeptical about the aggressive new strategy for Project Agni. Anaya, your Lead Engineer, is concerned about burnout, while the CFO is watching your initial spending closely.",
+        options: [
+            { text: "Hold a collaborative offsite to get team buy-in.", cost: 1000000, feedback: "The team feels heard, boosting morale. However, the CFO notes the expense, and the CTO worries about the 'soft' approach.", effects: { kpis: { morale: 15, productivity: -5, innovation: 5 }, stakeholders: { ceo: 5, cfo: -10, cto: -5 } }, teamEffects: { 'Anaya Sharma': { morale: 10, burnout: -5 }, 'Vikram Singh': { morale: 10 }, 'Priya Rao': { morale: 10 } } },
+            { text: "Push the strategy hard, promising bonuses for hitting targets.", cost: 0, feedback: "The team is stressed but focused, increasing productivity. The CEO is impressed, but Anaya's burnout risk rises sharply.", effects: { kpis: { morale: -10, productivity: 15 }, projectAgniProgress: 5, stakeholders: { ceo: 10, cfo: 5, cto: 0 } }, teamEffects: { 'Anaya Sharma': { morale: -10, burnout: 20 }, 'Vikram Singh': { morale: -5, burnout: 10 } } },
+            { text: "Invest in advanced new tools to accelerate development.", cost: 5000000, feedback: "The CTO is thrilled with the new tech. The team is excited but productivity dips during implementation. The CFO is alarmed by the major expense.", effects: { kpis: { productivity: -10, innovation: 15 }, projectAgniProgress: 5, stakeholders: { ceo: 0, cfo: -15, cto: 15 } }, teamEffects: { 'Priya Rao': { morale: 15, burnout: -5 } } }
+        ]
+    },
+    { 
+        title: "Q2: The Disruptive Competitor",
+        description: "A startup launches a rival product, grabbing market share. The CEO wants an immediate, aggressive response. Priya, R&D Lead, sees a chance to innovate.",
+        options: [
+            { text: "Fast-track Agni by cutting features to launch sooner.", cost: 2500000, feedback: "A pragmatic move that pleases the CEO and CFO. The CTO feels you're sacrificing quality, and the team is overworked.", effects: { marketShare: 4, projectAgniProgress: 15, kpis: { morale: -10, productivity: 5, innovation: -15 }, stakeholders: { ceo: 15, cfo: 5, cto: -10 } }, teamEffects: { 'Anaya Sharma': { burnout: 25 }, 'Vikram Singh': { morale: -10, burnout: 15 } } },
+            { text: "Launch a skunkworks 'spoiler' project led by Priya.", cost: 6000000, feedback: "A bold, innovative play that excites the CTO and Priya's team. The CEO is nervous about splitting focus, and the CFO hates the unbudgeted cost.", effects: { marketShare: 1, kpis: { morale: 5, productivity: -10, innovation: 25 }, stakeholders: { ceo: -10, cfo: -15, cto: 20 } }, teamEffects: { 'Priya Rao': { morale: 20, burnout: -10 }, 'Anaya Sharma': { burnout: 10 } } },
+            { text: "Initiate an acquisition of the startup.", cost: 20000000, feedback: "A massive power play. The CEO is ecstatic. The CFO is furious about the cost. The team is anxious about the integration.", effects: { marketShare: 8, kpis: { morale: -5 }, stakeholders: { ceo: 25, cfo: -30, cto: 5 } }, teamEffects: { 'Vikram Singh': { morale: 10 } } }
+        ]
+    },
+     {
+        title: "Q3: The Talent War",
+        description: "Anaya Sharma, your indispensable Lead Engineer, has a lucrative offer from a competitor. Her burnout is visibly high. Losing her would be catastrophic for Project Agni.",
+        options: [
+            { text: "Counter-offer with a huge bonus and promotion.", cost: 4000000, feedback: "Anaya stays, saving the project. The CFO is unhappy with the precedent. Other team members feel undervalued.", effects: { kpis: { morale: -10, productivity: 10 }, projectAgniProgress: 10, stakeholders: { cfo: -10 } }, teamEffects: { 'Anaya Sharma': { morale: 20, burnout: -15 }, 'Vikram Singh': { morale: -10 }, 'Priya Rao': { morale: -10 } } },
+            { text: "Offer a better work-life balance, more autonomy, and a smaller raise.", cost: 1000000, feedback: "Anaya appreciates the gesture and stays. Her loyalty is high. The CTO approves of fostering a sustainable culture.", effects: { kpis: { morale: 10, productivity: 5 }, stakeholders: { cfo: 0, cto: 10 } }, teamEffects: { 'Anaya Sharma': { morale: 25, burnout: -25 } } },
+            { text: "Let her go and promote from within to save money.", cost: 0, feedback: "A financially sound, but operationally disastrous move. The team is demoralized and Agni's timeline is severely impacted. The CEO is deeply concerned.", effects: { kpis: { morale: -25, productivity: -20, innovation: -10 }, projectAgniProgress: -15, stakeholders: { ceo: -20, cfo: 15 } } },
+        ]
+    },
+    {
+        title: "Q4: The High-Stakes Pivot",
+        description: "A major client offers a transformative contract, but it requires pivoting Agni to a new, unfamiliar technology. The CTO is excited by the challenge, but the team is not ready.",
+        options: [
+            { text: "Accept and invest heavily in external consultants and training.", cost: 10000000, feedback: "High-risk, high-reward. The CEO and CTO are thrilled. The team is stressed by the steep learning curve. The CFO is worried about the ROI.", effects: { marketShare: 5, projectAgniProgress: 10, kpis: { productivity: -20, innovation: 15 }, stakeholders: { ceo: 20, cfo: -10, cto: 15 } }, teamEffects: { 'Anaya Sharma': { burnout: 20 }, 'Priya Rao': { morale: 10 } } },
+            { text: "Propose a smaller, joint-venture pilot project first.", cost: 2500000, feedback: "A prudent compromise. It mitigates risk, pleasing the CFO. The team appreciates the manageable challenge. The CEO wishes you were more aggressive.", effects: { marketShare: 2, projectAgniProgress: 5, kpis: { morale: 10, innovation: 10 }, stakeholders: { ceo: -5, cfo: 10, cto: 10 } }, teamEffects: { 'Anaya Sharma': { burnout: -10 } } },
+            { text: "Decline to maintain focus on the original roadmap.", cost: 0, feedback: "The team is relieved. But the CEO, CTO, and the market see this as a lack of ambition, hurting your reputation and growth prospects.", effects: { marketShare: -2, kpis: { productivity: 5, innovation: -10 }, stakeholders: { ceo: -15, cfo: 5, cto: -10 } }, teamEffects: { 'Anaya Sharma': { burnout: -15 } } }
+        ]
+    },
+    // --- YEAR 2 ---
+    {
+        title: "Q5: Post-Launch Reality",
+        description: "Project Agni is live, but early user feedback is mixed. It's stable, but competitors are faster. The team is tired. Do you focus on fixing Agni or start the ambitious 'Project Vayu'?",
+        options: [
+            { text: "Dedicate the quarter to 'Agni 2.0' - bug fixes and performance improvements.", cost: 3000000, feedback: "The team stabilizes Agni, improving market share slightly. The CTO feels you are playing it safe and not innovating on Vayu.", effects: { marketShare: 2, projectAgniProgress: 5, kpis: { morale: 10, productivity: 5, innovation: -10 }, stakeholders: { ceo: 5, cfo: 0, cto: -10 } }, teamEffects: {'Anaya Sharma': {burnout: -10}} },
+            { text: "Launch Project Vayu with a small, dedicated R&D team.", cost: 7000000, feedback: "Priya's team is thrilled, and the CTO is impressed. However, with resources split, Agni's issues linger, hurting market share. The CEO is concerned.", effects: { projectVayuProgress: 15, marketShare: -3, kpis: { innovation: 20 }, stakeholders: { ceo: -5, cfo: -10, cto: 20 } }, teamEffects: {'Priya Rao': {morale: 15}} },
+            { text: "Do both: Assign half the team to Agni fixes and half to Vayu R&D.", cost: 5000000, feedback: "A difficult balancing act. Progress is slow on both fronts, and context-switching hurts productivity. No one is truly happy.", effects: { projectVayuProgress: 5, projectAgniProgress: 2, kpis: { productivity: -15 }, stakeholders: { ceo: -5, cfo: -5, cto: 5 } }, teamEffects: {'Vikram Singh': {burnout: 15}} }
+        ]
+    },
+    {
+        title: "Q6: Scaling the Team",
+        description: "Your division's success means you have headcount approval to grow. The market for senior talent is expensive and competitive.",
+        options: [
+            { text: "Hire two expensive, star senior engineers.", cost: 8000000, feedback: "The new hires bring immense skill, boosting innovation and Vayu's progress. However, their high salaries cause some resentment among the original team.", effects: { projectVayuProgress: 10, kpis: { productivity: 10, innovation: 15, morale: -5 }, stakeholders: { cfo: -10 } } },
+            { text: "Establish a graduate hiring program to build a pipeline of junior talent.", cost: 2000000, feedback: "A cost-effective, long-term strategy that pleases the CFO. The team's morale is high as they take on mentorship roles, but productivity drops due to training.", effects: { kpis: { productivity: -15, morale: 15 }, stakeholders: { cfo: 10, cto: 5 } } },
+            { text: "'Acquihire' a small, struggling startup with a talented team.", cost: 15000000, feedback: "You instantly gain a cohesive, innovative team, accelerating Vayu. The CEO loves the bold move. But the cost is huge and integrating the new culture is a major challenge.", effects: { projectVayuProgress: 20, kpis: { morale: -10, innovation: 10 }, marketShare: 1, stakeholders: { ceo: 15, cfo: -20, cto: 10 } } }
+        ]
+    },
+    {
+        title: "Q7: International Expansion",
+        description: "The CEO wants to launch Project Agni in Europe. This is a massive opportunity, but requires significant investment in localization, compliance (like GDPR), and marketing.",
+        options: [
+            { text: "Go all-in: Full-scale launch in three key European markets.", cost: 12000000, feedback: "An aggressive move that makes a huge splash, significantly boosting market share. The team is stretched to the breaking point with the workload.", effects: { marketShare: 8, kpis: { productivity: -10 }, stakeholders: { ceo: 20, cfo: -15 } }, teamEffects: {'Vikram Singh': {burnout: 25}, 'Anaya Sharma': {burnout: 20}} },
+            { text: "Run a single-country pilot project to test the waters.", cost: 4000000, feedback: "A sensible, data-driven approach that pleases the CFO. The market impact is small, and the CEO is impatient with your caution.", effects: { marketShare: 2, stakeholders: { ceo: -10, cfo: 10, cto: 5 } } },
+            { text: "Delay the launch to focus on perfecting Project Vayu first.", cost: 0, feedback: "The team is relieved to focus, accelerating Vayu's development. But the CEO is furious, viewing this as a missed strategic opportunity that costs market momentum.", effects: { projectVayuProgress: 10, marketShare: -2, stakeholders: { ceo: -25, cto: 10 } } }
+        ]
+    },
+    {
+        title: "Q8: The Cannibalization Dilemma",
+        description: "Project Vayu is nearing its internal demo and it's clear it will be far superior to Agni. The CFO is worried that launching Vayu will kill Agni's revenue stream. The CEO wants market disruption.",
+        options: [
+            { text: "Launch Vayu aggressively as an 'Agni-killer' and migrate users.", cost: 5000000, feedback: "The market is electrified by your bold innovation. Market share soars. The CFO is panicked by the immediate revenue dip from Agni, but the CEO and CTO are thrilled.", effects: { marketShare: 10, projectVayuProgress: 25, stakeholders: { ceo: 25, cfo: -20, cto: 20 }, kpis: {innovation: 20} } },
+            { text: "Position Vayu as a premium 'Pro' version of Agni at a high price point.", cost: 2000000, feedback: "A safe financial strategy that protects revenue. It creates two successful products, but fractures the user base and dilutes your innovative impact.", effects: { marketShare: 4, projectVayuProgress: 15, stakeholders: { ceo: 5, cfo: 15, cto: -5 }, kpis: {innovation: -10} } },
+            { text: "Delay Vayu's launch. Continue to sell Agni while building up Vayu's feature set.", cost: 0, feedback: "The CFO is relieved, and revenue is stable. But a competitor reverse-engineers your Vayu concept from a leak and launches first, devastating your market position and innovation cred.", effects: { marketShare: -8, projectVayuProgress: 5, stakeholders: { ceo: -20, cfo: 10, cto: -15 }, kpis: {innovation: -25, morale: -15} } }
+        ]
+    }
+];
+
+// --- GAME LOGIC ---
+async function startGame() {
+    const playerName = nameInput.value.trim();
+    if (!playerName) {
+        nameError.classList.remove('hidden');
+        return;
+    }
+    
+    if (!audioReady) {
+        await Tone.start();
+        audioReady = true;
+        console.log("Audio ready.");
+    }
+
+    playStartSound();
+
+    nameError.classList.add('hidden');
+    gameState = initialGameState();
+    gameState.playerName = playerName;
+    document.getElementById('player-title-display').innerText = `SVP ${gameState.playerName}, Astromee`;
+    welcomeModal.classList.add('hidden');
+    endGameModal.classList.add('hidden');
+    
+    if (endGameChart) {
+        endGameChart.destroy();
+    }
+    
+    logHistory(); // Log initial state for Q1
+    updateUI();
+    progressTurn();
+    saveGameState();
+}
+
+function restartGame() {
+    welcomeModal.classList.remove('hidden');
+    endGameModal.classList.add('hidden');
+    nameInput.value = '';
+    document.getElementById('player-title-display').innerText = `SVP, Astromee`;
+}
+
+function updateUI() {
+    if (!gameState) return;
+    document.getElementById('quarter-display').innerText = gameState.currentQuarter;
+    document.getElementById('budget-display').innerText = formatINR(gameState.budget);
+    document.getElementById('market-share-display').innerText = `${gameState.marketShare}%`;
+
+    const currentScore = calculateLeadershipScore();
+    document.getElementById('leadership-score-current').innerText = currentScore;
+
+    const agniProgress = clamp(gameState.projectAgniProgress, 0, 100);
+    const agniBar = document.getElementById('project-agni-bar');
+    agniBar.style.width = `${agniProgress}%`;
+    agniBar.innerText = `${agniProgress}%`;
+
+    const vayuProgress = clamp(gameState.projectVayuProgress, 0, 100);
+    const vayuBar = document.getElementById('project-vayu-bar');
+    vayuBar.style.width = `${vayuProgress}%`;
+    vayuBar.innerText = `${vayuProgress}%`;
+
+    const kpiContainer = document.getElementById('dashboard');
+    if (kpiContainer) { 
+        kpiContainer.innerHTML = '';
+        Object.keys(gameState.kpis).forEach(key => {
+            const value = clamp(gameState.kpis[key], 0, 100);
+            let barColorClass = value < 30 ? 'bg-red-500' : value < 60 ? 'bg-yellow-400' : 'bg-green-400';
+            kpiContainer.innerHTML += `
+                <div>
+                    <h3 class="font-semibold text-sm text-slate-300 font-heading">${kpiConfig[key].name}</h3>
+                    <div class="progress-bar-bg w-full h-3 mt-1"><div class="progress-bar h-full rounded-full ${barColorClass}" style="width: ${value}%"></div></div>
+                </div>`;
+        });
+    }
+    
+    const teamContainer = document.getElementById('team-status-container');
+    teamContainer.innerHTML = '';
+    gameState.team.forEach(member => {
+        if (!member.active) {
+             teamContainer.innerHTML += `<div class="inset-display opacity-50"><p class="text-red-400 line-through"><i class="fa-solid ${member.icon} mr-2"></i>${member.name}</p><p class="text-xs text-red-500 ml-6">Resigned</p></div>`;
+             return;
+        }
+        const morale = clamp(member.morale, 0, 100);
+        const burnout = clamp(member.burnout, 0, 100);
+        let moraleColor = morale < 30 ? 'text-red-400' : morale < 60 ? 'text-yellow-400' : 'text-green-400';
+        let burnoutColor = burnout < 40 ? 'text-slate-500' : burnout < 75 ? 'text-yellow-400' : 'text-red-500';
+
+        teamContainer.innerHTML += `
+            <div class="inset-display">
+                <div class="flex justify-between items-center text-sm">
+                    <p class="font-bold text-slate-200"><i class="fa-solid ${member.icon} mr-2 text-slate-400"></i>${member.name}</p>
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-fire ${burnoutColor}" title="Burnout Risk"></i>
+                        <p class="font-bold ${moraleColor}">${morale}%</p>
+                    </div>
+                </div>
+                <p class="text-xs text-slate-400 ml-6">${member.role}</p>
+            </div>`;
+    });
+
+    const stakeholderContainer = document.getElementById('stakeholder-container');
+    stakeholderContainer.innerHTML = '';
+    Object.values(gameState.stakeholders).forEach(sh => {
+        const satisfaction = clamp(sh.satisfaction, 0, 100);
+        let satColor = satisfaction < 30 ? 'text-red-400' : satisfaction < 60 ? 'text-yellow-400' : 'text-green-400';
+         stakeholderContainer.innerHTML += `
+            <div class="flex items-center justify-between text-sm">
+                <p class="text-slate-300"><i class="fa-solid ${sh.icon} mr-2 ${satColor}"></i>${sh.name}</p>
+                <p class="font-bold ${satColor}">${satisfaction}%</p>
+            </div>`;
+    });
+}
+
+function progressTurn() {
+    if (gameState.eventIndexInQuarter < EVENTS_PER_QUARTER) {
+        displayEvent();
+    } else {
+        displayScenario();
+    }
+}
+
+function displayEvent() {
+    const event = gameState.eventDeck.pop() || { title: "Quiet Quarter", type: "Market Pulse", description: "The market is stable and no major internal issues have arisen.", effectText: "A moment of calm.", effects: {} };
+    gameState.currentEvent = event;
+    
+    const negativeEventTypes = ["Crisis", "Shock", "Dilemma", "Challenge"];
+    if (negativeEventTypes.some(type => event.type.includes(type))) {
+        playNegativeEventSound();
+    } else {
+        playEventSound();
+    }
+
+    document.getElementById('event-title').innerHTML = `<i class="fa-solid fa-bolt mr-2"></i> New Development: ${event.type}`;
+    document.getElementById('event-description').innerText = event.description;
+    document.getElementById('event-effect').innerText = event.effectText;
+    eventModal.classList.remove('hidden');
+    eventModal.classList.add('flex');
+}
+
+function applyEvent() {
+    const event = gameState.currentEvent;
+    if (event.effects.budget) gameState.budget += event.effects.budget;
+    if (event.effects.marketShare) gameState.marketShare += event.effects.marketShare;
+    if (event.effects.projectAgniProgress) gameState.projectAgniProgress += event.effects.projectAgniProgress;
+    if (event.effects.projectVayuProgress) gameState.projectVayuProgress += event.effects.projectVayuProgress;
+    if (event.effects.kpis) {
+        Object.keys(event.effects.kpis).forEach(key => gameState.kpis[key] += event.effects.kpis[key]);
+    }
+    if (event.effects.stakeholders) {
+        Object.keys(event.effects.stakeholders).forEach(key => gameState.stakeholders[key].satisfaction += event.effects.stakeholders[key]);
+    }
+    if (event.effects.teamEffects) {
+        gameState.team.forEach(member => {
+            const memberEffect = event.effects.teamEffects[member.name];
+            if (memberEffect) {
+                if(memberEffect.morale) member.morale += memberEffect.morale;
+                if(memberEffect.burnout) member.burnout += memberEffect.burnout;
+            }
+        });
+    }
+    
+    eventModal.classList.add('hidden');
+    gameState.eventIndexInQuarter++;
+    updateUI();
+    progressTurn();
+    saveGameState();
+}
+
+function displayScenario() {
+    const scenario = scenarios[gameState.quarterlyScenarioIndex];
+    mainPanel.innerHTML = `
+        <div>
+            <div id="dashboard" class="mb-6 grid grid-cols-2 md:grid-cols-3 gap-4"></div>
+            <div id="scenario-area">
+                <h3 class="text-2xl font-bold mb-2 text-teal-300">${scenario.title}</h3>
+                <p class="text-slate-300 mb-6 leading-relaxed">${scenario.description}</p>
+                <div id="options-container" class="space-y-3"></div>
+            </div>
+        </div>
+        <div id="feedback-area" class="hidden mt-6 p-4 bg-teal-900/50 border border-teal-400/50 rounded-lg fade-in">
+            <h3 class="font-bold text-teal-300 mb-2 font-heading">Outcome</h3>
+            <p id="feedback-text" class="text-teal-200 mb-4"></p>
+            <button id="next-button" class="w-full bg-teal-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-teal-500 button-3d">End Quarter</button>
+        </div>
+    `;
+    updateUI(); // To populate dashboard inside main panel
+    const optionsContainer = document.getElementById('options-container');
+    
+    let enabledOptions = 0;
+    scenario.options.forEach(option => {
+        const button = document.createElement('button');
+        button.innerHTML = `<span class="block">${option.text}</span><span class="block text-sm font-bold text-red-400 mt-1">Cost: ${formatINR(option.cost)}</span>`;
+        button.className = "w-full text-left p-4 rounded-lg option-button-3d";
+        if (gameState.budget < option.cost && option.cost > 0) {
+            button.disabled = true;
+            button.classList.add('opacity-50', 'cursor-not-allowed');
+            button.innerHTML += `<span class="block text-xs text-red-500">Insufficient funds</span>`;
+        } else {
+            enabledOptions++;
+        }
+        button.onclick = () => selectOption(option);
+        optionsContainer.appendChild(button);
+    });
+
+    if (enabledOptions === 0 && scenario.options.length > 0) {
+        // Apply termination penalties
+        gameState.stakeholders.ceo.satisfaction = clamp(gameState.stakeholders.ceo.satisfaction - 50, 0, 100);
+        gameState.stakeholders.cfo.satisfaction = clamp(gameState.stakeholders.cfo.satisfaction - 50, 0, 100);
+        gameState.stakeholders.cto.satisfaction = clamp(gameState.stakeholders.cto.satisfaction - 50, 0, 100);
+        gameState.kpis.morale = clamp(gameState.kpis.morale - 30, 0, 100);
+        playNegativeEventSound();
+
+        const scenarioArea = document.getElementById('scenario-area');
+        scenarioArea.innerHTML = `
+             <h3 class="text-2xl font-bold mb-2 text-red-400">Financial Insolvency</h3>
+             <p class="text-slate-300 mb-6 leading-relaxed">Your division has insufficient funds to take any strategic actions this quarter. The board has reviewed your performance and decided to terminate your position due to financial mismanagement. Your final review reflects this outcome.</p>
+             <button id="termination-button" class="w-full bg-red-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-500 button-3d">View Final Scorecard</button>
+        `;
+        document.getElementById('termination-button').addEventListener('click', endGame);
+        saveGameState();
+        return; 
+    }
+
+    document.getElementById('next-button').addEventListener('click', nextQuarter);
+}
+
+function selectOption(option) {
+    playDecisionSound();
+    gameState.budget -= option.cost;
+    const effects = option.effects;
+    if (effects.kpis) Object.keys(effects.kpis).forEach(key => gameState.kpis[key] += effects.kpis[key]);
+    if (effects.stakeholders) Object.keys(effects.stakeholders).forEach(key => gameState.stakeholders[key].satisfaction += effects.stakeholders[key]);
+    if (effects.marketShare) gameState.marketShare += effects.marketShare;
+    if (effects.projectAgniProgress) gameState.projectAgniProgress += effects.projectAgniProgress;
+    if (effects.projectVayuProgress) gameState.projectVayuProgress += effects.projectVayuProgress;
+
+    if (option.teamEffects) {
+        gameState.team.forEach(member => {
+            const memberEffect = option.teamEffects[member.name];
+            if (memberEffect) {
+                if(memberEffect.morale) member.morale += memberEffect.morale;
+                if(memberEffect.burnout) member.burnout += memberEffect.burnout;
+            }
+        });
+    }
+
+    document.getElementById('feedback-text').innerText = option.feedback || "Your decision has been implemented.";
+    document.getElementById('feedback-area').classList.remove('hidden');
+    document.getElementById('options-container').classList.add('hidden');
+    
+    checkBurnout();
+    updateUI();
+    saveGameState();
+}
+
+function checkBurnout() {
+     gameState.team.forEach(member => {
+        if(member.active && member.burnout > 95) {
+            playNegativeEventSound();
+            member.active = false;
+            document.getElementById('feedback-text').innerHTML += `<br/><br/><strong class="text-red-400">CRITICAL: ${member.name} has resigned due to extreme burnout! This will severely impact productivity and morale.</strong>`;
+            gameState.kpis.morale -= 20;
+            gameState.kpis.productivity -= 20;
+            gameState.stakeholders.ceo.satisfaction -= 15;
+        } else if (member.active && member.burnout > 75) {
+             document.getElementById('feedback-text').innerHTML += `<br/><br/><strong class="text-yellow-400">WARNING: ${member.name}'s burnout is critically high. They may resign if conditions do not improve.</strong>`;
+        }
+    });
+}
+
+function logHistory() {
+    gameState.history.push({
+        quarter: gameState.currentQuarter,
+        kpis: { ...gameState.kpis },
+        marketShare: gameState.marketShare
+    });
+}
+
+function nextQuarter() {
+    proceedToNextQuarter();
+}
+
+function proceedToNextQuarter() {
+    logHistory();
+    gameState.quarterlyScenarioIndex++;
+    if (gameState.quarterlyScenarioIndex < scenarios.length) {
+        gameState.currentQuarter++;
+        gameState.eventIndexInQuarter = 0;
+        updateUI();
+        progressTurn();
+        saveGameState();
+    } else {
+        endGame();
+    }
+}
+
+function calculateLeadershipScore() {
+    const { projectAgniProgress, projectVayuProgress, kpis, stakeholders } = gameState;
+
+    const agniScore = clamp(projectAgniProgress, 0, 100);
+    const vayuScore = clamp(projectVayuProgress, 0, 100);
+    const moraleScore = clamp(kpis.morale, 0, 100);
+
+    const cSuiteScore = (
+        clamp(stakeholders.ceo.satisfaction, 0, 100) +
+        clamp(stakeholders.cfo.satisfaction, 0, 100) +
+        clamp(stakeholders.cto.satisfaction, 0, 100)
+    ) / 3;
+
+    const finalScore = (agniScore + vayuScore + moraleScore + cSuiteScore) / 4;
+    
+    return Math.round(finalScore);
+}
+
+function endGame() {
+    playEndGameSound();
+    document.getElementById('end-game-review-title').innerText = `Final 2-Year Performance Review for SVP ${gameState.playerName}`;
+    const finalStatsContainer = document.getElementById('final-stats-grid');
+    const avgStakeholder = (
+        clamp(gameState.stakeholders.ceo.satisfaction, 0, 100) +
+        clamp(gameState.stakeholders.cfo.satisfaction, 0, 100) +
+        clamp(gameState.stakeholders.cto.satisfaction, 0, 100)
+    ) / 3;
+    const finalScore = calculateLeadershipScore();
+
+    finalStatsContainer.innerHTML = `
+        <div class="inset-display flex justify-between"><span>Project Agni Score:</span> <span class="font-bold text-orange-400">${clamp(gameState.projectAgniProgress,0,100)}%</span></div>
+        <div class="inset-display flex justify-between"><span>Project Vayu Score:</span> <span class="font-bold text-sky-400">${clamp(gameState.projectVayuProgress,0,100)}%</span></div>
+        <div class="inset-display flex justify-between"><span>Team Morale Score:</span> <span class="font-bold text-indigo-300">${clamp(gameState.kpis.morale,0,100)}%</span></div>
+        <div class="inset-display flex justify-between"><span>C-Suite Alignment Score:</span> <span class="font-bold text-yellow-300">${avgStakeholder.toFixed(0)}%</span></div>
+        <div class="inset-display flex justify-between mt-2 pt-2 border-t border-slate-600"><span>Final Market Share:</span> <span class="font-bold text-fuchsia-400">${gameState.marketShare}%</span></div>
+        <div class="inset-display flex justify-between mt-2 pt-2 border-t border-slate-600"><span>Leadership Score:</span> <span class="font-bold text-teal-400">${finalScore}</span></div>
+    `;
+    
+    const scoreDisplay = document.getElementById('leadership-score-display');
+    const scoreTier = document.getElementById('leadership-tier');
+    const scoreCircleFg = document.getElementById('score-circle-fg');
+
+    scoreDisplay.textContent = '0';
+    let currentScore = 0;
+    const timer = setInterval(() => {
+        if (currentScore >= finalScore) {
+            clearInterval(timer);
+            scoreDisplay.textContent = finalScore;
+        } else {
+            currentScore++;
+            scoreDisplay.textContent = currentScore;
+        }
+    }, 25);
+    
+    const circumference = 440;
+    const offset = circumference - (finalScore / 100) * circumference;
+    setTimeout(() => {
+        scoreCircleFg.style.strokeDashoffset = offset;
+    }, 100);
+
+    if (finalScore > 80) {
+        scoreTier.textContent = "Outstanding Leader";
+        scoreTier.className = "mt-4 text-xl font-semibold text-green-400";
+    } else if (finalScore >= 65) {
+        scoreTier.textContent = "Adept Executive";
+        scoreTier.className = "mt-4 text-xl font-semibold text-teal-400";
+    } else if (finalScore >= 50) {
+        scoreTier.textContent = "Competent Manager";
+        scoreTier.className = "mt-4 text-xl font-semibold text-yellow-400";
+    } else {
+        scoreTier.textContent = "Emerging Leader";
+        scoreTier.className = "mt-4 text-xl font-semibold text-red-400";
+    }
+
+    const profile = getLeadershipProfile();
+    document.getElementById('profile-title').innerText = profile.title;
+    document.getElementById('profile-description').innerText = profile.description;
+    
+    endGameModal.classList.remove('hidden');
+    endGameModal.classList.add('flex');
+    renderEndGameChart();
+}
+
+function getLeadershipProfile() {
+    const { kpis, budget, marketShare, stakeholders, team } = gameState;
+    const activeTeam = team.filter(m => m.active).length;
+    const finalScore = calculateLeadershipScore();
+
+    if (finalScore > 80) {
+        return { title: "The Visionary", description: "You masterfully balanced aggressive growth with team well-being and C-Suite politics. Your ability to execute on multiple complex projects while navigating crises is the hallmark of an exceptional leader." };
+    }
+    if (stakeholders.ceo.satisfaction > 75 && marketShare > 35) {
+        return { title: "The Growth Champion", description: "You masterfully aligned with the CEO's vision, driving aggressive market growth over two years. Your challenge now is to ensure this pace is sustainable for your team and budget." };
+    }
+    if (stakeholders.cfo.satisfaction > 75 && budget > 20000000) {
+        return { title: "The Financial Strategist", description: "Your fiscal discipline impressed the CFO and built a strong financial foundation. Now, leverage this stability to take calculated risks that foster innovation and capture the market." };
+    }
+    if (stakeholders.cto.satisfaction > 75 && kpis.innovation > 75) {
+        return { title: "The Innovation Guru", description: "You've transformed the division into an R&D powerhouse, thrilling the CTO. Ensure your cutting-edge ideas are translated into profitable products to keep the rest of the C-Suite on board." };
+    }
+    if (kpis.morale > 75 && activeTeam === 3) {
+        return { title: "The People Leader", description: "You are a master of culture, creating a motivated and resilient team that weathered every storm across two years. Your next step is to channel this powerful human capital into dominant market performance." };
+    }
+     if (activeTeam < 3) {
+        return { title: "The Hard-Taskmaster", description: "In the pursuit of results, you pushed your team beyond its limits, leading to key departures. While your focus on targets is clear, sustainable success requires a stronger focus on your people." };
+    }
+    return { title: "The Political Navigator", description: "You skillfully balanced the competing demands of the C-Suite, keeping the division stable and avoiding major disasters. You've proven your ability to manage complexity; now is the time to define a bold, singular vision for the future." };
+}
+ function getUserId() {
+                const params = new URLSearchParams(window.location.search);
+                return params.get("userId") || "guest";
+            }
+// --- API FUNCTIONS ---
+async function saveGameState() {
+    const userId = getUserId()
+     const nameParam = new URLSearchParams(window.location.search).get("name");
+    const name = nameParam ? JSON.parse(decodeURIComponent(nameParam)) : 'Player';
+    try {
+        const payload = {
+            userId,
+            name,
+            gameState: gameState,
+        };
+        const response = await fetch(API_ENDPOINT, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        console.log('Game state saved successfully.');
+    } catch (error) {
+        console.error('Failed to save game state:', error);
+    }
+}
+
+async function loadGameState() {
+    loadingMessage.classList.remove('hidden');
+    const userId = getUserId()
+    try {
+        const response = await fetch(`${API_ENDPOINT}?userId=${userId}`);
+        if (response.status === 404) {
+            console.log('No saved game found.');
+            loadingMessage.classList.add('hidden');
+            return;
+        }
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const savedData = await response.json();
+        
+        if (savedData && savedData.gameState) {
+            gameState = savedData.gameState;
+            document.getElementById('player-name-input').value = gameState.playerName;
+            welcomeModal.classList.add('hidden');
+            document.getElementById('player-title-display').innerText = `SVP ${gameState.playerName}, Astromee`;
+            updateUI();
+            // Start the game loop from the loaded state
+            progressTurn();
+        }
+        loadingMessage.classList.add('hidden');
+    } catch (error) {
+        console.error('Failed to load game state:', error);
+        loadingMessage.classList.add('hidden');
+    }
+}
+
+// --- EVENT LISTENERS ---
+startGameButton.addEventListener('click', startGame);
+restartGameButton.addEventListener('click', restartGame);
+acknowledgeEventButton.addEventListener('click', applyEvent);
+
+// Initial call to load game state on page load
+window.onload = loadGameState;
+
+</script>
+</body>
+</html>
