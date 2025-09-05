@@ -153,6 +153,9 @@ export const menuItems = [
           {label : "Sales and Marketing", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Sector Shaker",  icon: <Gamepad className="h-5 w-5" />, path:"/game/sector-shaker"},
           ]},
+          {label : "Human Resource Development", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
+            {label:"Netritva",  icon: <Gamepad className="h-5 w-5" />, path:"/game/netrvita"},
+          ]},
           {label : "Strategy", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Taxila Capital Quest",  icon: <Gamepad className="h-5 w-5" />, path:"/game/quest"},
           ]},
@@ -187,6 +190,9 @@ export const menuItems = [
           ]},
           {label : "Sales and Marketing", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Sector Shaker",  icon: <Gamepad className="h-5 w-5" />, path:"/game/sector-shaker"},
+          ]},
+          {label : "Human Resource Development", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
+            {label:"Netritva",  icon: <Gamepad className="h-5 w-5" />, path:"/game/netrvita"},
           ]},
           {label : "Strategy", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Taxila Capital Quest",  icon: <Gamepad className="h-5 w-5" />, path:"/game/quest"},
