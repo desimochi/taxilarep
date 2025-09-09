@@ -190,7 +190,7 @@ const confirmReschdule = async () => {
     }
 };
   return (
-    <div className="px-12 py-16">
+    <div className="px-2 sm:px-12 py-6 sm:py-16">
        {showPopup && (
                 <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50">
                     {showToast && <Toast message={message}/>}
@@ -232,11 +232,11 @@ const confirmReschdule = async () => {
          <h1 className="text-3xl font-bold mb-2 font-sans">Class Schedule </h1>
                     <p className="text-sm text-gray-500 mb-8">Everyhting you need to know about Class Schedule</p>
                     </div>
-                    {hasadd && <Link href={`/add-class`} className="bg-red-800 text-green-50 px-8 py-2 rounded-sm shadow-sm hover:shadow-xl transition-shadow">Add Class</Link>}
+                    {hasadd && <Link href={`/add-class`} className="bg-red-800 text-green-50 px-4 py-2 rounded-sm shadow-sm hover:shadow-xl transition-shadow">Add Class</Link>}
                     </div>         
                     <hr className=" border  border-spacing-y-0.5 mb-6"/>
-                    <div className="mb-4 flex items-center justify-between ">
-                        <div className="w-1/5">
+                    <div className="mb-4 grid grid-cols-2 sm:grid-cols-5 gap-2 items-center justify-between ">
+                        <div className="">
                     <select value={selectedTerm} onChange={(e)=>setSelectedTerm(e.target.value)} className=" w-full border border-gray-300 rounded-sm p-2 text-gray-500 ">
                         <option value="">Select Term</option>
                         {terms.map(term => (
@@ -244,7 +244,7 @@ const confirmReschdule = async () => {
                         ))}
                     </select>
                     </div>
-                    <div className="w-1/5">
+                    <div className="">
                     <select onChange={(e) => setSelectedSubject(e.target.value)} className=" border w-full border-gray-300 rounded-sm p-2 text-gray-500">
                         <option value="">Select Subject</option>
                         {subjectas.map(sub => (
@@ -254,10 +254,10 @@ const confirmReschdule = async () => {
                         ))}
                     </select>
                 </div>
-                <div className="w-1/5">
+                <div className="">
                     <input type="date" className="w-full border border-gray-300 rounded-sm p-1 text-gray-500" onChange={(e) => setStartDate(e.target.value)} />
                 </div>
-                <div className="w-1/5">
+                <div className="">
                     <input type="date" className="w-full border border-gray-300 rounded-sm p-1 text-gray-500" onChange={(e) => setEndDate(e.target.value)} />
                 </div>
                 <button className="flex gap-1 justify-center w-fit border bg-gray-500 py-2 px-8 text-white rounded-sm hover:bg-gray-100 hover:text-red-800 transition duration-300 ease-in-out items-center" onClick={handleSubmit}><SearchIcon className="h-4 w-4"/> Search</button>

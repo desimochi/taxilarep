@@ -136,7 +136,7 @@ export default function AssignedSubject({editt, url, title}){
         <>
         <div className="py-4 px-5">
         {showToast && <Toast message={message}/>}
-            <div className="  py-8 px-12">
+            <div className="  py-8 sm:px-12">
                 <div className="flex justify-between items-center gap-2">
                     <div className="w-3/5">
                 <h5 className="text-2xl font-bold">{title}</h5>
@@ -180,7 +180,7 @@ export default function AssignedSubject({editt, url, title}){
   ) : (
     <button
       onClick={() => setEdit(true)}
-      className="mx-12 tx-sm flex items-center gap-1 justify-center bg-red-50 border border-red-700 text-red-800 hover:bg-red-800 hover:text-white px-4 py-2 rounded-sm"
+      className="sm:mx-12 tx-sm flex items-center gap-1 justify-center bg-red-50 border border-red-700 text-red-800 hover:bg-red-800 hover:text-white px-4 py-2 rounded-sm"
     >
       <PencilIcon className="h-4 w-4" />
       Edit
@@ -189,7 +189,7 @@ export default function AssignedSubject({editt, url, title}){
 )}
 
 {error && <p className="mx-12 text-sm text-red-800">{error}</p> }
-          {loading? <FullWidthLoader/> : <div className="px-12">  <table className="w-full rounded-xl text-sm text-left rtl:text-right text-gray-800 dark:text-gray-400 mt-4 mb-2">
+          {loading? <FullWidthLoader/> : <div className="sm:px-12"><div className="overflow-x-auto shadow-md sm:rounded-lg">  <table className="w-full rounded-xl text-sm text-left rtl:text-right text-gray-800 dark:text-gray-400 mt-4 mb-2">
         <thead className="text-xs text-red-800 uppercase bg-red-50 dark:bg-gray-700 dark:text-white-400 w-full">
             <tr>
                 {edit&& <th scope="col" className="px-6 py-3">-</th>}
@@ -234,7 +234,7 @@ export default function AssignedSubject({editt, url, title}){
        {course.faculty.first_name +" " + course.faculty.last_name}
       </td>
       
-      <td className="px-6 py-4 flex items-center  gap-2">
+      <td className="sm:px-6 py-4 flex items-center  gap-2">
       
       <Link href={`${url}${course.id}`} className="bg-green-50 text-green-800 p-1 rounded-sm"><EyeIcon className="h-5 w-5" /></Link>
       {editt &&  <Link href={`subject-manager/edit-assignedSub?subjectId=${course.id}`} className="bg-red-50 text-red-800 p-1 rounded-sm">
@@ -244,7 +244,7 @@ export default function AssignedSubject({editt, url, title}){
     </tr>
   )) : <tr className="text-center mt-4"><td colSpan={7}>No Subject Found For Selected Filter</td></tr>}
         </tbody>
-    </table></div>}
+    </table></div></div>}
     <div className="flex justify-between mt-4 mx-12">
         <button
           onClick={() => setCurrentPage((prev) => (prev - 1))}

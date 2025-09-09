@@ -4,6 +4,7 @@ import { GlobalContext } from "@/components/GlobalContext";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useContext, useEffect, useState } from "react";
 import RichTextEditor from "@/components/CKEditor";
+import BackButton from "@/components/ui/Backbutton";
 export default function Page() {
     const searchParams = useSearchParams();
     const subID = searchParams.get("subID"); // Get subID from URL
@@ -74,9 +75,10 @@ export default function Page() {
     }
 console.log(selectedSubject)
     return (
-        <div className="w-full rounded-sm py-12 px-12">
+        <div className="w-full rounded-sm py-12 px-2 sm:px-12">
+            <BackButton />
             <div className="border border-gray-300 shadow-sm hover:shadow-md rounded-sm">
-                <h4 className=" py-6 px-8 text-2xl font-bold text-red-800 bg-red-50">
+                <h4 className=" py-6 px-8 sm:text-2xl font-bold text-red-800 bg-red-50">
                     Upload Notes - {selectedSubject?.subject?.name || " "}
                 </h4>
                 <form className="py-5 px-5">

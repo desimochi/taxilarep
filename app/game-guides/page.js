@@ -26,6 +26,11 @@ const PDFViewer = () => {
       name: 'Project Management Guide',
       url: '/project-managementf.pdf', // File should be at public/manual.pdf
       description: 'Faculty Guide for project-management Game'
+    },
+    {
+      name: 'Indian Business Strategy Guide',
+      url: '/indian-business.pdf', // File should be at public/manual.pdf
+      description: 'Faculty Guide for Indian Business Strategy Game'
     }
   ];
 

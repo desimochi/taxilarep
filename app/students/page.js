@@ -115,7 +115,7 @@ const handleSubmit = async () => {
         }
     };
   return (
-    <div className="relative overflow-x-auto shadow-md sm:rounded-xl p-8 m-4 bg-white">
+    <div className="relative overflow-x-auto shadow-md sm:rounded-xl sm:p-8 m-4 bg-white">
       {/* Modal */}
       {showPopup && (
                 <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
@@ -136,12 +136,12 @@ const handleSubmit = async () => {
             )}
 
       {/* Filters */}
-      <div className="flex gap-3 mb-4 justify-end">
+      <div className="flex px-2 gap-2 mb-4 sm:justify-end">
         <select
           name="batch"
           value={filters.batch}
           onChange={handleFilterChange}
-          className="block p-2 ps-4 text-sm text-gray-700 border border-gray-400 rounded-sm bg-white focus:ring-blue-500 focus:border-blue-500"
+          className="block p-2  text-sm text-gray-700 border border-gray-400 rounded-sm bg-white focus:ring-blue-500 focus:border-blue-500"
         >
           <option value="">Select Batch</option>
           {batchOptions.map((batch) => (
@@ -183,6 +183,7 @@ const handleSubmit = async () => {
       ) : (
         <div className="rounded-xl border border-gray-300 mt-4">
           {filteredStudents.length > 0 ? (
+            <div className="overflow-x-auto shadow-md sm:rounded-lg">
             <table className="w-full text-sm text-left text-gray-500">
               <thead className="text-xs text-red-800 uppercase bg-red-50">
                 <tr>
@@ -240,6 +241,7 @@ const handleSubmit = async () => {
                 ))}
               </tbody>
             </table>
+            </div>
           ) : (
             <p className="mx-auto p-6 w-full text-center font-bold">No Student Found</p>
           )}

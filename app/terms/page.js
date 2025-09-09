@@ -137,18 +137,19 @@ const handleChange = (e, id, field) => {
         <>
         <div className="px-5 py-4">
             <div className="border border-gray-300 rounded-xl mt-4 bg-gradient-to-bl from-gray-700 to-stone-900 text-white p-2 hover:shadow-xl transition-shadow  py-8 px-12">
-                <div className="flex justify-between items-center gap-2">
-                    <div className="w-3/5">
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-2">
+                    <div className="sm:w-3/5">
                 <h5 className="text-2xl font-bold">Term Manager</h5>
                 <span className="text-sm text-gray-400">Taxila Business School</span>
                 </div>
-                <div className="w-1/5">
+                <div className="sm:w-1/5">
                 <input type="text" placeholder="search..."  className="p-2 rounded-sm text-gray-700"  value={search} onChange={(e) => setSearch(e.target.value)}/>
                 </div>
                 
                 </div>
                 
             </div>
+            <div className="overflow-x-auto shadow-md sm:rounded-lg">
         <table className="w-full text-sm text-left text-gray-700 dark:text-gray-400 mt-4">
     
             <thead className="text-xs text-white uppercase bg-black dark:bg-gray-700 dark:text-white-400 w-full">
@@ -219,6 +220,7 @@ const handleChange = (e, id, field) => {
                 ))}
             </tbody>
         </table>
+        </div>
         </div>
         {isDel && (
             <div

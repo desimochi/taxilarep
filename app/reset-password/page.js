@@ -74,7 +74,7 @@ export default function Page() {
       <div className="border border-gray-200 shadow-sm hover:shadow-md rounded-xl">
         <div className="flex flex-col items-center p-4 justify-center">
         <ShieldAlertIcon className="h-7 w-7"/>
-        <h4 className="px-40 mt-3 font-bold text-xl  text-red-800 rounded-t-md">
+        <h4 className="sm:px-40 mt-3 font-bold text-xl  text-red-800 rounded-t-md">
           Reset Password
         </h4>
         </div>

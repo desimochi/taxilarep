@@ -164,6 +164,7 @@ export const menuItems = [
           ]},
           {label : "Strategy", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Taxila Capital Quest",  icon: <Gamepad className="h-5 w-5" />, path:"/game/quest"},
+            {label:"Indian Business Strategy",  icon: <Gamepad className="h-5 w-5" />, path:"/game/indian-business"},
           ]},
            {label:"Wordify",  icon: <Gamepad className="h-5 w-5" />, path:"/game/wordfy"},
           ]},
@@ -203,6 +204,7 @@ export const menuItems = [
           {label:"Project Management",  icon: <Gamepad className="h-5 w-5" />, path:"/game/project-management"},
           {label : "Strategy", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Taxila Capital Quest",  icon: <Gamepad className="h-5 w-5" />, path:"/game/quest"},
+            {label:"Indian Business Strategy",  icon: <Gamepad className="h-5 w-5" />, path:"/game/indian-business"},
           ]},
           {label : "Critical Thinking", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Last City",  icon: <Gamepad className="h-5 w-5" />, path:"/game/lastcity"},

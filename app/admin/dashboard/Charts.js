@@ -52,7 +52,7 @@ fetchdata()
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
-      <div className=" px-8">
+      <div className="px-2 sm:px-8">
         {/* Header */}
         <div className="flex justify-between items-start mb-8">
           <div>
@@ -69,7 +69,7 @@ fetchdata()
           {/* Left Column */}
           <div className="lg:col-span-2 space-y-6">
             {/* Project Analytics */}
-            <div className='flex gap-2'>
+            <div className='flex flex-col sm:flex-row gap-2'>
             <div className="bg-white p-6 w-full rounded-xl border border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900 mb-6">T29 Batch Profile</h3>
               <div className="h-64">

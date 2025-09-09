@@ -40,7 +40,9 @@ export default function Atten15Day({id}){
                     <option value="15">15</option>
                 </select>
                 </div>
-               {loading? <FullWidthLoader/> :     <table className="w-full text-sm text-left text-gray-800 dark:text-gray-400 mt-4 max-h-96 overflow-y-auto">
+               {loading? <FullWidthLoader/> :    
+               <div className="overflow-x-auto shadow-md sm:rounded-lg">
+               <table className="w-full text-sm text-left text-gray-800 dark:text-gray-400 mt-4 max-h-96 overflow-y-auto">
                             <thead className="text-xs text-red-800 uppercase bg-red-50 dark:bg-gray-700 dark:text-gray-400">
               <tr>
                 <th scope="col" className="px-6 py-3">Date</th>
@@ -76,7 +78,8 @@ export default function Atten15Day({id}){
           )) : <tr><td className="text-center py-3">Attendance Data Not Available</td></tr>}
     
             </tbody>
-                            </table>}
+                            </table>
+                            </div>}
                 </div>
     )
 }

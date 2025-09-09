@@ -1,0 +1,1438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indian Business Strategy Challenge (IBSC)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #eef2f7;
+        }
+        .card {
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .btn-primary {
+            background-image: linear-gradient(to right, #4f46e5, #6366f1);
+            box-shadow: 0 4px 6px rgba(79, 70, 229, 0.2);
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 10px rgba(79, 70, 229, 0.3);
+        }
+         .btn-secondary {
+            background-color: #6c757d;
+            border-color: #6c757d;
+            transition: all 0.3s ease;
+        }
+        .btn-secondary:hover {
+            background-color: #5a6268;
+            border-color: #545b62;
+            transform: translateY(-2px);
+            box-shadow: 0 7px 10px rgba(0,0,0,0.1);
+        }
+        .main-content { display: none; }
+        .main-content.active { display: block; animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        input[type="range"] {
+            -webkit-appearance: none; appearance: none; width: 100%; height: 10px;
+            background: #e5e7eb; border-radius: 5px; outline: none; transition: background 0.3s;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none; width: 24px; height: 24px;
+            background: #4f46e5; cursor: pointer; border-radius: 50%; box-shadow: 0 0 5px rgba(0,0,0,0.2);
+        }
+        input, select {
+            border-radius: 0.5rem !important; border: 1px solid #d1d5db;
+            transition: box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+        input:focus, select:focus {
+            outline: none; border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
+        .glass-modal {
+            background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .hire-fire-input { width: 80px; }
+        
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4f46e5;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <!-- Main Container -->
+    <div id="main-game-container" class="flex flex-col sm:flex-row min-h-screen hidden">
+        <!-- Sidebar -->
+        <aside class="w-72 bg-white shadow-lg flex flex-col">
+            <div class="p-6 border-b text-center">
+                <h1 class="text-2xl font-bold text-indigo-700">IBSC</h1>
+                <p class="text-xs text-gray-500 font-medium">Indian Business Strategy Challenge</p>
+                <p class="text-xs text-gray-400 mt-1">Created at Taxila Business School, Jaipur</p>
+            </div>
+            <div class="p-4 bg-indigo-700 text-white">
+                <div class="text-center">
+                    <span class="font-semibold text-lg"><span id="current-year">Year 1</span></span>
+                    <span id="game-status" class="block mt-1 px-2 py-1 bg-green-500 text-white text-xs font-bold rounded-full">Active</span>
+                </div>
+            </div>
+            <nav class="flex-grow p-4 space-y-2">
+                <a href="#dashboard" class="nav-link flex items-center p-3 rounded-lg bg-indigo-100 text-indigo-700 font-bold">
+                    <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                    Dashboard
+                </a>
+                <a href="#decisions" class="nav-link flex items-center p-3 rounded-lg hover:bg-indigo-50 text-gray-600 hover:text-indigo-600">
+                   <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                    Decisions
+                </a>
+                <a href="#reports" class="nav-link flex items-center p-3 rounded-lg hover:bg-indigo-50 text-gray-600 hover:text-indigo-600">
+                    <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    Reports
+                </a>
+                 <a href="#market" class="nav-link flex items-center p-3 rounded-lg hover:bg-indigo-50 text-gray-600 hover:text-indigo-600">
+                    <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                    Market Research
+                </a>
+            </nav>
+            <div class="p-4 mt-auto space-y-2">
+                <button id="advance-year-btn" class="w-full btn-primary text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Advance to Next Year
+                </button>
+                <button id="restart-game-btn" class="w-full btn-secondary text-white font-bold py-2 px-3 rounded-lg text-sm">
+                    Restart Game
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 p-6 md:p-10 overflow-y-auto">
+            <!-- Dashboard Page -->
+            <div id="dashboard" class="main-content active">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h2 class="text-4xl font-bold text-gray-800 mb-1" id="player-company-name-header"></h2>
+                        <p class="text-gray-500 font-medium">CEO: <span id="player-name-header"></span></p>
+                    </div>
+                    <p class="text-gray-500 font-medium">Performance for <span id="dashboard-year"></span></p>
+                </div>
+                
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 my-8">
+                    <div class="card p-6"><h3 class="text-sm font-medium text-gray-500">Net Profit</h3><p id="metric-profit" class="mt-1 text-4xl font-semibold text-green-600">₹0 Cr</p></div>
+                    <div class="card p-6"><h3 class="text-sm font-medium text-gray-500">Market Share</h3><p id="metric-market-share" class="mt-1 text-4xl font-semibold text-blue-600">0%</p></div>
+                    <div class="card p-6"><h3 class="text-sm font-medium text-gray-500">Brand Image</h3><p id="metric-brand-image" class="mt-1 text-4xl font-semibold text-purple-600">0 / 100</p></div>
+                    <div class="card p-6"><h3 class="text-sm font-medium text-gray-500">Total Headcount</h3><p id="metric-headcount" class="mt-1 text-4xl font-semibold text-gray-600">0</p></div>
+                    <div class="card p-6"><h3 class="text-sm font-medium text-gray-500">Inventory Value</h3><p id="metric-inventory" class="mt-1 text-4xl font-semibold text-cyan-600">₹0 Cr</p></div>
+                    <div class="card p-6"><h3 class="text-sm font-medium text-gray-500">Employee Morale</h3><p id="metric-morale" class="mt-1 text-4xl font-semibold text-teal-600">0 / 100</p></div>
+                    <div class="card p-6"><h3 class="text-sm font-medium text-gray-500">Supply Chain Efficiency</h3><p id="metric-supply-chain" class="mt-1 text-4xl font-semibold text-orange-600">0%</p></div>
+                    <div class="card p-6"><h3 class="text-sm font-medium text-gray-500">Cash Balance</h3><p id="metric-cash" class="mt-1 text-4xl font-semibold text-yellow-600">₹0 Cr</p></div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <div class="card p-6"><h3 class="font-semibold mb-4 text-gray-700">Profit Trend (Last 5 Years)</h3><div class="h-80"><canvas id="profit-chart"></canvas></div></div>
+                    <div class="card p-6"><h3 class="font-semibold mb-4 text-gray-700">Regional Sales Breakdown</h3><div class="h-80"><canvas id="sales-chart"></canvas></div></div>
+                </div>
+                
+                <div class="card p-6"><h3 class="font-semibold mb-4 text-gray-700">Corporate & Market Newsfeed</h3><div id="game-log" class="space-y-3 h-48 overflow-y-auto"></div></div>
+            </div>
+
+            <!-- Decisions Page -->
+            <div id="decisions" class="main-content">
+                <div class="flex justify-between items-center mb-8">
+                     <div>
+                        <h2 class="text-4xl font-bold text-gray-800 mb-1">Annual Decisions for <span id="decision-year">Year 2</span></h2>
+                        <p class="text-gray-500">Formulate your strategy. Your choices here will define your company's future.</p>
+                     </div>
+                     <button id="get-advice-btn" class="btn-primary text-white font-bold py-2 px-4 rounded-lg flex items-center">
+                        ✨ Get Strategic Advice
+                    </button>
+                </div>
+                <div class="space-y-8">
+                    <!-- Production Decisions -->
+                    <div class="card p-8">
+                        <h3 class="text-2xl font-bold mb-4 border-b pb-3 text-indigo-700">🏭 Production & Operations</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div>
+                                <label for="production-units" class="block font-medium mb-2">Target Production Volume (Lakh Packs)</label>
+                                <div class="flex items-center space-x-4">
+                                    <input type="range" id="production-units" min="0" max="500" value="0" class="w-full">
+                                    <span id="production-units-value" class="font-bold text-indigo-600 w-28 text-center bg-indigo-50 py-2 rounded-lg">0 Lakh</span>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-2">Worker Capacity: <strong id="worker-capacity" class="text-gray-700">0 Lakh</strong> | Plant Capacity: <strong id="plant-capacity" class="text-gray-700">0 Lakh</strong></p>
+                            </div>
+                            <div>
+                                <label for="product-quality" class="block font-medium mb-2">Product Quality Investment</label>
+                                 <div class="flex items-center space-x-4">
+                                    <input type="range" id="product-quality" min="1" max="10" value="1" class="w-full">
+                                    <span id="product-quality-value" class="font-bold text-indigo-600 w-28 text-center bg-indigo-50 py-2 rounded-lg">Basic</span>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-2">Boosts brand image but increases unit cost.</p>
+                            </div>
+                             <div>
+                                <label for="plant-expansion" class="block font-medium mb-2">Plant Capacity Expansion</label>
+                                <select id="plant-expansion" class="w-full p-3 border"><option value="0">No Expansion</option><option value="50">Expand by 50 Lakh (₹25 Cr)</option><option value="100">Expand by 100 Lakh (₹50 Cr)</option></select>
+                                <p class="text-xs text-gray-500 mt-2">Increases your potential production ceiling. Requires workers to utilize.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Human Resources Decisions -->
+                    <div class="card p-8">
+                        <h3 class="text-2xl font-bold mb-4 border-b pb-3 text-indigo-700">👥 Human Resources</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                            <div class="md:col-span-2">
+                                <table class="w-full text-left">
+                                    <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                                        <tr>
+                                            <th class="px-4 py-2">Department (Avg. Salary)</th><th class="px-4 py-2 text-center">Current Staff</th>
+                                            <th class="px-4 py-2 text-center">Hire</th><th class="px-4 py-2 text-center">Fire</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="border-b">
+                                            <td class="px-4 py-2 font-medium">Production Workers (~₹4L p.a.)</td><td class="px-4 py-2 text-center" id="current-employees-production">0</td>
+                                            <td class="px-4 py-2 text-center"><input type="number" id="hire-production" class="p-1 border text-center hire-fire-input" min="0" value="0"></td>
+                                            <td class="px-4 py-2 text-center"><input type="number" id="fire-production" class="p-1 border text-center hire-fire-input" min="0" value="0"></td>
+                                        </tr>
+                                        <tr class="border-b">
+                                            <td class="px-4 py-2 font-medium">Sales & Marketing (~₹6L p.a.)</td><td class="px-4 py-2 text-center" id="current-employees-sales">0</td>
+                                            <td class="px-4 py-2 text-center"><input type="number" id="hire-sales" class="p-1 border text-center hire-fire-input" min="0" value="0"></td>
+                                            <td class="px-4 py-2 text-center"><input type="number" id="fire-sales" class="p-1 border text-center hire-fire-input" min="0" value="0"></td>
+                                        </tr>
+                                        <tr class="border-b">
+                                            <td class="px-4 py-2 font-medium">Supply Chain & Logistics (~₹7L p.a.)</td><td class="px-4 py-2 text-center" id="current-employees-supplychain">0</td>
+                                            <td class="px-4 py-2 text-center"><input type="number" id="hire-supplychain" class="p-1 border text-center hire-fire-input" min="0" value="0"></td>
+                                            <td class="px-4 py-2 text-center"><input type="number" id="fire-supplychain" class="p-1 border text-center hire-fire-input" min="0" value="0"></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-4 py-2 font-medium">Admin & Management (~₹10L p.a.)</td><td class="px-4 py-2 text-center" id="current-employees-admin">0</td>
+                                            <td class="px-4 py-2 text-center"><input type="number" id="hire-admin" class="p-1 border text-center hire-fire-input" min="0" value="0"></td>
+                                            <td class="px-4 py-2 text-center"><input type="number" id="fire-admin" class="p-1 border text-center hire-fire-input" min="0" value="0"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <p class="text-xs text-gray-500 mt-2">Hiring Cost: ~₹1 Lakh/head | Firing Cost: ~₹2 Lakhs/head</p>
+                            </div>
+                            <div>
+                                <label for="hr-training" class="block font-medium mb-2">Employee Training Investment (₹ Cr)</label>
+                                <input type="number" id="hr-training" class="w-full p-3 border" min="0" max="50" value="0">
+                                <p class="text-xs text-gray-500 mt-2">Improves morale and overall efficiency.</p>
+                            </div>
+                            <div>
+                                <label for="hr-compensation" class="block font-medium mb-2">Compensation Policy</label>
+                                <select id="hr-compensation" class="w-full p-3 border"><option value="0.9">Below Market Rate (-10%)</option><option value="1.0" selected>At Market Rate</option><option value="1.1">Above Market Rate (+10%)</option></select>
+                                <p class="text-xs text-gray-500 mt-2">Directly impacts employee morale and salary costs.</p>
+                            </div>
+                             <div class="md:col-span-2 mt-4 bg-indigo-50 p-4 rounded-lg">
+                                <h4 class="font-semibold text-indigo-800">Estimated Annual Costs for Next Year</h4>
+                                <p class="text-sm text-gray-700 mt-1">Salaries & Wages: <strong id="est-salary-cost" class="text-indigo-600">₹... Cr</strong></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Marketing & Distribution -->
+                    <div class="card p-8">
+                        <h3 class="text-2xl font-bold mb-4 border-b pb-3 text-indigo-700">📈 Marketing, Sales & Distribution</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <div>
+                                <h4 class="font-semibold mb-2">Price per Pack (₹)</h4>
+                                <div class="space-y-3">
+                                    <div><label for="price-north" class="text-sm">North India</label><input type="number" id="price-north" class="w-full p-2 border" min="5" max="30" value=""></div>
+                                    <div><label for="price-west" class="text-sm">West India</label><input type="number" id="price-west" class="w-full p-2 border" min="5" max="30" value=""></div>
+                                    <div><label for="price-south" class="text-sm">South India</label><input type="number" id="price-south" class="w-full p-2 border" min="5" max="30" value=""></div>
+                                    <div><label for="price-east" class="text-sm">East India</label><input type="number" id="price-east" class="w-full p-2 border" min="5" max="30" value=""></div>
+                                </div>
+                            </div>
+                             <div>
+                                <h4 class="font-semibold mb-2">Advertising (₹ Cr)</h4>
+                                <div class="space-y-3">
+                                    <div><label for="ad-north" class="text-sm">North India</label><input type="number" id="ad-north" class="w-full p-2 border" min="0" max="100" value=""></div>
+                                    <div><label for="ad-west" class="text-sm">West India</label><input type="number" id="ad-west" class="w-full p-2 border" min="0" max="100" value=""></div>
+                                    <div><label for="ad-south" class="text-sm">South India</label><input type="number" id="ad-south" class="w-full p-2 border" min="0" max="100" value=""></div>
+                                    <div><label for="ad-east" class="text-sm">East India</label><input type="number" id="ad-east" class="w-full p-2 border" min="0" max="100" value=""></div>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold mb-2">Distribution Focus (%)</h4>
+                                <div class="space-y-3">
+                                    <div><label for="dist-general" class="text-sm">General Trade (Kiranas)</label><input type="number" id="dist-general" class="w-full p-2 border" min="0" max="100" value=""></div>
+                                    <div><label for="dist-modern" class="text-sm">Modern Trade (Malls)</label><input type="number" id="dist-modern" class="w-full p-2 border" min="0" max="100" value=""></div>
+                                    <div><label for="dist-ecommerce" class="text-sm">E-commerce</label><input type="number" id="dist-ecommerce" class="w-full p-2 border" min="0" max="100" value=""></div>
+                                </div>
+                                <p id="dist-total" class="text-xs mt-2 font-bold text-green-600">Total: 0%</p>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold mb-2">Brand Ambassador</h4>
+                                <select id="brand-ambassador" class="w-full p-3 border"><option value="0">None (₹0 Cr)</option><option value="20">Regional Star (₹20 Cr)</option><option value="50">Bollywood Star (₹50 Cr)</option><option value="80">Cricket Star (₹80 Cr)</option></select>
+                                <p class="text-xs text-gray-500 mt-2">A major star significantly boosts brand image and appeal.</p>
+                            </div>
+                        </div>
+                         <div class="mt-6 bg-gray-50 p-4 rounded-lg">
+                            <h4 class="font-semibold text-gray-800">Sales Team Effectiveness</h4>
+                            <p class="text-xs text-gray-500 mt-1">Your <strong id="sales-team-size" class="text-indigo-600">0</strong> sales employees can effectively capture up to <strong id="sales-effectiveness-rate" class="text-indigo-600">0%</strong> of the market demand you generate. A larger team can convert more leads into sales.</p>
+                        </div>
+                    </div>
+
+                    <!-- Supply Chain & Finance -->
+                    <div class="card p-8"><h3 class="text-2xl font-bold mb-4 border-b pb-3 text-indigo-700">🚚 Supply Chain & Logistics</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            <div>
+                                <label for="sc-warehousing" class="block font-medium mb-2">Warehousing Solution</label>
+                                <select id="sc-warehousing" class="w-full p-3 border"><option value="3">Basic Storage</option><option value="2" selected>Standard Warehousing</option><option value="1">Automated Climate-Controlled</option></select>
+                                <p class="text-xs text-gray-500 mt-2">Affects inventory carrying costs and spoilage.</p>
+                            </div>
+                            <div>
+                                <label for="sc-supplier" class="block font-medium mb-2">Supplier Relations (₹ Cr)</label>
+                                <input type="number" id="sc-supplier" class="w-full p-3 border" min="0" max="30" value="0">
+                                <p class="text-xs text-gray-500 mt-2">Improves raw material quality and reliability.</p>
+                            </div>
+                            <div>
+                                <label for="inventory-clearance" class="block font-medium mb-2">Inventory Clearance Sale</label>
+                                <select id="inventory-clearance" class="w-full p-3 border"><option value="0">No Sale</option><option value="0.25">Hold Clearance Sale (25% Off)</option></select>
+                                <p class="text-xs text-gray-500 mt-2">Sell off oldest inventory at a discount to avoid spoilage.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card p-8"><h3 class="text-2xl font-bold mb-4 border-b pb-3 text-indigo-700">💰 Finance & Treasury</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div>
+                                <label for="take-loan" class="block font-medium mb-2">Issue New Loan (₹ Cr)</label>
+                                <select id="take-loan" class="w-full p-3 border"><option value="0">No new loan</option><option value="25">₹25 Cr @ 8% p.a.</option><option value="50">₹50 Cr @ 8.5% p.a.</option><option value="100">₹100 Cr @ 9% p.a.</option></select>
+                                <p class="text-xs text-gray-500 mt-2">Current Debt: <span id="current-debt" class="font-semibold">₹0 Cr</span></p>
+                            </div>
+                            <div>
+                                <label for="repay-loan" class="block font-medium mb-2">Repay Loan (₹ Cr)</label>
+                                <input type="number" id="repay-loan" class="w-full p-3 border" min="0" value="0">
+                                <p class="text-xs text-gray-500 mt-2">Early repayment of existing debt.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports Page -->
+            <div id="reports" class="main-content">
+                <h2 class="text-4xl font-bold text-gray-800 mb-1">Financial Statements for <span class="report-year">Year 1</span></h2>
+                <p class="text-gray-500 mb-8">Analyze your company's performance and financial health in detail.</p>
+                <div class="card">
+                    <div class="border-b"><nav class="flex -mb-px p-4" aria-label="Tabs"><a href="#income-statement" class="report-tab w-1/3 py-4 px-1 text-center border-b-2 font-medium border-indigo-500 text-indigo-600">Income Statement</a><a href="#balance-sheet" class="report-tab w-1/3 py-4 px-1 text-center border-b-2 font-medium border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">Balance Sheet</a><a href="#cash-flow" class="report-tab w-1/3 py-4 px-1 text-center border-b-2 font-medium border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">Cash Flow Statement</a></nav></div>
+                    <div class="p-6">
+                        <div id="income-statement" class="report-content"><table class="w-full text-left"><thead class="text-xs text-gray-700 uppercase bg-gray-50"><tr><th class="px-6 py-3">Item</th><th class="px-6 py-3 text-right">Amount (₹ Cr)</th></tr></thead><tbody id="income-statement-body"></tbody></table></div>
+                        <div id="balance-sheet" class="report-content hidden"><table class="w-full text-left"><thead class="text-xs text-gray-700 uppercase bg-gray-50"><tr><th class="px-6 py-3">Item</th><th class="px-6 py-3 text-right">Amount (₹ Cr)</th></tr></thead><tbody id="balance-sheet-body"></tbody></table></div>
+                        <div id="cash-flow" class="report-content hidden"><table class="w-full text-left"><thead class="text-xs text-gray-700 uppercase bg-gray-50"><tr><th class="px-6 py-3">Item</th><th class="px-6 py-3 text-right">Amount (₹ Cr)</th></tr></thead><tbody id="cash-flow-body"></tbody></table></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Market Research Page -->
+            <div id="market" class="main-content">
+                 <h2 class="text-4xl font-bold text-gray-800 mb-1">Market & Competitor Analysis for <span class="report-year">Year 1</span></h2>
+                 <p class="text-gray-500 mb-8">Stay ahead of the competition by analyzing key market data from the previous year.</p>
+                 <div class="card overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="text-sm text-gray-700 uppercase bg-gray-50"><tr><th class="px-6 py-4">Company</th><th class="px-6 py-4 text-center">Market Share</th><th class="px-6 py-4 text-center">Avg. Price (₹)</th><th class="px-6 py-4 text-center">Brand Image</th><th class="px-6 py-4 text-center">Ad Spend (Cr)</th><th class="px-6 py-4 text-center">Quality</th></tr></thead>
+                        <tbody id="competitor-table-body" class="divide-y"></tbody>
+                    </table>
+                 </div>
+            </div>
+
+        </main>
+    </div>
+    
+    <!-- Modals -->
+    <div id="game-over-modal" class="fixed inset-0 bg-gray-50 bg-opacity-80 flex items-center justify-center z-50 hidden"><div class="card p-8 max-w-sm w-full text-center"><h2 class="text-4xl font-bold text-red-600 mb-4">Game Over!</h2><p id="game-over-message" class="text-gray-600 mb-6">You have gone bankrupt.</p><button onclick="window.location.reload()" class="w-full btn-primary text-white font-bold py-2 px-4 rounded-lg">Start a New Game</button></div></div>
+    <div id="welcome-modal" class="fixed inset-0 bg-gray-50 bg-opacity-60 flex items-center justify-center z-50"><div class="card p-8 max-w-lg w-full glass-modal"><h2 class="text-4xl font-bold text-indigo-800 mb-2">Welcome to IBSC</h2><p class="text-xs text-gray-700 font-medium mb-4">The Indian Business Strategy Challenge from Taxila Business School, Jaipur</p><p class="text-gray-700 mb-4">You are the new CEO of a promising FMCG snack company. Your mission is to dominate the Indian market over the next 10 years. You start with solid initial funding, a basic production plant, and a dream.</p><p class="text-gray-700 mb-6">You will compete against three other companies: <strong class="text-red-500">TasteMasters</strong>, <strong class="text-green-500">Bharat Bites</strong>, and <strong class="text-blue-500">QuickCrunch</strong>. Make wise decisions to lead your company to victory!</p><div class="space-y-4 mb-6"><div><label for="player-name" class="block font-medium mb-1 text-gray-700">Enter Your Name:</label><input type="text" id="player-name" class="w-full p-3 border"></div><div><label for="player-company-name" class="block font-medium mb-1 text-gray-700">Enter Your Company Name:</label><input type="text" id="player-company-name" class="w-full p-3 border"></div></div><button id="start-game-btn" class="w-full btn-primary text-white font-bold py-3 px-4 rounded-lg">Begin The Challenge!</button></div></div>
+
+    <!-- AI Advisor Modal -->
+    <div id="advisor-modal" class="fixed inset-0 bg-gray-900 bg-opacity-60 flex items-center justify-center z-50 hidden">
+        <div class="card p-8 max-w-2xl w-full bg-white rounded-lg shadow-2xl">
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <h2 class="text-2xl font-bold text-indigo-700">✨ Strategic Briefing</h2>
+                <button id="close-advisor-modal" class="text-gray-500 hover:text-gray-800">&times;</button>
+            </div>
+            <div id="advisor-content" class="text-gray-700 space-y-4 max-h-96 overflow-y-auto">
+                <!-- AI content will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+
+<script type="module">
+    
+    // --- SCRIPT START ---
+    document.addEventListener('DOMContentLoaded', () => {
+
+    // --- CONFIG & CONSTANTS ---
+    const REGIONS = ['North', 'West', 'South', 'East'];
+    const START_YEAR = 2025;
+    const END_YEAR = 2035;
+    const INITIAL_CASH = 200; // in Cr
+    const INITIAL_PLANT_ASSET = 100; // in Cr
+    const INITIAL_EQUITY = INITIAL_CASH + INITIAL_PLANT_ASSET;
+    const TAX_RATE = 0.25;
+    const BASE_UNIT_COST = 3; // in Rs
+    const QUALITY_LEVELS = ["Basic", "Decent", "Standard", "Good", "Premium", "Gourmet", "Artisanal", "Exquisite", "Luxury", "World-Class"];
+    const INVENTORY_SPOILAGE_YEARS = 2;
+    const BASE_SALARIES = { production: 4, sales: 6, supplychain: 7, admin: 10 }; // Lakhs p.a.
+    const HIRING_COST_PER_HEAD = 1; // Lakhs
+    const FIRING_COST_PER_HEAD = 2; // Lakhs
+
+    // --- STATE, UI, & API ELEMENTS ---
+    let gameState = {};
+    let profitChart, salesChart;
+    const API_BASE_URL = 'https://erp.taxila.in/api/game/indian'; // *** REPLACE WITH YOUR ACTUAL API BASE URL ***
+
+    const welcomeModal = document.getElementById('welcome-modal');
+    const startGameBtn = document.getElementById('start-game-btn');
+    const restartGameBtn = document.getElementById('restart-game-btn');
+    const mainGameContainer = document.getElementById('main-game-container');
+    const pageElements = { dashboard: document.getElementById('dashboard'), decisions: document.getElementById('decisions'), reports: document.getElementById('reports'), market: document.getElementById('market') };
+    const advanceYearBtn = document.getElementById('advance-year-btn');
+    const navLinks = document.querySelectorAll('.nav-link');
+    const reportTabs = document.querySelectorAll('.report-tab');
+    
+    // AI Elements
+    const getAdviceBtn = document.getElementById('get-advice-btn');
+    const advisorModal = document.getElementById('advisor-modal');
+    const closeAdvisorModalBtn = document.getElementById('close-advisor-modal');
+    const advisorContent = document.getElementById('advisor-content');
+
+    const decisionInputs = {
+        productionUnits: document.getElementById('production-units'), productQuality: document.getElementById('product-quality'), plantExpansion: document.getElementById('plant-expansion'),
+        prices: { North: document.getElementById('price-north'), West: document.getElementById('price-west'), South: document.getElementById('price-south'), East: document.getElementById('price-east') },
+        ads: { North: document.getElementById('ad-north'), West: document.getElementById('ad-west'), South: document.getElementById('ad-south'), East: document.getElementById('ad-east') },
+        distribution: { general: document.getElementById('dist-general'), modern: document.getElementById('dist-modern'), ecommerce: document.getElementById('dist-ecommerce') },
+        brandAmbassador: document.getElementById('brand-ambassador'),
+        hr: {
+            hire: { production: document.getElementById('hire-production'), sales: document.getElementById('hire-sales'), supplychain: document.getElementById('hire-supplychain'), admin: document.getElementById('hire-admin') },
+            fire: { production: document.getElementById('fire-production'), sales: document.getElementById('fire-sales'), supplychain: document.getElementById('fire-supplychain'), admin: document.getElementById('fire-admin') }
+        },
+        hrTraining: document.getElementById('hr-training'), hrCompensation: document.getElementById('hr-compensation'),
+        scWarehousing: document.getElementById('sc-warehousing'), scSupplier: document.getElementById('sc-supplier'), inventoryClearance: document.getElementById('inventory-clearance'),
+        takeLoan: document.getElementById('take-loan'), repayLoan: document.getElementById('repay-loan'),
+    };
+    const decisionValues = {
+        productionUnits: document.getElementById('production-units-value'), productQuality: document.getElementById('product-quality-value'), distTotal: document.getElementById('dist-total'),
+    };
+
+    // --- CLASSES ---
+    class Company {
+        constructor(name, isPlayer = false) {
+            this.name = name;
+            this.isPlayer = isPlayer;
+            
+            // Core Attributes
+            this.brandImage = isPlayer ? 35 : 30 + Math.random() * 15;
+            this.employeeMorale = 70;
+            this.supplyChainEfficiency = 75;
+            this.marketShare = 0;
+
+            // Balance Sheet
+            this.cash = INITIAL_CASH;
+            this.inventory = []; // [{ units: 10, cost: 3.5, age: 0 }, ...]
+            this.plantAssets = INITIAL_PLANT_ASSET;
+            this.debt = 0;
+            this.retainedEarnings = 0;
+
+            // HR
+            this.employees = { production: 150, sales: 25, supplychain: 15, admin: 10 };
+
+            // Operations
+            this.plantCapacity = 100; // Lakhs of units
+
+            // Decisions & Reports
+            this.decisions = {};
+            this.lastYearDecisions = null;
+            this.lastYear = {}; // To store P&L, etc. for reports
+        }
+
+        get totalAssets() { return this.cash + this.inventoryValue + this.plantAssets; }
+        get inventoryValue() { return this.inventory.reduce((sum, batch) => sum + (batch.units * batch.cost / 100), 0); }
+        get inventoryUnits() { return this.inventory.reduce((sum, batch) => sum + batch.units, 0); }
+        get totalLiabilities() { return this.debt; }
+        get totalEquity() { return INITIAL_EQUITY + this.retainedEarnings; }
+        get totalHeadcount() { return Object.values(this.employees).reduce((sum, val) => sum + val, 0); }
+
+        getInitialDecisions() {
+            return {
+                productionUnits: 70, productQuality: 4, plantExpansion: 0,
+                prices: { North: 11, West: 11, South: 11, East: 11 },
+                ads: { North: 5, West: 5, South: 5, East: 5 },
+                distribution: { general: 80, modern: 15, ecommerce: 5 },
+                brandAmbassador: 0,
+                hr: { hire: {}, fire: {} }, hrTraining: 1, hrCompensation: 1.0,
+                scWarehousing: 2, scSupplier: 1, inventoryClearance: 0,
+                takeLoan: 0, repayLoan: 0
+            };
+        }
+        
+        snapshotForReport() {
+            this.lastYear.balanceSheet = {
+                cash: this.cash, inventory: this.inventoryValue, plantAssets: this.plantAssets,
+                totalAssets: this.totalAssets, debt: this.debt, retainedEarnings: this.retainedEarnings,
+                totalEquity: this.totalEquity, totalLiabilitiesAndEquity: this.totalLiabilities + this.totalEquity
+            };
+        }
+    }
+function getUserId() {
+                const params = new URLSearchParams(window.location.search);
+                return params.get("userId") || "guest";
+            }
+    // --- API FUNCTIONS (PLACEHOLDERS) ---
+    async function saveGame() {
+        const userId = getUserId()
+             const nameParam = new URLSearchParams(window.location.search).get("name");
+               const name = nameParam ? JSON.parse(decodeURIComponent(nameParam)) : 'Player';
+               gameState.playerName = name
+        // Placeholder for your save API endpoint
+        const savableGameState = JSON.parse(JSON.stringify(gameState));
+        try {
+            const response = await fetch(`${API_BASE_URL}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: userId, name: gameState.playerName, gameState: savableGameState }),
+            });
+            if (response.ok) {
+                console.log("Game saved successfully via API.");
+            } else {
+                console.error("Failed to save game via API. Status:", response.status);
+            }
+        } catch (error) {
+            console.error("Failed to save game via API:", error);
+        }
+    }
+
+    async function loadGame() {
+        // Placeholder for your load API endpoint
+         const userId = getUserId()
+        try {
+            const response = await fetch(`${API_BASE_URL}?userId=${userId}`);
+            if (response.ok) {
+                const loaded = await response.json();
+                const loadedData = loaded.gameState
+                console.log("Game loaded successfully from API.");
+                
+                loadedData.companies = loadedData.companies.map(companyData => {
+                    const company = new Company(companyData.name, companyData.isPlayer);
+                    return Object.assign(company, companyData);
+                });
+                gameState = loadedData;
+
+                initCharts();
+                welcomeModal.classList.add('hidden');
+                mainGameContainer.classList.remove('hidden');
+                mainGameContainer.classList.add('flex');
+                updateUI();
+                updateDecisionUI();
+
+            } else {
+                console.log("No saved game found on API. Displaying welcome screen.");
+                welcomeModal.classList.remove('hidden');
+                mainGameContainer.classList.add('hidden');
+                mainGameContainer.classList.remove('flex');
+            }
+        } catch (error) {
+            console.error("Failed to load game from API:", error);
+            // Fallback to starting a new game if loading fails
+            welcomeModal.classList.remove('hidden');
+            mainGameContainer.classList.add('hidden');
+            mainGameContainer.classList.remove('flex');
+        }
+    }
+
+    async function restartGame() {
+        // Use a custom modal instead of alert()
+        const userId = getUserId()
+        const modal = createModal('Are you sure you want to restart? Your current progress will be deleted.');
+        modal.querySelector('#modal-confirm-btn').addEventListener('click', async () => {
+             modal.remove();
+             try {
+                // Placeholder for your reset API endpoint
+                const response = await fetch(`${API_BASE_URL}?userId=${userId}`, {
+                    method: 'PATCH',
+                });
+                if (response.ok) {
+                    console.log("Game data cleared via API.");
+                } else {
+                    console.error("Failed to clear game data via API. Status:", response.status);
+                }
+                window.location.reload();
+            } catch (error) {
+                console.error("Failed to clear game data via API:", error);
+                // Even if deletion fails, reload the page to start a new session
+                window.location.reload();
+            }
+        });
+        modal.querySelector('#modal-cancel-btn').addEventListener('click', () => modal.remove());
+        document.body.appendChild(modal);
+    }
+    
+    // Custom modal for alerts and confirmations
+    function createModal(message, isAlert = false) {
+        const modalHtml = `
+            <div class="fixed inset-0 bg-gray-900 bg-opacity-80 flex items-center justify-center z-50">
+                <div class="card p-8 max-w-sm w-full text-center">
+                    <p class="text-gray-600 mb-6">${message}</p>
+                    <div class="flex justify-center space-x-4">
+                        ${isAlert ? 
+                            `<button id="modal-ok-btn" class="btn-primary text-white font-bold py-2 px-4 rounded-lg">OK</button>` :
+                            `<button id="modal-confirm-btn" class="btn-primary text-white font-bold py-2 px-4 rounded-lg">Confirm</button>
+                             <button id="modal-cancel-btn" class="btn-secondary text-white font-bold py-2 px-4 rounded-lg">Cancel</button>`
+                        }
+                    </div>
+                </div>
+            </div>
+        `;
+        const modalContainer = document.createElement('div');
+        modalContainer.innerHTML = modalHtml;
+        return modalContainer;
+    }
+
+
+    // --- INITIALIZATION ---
+    function initGame(playerName, companyName) {
+        gameState = { year: START_YEAR, companies: [], playerName, companyName, log: [], history: {}, isGameOver: false };
+        
+        const player = new Company(companyName, true);
+        const aiCompanies = [ new Company('TasteMasters'), new Company('Bharat Bites'), new Company('QuickCrunch') ];
+        gameState.companies = [ player, ...aiCompanies ];
+        
+        aiCompanies[0].marketShare = 0.40; aiCompanies[0].brandImage = 45; aiCompanies[0].lastYearDecisions = { productQuality: 5, prices: {North:12, West:12, South:13, East:12}, ads: {North:10, West:12, South:11, East:9}, brandAmbassador: 20 };
+        aiCompanies[1].marketShare = 0.35; aiCompanies[1].brandImage = 38; aiCompanies[1].lastYearDecisions = { productQuality: 4, prices: {North:10, West:11, South:11, East:10}, ads: {North:8, West:9, South:8, East:7}, brandAmbassador: 0 };
+        aiCompanies[2].marketShare = 0.25; aiCompanies[2].brandImage = 30; aiCompanies[2].lastYearDecisions = { productQuality: 3, prices: {North:9, West:9, South:10, East:9}, ads: {North:6, West:7, South:6, East:5}, brandAmbassador: 0 };
+        
+        player.lastYearDecisions = player.getInitialDecisions();
+        player.lastYear = {
+            revenue: 0, cogs: 0, marketing: 0, salaries: 0, admin: 0, depreciation: 0, interest: 0,
+            grossProfit: 0, ebit: 0, ebt: 0, tax: 0, netProfit: 0,
+            cashFlow: null 
+        };
+        
+        gameState.companies.forEach(c => {
+            c.snapshotForReport();
+            const initialProfitHistory = c.isPlayer 
+                ? [-0.5, -0.2, 0, 0] 
+                : [5 + Math.random()*5, 8 + Math.random()*5, 10 + Math.random()*5, 12 + Math.random()*5];
+            gameState.history[c.name] = { 
+                profit: initialProfitHistory, 
+                marketShare: [c.marketShare], 
+                brandImage: [c.brandImage] 
+            };
+        });
+        
+        addLog(`Game started for Year 1. Welcome, CEO ${playerName} of ${companyName}!`);
+        saveGame();
+        updateUI();
+        updateDecisionUI();
+    }
+
+    // --- UI UPDATE FUNCTIONS ---
+    function updateUI() {
+        const player = getPlayerCompany();
+        if (!player) return;
+
+        const displayYear = gameState.year - START_YEAR + 1;
+
+        document.getElementById('current-year').textContent = `Year ${displayYear}`;
+        document.getElementById('player-name-header').textContent = gameState.playerName;
+        document.getElementById('player-company-name-header').textContent = gameState.companyName;
+        document.getElementById('dashboard-year').textContent = `Year ${displayYear}`;
+        document.querySelectorAll('.report-year').forEach(el => el.textContent = `Year ${displayYear}`);
+        document.getElementById('decision-year').textContent = `Year ${displayYear + 1}`;
+
+        const formatCr = (val) => `₹${val.toFixed(2)} Cr`;
+        document.getElementById('metric-profit').textContent = formatCr(player.lastYear.netProfit || 0);
+        document.getElementById('metric-market-share').textContent = `${(player.marketShare * 100).toFixed(1)}%`;
+        document.getElementById('metric-brand-image').textContent = `${player.brandImage.toFixed(0)} / 100`;
+        document.getElementById('metric-headcount').textContent = player.totalHeadcount;
+        document.getElementById('metric-inventory').textContent = formatCr(player.inventoryValue);
+        document.getElementById('metric-morale').textContent = `${player.employeeMorale.toFixed(0)} / 100`;
+        document.getElementById('metric-supply-chain').textContent = `${player.supplyChainEfficiency.toFixed(0)}%`;
+        document.getElementById('metric-cash').textContent = formatCr(player.cash);
+
+        Object.keys(player.employees).forEach(dept => {
+            const element = document.getElementById(`current-employees-${dept}`);
+            if (element) {
+                element.textContent = player.employees[dept];
+            }
+        });
+
+        updateGameLog();
+        updateCharts();
+        updateReports();
+        updateMarketResearch();
+    }
+
+    function updateDecisionUI() {
+        const player = getPlayerCompany();
+        if (!player) return;
+
+        const workerCapacity = player.employees.production * 0.5;
+        document.getElementById('worker-capacity').textContent = `${workerCapacity.toFixed(0)} Lakh`;
+        document.getElementById('plant-capacity').textContent = `${player.plantCapacity.toFixed(0)} Lakh`;
+        decisionInputs.productionUnits.max = Math.min(workerCapacity, player.plantCapacity);
+        
+        const salesTeamSize = player.employees.sales;
+        document.getElementById('sales-team-size').textContent = salesTeamSize;
+        const effectiveness = Math.min(100, 20 + salesTeamSize * 1.5);
+        document.getElementById('sales-effectiveness-rate').textContent = `${effectiveness.toFixed(0)}%`;
+        
+        document.getElementById('current-debt').textContent = `₹${player.debt.toFixed(2)} Cr`;
+        decisionInputs.repayLoan.max = player.debt;
+
+        Object.values(decisionInputs.hr.hire).forEach(i => i.value = 0);
+        Object.values(decisionInputs.hr.fire).forEach(i => i.value = 0);
+        ['productionUnits', 'hrTraining', 'scSupplier', 'repayLoan'].forEach(id => decisionInputs[id].value = 0);
+        ['price-north', 'price-west', 'price-south', 'price-east'].forEach(id => document.getElementById(id).value = '');
+        ['ad-north', 'ad-west', 'ad-south', 'ad-east'].forEach(id => document.getElementById(id).value = '');
+        ['dist-general', 'dist-modern', 'dist-ecommerce'].forEach(id => document.getElementById(id).value = '');
+
+        updateEstimatedSalaryCost();
+        updateDistTotal();
+        decisionInputs.productionUnits.dispatchEvent(new Event('input'));
+        decisionInputs.productQuality.dispatchEvent(new Event('input'));
+    }
+
+
+    function addLog(message) {
+        gameState.log.unshift({ year: gameState.year, message });
+        if (gameState.log.length > 50) gameState.log.pop();
+    }
+
+    function updateEstimatedSalaryCost() {
+        const player = getPlayerCompany();
+        if (!player) return;
+        let totalEmployees = { ...player.employees };
+        let cost = 0;
+
+        Object.keys(totalEmployees).forEach(dept => {
+            const hire = parseInt(decisionInputs.hr.hire[dept].value) || 0;
+            const fire = parseInt(decisionInputs.hr.fire[dept].value) || 0;
+            totalEmployees[dept] += hire - fire;
+        });
+
+        Object.keys(totalEmployees).forEach(dept => {
+            cost += totalEmployees[dept] * BASE_SALARIES[dept];
+        });
+
+        const compensationMultiplier = parseFloat(decisionInputs.hrCompensation.value) || 1.0;
+        cost *= compensationMultiplier;
+
+        document.getElementById('est-salary-cost').textContent = `₹${(cost / 100).toFixed(2)} Cr`;
+        
+    }
+
+    function updateGameLog() {
+        const logContainer = document.getElementById('game-log');
+        logContainer.innerHTML = gameState.log.map(entry => {
+            const displayYear = entry.year - START_YEAR + 1;
+            return `<div class="text-sm"><span class="font-semibold text-indigo-600">[Year ${displayYear}]</span> ${entry.message}</div>`
+        }).join('');
+    }
+
+    function updateDistTotal() {
+        const general = parseInt(decisionInputs.distribution.general.value) || 0;
+        const modern = parseInt(decisionInputs.distribution.modern.value) || 0;
+        const ecommerce = parseInt(decisionInputs.distribution.ecommerce.value) || 0;
+        const total = general + modern + ecommerce;
+        decisionValues.distTotal.textContent = `Total: ${total}%`;
+        if (total === 100) {
+            decisionValues.distTotal.className = 'text-xs mt-2 font-bold text-green-600';
+        } else {
+            decisionValues.distTotal.className = 'text-xs mt-2 font-bold text-red-500';
+        }
+        
+    }
+
+
+    // --- EVENT LISTENERS ---
+    startGameBtn.addEventListener('click', () => {
+        const playerName = document.getElementById('player-name').value.trim();
+        const companyName = document.getElementById('player-company-name').value.trim();
+        if (!playerName || !companyName) { 
+            const modal = createModal("Please enter both your name and a company name.", true);
+            modal.querySelector('#modal-ok-btn').addEventListener('click', () => modal.remove());
+            document.body.appendChild(modal);
+            return; 
+        }
+        
+        initCharts();
+        welcomeModal.classList.add('hidden');
+        mainGameContainer.classList.remove('hidden');
+        mainGameContainer.classList.add('flex');
+
+        initGame(playerName, companyName);
+    });
+
+    restartGameBtn.addEventListener('click', restartGame);
+    getAdviceBtn.addEventListener('click', getStrategicAdvice);
+    closeAdvisorModalBtn.addEventListener('click', () => advisorModal.classList.add('hidden'));
+
+    navLinks.forEach(link => {
+        link.addEventListener('click', e => {
+            e.preventDefault();
+            const targetId = link.getAttribute('href').substring(1);
+            
+            Object.values(pageElements).forEach(page => page.classList.remove('active'));
+            pageElements[targetId].classList.add('active');
+            
+            navLinks.forEach(l => l.classList.remove('bg-indigo-100', 'text-indigo-700', 'font-bold'));
+            link.classList.add('bg-indigo-100', 'text-indigo-700', 'font-bold');
+           
+        });
+    });
+
+    reportTabs.forEach(tab => {
+        tab.addEventListener('click', e => {
+            e.preventDefault();
+            const targetId = tab.getAttribute('href').substring(1);
+            
+            document.querySelectorAll('.report-content').forEach(content => content.classList.add('hidden'));
+            document.getElementById(targetId).classList.remove('hidden');
+            
+            reportTabs.forEach(t => t.classList.remove('border-indigo-500', 'text-indigo-600'));
+            tab.classList.add('border-indigo-500', 'text-indigo-600');
+           
+        });
+    });
+
+    advanceYearBtn.addEventListener('click', () => {
+        if (validateDecisions()) {
+            runSimulation();
+        }
+    });
+
+    decisionInputs.productionUnits.addEventListener('input', e => {
+        decisionValues.productionUnits.textContent = `${e.target.value} Lakh`;
+        saveGame();
+    });
+    decisionInputs.productQuality.addEventListener('input', e => {
+        decisionValues.productQuality.textContent = QUALITY_LEVELS[e.target.value - 1];
+        saveGame();
+    });
+    Object.values(decisionInputs.distribution).forEach(input => input.addEventListener('input', updateDistTotal));
+    Object.values(decisionInputs.hr.hire).forEach(input => input.addEventListener('input', updateEstimatedSalaryCost));
+    Object.values(decisionInputs.hr.fire).forEach(input => input.addEventListener('input', updateEstimatedSalaryCost));
+    decisionInputs.hrCompensation.addEventListener('change', updateEstimatedSalaryCost);
+    Object.values(decisionInputs.prices).forEach(input => input.addEventListener('input', saveGame));
+    Object.values(decisionInputs.ads).forEach(input => input.addEventListener('input', saveGame));
+    ['hrTraining', 'scSupplier', 'repayLoan', 'plantExpansion', 'brandAmbassador', 'scWarehousing', 'inventoryClearance', 'takeLoan'].forEach(id => {
+        if(decisionInputs[id]) {
+            decisionInputs[id].addEventListener('change', saveGame);
+            decisionInputs[id].addEventListener('input', saveGame);
+        }
+    });
+
+
+    // --- CORE SIMULATION ENGINE ---
+    function getPlayerCompany() { 
+        if (!gameState || !gameState.companies) return null;
+        return gameState.companies.find(c => c.isPlayer); 
+    }
+
+    function validateDecisions() {
+        const general = parseInt(decisionInputs.distribution.general.value) || 0;
+        const modern = parseInt(decisionInputs.distribution.modern.value) || 0;
+        const ecommerce = parseInt(decisionInputs.distribution.ecommerce.value) || 0;
+        if (general + modern + ecommerce !== 100) {
+            const modal = createModal("Distribution focus must add up to 100%.", true);
+            modal.querySelector('#modal-ok-btn').addEventListener('click', () => modal.remove());
+            document.body.appendChild(modal);
+            return false;
+        }
+
+        const player = getPlayerCompany();
+        let valid = true;
+        Object.keys(player.employees).forEach(dept => {
+            const fire = parseInt(decisionInputs.hr.fire[dept].value) || 0;
+            if (fire > player.employees[dept]) {
+                const modal = createModal(`You cannot fire more ${dept} employees than you have.`, true);
+                modal.querySelector('#modal-ok-btn').addEventListener('click', () => modal.remove());
+                document.body.appendChild(modal);
+                valid = false;
+            }
+        });
+        
+        const requiredNumericInputs = [
+            ...Object.values(decisionInputs.prices),
+            ...Object.values(decisionInputs.ads),
+            ...Object.values(decisionInputs.distribution)
+        ];
+        for (const input of requiredNumericInputs) {
+            if (input.value === '' || isNaN(parseFloat(input.value))) {
+                const modal = createModal('Please fill out all Price, Advertising, and Distribution fields before advancing.', true);
+                modal.querySelector('#modal-ok-btn').addEventListener('click', () => modal.remove());
+                document.body.appendChild(modal);
+                return false;
+            }
+        }
+
+        return valid;
+    }
+
+    function getPlayerDecisions() {
+        const player = getPlayerCompany();
+        player.decisions = {
+            productionUnits: parseInt(decisionInputs.productionUnits.value) || 0,
+            productQuality: parseInt(decisionInputs.productQuality.value) || 1,
+            plantExpansion: parseInt(decisionInputs.plantExpansion.value) || 0,
+            prices: {
+                North: parseFloat(decisionInputs.prices.North.value) || 10,
+                West: parseFloat(decisionInputs.prices.West.value) || 10,
+                South: parseFloat(decisionInputs.prices.South.value) || 10,
+                East: parseFloat(decisionInputs.prices.East.value) || 10,
+            },
+            ads: {
+                North: parseFloat(decisionInputs.ads.North.value) || 0,
+                West: parseFloat(decisionInputs.ads.West.value) || 0,
+                South: parseFloat(decisionInputs.ads.South.value) || 0,
+                East: parseFloat(decisionInputs.ads.East.value) || 0,
+            },
+            distribution: {
+                general: parseInt(decisionInputs.distribution.general.value) || 0,
+                modern: parseInt(decisionInputs.distribution.modern.value) || 0,
+                ecommerce: parseInt(decisionInputs.distribution.ecommerce.value) || 0,
+            },
+            brandAmbassador: parseInt(decisionInputs.brandAmbassador.value) || 0,
+            hr: {
+                hire: {
+                    production: parseInt(decisionInputs.hr.hire.production.value) || 0,
+                    sales: parseInt(decisionInputs.hr.hire.sales.value) || 0,
+                    supplychain: parseInt(decisionInputs.hr.hire.supplychain.value) || 0,
+                    admin: parseInt(decisionInputs.hr.hire.admin.value) || 0,
+                },
+                fire: {
+                    production: parseInt(decisionInputs.hr.fire.production.value) || 0,
+                    sales: parseInt(decisionInputs.hr.fire.sales.value) || 0,
+                    supplychain: parseInt(decisionInputs.hr.fire.supplychain.value) || 0,
+                    admin: parseInt(decisionInputs.hr.fire.admin.value) || 0,
+                }
+            },
+            hrTraining: parseFloat(decisionInputs.hrTraining.value) || 0,
+            hrCompensation: parseFloat(decisionInputs.hrCompensation.value) || 1.0,
+            scWarehousing: parseInt(decisionInputs.scWarehousing.value) || 2,
+            scSupplier: parseFloat(decisionInputs.scSupplier.value) || 0,
+            inventoryClearance: parseFloat(decisionInputs.inventoryClearance.value) || 0,
+            takeLoan: parseInt(decisionInputs.takeLoan.value) || 0,
+            repayLoan: parseFloat(decisionInputs.repayLoan.value) || 0,
+        };
+    }
+
+    function setAIDecisions() {
+        gameState.companies.filter(c => !c.isPlayer).forEach(c => {
+            const aggression = c.name === 'TasteMasters' ? 1.2 : (c.name === 'QuickCrunch' ? 0.8 : 1.0);
+            const shouldInvest = Math.random() > 0.4;
+            
+            c.decisions = {
+                productionUnits: (c.marketShare * 200) * (1 + (Math.random() - 0.4) * 0.2) * aggression,
+                productQuality: Math.max(3, Math.min(8, c.lastYearDecisions.productQuality + (shouldInvest ? 1 : -1) * (Math.random() > 0.5 ? 1 : 0))),
+                prices: {
+                    North: c.lastYearDecisions.prices.North * (1 + (Math.random() - 0.5) * 0.1),
+                    West: c.lastYearDecisions.prices.West * (1 + (Math.random() - 0.5) * 0.1),
+                    South: c.lastYearDecisions.prices.South * (1 + (Math.random() - 0.5) * 0.1),
+                    East: c.lastYearDecisions.prices.East * (1 + (Math.random() - 0.5) * 0.1),
+                },
+                ads: {
+                    North: Math.max(5, c.lastYearDecisions.ads.North + (Math.random() - 0.4) * 3 * aggression),
+                    West: Math.max(5, c.lastYearDecisions.ads.West + (Math.random() - 0.4) * 3 * aggression),
+                    South: Math.max(5, c.lastYearDecisions.ads.South + (Math.random() - 0.4) * 3 * aggression),
+                    East: Math.max(5, c.lastYearDecisions.ads.East + (Math.random() - 0.4) * 3 * aggression),
+                },
+                brandAmbassador: (c.marketShare > 0.35 && Math.random() > 0.6) ? 20 : 0,
+                hr: { hire: {}, fire: {} },
+                hrCompensation: 1.0,
+            };
+        });
+    }
+
+    async function runSimulation() {
+        advanceYearBtn.disabled = true;
+        advanceYearBtn.textContent = 'Simulating...';
+        
+        getPlayerDecisions();
+        setAIDecisions();
+
+        const marketEvent = await generateMarketEvent();
+        
+        let marketPotentials = { North: 120, West: 150, South: 100, East: 80 };
+        let currentBaseUnitCost = BASE_UNIT_COST;
+
+        if (marketEvent) {
+            if (marketEvent.impactType === 'market_growth') {
+                Object.keys(marketPotentials).forEach(region => {
+                    marketPotentials[region] *= marketEvent.impactValue;
+                });
+            } else if (marketEvent.impactType === 'cost_increase') {
+                currentBaseUnitCost *= marketEvent.impactValue;
+            }
+        }
+
+        const marketAttraction = {};
+        let totalMarketAttraction = 0;
+
+        gameState.companies.forEach(c => {
+            const d = c.decisions;
+            const avgPrice = Object.values(d.prices).reduce((s, p) => s + p, 0) / 4;
+            let totalAds = Object.values(d.ads).reduce((s, a) => s + a, 0) + (d.brandAmbassador || 0);
+
+            if (marketEvent && marketEvent.impactType === 'brand_boost' && c.isPlayer) {
+                 totalAds *= marketEvent.impactValue; // Apply boost only to player for specific events
+            }
+
+            const priceFactor = 1 / (avgPrice || 10);
+            const qualityFactor = 1 + (d.productQuality / 10);
+            const brandFactor = c.brandImage;
+            const adFactor = totalAds;
+            const attractionScore = (priceFactor * 500) + (qualityFactor * 100) + brandFactor + adFactor;
+            marketAttraction[c.name] = attractionScore;
+            totalMarketAttraction += attractionScore;
+        });
+
+        gameState.companies.forEach(c => {
+            const pnl = { revenue: 0, cogs: 0, marketing: 0, salaries: 0, admin: 0, depreciation: 0, interest: 0 };
+            const cashFlowItems = {
+                netProfit: 0, depreciation: 0, inventoryChange: 0, capex: 0,
+                debtIssued: 0, debtRepaid: 0, netCashFlow: 0, cashAtStart: c.cash
+            };
+            const inventoryValueStart = c.inventoryValue;
+
+            if (c.isPlayer) {
+                const d = c.decisions;
+                if (d.takeLoan > 0) {
+                    c.cash += d.takeLoan;
+                    c.debt += d.takeLoan;
+                    cashFlowItems.debtIssued = d.takeLoan;
+                    addLog(`${c.name} took a new loan of ₹${d.takeLoan} Cr.`);
+                }
+                if (d.repayLoan > 0) {
+                    const repayAmount = Math.min(d.repayLoan, c.debt, c.cash);
+                    c.cash -= repayAmount;
+                    c.debt -= repayAmount;
+                    cashFlowItems.debtRepaid = -repayAmount;
+                }
+            }
+            
+            let hiringCosts = 0, firingCosts = 0, totalSalary = 0;
+            if (c.isPlayer && c.decisions.hr) {
+                 Object.keys(c.employees).forEach(dept => {
+                    const hire = c.decisions.hr.hire[dept] || 0;
+                    const fire = c.decisions.hr.fire[dept] || 0;
+                    hiringCosts += hire * HIRING_COST_PER_HEAD;
+                    firingCosts += fire * FIRING_COST_PER_HEAD;
+                    c.employees[dept] += hire - fire;
+                });
+            }
+            Object.keys(c.employees).forEach(dept => { totalSalary += c.employees[dept] * (c.decisions.hrCompensation || 1.0) * BASE_SALARIES[dept]; });
+            pnl.salaries = (totalSalary + hiringCosts + firingCosts) / 100;
+            c.cash -= pnl.salaries;
+
+            if (c.isPlayer && c.decisions.plantExpansion > 0) {
+                const cost = c.decisions.plantExpansion * 0.5;
+                if (c.cash >= cost) {
+                    c.cash -= cost;
+                    c.plantCapacity += c.decisions.plantExpansion;
+                    c.plantAssets += cost;
+                    cashFlowItems.capex = -cost;
+                    addLog(`${c.name} expanded plant capacity by ${c.decisions.plantExpansion} Lakh units for ₹${cost} Cr.`);
+                }
+            }
+
+            const d = c.decisions;
+            const unitCost = currentBaseUnitCost * (1 + (d.productQuality - 1) * 0.15);
+            const productionVolume = Math.min(d.productionUnits, c.plantCapacity, c.employees.production * 0.5);
+            const productionCost = (productionVolume * unitCost) / 100;
+            if (c.cash >= productionCost) {
+                c.cash -= productionCost;
+                if(productionVolume > 0) c.inventory.push({ units: productionVolume, cost: unitCost, age: 0 });
+            }
+
+            c.marketShare = marketAttraction[c.name] / totalMarketAttraction;
+            const totalMarketSize = Object.values(marketPotentials).reduce((s, p) => s + p, 0);
+            const demandForCompany = c.marketShare * totalMarketSize;
+            const unitsAvailable = c.inventoryUnits;
+            const unitsSold = Math.min(demandForCompany, unitsAvailable);
+
+            let soldUnitsTracker = unitsSold;
+            c.inventory.sort((a,b) => b.age - a.age);
+            for (const batch of c.inventory) {
+                const unitsFromBatch = Math.min(soldUnitsTracker, batch.units);
+                pnl.revenue += (unitsFromBatch * Object.values(d.prices).reduce((s, p) => s + p, 0) / 4) / 100;
+                pnl.cogs += (unitsFromBatch * batch.cost) / 100;
+                batch.units -= unitsFromBatch;
+                soldUnitsTracker -= unitsFromBatch;
+                if (soldUnitsTracker <= 0) break;
+            }
+            c.inventory = c.inventory.filter(b => b.units > 0);
+            c.inventory.forEach(b => b.age++);
+            c.cash += pnl.revenue;
+
+            pnl.marketing = Object.values(d.ads).reduce((s, v) => s + v, 0) + (d.brandAmbassador || 0);
+            pnl.admin += (c.isPlayer ? (d.hrTraining || 0) + (d.scSupplier || 0) : 0);
+            pnl.depreciation = c.plantAssets * 0.10;
+            pnl.interest = c.debt * 0.08;
+            c.cash -= (pnl.marketing + pnl.admin + pnl.interest);
+
+            const grossProfit = pnl.revenue - pnl.cogs;
+            const ebit = grossProfit - pnl.marketing - pnl.salaries - pnl.admin - pnl.depreciation;
+            const ebt = ebit - pnl.interest;
+            const tax = Math.max(0, ebt * TAX_RATE);
+            const netProfit = ebt - tax;
+
+            const inventoryValueEnd = c.inventoryValue;
+            cashFlowItems.inventoryChange = -(inventoryValueEnd - inventoryValueStart);
+            cashFlowItems.netProfit = netProfit;
+            cashFlowItems.depreciation = pnl.depreciation;
+            cashFlowItems.netCashFlow = c.cash - cashFlowItems.cashAtStart;
+
+            c.lastYear = { ...pnl, grossProfit, ebit, ebt, tax, netProfit, cashFlow: cashFlowItems };
+            c.retainedEarnings += netProfit;
+            c.lastYearDecisions = JSON.parse(JSON.stringify(d));
+
+            c.brandImage += (d.productQuality * 1.5) + (pnl.marketing / 8) - (Math.abs(11 - Object.values(d.prices).reduce((s,p)=>s+p,0)/4) * 1.5);
+            c.brandImage = Math.max(10, Math.min(100, c.brandImage));
+        });
+
+        gameState.year++;
+        
+        gameState.companies.forEach(c => {
+            c.snapshotForReport();
+            if (gameState.history[c.name]) {
+                gameState.history[c.name].profit.push(c.lastYear.netProfit);
+                gameState.history[c.name].marketShare.push(c.marketShare);
+                gameState.history[c.name].brandImage.push(c.brandImage);
+            }
+        });
+
+        await saveGame();
+        checkEndConditions();
+        if (!gameState.isGameOver) {
+            updateUI();
+            updateDecisionUI();
+        }
+
+        advanceYearBtn.disabled = false;
+        advanceYearBtn.textContent = 'Advance to Next Year';
+    }
+
+    // --- GEMINI API FUNCTIONS ---
+
+    async function getStrategicAdvice() {
+        advisorModal.classList.remove('hidden');
+        advisorContent.innerHTML = '<div class="flex justify-center items-center h-48"><div class="loader"></div></div>';
+
+        const player = getPlayerCompany();
+        const displayYear = gameState.year - START_YEAR + 1;
+        
+        let competitorData = "";
+        gameState.companies.filter(c => !c.isPlayer).forEach(c => {
+            const decisions = c.lastYearDecisions;
+            const avgPrice = (Object.values(decisions.prices).reduce((a,b)=>a+b,0) / 4).toFixed(2);
+            const totalAdSpend = (Object.values(decisions.ads).reduce((a,b)=>a+b,0) + decisions.brandAmbassador).toFixed(1);
+            competitorData += `\n- ${c.name}: Market Share: ${(c.marketShare*100).toFixed(1)}%, Brand Image: ${c.brandImage.toFixed(0)}, Avg Price: ₹${avgPrice}, Ad Spend: ₹${totalAdSpend} Cr, Quality: ${QUALITY_LEVELS[decisions.productQuality-1]}`;
+        });
+
+        const userQuery = `
+            I am the CEO of ${player.name} in a business simulation for the Indian FMCG snack market. We are about to start Year ${displayYear}. 
+            Please provide strategic advice for the upcoming year based on the following data:
+
+            My Company's Current State (${player.name}):
+            - Last Year's Net Profit: ₹${player.lastYear.netProfit.toFixed(2)} Cr
+            - Current Market Share: ${(player.marketShare * 100).toFixed(1)}%
+            - Brand Image: ${player.brandImage.toFixed(0)}/100
+            - Cash Balance: ₹${player.cash.toFixed(2)} Cr
+            - Total Debt: ₹${player.debt.toFixed(2)} Cr
+            - Employee Morale: ${player.employeeMorale.toFixed(0)}/100
+
+            Competitive Landscape (Previous Year Data):
+            ${competitorData}
+
+            Based on this situation, what are the key opportunities and threats? What should be my top 3 strategic priorities for Year ${displayYear}? Give me specific, actionable recommendations on pricing, marketing, production, and HR.
+        `;
+
+        const systemPrompt = "You are a world-class business strategy consultant from a top-tier firm like McKinsey, BCG, or Bain. Your expertise is in the Indian FMCG (Fast-Moving Consumer Goods) market, specifically snack foods. Provide sharp, actionable, and concise advice in markdown format. Your tone should be professional, insightful, and encouraging. Start with a brief 'Situation Analysis', followed by 'Top 3 Strategic Priorities', and then 'Actionable Recommendations' with bullet points for each business area (Marketing, Operations, HR, Finance).";
+
+        const apiKey = "";
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+        try {
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: userQuery }] }],
+                    systemInstruction: { parts: [{ text: systemPrompt }] }
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`API call failed with status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+            if (text) {
+                advisorContent.innerHTML = text.replace(/\n/g, '<br>'); // Simple markdown conversion
+            } else {
+                advisorContent.textContent = 'Could not retrieve advice at this time. Please check the API response.';
+                console.error('Unexpected API response:', result);
+            }
+        } catch (error) {
+            console.error('Error fetching strategic advice:', error);
+            advisorContent.textContent = 'Failed to get advice. Please try again later. Check the console for more details.';
+        }
+    }
+    
+    async function generateMarketEvent() {
+        const displayYear = gameState.year - START_YEAR + 1;
+        const userQuery = `Generate a single, random market event for an Indian FMCG snack food company simulation for Year ${displayYear}. The event should be plausible for the Indian market.`;
+        
+        const systemPrompt = "You are a simulation engine. Your role is to generate unpredictable market events. Respond only with a single JSON object and nothing else. Do not add any extra text or markdown formatting around the JSON.";
+        
+        const apiKey = "";
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+        const payload = {
+            contents: [{ parts: [{ text: userQuery }] }],
+            systemInstruction: { parts: [{ text: systemPrompt }] },
+            generationConfig: {
+                responseMimeType: "application/json",
+                responseSchema: {
+                    type: "OBJECT",
+                    properties: {
+                        "eventName": { "type": "STRING" },
+                        "description": { "type": "STRING" },
+                        "impactType": { "type": "STRING", "enum": ["market_growth", "cost_increase", "brand_boost", "no_impact"] },
+                        "impactValue": { "type": "NUMBER" }
+                    },
+                    required: ["eventName", "description", "impactType", "impactValue"]
+                }
+            }
+        };
+
+        try {
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) throw new Error(`API Error: ${response.status}`);
+
+            const result = await response.json();
+            const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+            
+            if(jsonText) {
+                const eventData = JSON.parse(jsonText);
+                addLog(`<strong>Market Event: ${eventData.eventName}</strong> - ${eventData.description}`);
+                return eventData;
+            }
+            return null;
+        } catch (error) {
+            console.error("Failed to generate market event:", error);
+            addLog("The market experienced a stable year with no major external events.");
+            return null;
+        }
+    }
+
+
+    // --- CHARTS, REPORTS, & END CONDITIONS ---
+    function initCharts() {
+        if (profitChart) profitChart.destroy();
+        if (salesChart) salesChart.destroy();
+
+        const chartOptions = {
+            responsive: true, maintainAspectRatio: false,
+            scales: { y: { beginAtZero: true } },
+            plugins: { legend: { position: 'bottom' } }
+        };
+        profitChart = new Chart(document.getElementById('profit-chart'), { type: 'line', data: {}, options: chartOptions });
+        salesChart = new Chart(document.getElementById('sales-chart'), { type: 'doughnut', data: {}, options: chartOptions });
+    }
+
+    function updateCharts() {
+        const player = getPlayerCompany();
+        if (!player || !gameState.history || !gameState.history[player.name]) return;
+        const history = gameState.history[player.name];
+        const displayYear = gameState.year - START_YEAR + 1;
+
+        profitChart.data = {
+            labels: Array.from({length: 5}, (_, i) => `Year ${Math.max(1, displayYear - 4 + i)}`),
+            datasets: [{
+                label: 'Net Profit (₹ Cr)',
+                data: history.profit.slice(-5),
+                borderColor: '#4f46e5',
+                backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                fill: true,
+                tension: 0.3
+            }]
+        };
+        profitChart.update();
+
+        salesChart.data = {
+            labels: gameState.companies.map(c => c.name),
+            datasets: [{
+                label: 'Market Share',
+                data: gameState.companies.map(c => (c.marketShare * 100).toFixed(1)),
+                backgroundColor: ['#4f46e5', '#ef4444', '#10b981', '#3b82f6'],
+            }]
+        };
+        salesChart.update();
+    }
+
+    function updateReports() {
+        const player = getPlayerCompany();
+        if (!player) return;
+        const pnl = player.lastYear;
+        const bs = player.lastYear.balanceSheet;
+
+        const createRow = (label, value, isBold = false, isHeader = false) => {
+            const isNumeric = typeof value === 'number' && !isNaN(value);
+            const valStr = isNumeric ? `₹${value.toFixed(2)}` : (value === null ? '' : '₹--');
+            const boldClass = isBold ? 'font-bold' : '';
+            if (isHeader) return `<tr class="bg-gray-50"><td class="px-6 py-3 font-semibold text-gray-600" colspan="2">${label}</td></tr>`;
+            return `<tr class="border-b"><td class="px-6 py-4 ${boldClass}">${label}</td><td class="px-6 py-4 text-right ${boldClass}">${valStr}</td></tr>`;
+        };
+
+        if (pnl && Object.keys(pnl).length > 0) {
+            document.getElementById('income-statement-body').innerHTML = [
+                createRow('Revenue', pnl.revenue),
+                createRow('Cost of Goods Sold (COGS)', -pnl.cogs),
+                createRow('Gross Profit', pnl.grossProfit, true),
+                createRow('Marketing Expenses', -pnl.marketing),
+                createRow('Salary & HR Expenses', -pnl.salaries),
+                createRow('Administrative Expenses', -pnl.admin),
+                createRow('Depreciation', -pnl.depreciation),
+                createRow('Earnings Before Interest & Tax (EBIT)', pnl.ebit, true),
+                createRow('Interest Expense', -pnl.interest),
+                createRow('Earnings Before Tax (EBT)', pnl.ebt, true),
+                createRow('Tax', -pnl.tax),
+                createRow('Net Profit', pnl.netProfit, true, false),
+            ].join('');
+        }
+
+        if (bs) {
+            document.getElementById('balance-sheet-body').innerHTML = [
+                createRow('ASSETS', null, false, true),
+                createRow('Cash & Equivalents', bs.cash),
+                createRow('Inventory', bs.inventory),
+                createRow('Total Current Assets', bs.cash + bs.inventory, true),
+                createRow('Plant & Equipment (Net)', bs.plantAssets),
+                createRow('TOTAL ASSETS', bs.totalAssets, true),
+                createRow('LIABILITIES & EQUITY', null, false, true),
+                createRow('Debt', bs.debt),
+                createRow('Total Liabilities', bs.debt, true),
+                createRow('Share Capital', INITIAL_EQUITY),
+                createRow('Retained Earnings', bs.retainedEarnings),
+                createRow('Total Equity', bs.totalEquity, true),
+                createRow('TOTAL LIABILITIES & EQUITY', bs.totalLiabilitiesAndEquity, true),
+            ].join('');
+        }
+        
+        const cf = player.lastYear.cashFlow;
+        if (cf) {
+            document.getElementById('cash-flow-body').innerHTML = [
+                createRow('Cash Flow from Operating Activities', null, false, true),
+                createRow('Net Profit', cf.netProfit),
+                createRow('Depreciation', cf.depreciation),
+                createRow('Change in Inventory', cf.inventoryChange),
+                createRow('Net Cash from Operations', cf.netProfit + cf.depreciation + cf.inventoryChange, true),
+                createRow('Cash Flow from Investing Activities', null, false, true),
+                createRow('Capital Expenditures (Plant)', cf.capex),
+                createRow('Net Cash from Investing', cf.capex, true),
+                createRow('Cash Flow from Financing Activities', null, false, true),
+                createRow('Debt Issued', cf.debtIssued),
+                createRow('Debt Repaid', cf.debtRepaid),
+                createRow('Net Cash from Financing', cf.debtIssued + cf.debtRepaid, true),
+                createRow('Net Change in Cash', cf.netCashFlow, true),
+                createRow('Cash at Beginning of Year', cf.cashAtStart),
+                createRow('Cash at End of Year', cf.cashAtStart + cf.netCashFlow, true)
+            ].join('');
+        } else {
+             document.getElementById('cash-flow-body').innerHTML = `
+                <tr class="border-b">
+                    <td class="px-6 py-4 italic text-gray-500" colspan="2">Cash Flow Statement will be generated after your first year of operations.</td>
+                </tr>
+            `;
+        }
+    }
+
+    function updateMarketResearch() {
+        if (!gameState.companies) return;
+        const tableBody = document.getElementById('competitor-table-body');
+        tableBody.innerHTML = '';
+        const companiesForReport = [...gameState.companies].sort((a,b) => b.marketShare - a.marketShare);
+        
+        companiesForReport.forEach(c => {
+            const decisions = c.lastYearDecisions;
+            if (!decisions) return; 
+
+            const isFirstYearForPlayer = c.isPlayer && gameState.year === START_YEAR;
+            const prices = Object.values(decisions.prices || {});
+            const avgPriceText = isFirstYearForPlayer ? 'N/A' : `₹${(prices.reduce((s, p) => s + p, 0) / prices.length).toFixed(2)}`;
+            const adSpendValue = REGIONS.reduce((sum, r) => sum + (decisions.ads[r] || 0), 0) + (decisions.brandAmbassador || 0);
+            const adSpendText = isFirstYearForPlayer ? 'N/A' : `₹${adSpendValue.toFixed(1)} Cr`;
+            const qualityText = isFirstYearForPlayer ? 'N/A' : QUALITY_LEVELS[(decisions.productQuality || 1) - 1];
+
+            const row = document.createElement('tr');
+            row.className = `${c.isPlayer ? 'bg-indigo-50 font-semibold' : ''}`;
+            row.innerHTML = `
+                <td class="px-6 py-4">${c.name}${c.isPlayer ? ' (Your Company)' : ''}</td>
+                <td class="px-6 py-4 text-center">${(c.marketShare * 100).toFixed(1)}%</td>
+                <td class="px-6 py-4 text-center">${avgPriceText}</td>
+                <td class="px-6 py-4 text-center">${c.brandImage.toFixed(0)}</td>
+                <td class="px-6 py-4 text-center">${adSpendText}</td>
+                <td class="px-6 py-4 text-center">${qualityText}</td>
+            `;
+            tableBody.appendChild(row);
+        });
+    }
+
+async function checkEndConditions() {
+        const player = getPlayerCompany();
+        if (!player) return;
+        if (player.cash < 0 || player.totalEquity < 0) {
+            gameState.isGameOver = true;
+            document.getElementById('game-over-message').textContent = 'Your company has gone bankrupt!';
+            document.getElementById('game-over-modal').classList.remove('hidden');
+            await restartGame()
+        }
+        if (gameState.year > END_YEAR) {
+            gameState.isGameOver = true;
+            document.getElementById('game-over-message').textContent = `Congratulations! You have successfully completed the 10-year challenge.`;
+            document.getElementById('game-over-modal').classList.remove('hidden');
+        }
+    }
+    
+    // Kick off the application
+    loadGame();
+
+    });
+</script>
+</body>
+</html>

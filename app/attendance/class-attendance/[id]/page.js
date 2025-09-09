@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { authFetch } from "@/app/lib/fetchWithAuth";
 import { hasPermission } from "@/app/lib/checkPermission";
 import Toast from "@/components/Toast";
+import BackButton from "@/components/ui/Backbutton";
 
 export default function Page() {
     const { id } = useParams()
@@ -130,28 +131,26 @@ export default function Page() {
         <>
         <section className="relative ">
             {showToast && <Toast message={message} />}
+            <div className="block sm:hidden">
+             <button
+  onClick={handleSubmit}
+  className="fixed bottom-0 z-50 w-full py-2 bg-red-600 text-white  shadow-lg hover:bg-red-700"
+>
+  Submit Attendance
+</button>
+</div>
         <div className="bg-violet-200 w-full sm:w-80 h-40 rounded-full absolute top-1 opacity-20 max-sm:left-0 sm:right-56 z-0"></div>
         <div className="bg-violet-300 w-full sm:w-40 h-24 absolute top-0 -right-0 opacity-20 z-0"></div>
         <div className="bg-violet-500 w-full sm:w-40 h-24 absolute top-40 -right-0 opacity-20 z-0"></div>
         <div className="w-full pt-4 relative z-10 backdrop-blur-3xl">
-        <div className="px-12 py-6">
-            <button 
-                onClick={() => router.back()} 
-                className="px-6 py-1 flex align-middle items-center gap-1 text-gray-600 text-sm rounded"
-            >
-                <ArrowLeft className='h-4 w-4' /> Back to List
-            </button>
+        <div className="sm:px-12 py-6">
+           <BackButton/>
             <h1 className="text-2xl font-bold mb-2 font-sans px-6 mt-6">{subName} Class Attendance  - {date} -({type})</h1>
             <p className="text-sm text-gray-500 mb-8 px-6">Everyhting you need to know about Your Class Schedule</p>
             <hr className=" border  border-spacing-y-0.5 mb-6 px-6"/>
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-6 px-3">
             <input type="text" placeholder="search..."  className="p-2 mx-6 border border-gray-300 rounded-sm text-gray-700"  value={search} onChange={(e) => setSearch(e.target.value)}/>
-            <button
-            onClick={handleSubmit}
-            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-        >
-            Submit Attendance
-        </button>
+           <button onClick={handleSubmit} className="hidden sm:block px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 mt-3 sm:mt-0" > Submit Attendance </button>
             </div>
            
             

@@ -60,7 +60,7 @@ const filteredSchedule = classSchedule.filter((item) =>
 );
 
   return (
-    <div className="px-8 py-6">
+    <div className="sm:px-8 sm:py-6">
      <div className="bg-white min-h-screen">
    
         <section className="relative">
@@ -68,13 +68,13 @@ const filteredSchedule = classSchedule.filter((item) =>
            <div className="bg-violet-200 w-full sm:w-80 h-40 rounded-full absolute top-1 opacity-20 max-sm:left-0 sm:right-56 z-0"></div>
            <div className="bg-violet-300 w-full sm:w-40 h-24 absolute top-0 -right-0 opacity-20 z-0"></div>
            <div className="w-full pt-4 relative z-10 backdrop-blur-3xl">
-           <div className="px-6">
-          <div className="w-1/3">
+           <div className="px-2 sm:px-6">
+          <div className="sm:w-1/3">
             <h2 className="text-2xl font-bold">Exam Schedule</h2>
             <p className="text-gray-500 text-sm">Check the examination schedule</p>
           </div>
           <hr className="border border-b-2 mt-4 mb-4"/>
-          <div className="flex gap-3">
+          <div className="flex gap-2 px-2">
           <input
   type="text"
   name="search"
@@ -83,7 +83,7 @@ const filteredSchedule = classSchedule.filter((item) =>
   value={searchTerm}
   onChange={(e) => setSearchTerm(e.target.value)}
 />
-            <select className="bg-white border border-gray-300 text-gray-700 text-sm rounded-sm block w-[180px] p-2.5" onChange={handleTermChange}>
+            <select className="bg-white border border-gray-300 text-gray-700 text-sm rounded-sm block w-full sm:w-[180px] p-2.5" onChange={handleTermChange}>
               <option value="" disabled selected>Select a Term</option>
   {component.map((item) => (
     <option key={item.id} value={item.id}>
@@ -97,6 +97,7 @@ const filteredSchedule = classSchedule.filter((item) =>
       {loading ? (
         <FullWidthLoader />
       ) : (
+        <div className="overflow-x-auto shadow-md sm:rounded-lg px-2">
         <table className="table-auto w-full border-collapse border border-gray-300 mt-8">
           <thead>
             <tr className="bg-red-50 text-red-800">
@@ -128,6 +129,7 @@ const filteredSchedule = classSchedule.filter((item) =>
             )}
           </tbody>
         </table>
+        </div>
       )}
       </section>
       </div>

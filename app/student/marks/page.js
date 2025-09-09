@@ -36,13 +36,13 @@ export default function Marks() {
   );
   const componentNames = Array.from(componentSet);
   return (
-    <div className="px-8 py-8">
-      <h1 className="px-4 text-3xl font-bold">See Your Marks</h1>
+    <div className="sm:px-8 px-2 py-8">
+      <h1 className="px-4 text-xl sm:text-3xl font-bold">See Your Marks</h1>
 
       {isLoading && <p>Loading terms...</p>}
       {error2 && <p className="text-red-500">Failed to load terms</p>}
 
-      <select className="border p-2 mt-4 w-[360px] rounded" onChange={(e) => handleChange(e.target.value)}>
+      <select className="border p-2 mt-4 w-full sm:w-[360px] rounded" onChange={(e) => handleChange(e.target.value)}>
         <option value="">Select A Term</option>
         {terms.map((term) => (
           <option key={term.id} value={term.id}>

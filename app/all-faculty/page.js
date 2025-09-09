@@ -107,15 +107,15 @@ export default function Page() {
         }
     };
     return<>
-    <div className="px-6 py-4">
+    <div className="sm:px-6 py-4">
     {showtoast && <Toast message={message}/>}
-    <div className="p-6 min-h-screen">
+    <div className="sm:p-6 min-h-screen">
             <div className="bg-white p-6 rounded-lg">
                 <h1 className="text-3xl font-bold mb-2 font-sans">Faculty </h1>
                 <p className="text-sm text-gray-500 mb-8">Everyhting you need to know about faculty</p>
                 <hr className=" border  border-spacing-y-0.5 mb-6"/>
-                <div className="mb-4 flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
+                <div className="mb-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+                    <div className="flex flex-col sm:flex-row items-center gap-2">
                     <input
   type="text"
   placeholder="Search Faculty..."
@@ -130,7 +130,7 @@ export default function Page() {
                     </button>
                    
                 </div>
-                <div className="overflow-x-auto">
+               <div className="overflow-x-auto shadow-md sm:rounded-lg">
                     <table className="min-w-full bg-white border border-gray-200 rounded-lg">
                         <thead>
                             <tr className="text-gray-400 font-normal text-sm border-b">

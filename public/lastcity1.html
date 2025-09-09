@@ -284,7 +284,7 @@
         const saveGame = async (userId) => {
             const stateToSave = { ...state, log: JSON.stringify(state.log) };
             try {
-                const response = await fetch('http://localhost:3000/api/game/lastcity', {
+                const response = await fetch('https://erp.taxila.in/api/game/lastcity', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ userId: userId, name: state.playerName, gameState: stateToSave })
@@ -306,7 +306,7 @@
          */
         const loadGame = async (userId) => {
             try {
-                const response = await fetch(`http://localhost:3000/api/game/lastcity?userId=${userId}`, {
+                const response = await fetch(`https://erp.taxila.in/api/game/lastcity?userId=${userId}`, {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' }
                 });

@@ -2,6 +2,7 @@
 import { authFetch } from "@/app/lib/fetchWithAuth";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import BackButton from "./ui/Backbutton";
 
 export default function CreateSubComponent() {
     const [components, setComponents] = useState([]);
@@ -132,9 +133,10 @@ export default function CreateSubComponent() {
     };
 
     return (
-        <div className="flex justify-center items-center w-full rounded-sm py-12">
+        <div className="flex flex-col justify-center sm:items-center w-full rounded-sm px-2 py-12">
+            <BackButton/>
             <div className="border border-gray-300 shadow-sm hover:shadow-md rounded-sm">
-                <h4 className="px-60 py-4 bg-gradient-to-bl font-bold from-gray-700 to-stone-900 text-white">
+                <h4 className="sm:px-60 py-4 bg-gradient-to-bl font-bold from-gray-700 to-stone-900 text-white">
                     Create Sub Component
                 </h4>
                 <form className="py-5 px-5" onSubmit={handleSubmit}>

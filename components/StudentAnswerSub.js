@@ -46,6 +46,7 @@ export default function StudentAnswerSub({ id, subcomponent, is_submission, show
             ) : error ? (
                 <p className="text-center py-4 text-red-500">Failed to load data.</p>
             ) : (
+                <div className="overflow-x-auto shadow-md sm:rounded-lg">
                 <table className="table-auto w-full border-collapse border border-gray-300 rounded-sm mt-4">
                     <thead>
                         <tr className="bg-gray-300 text-gray-800">
@@ -80,6 +81,7 @@ export default function StudentAnswerSub({ id, subcomponent, is_submission, show
                         )}
                     </tbody>
                 </table>
+                </div>
             )}
         </div>
     );

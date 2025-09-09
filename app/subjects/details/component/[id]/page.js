@@ -10,6 +10,7 @@ import ComponentDate from "@/components/ComponentDate"
 import { EyeDropperIcon, EyeSlashIcon } from "@heroicons/react/24/outline"
 import StudentAnswerSub from "@/components/StudentAnswerSub";
 import { hasPermission } from "@/app/lib/checkPermission";
+import BackButton from "@/components/ui/Backbutton";
 
 export default function Page(){
     const {id} = useParams()
@@ -85,7 +86,7 @@ export default function Page(){
         }
     }
     return(
-        <div className="px-6 py-6">
+        <div className="sm:px-6 py-6">
             {editDetails && <>
             <div
                       id="crud-modal"
@@ -132,16 +133,11 @@ export default function Page(){
                       </div>
                     </div>
             </>}
-             <button 
-                onClick={() => router.back()} 
-                className="px-12 py-1 flex align-middle items-center gap-1 text-gray-600 text-sm rounded"
-            >
-                <ArrowLeft className='h-4 w-4' /> Back to List
-            </button>
-            <div className=" mt-4 px-4 mx-6 mb-4">
-                    <div className="flex justify-between items-center">
+            <BackButton/>
+            <div className=" mt-4 sm:px-4 mx-6 mb-4">
+                    <div className="flex flex-col sm:flex-row justify-between sm:items-center">
                       <div>
-                        <h5 className="text-3xl font-bold mb-2 font-sans">
+                        <h5 className="sm:text-3xl font-bold mb-2 font-sans">
                             {students?.name || 'N/A'} Component Details
                         </h5>
                         <p className="text-sm text-gray-500 mb-4">Everyhting you need to know about Your Component</p>
@@ -154,13 +150,13 @@ export default function Page(){
                             </p>
                         </div>
                         </div>
-                       {hasedit && <Link href={`/exam-components/edit-component?componentID=${students?.id}`} className="bg-red-700 text-white py-1.5 px-8 rounded-sm shadow-lg">Edit Component</Link>}
+                       {hasedit && <Link href={`/exam-components/edit-component?componentID=${students?.id}`} className="bg-red-700 text-center mt-4 sm:mt-0 text-white py-1.5 px-8 rounded-sm shadow-lg">Edit Component</Link>}
                     </div>
                     <hr className=" border  border-spacing-y-0.5 mt-6"/>
                 </div>
                 
                 {students?.has_subcomponents?<div className="grid grid-cols-1 gap-4">
-  <div className="border border-gray-300 p-6 rounded-sm mx-10 mt-4">
+  <div className="border border-gray-300 p-6 rounded-sm sm:mx-10 mt-4">
     <h3 className="bg-red-50 rounded-sm text-red-800 font-bold text-center py-1.5">
       Components Details
     </h3>
@@ -265,7 +261,7 @@ export default function Page(){
       </div>
     )}
   </div>
-</div>: <div className="grid grid-cols-[1fr_2fr] gap-4">
+</div>: <div className="grid sm:grid-cols-[1fr_2fr] gap-4">
   <div className="border border-gray-300 p-6 rounded-sm">
     <h3 className="bg-red-50 text-red-800 rounded-sm text-center py-1.5">
       Components Details

@@ -35,7 +35,7 @@ import BatchTopperCard from "./BatchTopperCard"
       {data.length === 0 ? (
         <p className="text-gray-500">No data available</p>
       ) : (
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2">
             {data.map((batch) =>  <BatchTopperCard key={batch.batch_id} batch={batch} />)}
         </div>
       )}

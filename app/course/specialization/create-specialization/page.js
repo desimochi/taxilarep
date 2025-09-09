@@ -59,10 +59,10 @@ export default function Page(){
       }
     }
     return(
-        <div className="flex justify-center items-center w-full rounded-sm py-12">
+        <div className="flex justify-center items-center w-full rounded-sm py-12 px-2">
           {showToast && <Toast message={message}/>}
-            <div className="border border-gray-300 shadow-sm hover:shadow-md rounded-sm">
-                <h4 className="px-60 py-4 bg-gradient-to-bl font-bold from-gray-700 to-stone-900 text-white">Create a Specialization</h4>
+            <div className="border border-gray-300 shadow-sm hover:shadow-md rounded-sm w-full">
+                <h4 className="text-center py-4 bg-gradient-to-bl font-bold from-gray-700 to-stone-900 text-white">Create a Specialization</h4>
                 <form onSubmit={handlesubmit} className="py-5 px-5">
                 {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
                 <label className="font-bold">Specialization Name</label>

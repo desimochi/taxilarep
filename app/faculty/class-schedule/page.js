@@ -230,12 +230,12 @@ const confirmReschdule = async () => {
         <div className="py-4 px-5">
             
             <div>
-            <div className="w-full px-12 py-6">
+            <div className="w-full sm:px-12 py-6">
             <h1 className="text-3xl font-bold mb-2 font-sans">Class Schedule </h1>
             <p className="text-sm text-gray-500 mb-8">Everyhting you need to know about Your Class Schedule</p>
             <hr className=" border  border-spacing-y-0.5 mb-6"/>
-            <div className="mb-4 flex items-center justify-between ">
-                <div className="w-1/5">
+            <div className="mb-4 grid grid-cols-2 sm:grid-cols-5 gap-2 items-center justify-between ">
+                <div className="">
             <select value={selectedTerm} onChange={handleTermChange} className=" w-full border border-gray-300 rounded-sm p-2 text-gray-500 ">
                 <option value="">Select Term</option>
                 {terms.map(term => (
@@ -243,7 +243,7 @@ const confirmReschdule = async () => {
                 ))}
             </select>
             </div>
-            <div className="w-1/5">
+            <div className="">
             <select onChange={(e) => setSelectedSubject(e.target.value)} disabled={!selectedTerm} className=" border w-full border-gray-300 rounded-sm p-2 text-gray-500">
                 <option value="">Select Subject</option>
                 {filteredSubjects.map(sub => (
@@ -253,10 +253,10 @@ const confirmReschdule = async () => {
                 ))}
             </select>
         </div>
-        <div className="w-1/5">
+        <div className="">
             <input type="date" className="w-full border border-gray-300 rounded-sm p-1 text-gray-500" onChange={(e) => setStartDate(e.target.value)} />
         </div>
-        <div className="w-1/5">
+        <div className="">
             <input type="date" className="w-full border border-gray-300 rounded-sm p-1 text-gray-500" onChange={(e) => setEndDate(e.target.value)} />
         </div>
         <button className="flex gap-1 justify-center w-fit border bg-red-700 py-2 px-8 text-white rounded-sm hover:bg-red-100 hover:text-red-800 transition duration-300 ease-in-out items-center" onClick={handleSubmit}><SearchIcon className="h-4 w-4"/> Search</button>
@@ -264,7 +264,8 @@ const confirmReschdule = async () => {
                    </div>
         
             <div>
-            {loading? <FullWidthLoader/> :     <table className="overflow-x-auto w-full text-center" >
+            {loading? <FullWidthLoader/> :  <div className="overflow-x-auto shadow-md sm:rounded-lg">   
+                <table className="overflow-x-auto w-full text-center" >
                             <thead className="min-w-full border border-red-200 rounded-lg">
              
                          <tr className="text-red-700 bg-red-50 font-normal text-sm border-b" >
@@ -313,7 +314,8 @@ const confirmReschdule = async () => {
             
     
             </tbody>
-                            </table>}
+                            </table>
+                            </div>}
             </div>
         </div>
             </div>

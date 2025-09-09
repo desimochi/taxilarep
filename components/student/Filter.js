@@ -35,8 +35,8 @@ const handleSubmit = async () => {
       };
     
     return(
-        <div className="flex px-12 gap-2 text-sm">
-        <div className="w-1/5">
+        <div className="grid grid-cols-2 sm:grid-cols-5 px-2 sm:px-12 gap-2 text-sm">
+        <div className="">
           <select value={selectedTerm} onChange={(e) => setSelectedTerm(e.target.value)} className="w-full border border-gray-300 rounded-sm p-2 text-black">
             <option value="">Select Term</option>
             {terms.map(term => (
@@ -45,7 +45,7 @@ const handleSubmit = async () => {
           </select>
         </div>
 
-        <div className="w-1/5">
+        <div className="">
           <select
             onChange={(e) => setSelectedSubject(e.target.value)}
             className="w-full border border-gray-300 rounded-sm p-2 text-black"
@@ -59,11 +59,11 @@ const handleSubmit = async () => {
           </select>
         </div>
 
-        <div className="w-1/5">
+        <div className="">
           <input type="date" className="w-full border border-gray-300 rounded-sm p-1 text-black" onChange={(e) => setStartDate(e.target.value)} />
         </div>
 
-        <div className="w-1/5">
+        <div className="">
           <input type="date" className="w-full border border-gray-300 rounded-sm p-1 text-black" onChange={(e) => setEndDate(e.target.value)} />
         </div>
 

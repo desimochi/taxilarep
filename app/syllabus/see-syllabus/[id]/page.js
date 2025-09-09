@@ -1,5 +1,6 @@
 "use client"
 import { authFetch } from "@/app/lib/fetchWithAuth";
+import BackButton from "@/components/ui/Backbutton";
 import DOMPurify from "dompurify";
 import { ArrowLeft, BookIcon } from "lucide-react";
 import Link from "next/link";
@@ -33,15 +34,10 @@ export default function Page(){
     
     return(
         <div className="px-6 py-6">
-            <button 
-                onClick={() => router.back()} 
-                className="px-6 py-1 flex align-middle items-center gap-1 text-gray-600 text-sm rounded"
-            >
-                <ArrowLeft className='h-4 w-4' /> Back to List
-            </button>
-            <div className={`  py-8 px-12 `}>
-                    <div className="flex justify-between items-center gap-2">
-                      <div className="w-3/5">
+            <BackButton/>
+            <div className={`  py-8 sm:px-12 `}>
+                    <div className="flex flex-col sm:flex-row justify-between items-center gap-2">
+                      <div className="sm:w-3/5">
                         <h5 className="text-2xl font-bold flex gap-1">
                           <BookIcon className="w-7 h-7" /> {data?.mapping?.subject?.name || "Subject Name"}
                         </h5>
@@ -51,8 +47,8 @@ export default function Page(){
                             <span className="bg-gray-100 text-black py-0.5 px-2 text-xs rounded-sm"> {data?.mapping?.course?.map((course) => course.name).join(", ") || "No Course"}</span>
                         </div>
                       </div>
-                      <div className=" flex gap-3">
-                       <Link href={`/syllabus/edit-syllabus?subID=${id}`}><span className="border border-red-300 bg-red-100 text-red-800 py-2 px-8 rounded-sm shadow-sm hover:shadow-xl transition-shadow cursor-pointer">Edit Syllabus</span></Link>
+                      <div className=" flex gap-3 mt-3 sm:mt-0">
+                       <Link href={`/syllabus/edit-syllabus?subID=${id}`}><span className="border border-red-300 bg-red-100 text-red-800 py-2 px-8 mt-4 sm:mt-0 rounded-sm shadow-sm hover:shadow-xl transition-shadow cursor-pointer">Edit Syllabus</span></Link>
                        
                       </div>
                     </div>

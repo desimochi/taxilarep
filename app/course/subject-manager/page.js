@@ -131,7 +131,7 @@ useEffect(() => {
       </div>
        {activeTab==="subject" && <>
         <div className="px-5 py-4">
-         <div className="py-8 px-12">
+         <div className="py-8 sm:px-12">
                 <div className="flex justify-between items-center gap-2">
                     <div className="w-3/5">
                 <h5 className="text-2xl font-bold">Subject Manager</h5>
@@ -151,7 +151,9 @@ useEffect(() => {
                 </div>
                 <hr className="border border-b-2 mt-4"/>
             </div>
-          <div className="px-12">
+          <div className="sm:px-12">
+
+          <div className="overflow-x-auto shadow-md sm:rounded-lg">
         <table className="w-full text-sm text-left text-gray-700 dark:text-gray-400 mt-4">
             <thead className="text-xs text-red-800 uppercase bg-red-50 dark:bg-gray-700 dark:text-white-400 w-full">
                 <tr >
@@ -262,6 +264,7 @@ useEffect(() => {
 
             </tbody>
         </table>
+        </div>
         </div>
         </div>
         {isDel && (

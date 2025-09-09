@@ -97,9 +97,9 @@ export default function Temp({id}) {
   }, []);
 
   return (
-    <div className="px-8 py-8">
+    <div className="sm:px-8 py-8">
       <BackButton />
-      <div className="px-12 py-6">
+      <div className="px-2 sm:px-12 py-6">
         <h1 className="text-2xl font-bold">{subjectId} - Student Marks</h1>
         <p className="text-gray-600 text-sm mt-2">
           Here you can see the marks of all components of all students of a subject.
@@ -221,9 +221,9 @@ export default function Temp({id}) {
        
       </div>
 
-      {loading && <p className="px-12 text-gray-500">Loading...</p>}
+      {loading && <p className="sm:px-12 text-gray-500">Loading...</p>}
       {error && <p className="px-12 text-red-600">{error}</p>}
-<div className="flex mx-12 mb-4 gap-3 p-3 rounded-sm mb-3 w-fit bg-gray-100 ">
+<div className="flex px-2 sm:mx-12 mb-4 gap-3 p-3 rounded-sm mb-3 w-fit bg-gray-100 ">
   <button className={`${see==='internal'? 'bg-red-800 text-red-50 rounded-sm':''} p-2`} onClick={()=>setSee('internal')}>See Internal</button>
    <button className={`${see==='external'? 'bg-red-800 text-red-50 rounded-sm':''} p-2`}  onClick={()=>setSee('external')}>See External</button>
  <button className={`${see==='total'? 'bg-red-800 text-red-50 rounded-sm':''} p-2`} onClick={()=>setSee('total')}>See Total</button>
@@ -231,7 +231,7 @@ export default function Temp({id}) {
       {/* Internal Table */}
       {data.length > 0 && allInternalComponentNames.length > 0 && (
          see==='internal' &&
-        <div className="overflow-x-auto px-12 mb-10">
+        <div className="overflow-x-auto px-2 sm:px-12 mb-10">
           <h2 className="text-xl font-semibold mb-2 text-black">Internal Marks</h2>
           <table className="text-sm text-center border border-red-300 w-full">
             <thead>
@@ -296,7 +296,7 @@ export default function Temp({id}) {
       {/* External Table */}
       {data.length > 0 && allExternalComponentNames.length > 0 && (
         see==='external' &&
-        <div className="overflow-x-auto px-12 mb-10">
+        <div className="overflow-x-auto px-2 sm:px-12 mb-10">
           <h2 className="text-xl font-semibold mb-2 text-black">External Marks</h2>
           <table className="text-sm text-center border border-red-300 w-full">
             <thead>
@@ -358,7 +358,7 @@ export default function Temp({id}) {
         </div>
       )}
         {data.length > 0 && see === 'total' && (
-  <div className="overflow-x-auto px-12 mb-10">
+  <div className="overflow-x-auto px-2 sm:px-12 mb-10">
     <h2 className="text-xl font-semibold mb-2 text-black">Total Marks</h2>
     <table className="text-sm text-center border border-red-300 w-full">
       <thead>

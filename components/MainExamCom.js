@@ -248,12 +248,12 @@ const filteredSchedule = classSchedule.filter((item) =>
            <div className="bg-violet-300 w-full sm:w-40 h-24 absolute top-0 -right-0 opacity-20 z-0"></div>
            <div className="w-full pt-4 relative z-10 backdrop-blur-3xl">
            <div className="px-6">
-          <div className="w-1/3">
+          <div className="">
             <h2 className="text-2xl font-bold">Main Exam Schedule</h2>
             <p className="text-gray-500 text-sm">Check the examination schedule</p>
           </div>
           <hr className="border border-b-2 mt-4 mb-4"/>
-          <div className="flex gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <input
   type="text"
   name="search"
@@ -284,6 +284,7 @@ const filteredSchedule = classSchedule.filter((item) =>
       {loading ? (
         <FullWidthLoader />
       ) : (
+        <div className="overflow-x-auto shadow-md sm:rounded-lg">
         <table className="table-auto w-full border-collapse border border-gray-300 mt-8">
           <thead>
             <tr className="bg-red-50 text-red-800">
@@ -330,6 +331,7 @@ const filteredSchedule = classSchedule.filter((item) =>
             )}
           </tbody>
         </table>
+        </div>
       )}
       </section>
       </div>

@@ -8,6 +8,7 @@ import FullWidthLoader from "@/components/Loaader";
 
 import Link from "next/link";
 import { GlobalContext } from "@/components/GlobalContext";
+import BackButton from "@/components/ui/Backbutton";
 
 export default function Page() {
     const router = useRouter()
@@ -46,21 +47,16 @@ export default function Page() {
                 <div className="bg-violet-300 w-full sm:w-40 h-24 absolute top-0 -right-0 opacity-20 z-0"></div>
                 <div className="bg-violet-500 w-full sm:w-40 h-24 absolute top-40 -right-0 opacity-20 z-0"></div>
                 <div className="w-full pt-4 relative z-10 backdrop-blur-3xl">
-                    <div className="px-6 pt-8">
-                        <button
-                            onClick={() => router.back()}
-                            className="px-12 py-1 flex align-middle items-center gap-1 text-gray-600 text-sm rounded"
-                        >
-                            <ArrowLeft className='h-4 w-4' /> Back to List
-                        </button>
-                        <div className="w-full px-12 py-6">
+                    <div className="sm:px-6 pt-8">
+                        <BackButton />
+                        <div className="w-full px-2 sm:px-12 py-6">
                             <h1 className="text-3xl font-bold mb-2 font-sans">Admit Card Details</h1>
                             <p className="text-sm text-gray-500 mb-4">Everything you need to know about Admit Cards</p>
                             <hr className=" border border-spacing-y-0.5" />
                         </div>
                     </div>
-                    <div className="px-12">
-                        <div className="flex px-6 mb-4 justify-between items-center">
+                    <div className="sm:px-12">
+                        <div className="flex px-2 gap-2 sm:px-6 mb-4 justify-between items-center">
                         <div className="relative w-full max-w-xs">
     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
     <input
@@ -73,7 +69,7 @@ export default function Page() {
 </div>
                             <Link
                                 href={`/exam-components/admitcard/create-admit-card`}
-                                className="border border-red-800 text-red-800 bg-red-50 py-2 px-6 rounded-sm hover:bg-red-800 hover:text-white"
+                                className="border text-xs sm:text-md border-red-800 text-red-800 bg-red-50 py-2 px-6 rounded-sm hover:bg-red-800 hover:text-white"
                             >
                                 Add Admit Card
                             </Link>
@@ -84,6 +80,7 @@ export default function Page() {
 
                         {!loading && !error && (
                             <div className="flex gap-4 px-6">
+                                <div className="overflow-x-auto  w-full shadow-md sm:rounded-lg">
                                 <table className="overflow-x-auto w-full text-center mt-2">
                                     <thead className="min-w-full border border-red-200 rounded-lg">
                                         <tr className="text-red-700 bg-red-50 font-normal text-sm border-b">
@@ -118,6 +115,7 @@ export default function Page() {
                                         )}
                                     </tbody>
                                 </table>
+                                </div>
                             </div>
                         )}
                     </div>

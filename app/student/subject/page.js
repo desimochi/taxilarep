@@ -71,15 +71,15 @@ export default function Page() {
     };
 
     return (
-        <div className="py-4 px-5">
+        <div className="py-4 sm:px-5">
             <div className="w-full">
-                <div className="py-8 px-12">
-                    <div className="flex justify-between items-center gap-2">
-                        <div className="w-2/5">
+                <div className="py-8 px-2 sm:px-12">
+                    <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+                        <div className="sm:w-2/5">
                             <h5 className="text-2xl font-bold">Subjects</h5>
                             <span className="text-sm text-gray-400">Taxila Business School</span>
                         </div>
-                        <div className="flex w-3/5 gap-2 justify-end">
+                        <div className="flex sm:w-3/5 gap-2 justify-end">
                             <div>
                                 <select value={selectedTerm} onChange={handleTermChange} className="w-full border border-gray-300 rounded-sm px-8 py-2 text-black">
                                     <option value="">Select Term</option>
@@ -100,8 +100,9 @@ export default function Page() {
                     </div>
                     <hr className="border border-b-2 mt-4" />
                 </div>
-                <div className="px-12">
+                <div className="px-2 sm:px-12">
                     {loading ? <FullWidthLoader /> : (
+                        <div className="overflow-x-auto shadow-md sm:rounded-lg">
                         <table className="w-full text-sm text-left text-gray-800 dark:text-gray-400 mt-4">
                             <thead className="text-xs text-red-800 uppercase bg-red-50 dark:bg-gray-700 dark:text-gray-400">
                                 <tr>
@@ -143,6 +144,7 @@ export default function Page() {
 
                             </tbody>
                         </table>
+                        </div>
                     )}
                 </div>
             </div>

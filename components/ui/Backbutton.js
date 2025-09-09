@@ -7,7 +7,7 @@ export default function BackButton() {
         return (
             <button
                 onClick={() => router.back()}
-                className="px-12 py-1 flex align-middle items-center gap-1 text-gray-600 text-sm rounded"
+                className="px-2 sm:px-12 py-1 flex align-middle items-center gap-1 text-gray-600 text-sm rounded"
             >
                 <ArrowLeft className='h-4 w-4' /> Back to List
             </button>

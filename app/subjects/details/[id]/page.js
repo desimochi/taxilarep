@@ -8,6 +8,7 @@ import FullWidthLoader from "@/components/Loaader";
 
 import Link from "next/link";
 import { GlobalContext } from "@/components/GlobalContext";
+import BackButton from "@/components/ui/Backbutton";
 
 export default function Page() {
     const { id } = useParams()
@@ -74,13 +75,13 @@ export default function Page() {
            <div className="bg-violet-300 w-full sm:w-40 h-24 absolute top-0 -right-0 opacity-20 z-0"></div>
            <div className="bg-violet-500 w-full sm:w-40 h-24 absolute top-40 -right-0 opacity-20 z-0"></div>
            <div className="w-full pt-4 relative z-10 backdrop-blur-3xl">
-            <div className="px-6 py-6">
-           
-            {!loading && !error && students && <div className="w-full px-12 py-6">
+            <div className="sm:px-6 py-6">
+           <BackButton />
+            {!loading && !error && students && <div className="w-full px-2 sm:px-12 py-6">
             
             <h1 className="text-3xl font-bold mb-2 font-sans">  {students?.subject?.name || 'N/A'} Subject Details - {students?.type} </h1>
             <p className="text-sm text-gray-500 mb-4">Everyhting you need to know about Your Subject</p>
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row justify-between items-center">
                 <div className="flex gap-2 text-sm mb-6">
                 <p className="bg-red-50 text-red-800 px-4 py-1 rounded-sm">
                                 Batch - {students?.batch?.name || 'N/A'}
@@ -92,7 +93,7 @@ export default function Page() {
                                 Specialization - {students?.specialization?.map(spec => spec.name).join(', ') || 'N/A'}
                             </p>
                 </div>
-                <div className="flex gap-2 text-sm mb-6">
+                <div className="flex gap-2 px-2 text-sm mb-6">
                         <Link className="bg-red-700 text-white py-1.5 px-8 rounded-sm shadow-lg" href={`/attendance/class-attendance`}>Attendance</Link>
                         <Link className="bg-green-700 text-white py-1.5 px-8 rounded-sm shadow-lg" href={`/syllabus/see-syllabus/${students?.id}`}>Syllabus</Link>
                         <Link className="bg-yellow-700 text-white py-1.5 px-8 rounded-sm shadow-lg" href={`/marks/${students?.id}?subName=${students?.subject?.name}`}>Marks</Link>
@@ -102,7 +103,7 @@ export default function Page() {
             <hr className=" border  border-spacing-y-0.5"/>
             </div>}
             </div>
-        <div className="px-12">
+        <div className="px-2 sm:px-12">
            
 
             {/* Loading & Error Handling */}
@@ -112,36 +113,36 @@ export default function Page() {
             {/* Table */}
             {!loading && !error && (
                 <>
-                <div className="border border-gray-300 p-6 rounded-sm mx-6">
-                            <div className="flex">
-                                <div className="w-1/3 border-r-2 text-center">
+                <div className="border border-gray-300 p-6 rounded-sm sm:mx-6">
+                            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                                <div className="   border-r-2 text-center">
                                     <p className="font-sans font-bold text-xl">
                                         {students?.faculty?.first_name + " " + students?.faculty?.last_name || 'N/A'}
                                     </p>
                                     <p className="text-xs text-gray-600">Assign Faculty</p>
                                 </div>
-                                <div className="w-1/3 border-r-2 text-center">
+                                <div className="   border-r-2 text-center">
                                     <p className="font-sans font-bold text-xl">{students?.total_classes || 'N/A'}</p>
                                     <p className="text-xs text-gray-600">Total Classes</p>
                                 </div>
-                                <div className="w-1/3 border-r-2 text-center">
+                                <div className="   border-r-2 text-center">
                                 <Link href={`/attendance/subject-wise/${students?.id}`}>
                                     <p className="font-sans font-bold text-xl">{students?.classes_completed || 0}</p>
                                     <p className="text-xs text-gray-600">Completed Classes - See Attendance</p>
                                     </Link>
                                 </div>
-                                <div className="w-1/3 border-r-2 text-center">
+                                <div className="   border-r-2 text-center">
                                     <p className="font-sans font-bold text-xl">{students?.weightage_external || 'N/A'}</p>
                                     <p className="text-xs text-gray-600">External Weightage</p>
                                 </div>
-                                <div className="w-1/3 text-center">
+                                <div className="   text-center">
                                     <p className="font-sans font-bold text-xl">{students?.weightage_internal || 'N/A'}</p>
                                     <p className="text-xs text-gray-600">Internal Weightage</p>
                                 </div>
                             </div>
                         </div>
-                <div className="flex gap-4 px-6">
-                    <div className="w-2/6 mt-4">
+                <div className="flex flex-col sm:flex-row gap-4 sm:px-6">
+                    <div className="sm:w-2/6 mt-4">
                         <div className="border border-gray-300 p-6 rounded-sm">
                             <h3 className="bg-red-50 text-red-800 font-bold rounded-sm text-center py-1.5">Components Details</h3>
                             {additionalData.map((comp) => (
@@ -172,10 +173,11 @@ export default function Page() {
                         </div>
                         
                     </div>
-                    <div className="w-4/6">
+                    <div className="sm:w-4/6">
                         
                         <div className="border border-gray-300 p-6 rounded-sm mt-4">
                             <h3 className="bg-red-800 rounded-sm text-red-50 font-bold text-center py-1.5 shadow-xl">Classes Schedule</h3>
+                           <div className="overflow-x-auto shadow-md sm:rounded-lg">
                             <table className="overflow-x-auto w-full text-center mt-8" >
                             <thead className="min-w-full border border-red-200 rounded-lg">
              
@@ -219,6 +221,7 @@ export default function Page() {
 )}
 </tbody>
                             </table>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -276,7 +276,7 @@ if (!mounted || !editor) return null;
         <div id="editor-container" className="border border-gray-300 rounded-md p-4">
             {showtoast && <Toast message={message} /> }
             {/* Toolbar */}
-            <div className="flex space-x-2 border py-4 px-6 rounded-lg">
+            <div className="grid grid-cols-4 sm:grid-cols-12 gap-2 border py-4 px-6 rounded-lg">
             <select onChange={changeFontSize} className="rounded-sm bg-red-100 text-red-800  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-red-700 px-2">
             <option value="8px">8px</option>
         <option value="10px">10px</option>

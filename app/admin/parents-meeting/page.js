@@ -67,9 +67,9 @@ export default function Page() {
     };
    
     return<>
-    <div className="px-6 py-4">
+    <div className="sm:px-6 py-4">
     {showtoast && <Toast message={message}/>}
-    <div className="p-6 min-h-screen">
+    <div className="sm:p-6 min-h-screen">
             <div className="bg-white p-6 rounded-lg">
                 <h1 className="text-3xl font-bold mb-2 font-sans">All Meetings Details </h1>
                 <p className="text-sm text-gray-500 mb-8">Everyhting you need to know about parents meetings  of Taxila Busines School</p>

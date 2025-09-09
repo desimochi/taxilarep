@@ -68,11 +68,11 @@ export default function Page() {
   const percntage = normalizedAtten.map((item) => item.attended_percentage);
 
   return (
-    <div className="py-4 px-5">
+    <div className="py-4 sm:px-5">
       <div className="w-full">
-        <div className="mt-4 p-2 py-8 px-12">
-          <div className="flex justify-between items-center gap-2">
-            <div className="w-2/6">
+        <div className="mt-4 p-2 py-8 px-2 sm:px-12">
+          <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+            <div className="sm:w-2/6">
               <h5 className="text-2xl font-bold">Student Attendance</h5>
               <span className="text-sm text-gray-400">Taxila Business School</span>
             </div>
@@ -82,12 +82,13 @@ export default function Page() {
 
         <StudentFilter id={id} searchapi="attendance-summary-filter" updateData ={setAttendanceData} />
 
-        <div className="px-12">
+        <div className="px-2 sm:px-12">
           {loading ? (
             <FullWidthLoader />
           ) : normalizedAtten.length === 0 ? (
             <p className="text-center text-gray-500 mt-8">No attendance data found.</p>
           ) : (
+            <div className="overflow-x-auto shadow-md sm:rounded-lg">
             <table className="w-full text-sm text-left text-gray-800 dark:text-gray-400 mt-4">
               <thead className="text-xs text-red-800 uppercase bg-red-50 dark:bg-gray-700 dark:text-gray-400">
                 <tr>
@@ -124,6 +125,7 @@ export default function Page() {
                 )) :<tr><td colSpan={2} className="text-center py-3">No Data Available for Selected Filter Kindly Select Valid Values</td></tr>}
               </tbody>
             </table>
+            </div>
           )}
         </div>
       </div>

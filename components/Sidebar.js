@@ -4,163 +4,203 @@ import { usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import logo from "../public/logo.png";
-import { Accountant, menuItems, Staff, stumenuItems } from "@/app/lib/MenuItems";
-import { FacmenuItems } from "@/app/lib/MenuItems";
-import { ITManager } from "@/app/lib/MenuItems";
 import {
-  HomeIcon,
-  AcademicCapIcon,
-  UserGroupIcon,
-  CalendarIcon,
-  ChevronDownIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-} from "@heroicons/react/24/outline";
-import { AlignLeftIcon, AlignRightIcon, BookCheckIcon, NewspaperIcon, PenSquareIcon } from "lucide-react";
-import { lastDayOfDecade } from "date-fns";
+  Accountant,
+  menuItems,
+  Staff,
+  stumenuItems,
+  FacmenuItems,
+  ITManager,
+} from "@/app/lib/MenuItems";
+import { ChevronDownIcon } from "@heroicons/react/24/outline";
+import {
+  AlignCenterVerticalIcon,
+  AlignEndVertical,
+  Plus,
+  X,
+} from "lucide-react";
 
-const Sidebar = ({collapsed, toggleSidebar, toggleMenu, openMenus, role, type  }) => {
+const Sidebar = ({ collapsed, toggleSidebar, role, type }) => {
   const pathname = usePathname();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [openMenus, setOpenMenus] = useState({});
+
+  // ✅ toggle menu open/close
+  const toggleMenu = (label) => {
+    setOpenMenus((prev) => ({ ...prev, [label]: !prev[label] }));
+  };
+
+  // ✅ Menu builder based on role/type
   const getMenuByRole = (role, type) => {
     const roles = Array.isArray(role) ? role.map(String) : [String(role)];
-  
     let result = [];
-  
+
     roles.forEach((r) => {
       switch (r) {
-        case "1": // Super Admin
+        case "1":
           result = [...result, ...menuItems];
           break;
-  
-        case "2": // Admin
-          if (type === "Teaching") {
-            result = [...result, ...FacmenuItems, ...menuItems];
-          } else {
-            result = [...result, ...menuItems];
-          }
+        case "2":
+          result =
+            type === "Teaching"
+              ? [...result, ...FacmenuItems, ...menuItems]
+              : [...result, ...menuItems];
           break;
-  
-        case "3": // Student
+        case "3":
           result = [...result, ...stumenuItems];
           break;
-  
-        case "4": // Faculty
+        case "4":
           result = [...result, ...FacmenuItems];
           break;
-
-       case "5": // Faculty
+        case "5":
           result = [...result, ...Staff];
           break;
-  
-        case "6": // IT Manager / Examination
-          if (type === "Teaching") {
-            result = [...result, ...FacmenuItems, ...ITManager];
-          } else {
-            result = [...result, ...menuItems];
-          }
+        case "6":
+          result =
+            type === "Teaching"
+              ? [...result, ...FacmenuItems, ...ITManager]
+              : [...result, ...menuItems];
           break;
-  
-        case "7": // Accountant
+        case "7":
           result = [...result, ...Accountant];
           break;
-  
         default:
           break;
       }
     });
-  
-    // Remove duplicates by label
-    const uniqueMenu = result.filter(
+
+    return result.filter(
       (item, index, self) =>
         index === self.findIndex((t) => t.label === item.label)
     );
-  
-    return uniqueMenu;
   };
-  
-  
-  
-const selectedMenu = getMenuByRole(role, type);
+
+  const selectedMenu = getMenuByRole(role, type);
+
+  // ✅ Recursive renderer for menu & submenu
+  const renderItem = (item, collapsed, level = 0) => (
+    <div key={item.label}>
+      {item.path ? (
+        <Link href={item.path}>
+          <span
+            className={`flex items-center px-4 py-2 mt-2 rounded-md ${
+              pathname.includes(item.path)
+                ? "bg-black text-white"
+                : "text-gray-800 hover:bg-gray-200"
+            }`}
+            style={{ paddingLeft: `${level * 16 + 16}px` }}
+          >
+            {item.icon}
+            {!collapsed && <span className="ml-2">{item.label}</span>}
+          </span>
+        </Link>
+      ) : (
+        <>
+          {/* Parent */}
+          <button
+            onClick={() => toggleMenu(item.label)}
+            className="flex items-center justify-between w-full px-4 py-2 mt-2 text-gray-800 hover:bg-gray-200 rounded-md"
+            style={{ paddingLeft: `${level * 16 + 16}px` }}
+          >
+            <div className="flex items-center space-x-2">
+              {item.icon}
+              {!collapsed && <span>{item.label}</span>}
+            </div>
+            {!collapsed && item.subMenu && (
+              <ChevronDownIcon
+                className={`h-5 w-5 transition-transform ${
+                  openMenus[item.label] ? "rotate-180" : ""
+                }`}
+              />
+            )}
+          </button>
+
+          {/* Submenu */}
+          {openMenus[item.label] &&
+            item.subMenu &&
+            item.subMenu.map((sub) => renderItem(sub, collapsed, level + 1))}
+        </>
+      )}
+    </div>
+  );
+
   return (
-    <div className={`h-fit bg-white border-r-2 p-4 transition-all ${collapsed ? "w-24" : "w-80"}`}>
-      <div className="flex items-center justify-between h-[70px] p-2">
-        {!collapsed && <Link href={`/`}> <Image src={logo} width={140} height={60} alt="Taxila Logo" /></Link>}
-        <button onClick={toggleSidebar} className="p-1 rounded-md hover:bg-gray-200">
-          {collapsed ? <AlignRightIcon className="h-5 w-5" /> : <AlignLeftIcon className="h-5 w-5" />}
+    <>
+      {/* Floating Mobile Toggle */}
+      <div className="md:hidden fixed bottom-10 right-6 z-50">
+        <button
+          onClick={() => setMobileOpen(!mobileOpen)}
+          className="p-3 rounded-full bg-black text-white shadow-lg hover:bg-gray-800 transition"
+        >
+          {mobileOpen ? <X className="h-8 w-8" /> : <Plus className="h-8 w-8" />}
         </button>
       </div>
-      <hr className="border-1 mb-4" />
 
-      <nav>
-        {selectedMenu.map((item, index) => (
-          <div key={index}>
-            {item.path ? (
-              <Link href={item.path}>
-                <span className={`flex items-center px-4 py-2 mt-2 rounded-md ${pathname.includes(item.path) ? "bg-black text-white" : "text-gray-800 hover:bg-gray-200"}`}>
-                  {item.icon}
-                  {!collapsed && <span className="ml-2">{item.label}</span>}
-                </span>
+      {/* Mobile Sidebar Overlay */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-40 flex">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50"
+            onClick={() => setMobileOpen(false)}
+          ></div>
+
+          {/* Sidebar */}
+          <div className="relative w-64 bg-white h-full shadow-xl z-50 flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between h-[70px] p-2 flex-shrink-0">
+              <Link href={`/`}>
+                <Image src={logo} width={140} height={60} alt="Taxila Logo" />
               </Link>
-            ) : (
-              <>
-                {/* Main Menu Button */}
-                <button
-                  onClick={() => toggleMenu(item.label)}
-                  className="flex items-center justify-between w-full px-4 py-2 mt-2 text-gray-800 hover:bg-gray-200 rounded-md"
-                >
-                  <div className="flex items-center space-x-2">
-                    {item.icon}
-                    {!collapsed && <span>{item.label}</span>}
-                  </div>
-                  {!collapsed && <ChevronDownIcon className={`h-5 w-5 transition-transform ${openMenus[item.label] ? "rotate-180" : ""}`} />}
-                </button>
+              <button
+                onClick={() => setMobileOpen(false)}
+                className="p-1 rounded-md hover:bg-gray-200"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+            <hr />
 
-                {/* Submenu */}
-                {openMenus[item.label] && (
-                  <div className="ml-6 space-y-2 mt-2">
-                    {item.subMenu.map((subItem, subIndex) => (
-                      <div key={subIndex}>
-                        {subItem.path ? (
-                          <Link href={subItem.path}>
-                            <span className={`block px-4 py-2 text-sm rounded-md ${pathname.includes(subItem.path) ? "bg-gray-300" : "hover:bg-gray-100"}`}>
-                              {subItem.label}
-                            </span>
-                          </Link>
-                        ) : (
-                          <>
-                            {/* Submenu Toggle Button */}
-                            <button
-                              onClick={() => toggleMenu(subItem.label)}
-                              className="flex items-center justify-between text-sm w-full px-4 py-2 text-gray-900 hover:bg-gray-200 rounded-md"
-                            >
-                              <span>{subItem.label}</span>
-                              <ChevronDownIcon className={`h-5 w-5 transition-transform ${openMenus[subItem.label] ? "rotate-180" : ""}`} />
-                            </button>
-
-                            {/* Nested Submenu */}
-                            {openMenus[subItem.label] && (
-                              <div className="ml-6 space-y-2">
-                                {subItem.subMenu.map((nestedItem, nestedIndex) => (
-                                  <Link key={nestedIndex} href={nestedItem.path}>
-                                    <span className={`block px-4 py-2 text-sm rounded-md ${pathname.includes(nestedItem.path) ? "bg-gray-300" : "hover:bg-gray-100"}`}>
-                                      {nestedItem.label}
-                                    </span>
-                                  </Link>
-                                ))}
-                              </div>
-                            )}
-                          </>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
+            {/* Scrollable Menu */}
+            <div className="flex-1 overflow-y-auto p-2">
+              <nav>{selectedMenu.map((item) => renderItem(item, false))}</nav>
+            </div>
           </div>
-        ))}
-      </nav>
-    </div>
+        </div>
+      )}
+
+      {/* Desktop Sidebar */}
+      <div
+        className={`hidden md:flex flex-col bg-white border-r-2 p-4 transition-all ${
+          collapsed ? "w-24" : "w-80"
+        } h-screen`}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between h-[70px] p-2 flex-shrink-0">
+          {!collapsed && (
+            <Link href={`/`}>
+              <Image src={logo} width={140} height={60} alt="Taxila Logo" />
+            </Link>
+          )}
+          <button
+            onClick={toggleSidebar}
+            className="p-1 rounded-md hover:bg-gray-200"
+          >
+            {collapsed ? (
+              <AlignEndVertical className="h-5 w-5" />
+            ) : (
+              <AlignCenterVerticalIcon className="h-5 w-5" />
+            )}
+          </button>
+        </div>
+        <hr className="border-1 mb-4" />
+
+        {/* Scrollable Menu */}
+        <div className="flex-1 overflow-y-auto">
+          <nav>{selectedMenu.map((item) => renderItem(item, collapsed))}</nav>
+        </div>
+      </div>
+    </>
   );
 };
 

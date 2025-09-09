@@ -134,11 +134,11 @@ if(!hasPermission){
     };
 
     return (
-        <div className="flex justify-center items-center w-full rounded-sm py-12">
+        <div className="flex justify-center items-center w-full rounded-sm py-12 px-3">
          
             {showToast && <Toast message={message}/>}
             <div className="border border-gray-300 shadow-sm hover:shadow-md rounded-sm">
-                <h4 className="px-60 py-4 bg-gradient-to-bl font-bold from-gray-700 to-stone-900 text-white">
+                <h4 className="sm:px-60 py-4 bg-gradient-to-bl font-bold from-gray-700 to-stone-900 text-white">
                     Create Component
                 </h4>
                 <form className="py-5 px-5" onSubmit={handleSubmit}>

@@ -154,6 +154,7 @@ const token = localStorage.getItem("accessToken");
                 
             </div>
             </div>
+            <div className="overflow-x-auto shadow-md sm:rounded-lg">
              <table className="w-full rounded-xl text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 mt-4 mb-2">
         <thead className="text-xs text-white uppercase bg-black dark:bg-gray-700 dark:text-white-400 w-full">
             <tr>
@@ -204,6 +205,7 @@ const token = localStorage.getItem("accessToken");
   )) : <p>No Courses Found</p>}
         </tbody>
     </table>
+    </div>
                 
         </div>
         {isDel && (

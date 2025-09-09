@@ -108,7 +108,7 @@ const[terms, setTerms] = useState([]);
   };
 
   return (
-    <div className="border border-gray-300 mt-4 mx-80 md:mt-12 md:mx-40 rounded-md shadow-md hover:shadow-xl transition-shadow">
+    <div className="border border-gray-300 mt-4 sm:mx-80 md:mt-12 md:mx-40 rounded-md shadow-md hover:shadow-xl transition-shadow">
       {showToast && <Toast message={message} />}
       <h3 className="text-center py-4 bg-gradient-to-bl font-bold from-gray-700 to-stone-900 text-white">
         Promoting Students
@@ -218,6 +218,7 @@ const[terms, setTerms] = useState([]);
         <FullWidthLoader />
       ) : (
         <div className="p-6">
+          <div className="overflow-x-auto shadow-md sm:rounded-lg">
           <table className="table-auto w-full border-collapse border border-gray-300">
             <thead>
               <tr className="bg-red-50 text-red-800">
@@ -250,6 +251,7 @@ const[terms, setTerms] = useState([]);
               )}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 

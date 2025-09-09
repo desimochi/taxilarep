@@ -48,10 +48,10 @@ export default function Page(){
       }, [state.user_id, days]);
         
         return (
-                <div className="p-6">
-                    <div className=" flex gap-4">
-                        <div className=" w-3/4">
-                        <div className="flex gap-4">
+                <div className="sm:p-6 px-2">
+                    <div className=" flex flex-col sm:flex-row gap-4">
+                        <div className=" sm:w-3/4">
+                        <div className="flex flex-col sm:flex-row gap-4">
                             <span className="bg-red-600 bg-opacity-10 text-red-800  border border-red-100  w-full text-center py-4 rounded-sm shadow-sm hover:shadow-xl transition-shadow"><p className="font-bold">{studata.course?.name}</p> <p className="text-sm text-black">Course</p></span>
                             <span className="bg-red-600 bg-opacity-10   text-red-800 border border-red-100 w-full text-center py-4 rounded-sm shadow-sm hover:shadow-xl transition-shadow"><p className="font-bold">{studata.batch?.name}</p> <p className="text-sm text-black">Batch</p></span>
                             <span className="bg-red-600 bg-opacity-10 text-red-800   border border-red-100 w-full text-center py-4 rounded-sm shadow-sm hover:shadow-xl transition-shadow"><p className="font-bold">{studata.enrollment_number}</p> <p className="text-sm text-black">Enrollment Number</p></span>
@@ -61,7 +61,9 @@ export default function Page(){
                             <div className="mt-4">
                             <div className="p-4 border border-gray-300 rounded-sm shadow-sm hover:shadow-xl transition-shadow">
                                 <h3 className="bg-red-700 px-12 w-fit py-3 text-white rounded-sm font-bold">Subject Wise Class Details</h3>
-                                {sclass.length>0 ? ( <table className="w-full text-sm text-left text-gray-800 dark:text-gray-400 mt-4">
+                                {sclass.length>0 ? (
+                                  <div className="overflow-x-auto shadow-md sm:rounded-lg">
+                                  <table className="w-full text-sm text-left text-gray-800 dark:text-gray-400 mt-4">
                                 <thead className="text-xs text-red-800 uppercase bg-red-50 dark:bg-gray-700 dark:text-gray-400">
                   <tr>
                     <th scope="col" className="px-6 py-3">Subject Name</th>
@@ -88,11 +90,12 @@ export default function Page(){
                 
         
                 </tbody>
-                                </table>) : (loading ? <FullWidthLoader/> : <p className="text-center mt-4">No Class Data Available</p>)}
+                                </table>
+                                </div>) : (loading ? <FullWidthLoader/> : <p className="text-center mt-4">No Class Data Available</p>)}
                             </div>
                         </div>
                         </div>
-                        <div className="w-1/4">
+                        <div className="sm:w-1/4">
                         <div className="border border-gray-300 p-2">
                             <h3 className="font-bold px-6 py-2 bg-red-50 text-red-800 rounded-sm mb-3 text-center">Upcoming Class</h3>
                            {loading? <FullWidthLoader/> : <ul className="max-h-96 overflow-y-auto">

@@ -121,15 +121,15 @@ const today = new Date().toISOString().split("T")[0];
         <div className="bg-violet-300 w-full sm:w-40 h-24 absolute top-0 -right-0 opacity-20 z-0"></div>
         <div className="bg-violet-500 w-full sm:w-40 h-24 absolute top-40 -right-0 opacity-20 z-0"></div>
         <div className="w-full pt-4 relative z-10 backdrop-blur-3xl">
-        <div className="py-4 px-5">
+        <div className="py-4 sm:px-5">
             
             <div>
-            <div className="w-full px-12 py-6">
+            <div className="p-2 sm:px-12 py-6">
             <h1 className="text-3xl font-bold mb-2 font-sans">Class Attendance </h1>
-            <p className="text-sm text-gray-500 mb-8">Everyhting you need to know about Class Attendance</p>
+            <p className="text-sm text-gray-500 mb-8">Everyhting about Class Attendance</p>
             <hr className=" border  border-spacing-y-0.5 mb-6"/>
-            <div className="mb-4 flex items-center justify-between ">
-                <div className="w-1/5">
+            <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-5 items-center justify-between ">
+                <div className="">
             <select value={selectedTerm} onChange={handleTermChange} className=" w-full border border-gray-300 rounded-sm p-2 text-gray-500 ">
                 <option value="">Select Term</option>
                 {terms.map(term => (
@@ -137,7 +137,7 @@ const today = new Date().toISOString().split("T")[0];
                 ))}
             </select>
             </div>
-            <div className="w-1/5">
+            <div className="">
             <select onChange={(e) => setSelectedSubject(e.target.value)} disabled={!selectedTerm} className=" border w-full border-gray-300 rounded-sm p-2 text-gray-500">
                 <option value="">Select Subject</option>
                 {filteredSubjects.map(sub => (
@@ -147,10 +147,10 @@ const today = new Date().toISOString().split("T")[0];
                 ))}
             </select>
         </div>
-        <div className="w-1/5">
+        <div className="">
             <input type="date" className="w-full border border-gray-300 rounded-sm p-1 text-gray-500" onChange={(e) => setStartDate(e.target.value)} />
         </div>
-        <div className="w-1/5">
+        <div className="">
             <input type="date" className="w-full border border-gray-300 rounded-sm p-1 text-gray-500" onChange={(e) => setEndDate(e.target.value)} />
         </div>
         <button className="flex gap-1 justify-center w-fit border bg-red-700 py-2 px-8 text-white rounded-sm hover:bg-red-100 hover:text-red-800 transition duration-300 ease-in-out items-center" onClick={handleSubmit}><SearchIcon className="h-4 w-4"/> Search</button>
@@ -158,7 +158,8 @@ const today = new Date().toISOString().split("T")[0];
                    </div>
         
             <div>
-            {loading? <FullWidthLoader/> :     <table className="overflow-x-auto w-full text-center" >
+            {loading? <FullWidthLoader/> :  
+            <div className="overflow-x-auto shadow-md sm:rounded-lg">   <table className="overflow-x-auto w-full text-center" >
                             <thead className="min-w-full border border-red-200 rounded-lg">
              
                          <tr className="text-red-700 bg-red-50 font-normal text-sm border-b" >
@@ -205,7 +206,8 @@ const today = new Date().toISOString().split("T")[0];
             
     
             </tbody>
-                            </table>}
+                            </table>
+                            </div>}
             </div>
             <div className="flex justify-between mt-4">
         <button

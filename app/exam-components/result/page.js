@@ -7,6 +7,7 @@ import { authFetch } from "@/app/lib/fetchWithAuth";
 import FullWidthLoader from "@/components/Loaader";
 
 import Link from "next/link";
+import BackButton from "@/components/ui/Backbutton";
 
 export default function Page() {
     const router = useRouter()
@@ -45,25 +46,20 @@ export default function Page() {
                 <div className="bg-violet-300 w-full sm:w-40 h-24 absolute top-0 -right-0 opacity-20 z-0"></div>
                 <div className="bg-violet-500 w-full sm:w-40 h-24 absolute top-40 -right-0 opacity-20 z-0"></div>
                 <div className="w-full pt-4 relative z-10 backdrop-blur-3xl">
-                    <div className="px-6 pt-8">
-                        <button
-                            onClick={() => router.back()}
-                            className="px-12 py-1 flex align-middle items-center gap-1 text-gray-600 text-sm rounded"
-                        >
-                            <ArrowLeft className='h-4 w-4' /> Back to List
-                        </button>
-                        <div className="flex justify-between items-center">
-                        <div className=" px-12 py-6">
+                    <div className="sm:px-6 pt-8">
+                        <BackButton />
+                        <div className="flex flex-col sm:flex-row justify-between items-center">
+                        <div className="px-2 sm:px-12 py-6">
                             <h1 className="text-3xl font-bold mb-2 font-sans">Result Details</h1>
-                            <p className="text-sm text-gray-500 mb-4">Everything you need to know about Result</p>
+                            <p className="text-sm text-gray-500 sm:mb-4">Everything you need to know about Result</p>
                             
                         </div>
-                        <Link href={`/exam-components/result/see-result`}className="px-6 py-2 bg-gray-800 text-white rounded-sm mx-12">See Result</Link>
+                        <Link href={`/exam-components/result/see-result`}className="px-6 py-2 mb-4 sm:mb-0 bg-gray-800 text-white rounded-sm mx-12">See Result</Link>
                         </div>
-                        <hr className=" border border-spacing-y-8 mb-8" />
+                        <hr className=" border border-spacing-y-8 mb-4 sm:mb-8" />
                     </div>
-                    <div className="px-12">
-                        <div className="flex px-6 mb-4 justify-between items-center">
+                    <div className="sm:px-12">
+                        <div className="flex flex-col gap-3 sm:flex-row px-6 mb-4 justify-between items-center">
                             <div className="flex gap-2">
                             <div className="relative w-full max-w-xs">
     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -91,6 +87,7 @@ export default function Page() {
 
                         {!loading && !error && (
                             <div className="flex gap-4 px-6">
+                                <div className="overflow-x-auto w-full shadow-md sm:rounded-lg">
                                 <table className="overflow-x-auto w-full text-center mt-2">
                                     <thead className="min-w-full border border-red-200 rounded-lg">
                                         <tr className="text-red-700 bg-red-50 font-normal text-sm border-b">
@@ -125,6 +122,7 @@ export default function Page() {
                                         )}
                                     </tbody>
                                 </table>
+                                </div>
                             </div>
                         )}
                     </div>

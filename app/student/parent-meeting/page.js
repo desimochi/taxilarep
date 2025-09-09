@@ -25,16 +25,16 @@ export default function Page(){
         fetchExams();
     }, []);
     return (
-        <div className="px-8 py-12">
+        <div className="sm:px-8 py-4 sm:py-12">
             <BackButton />
-            <div className="px-12 mt-5">
-                <div className="flex justify-between items-center">
+            <div className="px-2 sm:px-12 mt-5">
+                <div className="flex flex-col sm:flex-row justify-between sm:items-center">
                     <div>
                         <h1 className="text-2xl font-bold">Parents Meetings</h1>
                         <p className="text-gray-700 text-sm">Check all the information about parents meeting with Taxila Business School</p>
                     
                     </div>
-                    <Link className="bg-red-800 px-8 py-2 rounded text-white" href={"/student/add-parent-meeting"}>Add A Meeting</Link>
+                    <Link className="bg-red-800 px-8 py-2 text-center mt-3 sm:mt-0 rounded text-white" href={"/student/add-parent-meeting"}>Add A Meeting</Link>
                 </div>
                 <hr className="border border-b-2 border-gray-200 mt-5 mb-8" />
 
