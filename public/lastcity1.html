@@ -1,0 +1,488 @@
+=<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LASTCITY SURVIVAL</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 3D Graphics Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px); }
+        body, html {
+            font-family: 'Roboto Mono', monospace;
+            background-color: #334155; /* Lighter Slate-700 background */
+            color: #cbd5e1; /* Lighter Slate-300 text for better contrast */
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+        }
+        h1, h2 {
+            font-family: 'Exo 2', sans-serif;
+        }
+        .ui-panel {
+            background-color: rgba(15, 23, 42, 0.85); /* Darker Slate-900 panel */
+            backdrop-filter: blur(10px);
+            border-color: #1e293b; /* Slate-800 border */
+        }
+        .progress-bar-bg { background-color: #1e293b; }
+        .hope-bar { background-color: #38bdf8; } /* Brighter Sky-400 */
+        .discontent-bar { background-color: #f43f5e; } /* Brighter Rose-500 */
+        .btn { @apply rounded-md px-4 py-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed; }
+        .btn-primary { @apply btn bg-slate-700 text-slate-200 hover:bg-slate-600 border border-slate-600; }
+        .btn-secondary { @apply btn bg-sky-600 text-sky-100 hover:bg-sky-500 border border-sky-500; }
+        .mobile-scroll::-webkit-scrollbar { width: 6px; }
+        .mobile-scroll::-webkit-scrollbar-track { background: transparent; }
+        .mobile-scroll::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+        #city-canvas {
+            display: block; /* Ensures canvas behaves like a block element */
+            width: 100%;
+            height: 100%;
+        }
+        /* Custom message box for alerts */
+        .message-box-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        .message-box {
+            background-color: #1e293b;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            border: 2px solid #334155;
+            text-align: center;
+            max-width: 80%;
+        }
+    </style>
+</head>
+<body class="flex flex-col">
+
+    <!-- START SCREEN -->
+    <div id="start-screen" class="absolute inset-0 bg-gray-900/50 backdrop-blur-sm z-50 flex items-center justify-center">
+        <div class="text-center p-4">
+            <h1 class="text-4xl md:text-6xl font-bold text-white tracking-wider">LASTCITY SURVIVAL</h1>
+            <p class="text-lg text-sky-300 mt-2">Test Your Critical Thinking</p>
+            <input type="text" id="player-name-input" placeholder="Enter Your Name, Captain" class="mt-8 text-center bg-slate-800/50 text-white text-xl px-4 py-3 rounded-md border border-slate-600 focus:outline-none focus:ring-2 focus:ring-sky-500 w-full max-w-sm">
+            <button id="start-btn" class="mt-4 btn-secondary font-bold text-xl px-10 py-4 w-full max-w-sm">Begin Transmission</button>
+        </div>
+    </div>
+
+    <!-- MAIN UI (Hidden Initially) -->
+    <div id="main-ui" class="flex flex-col w-full h-full hidden">
+        <!-- HEADER -->
+        <header class="ui-panel border-b p-4 flex items-center justify-between z-10 flex-shrink-0">
+             <div>
+                 <h1 class="text-xl md:text-2xl font-bold text-white tracking-wider">LASTCITY SURVIVAL</h1>
+                 <p id="player-name-display" class="text-sm text-sky-300"></p>
+            </div>
+            <div class="flex-grow max-w-sm flex flex-col gap-1 mx-4">
+                <div>
+                    <span class="text-xs font-semibold text-sky-300">HOPE</span>
+                    <div class="w-full progress-bar-bg rounded-full h-4 mt-1"><div id="hope-bar" class="hope-bar h-4 rounded-full text-xs text-white text-center font-bold"></div></div>
+                </div>
+                <div>
+                    <span class="text-xs font-semibold text-rose-400">DISCONTENT</span>
+                    <div class="w-full progress-bar-bg rounded-full h-4 mt-1"><div id="discontent-bar" class="discontent-bar h-4 rounded-full text-xs text-white text-center font-bold"></div></div>
+                </div>
+            </div>
+            <div class="flex items-center gap-4 text-center">
+                 <div>
+                     <div class="text-xs sm:text-sm font-bold text-white">CTS</div>
+                     <div id="cts-score" class="text-2xl sm:text-3xl font-bold">65</div>
+                 </div>
+                 <div><div class="text-xs sm:text-sm font-bold text-white">Day</div><div id="day-counter" class="text-base sm:text-lg">1</div></div>
+                 <div><div class="text-xs sm:text-sm font-bold text-white">Temp</div><div id="temperature-display" class="text-base sm:text-lg">-20°C</div></div>
+            </div>
+        </header>
+
+        <!-- MAIN CONTENT: Stacks on mobile -->
+        <main class="flex-grow w-full flex-1 md:grid md:grid-cols-3 md:gap-4 p-4 min-h-0 overflow-y-auto mobile-scroll">
+            <!-- Left Panel: Status & Construction -->
+            <div id="status-panel" class="bg-slate-900/50 p-4 rounded-lg space-y-6 mb-4 md:mb-0"></div>
+            <!-- Center Panel: City 3D Viewport -->
+            <div id="city-viewport" class="bg-slate-900/50 rounded-lg mb-4 md:mb-0 min-h-[300px] md:min-h-0 relative overflow-hidden">
+                <canvas id="city-canvas"></canvas>
+            </div>
+            <!-- Right Panel: Log & Assignments -->
+            <div id="log-panel" class="bg-slate-900/50 p-4 rounded-lg flex flex-col min-h-[300px] md:min-h-0 space-y-6"></div>
+        </main>
+
+        <!-- FOOTER -->
+        <footer class="ui-panel border-t p-2 flex-shrink-0" style="padding-bottom: calc(0.5rem + var(--safe-area-inset-bottom));">
+            <div class="max-w-7xl mx-auto flex items-center justify-center">
+                <button id="next-day-btn" class="btn-secondary font-bold text-lg px-8 py-3">End Day</button>
+            </div>
+        </footer>
+    </div>
+
+    <script type="module">
+        const CONFIG = {
+            buildings: { tent: { name: "Tent", cost: { wood: 15 }, capacity: 10 }, cookhouse: { name: "Cookhouse", cost: { wood: 20, steel: 5 } }, medical_post: { name: "Medical Post", cost: { wood: 25 }, capacity: 5 }, workshop: { name: "Workshop", cost: { wood: 15, steel: 5 } } },
+            jobs: { coal: { name: "Coal Miners", rate: 2, resource: 'coal' }, wood: { name: "Woodcutters", rate: 2, resource: 'wood' }, steel: { name: "Steelworkers", rate: 1, resource: 'steel' }, hunters: { name: "Hunters", rate: 1, resource: 'rawFood' } },
+            dailyConsumption: { foodPerPerson: 1, generatorCoal: 15 },
+            sickness: { homelessChance: 0.1, coldChance: 0.05, starvingChance: 0.1 }
+        };
+        let state = {};
+        
+        const getInitialState = () => {
+            return { day: 1, temperature: -20, resources: { coal: 100, wood: 50, steel: 20, rawFood: 0, rations: 50 }, population: { total: 80, workers: 50, sick: 0 }, assignments: { coal: 0, wood: 0, steel: 0, hunters: 0 }, buildings: { tent: 0, cookhouse: 0, medical_post: 0, workshop: 0 }, hope: 50, discontent: 20, generatorOn: true, log: ["The generator is active. We must survive the cold."], gameOver: false, playerName: "Captain" };
+        };
+        
+        const ui = {
+            day: document.getElementById('day-counter'), temp: document.getElementById('temperature-display'),
+            hopeBar: document.getElementById('hope-bar'), discontentBar: document.getElementById('discontent-bar'),
+            statusPanel: document.getElementById('status-panel'), logPanel: document.getElementById('log-panel'),
+            nextDayBtn: document.getElementById('next-day-btn'), ctsScore: document.getElementById('cts-score'),
+            playerNameDisplay: document.getElementById('player-name-display')
+        };
+        
+        // Custom message box for in-game notifications
+        function showMessageBox(title, message) {
+            const container = document.createElement('div');
+            container.className = 'message-box-container';
+            const box = document.createElement('div');
+            box.className = 'message-box';
+            box.innerHTML = `<h2 class="text-xl font-bold text-white mb-4">${title}</h2><p class="mb-6">${message}</p><button id="message-ok-btn" class="btn-primary">OK</button>`;
+            container.appendChild(box);
+            document.body.appendChild(container);
+            document.getElementById('message-ok-btn').addEventListener('click', () => {
+                document.body.removeChild(container);
+            });
+        }
+        
+        // --- Sound Engine (Native Web Audio API) ---
+        const sounds = {
+            audioCtx: null,
+            isInitialized: false,
+
+            init: async function() {
+                if (this.isInitialized || typeof(window.AudioContext) === 'undefined') {
+                    return;
+                }
+                try {
+                    this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    // Resume context on user gesture, which is required by modern browsers.
+                    await this.audioCtx.resume();
+                    this.isInitialized = true;
+                    this.playAmbience();
+                } catch (e) {
+                    console.error("Could not initialize Web Audio context:", e);
+                }
+            },
+
+            play: function(type, frequency, duration, volume) {
+                if (!this.isInitialized) return;
+                const oscillator = this.audioCtx.createOscillator();
+                const gainNode = this.audioCtx.createGain();
+
+                oscillator.type = type;
+                oscillator.frequency.setValueAtTime(frequency, this.audioCtx.currentTime);
+                
+                gainNode.gain.setValueAtTime(volume, this.audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioCtx.currentTime + duration);
+
+                oscillator.connect(gainNode);
+                gainNode.connect(this.audioCtx.destination);
+
+                oscillator.start(this.audioCtx.currentTime);
+                oscillator.stop(this.audioCtx.currentTime + duration);
+            },
+
+            playAmbience: function() {
+                if (!this.isInitialized) return;
+                const bufferSize = 2 * this.audioCtx.sampleRate;
+                const noiseBuffer = this.audioCtx.createBuffer(1, bufferSize, this.audioCtx.sampleRate);
+                const output = noiseBuffer.getChannelData(0);
+                let lastOut = 0.0;
+                // Generate brown noise
+                for (let i = 0; i < bufferSize; i++) {
+                    const white = Math.random() * 2 - 1;
+                    output[i] = (lastOut + (0.02 * white)) / 1.02;
+                    lastOut = output[i];
+                    output[i] *= 3.5; // Compensate for gain
+                }
+
+                const brownNoise = this.audioCtx.createBufferSource();
+                brownNoise.buffer = noiseBuffer;
+                brownNoise.loop = true;
+
+                const gainNode = this.audioCtx.createGain();
+                gainNode.gain.setValueAtTime(0.03, this.audioCtx.currentTime);
+
+                brownNoise.connect(gainNode);
+                gainNode.connect(this.audioCtx.destination);
+                brownNoise.start();
+            },
+
+            playClick: function() { this.play('sine', 880, 0.1, 0.1); },
+            playNewDay: function() {
+                 if (!this.isInitialized) return;
+                const oscillator = this.audioCtx.createOscillator();
+                const gainNode = this.audioCtx.createGain();
+                oscillator.type = 'triangle';
+                oscillator.frequency.setValueAtTime(392, this.audioCtx.currentTime); // G4
+                gainNode.gain.setValueAtTime(0.4, this.audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.5);
+                oscillator.connect(gainNode).connect(this.audioCtx.destination);
+                oscillator.start();
+                oscillator.stop(this.audioCtx.currentTime + 0.5);
+            },
+            playBuild: function() {
+                if (!this.isInitialized) return;
+                const osc = this.audioCtx.createOscillator();
+                const gainNode = this.audioCtx.createGain();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(80, this.audioCtx.currentTime);
+                gainNode.gain.setValueAtTime(0.3, this.audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioCtx.currentTime + 0.3);
+                osc.connect(gainNode).connect(this.audioCtx.destination);
+                osc.start();
+                osc.stop(this.audioCtx.currentTime + 0.3);
+            },
+            playError: function() { this.play('square', 100, 0.2, 0.15); },
+            playAlarm: function() { this.play('sawtooth', 440, 0.5, 0.2); }
+        };
+
+
+        function updateUI() {
+            ui.day.textContent = state.day; ui.temp.textContent = `${state.temperature}°C`; ui.hopeBar.style.width = `${state.hope}%`; ui.hopeBar.textContent = `${state.hope}%`;
+            ui.discontentBar.style.width = `${state.discontent}%`; ui.discontentBar.textContent = `${state.discontent}%`;
+            const homeless = Math.max(0, state.population.total - (state.buildings.tent * CONFIG.buildings.tent.capacity));
+            const unemployedCount = state.population.workers - Object.values(state.assignments).reduce((a, b) => a + b, 0);
+            const ctsScoreValue = Math.round(((state.hope - state.discontent) + 100) / 2);
+            ui.ctsScore.textContent = ctsScoreValue; ui.playerNameDisplay.textContent = `Captain: ${state.playerName}`;
+            if (ctsScoreValue < 30) ui.ctsScore.style.color = '#f43f5e'; else if (ctsScoreValue < 60) ui.ctsScore.style.color = '#e2e8f0'; else ui.ctsScore.style.color = '#38bdf8';
+            ui.statusPanel.innerHTML = `<div><h2 class="text-2xl font-bold text-white mb-2">City Status</h2><div class="space-y-1">${Object.entries(state.resources).map(([res, amount]) => `<div class="flex justify-between items-center bg-slate-800/50 p-2 rounded-md"><span>${res.charAt(0).toUpperCase() + res.slice(1).replace('rawFood', 'Raw Food')}</span><span class="font-bold text-white text-lg">${Math.floor(amount)}</span></div>`).join('')}</div><div class="space-y-1 mt-2">${`<div class="flex justify-between items-center bg-slate-800/50 p-2 rounded-md"><span>Population</span> <span class="font-bold text-white text-lg">${state.population.total}</span></div><div class="flex justify-between items-center bg-slate-800/50 p-2 rounded-md"><span>Sick</span> <span class="font-bold text-yellow-400 text-lg">${state.population.sick}</span></div><div class="flex justify-between items-center bg-slate-800/50 p-2 rounded-md"><span>Homeless</span> <span class="font-bold ${homeless > 0 ? 'text-red-400' : 'text-white'} text-lg">${homeless}</span></div>`}</div></div><div class="mt-6"><h2 class="text-2xl font-bold text-white mb-2">Construction</h2><div class="space-y-2">${Object.entries(CONFIG.buildings).map(([key, b]) => { const c = Object.entries(b.cost).map(([r, a]) => `${a} ${r}`).join(', '); const can = Object.entries(b.cost).every(([r, a]) => state.resources[r] >= a); return `<button data-building="${key}" class="btn-primary w-full text-left !p-2" ${!can?'disabled':''}> <p class="font-bold">${b.name} (${state.buildings[key]})</p> <p class="text-xs">Cost: ${c}</p></button>`; }).join('')}</div></div>`;
+            ui.logPanel.innerHTML = `<div><h2 class="text-2xl font-bold text-white mb-2 flex-shrink-0">Daily Log</h2><div class="log-box flex-grow h-48 bg-slate-800/50 p-2 rounded-md overflow-y-auto space-y-2 text-xs">${state.log.map(msg => `<p class="border-b border-gray-700/50 pb-1">${msg}</p>`).join('')}</div></div><div class="mt-6"><h2 class="text-2xl font-bold text-white mb-2">Work Assignments (${unemployedCount})</h2><div class="space-y-2">${Object.entries(CONFIG.jobs).map(([key, job]) => `<div class="flex items-center justify-between text-sm bg-slate-800/50 p-2 rounded-md"><label class="font-semibold">${job.name}</label><div class="flex items-center space-x-2"><button class="font-bold w-7 h-7 rounded bg-slate-600 hover:bg-slate-500" data-job="${key}" data-amount="-1">-</button><span class="w-8 text-center font-bold text-lg">${state.assignments[key]}</span><button class="font-bold w-7 h-7 rounded bg-slate-600 hover:bg-slate-500" data-job="${key}" data-amount="1">+</button></div></div>`).join('')}</div></div>`;
+            document.querySelectorAll('.log-box').forEach(box => box.scrollTop = box.scrollHeight);
+        }
+        
+        const addLog = (message) => { state.log.push(`<strong>Day ${state.day}:</strong> ${message}`); if (state.log.length > 100) state.log.shift(); };
+        const handleBuild = (buildingKey) => { const b = CONFIG.buildings[buildingKey]; if (Object.entries(b.cost).every(([r, a]) => state.resources[r] >= a)) { Object.entries(b.cost).forEach(([r, a]) => state.resources[r] -= a); state.buildings[buildingKey]++; addLog(`Constructed a new ${b.name}.`); sounds.playBuild(); updateUI(); } };
+        const handleAssignment = (job, amount) => { const unemployed = state.population.workers - Object.values(state.assignments).reduce((a, b) => a + b, 0); if (amount > 0 && unemployed > 0) state.assignments[job]++; else if (amount < 0 && state.assignments[job] > 0) state.assignments[job]--; updateUI(); };
+        
+        // Function to get user ID from URL parameters
+        function getUserId() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get("userId") || "guest";
+        }
+
+        /**
+         * Saves the current game state to a remote API endpoint.
+         * The game state is serialized to JSON and sent via a POST request.
+         */
+        const saveGame = async (userId) => {
+            const stateToSave = { ...state, log: JSON.stringify(state.log) };
+            try {
+                const response = await fetch('http://localhost:3000/api/game/lastcity', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: userId, name: state.playerName, gameState: stateToSave })
+                });
+                if (response.ok) {
+                    console.log("Game saved successfully.");
+                } else {
+                    console.error("Failed to save game:", response.statusText);
+                }
+            } catch (error) {
+                console.error("Network error saving game:", error);
+            }
+        };
+
+        /**
+         * Loads the game state from a remote API endpoint.
+         * Fetches the latest game data via a GET request and updates the local state.
+         * @returns {object} The loaded game state or the initial state if not found.
+         */
+        const loadGame = async (userId) => {
+            try {
+                const response = await fetch(`http://localhost:3000/api/game/lastcity?userId=${userId}`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                if (response.ok) {
+                    const savedState = await response.json();
+                    if(Object.keys(savedState).length > 0) {
+                        savedState.gameState.log = JSON.parse(savedState.gameState.log);
+                        console.log("Game loaded successfully.");
+                        return { ...getInitialState(), ...savedState.gameState };
+                    } else {
+                        console.log("No saved game found. Starting new game.");
+                        return getInitialState();
+                    }
+                } else if (response.status === 404) {
+                    console.log("No saved game found. Starting new game.");
+                    return getInitialState();
+                } else {
+                    console.error("Failed to load game:", response.statusText);
+                    return getInitialState();
+                }
+            } catch (error) {
+                console.error("Network error loading game:", error);
+                return getInitialState();
+            }
+        };
+
+        const nextDay = () => {
+             if (state.gameOver) return; state.day++; sounds.playNewDay(); addLog(`A new day begins.`);
+             Object.entries(state.assignments).forEach(([j, c]) => { const jc = CONFIG.jobs[j]; state.resources[jc.resource] += c * jc.rate; });
+             if (state.buildings.cookhouse > 0 && state.resources.rawFood > 0) { const c = state.resources.rawFood; state.resources.rations += c; state.resources.rawFood = 0; addLog(`Cookhouse prepared ${c} rations.`); }
+             const foodNeeded = state.population.total; const foodEaten = Math.min(foodNeeded, state.resources.rations); state.resources.rations -= foodEaten;
+             const starving = foodNeeded - foodEaten; if (starving > 0) { addLog(`<span class="text-red-400">${starving} people are starving!</span>`); state.discontent = Math.min(100, state.discontent + 5); state.hope = Math.max(0, state.hope - 5); }
+             let coalBurned = state.generatorOn ? CONFIG.dailyConsumption.generatorCoal + Math.max(0, -20 - state.temperature) : 0;
+             if (state.resources.coal < coalBurned) { addLog(`<span class="text-red-400">Generator shuts down!</span>`); sounds.playAlarm(); state.generatorOn = false; state.discontent = Math.min(100, state.discontent + 10); state.hope = Math.max(0, state.hope - 10); } else { state.resources.coal -= coalBurned; }
+             const healed = Math.min(state.population.sick, state.buildings.medical_post * CONFIG.buildings.medical_post.capacity); state.population.sick -= healed;
+             let newSick = Math.floor(Math.max(0, state.population.total - (state.buildings.tent * CONFIG.buildings.tent.capacity))*CONFIG.sickness.homelessChance) + (state.generatorOn?0:Math.floor(state.population.total*CONFIG.sickness.coldChance)) + (starving > 0 ? Math.floor(starving*CONFIG.sickness.starvingChance) : 0);
+             if (newSick > 0) { state.population.sick=Math.min(state.population.total, state.population.sick + newSick); addLog(`<span class="text-yellow-400">${newSick} people fell ill.</span>`); state.discontent = Math.min(100, state.discontent + 2); }
+             if (state.day > 1 && state.day % 3 === 0) { state.temperature -= Math.floor(Math.random() * 4) + 4; addLog(`<span class="text-blue-400">Temp drops to ${state.temperature}°C.</span>`); }
+             updateUI();
+             saveGame(getUserId()); // Save after each day ends
+        };
+
+        // --- 3D Scene Setup ---
+        let scene, camera, renderer, generatorLight;
+        function initThreeScene() {
+            const container = document.getElementById('city-viewport');
+            const canvas = document.getElementById('city-canvas');
+            scene = new THREE.Scene();
+            scene.fog = new THREE.Fog(0x334155, 20, 70);
+            camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera.position.set(0, 15, 25);
+            camera.lookAt(0, 0, 0);
+            renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.shadowMap.enabled = true;
+            renderer.setClearColor(0x000000, 0);
+            const ambientLight = new THREE.AmbientLight(0x607d8b, 0.8);
+            scene.add(ambientLight);
+            const moonLight = new THREE.DirectionalLight(0x7dd3fc, 0.5);
+            moonLight.position.set(10, 20, 5);
+            moonLight.castShadow = true;
+            moonLight.shadow.mapSize.width = 1024;
+            moonLight.shadow.mapSize.height = 1024;
+            scene.add(moonLight);
+            const groundGeometry = new THREE.PlaneGeometry(80, 80);
+            const groundMaterial = new THREE.MeshStandardMaterial({ color: 0xe2e8f0 });
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = -Math.PI / 2;
+            ground.receiveShadow = true;
+            scene.add(ground);
+            const generatorGeometry = new THREE.CylinderGeometry(2, 2.5, 6, 16);
+            const generatorMaterial = new THREE.MeshStandardMaterial({ color: 0xf59e0b, emissive: 0xf59e0b, emissiveIntensity: 0.2 });
+            const generator = new THREE.Mesh(generatorGeometry, generatorMaterial);
+            generator.position.y = 3;
+            generator.castShadow = true;
+            scene.add(generator);
+            generatorLight = new THREE.PointLight(0xf59e0b, 1, 30);
+            generatorLight.position.y = 6;
+            generatorLight.castShadow = true;
+            scene.add(generatorLight);
+            const buildingGeometry = new THREE.BoxGeometry(1, 1, 1);
+            const buildingMaterial = new THREE.MeshStandardMaterial({ color: 0x475569 });
+            for (let i = 0; i < 40; i++) {
+                const building = new THREE.Mesh(buildingGeometry, buildingMaterial);
+                const angle = Math.random() * Math.PI * 2;
+                const radius = Math.random() * 15 + 8;
+                building.position.x = Math.cos(angle) * radius;
+                building.position.z = Math.sin(angle) * radius;
+                building.scale.x = Math.random() * 2 + 1.5;
+                building.scale.z = Math.random() * 2 + 1.5;
+                building.scale.y = Math.random() * 5 + 3;
+                building.position.y = building.scale.y / 2;
+                building.castShadow = true;
+                building.receiveShadow = true;
+                scene.add(building);
+            }
+            function animate() {
+                requestAnimationFrame(animate);
+                scene.rotation.y += 0.0005;
+                if (state && state.generatorOn) {
+                    generatorLight.intensity = 1 + Math.sin(Date.now() * 0.005) * 0.2;
+                } else {
+                    generatorLight.intensity = 0;
+                }
+                renderer.render(scene, camera);
+            }
+            animate();
+            function onWindowResize() {
+                if (!container) return;
+                camera.aspect = container.clientWidth / container.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(container.clientWidth, container.clientHeight);
+            }
+            window.addEventListener('resize', onWindowResize);
+        }
+        
+        async function init(playerName, isNewGame = false) {
+            const userId = getUserId();
+            if (isNewGame) {
+                state = getInitialState();
+            } else {
+                state = await loadGame(userId);
+            }
+            state.playerName = playerName;
+            updateUI();
+            initThreeScene();
+            
+            document.body.addEventListener('click', e => { 
+                const btn = e.target.closest('button'); if (!btn) return;
+                if (btn.id === 'start-btn') return; // Start button handled separately
+                
+                if (btn.disabled) {
+                    sounds.playError();
+                    return;
+                }
+                sounds.playClick();
+                
+                if(btn.dataset.building) handleBuild(btn.dataset.building); 
+                if(btn.dataset.job) handleAssignment(btn.dataset.job, parseInt(btn.dataset.amount)); 
+            });
+            ui.nextDayBtn.addEventListener('click', nextDay);
+        }
+
+        document.getElementById('start-btn').addEventListener('click', async () => {
+            // Initialize audio context on the first user interaction
+            await sounds.init();
+            
+            const playerNameInput = document.getElementById('player-name-input');
+            let playerName = playerNameInput.value.trim();
+            if (playerName === '') { playerName = 'Captain'; }
+            
+            document.getElementById('start-screen').style.display = 'none';
+            const mainUI = document.getElementById('main-ui');
+            mainUI.classList.remove('hidden');
+            mainUI.classList.add('flex');
+            init(playerName, true);
+        });
+
+        // Check for saved game on page load
+        window.onload = async () => {
+            const userId = getUserId();
+            if (userId !== "guest") {
+                const loadedState = await loadGame(userId);
+                // Check if the loaded state is not the default initial state.
+                if (JSON.stringify(loadedState) !== JSON.stringify(getInitialState())) {
+                    state = loadedState;
+                    document.getElementById('start-screen').style.display = 'none';
+                    const mainUI = document.getElementById('main-ui');
+                    mainUI.classList.remove('hidden');
+                    mainUI.classList.add('flex');
+                    init(state.playerName);
+                    await sounds.init();
+                }
+            }
+        };
+    </script>
+</body>
+</html>

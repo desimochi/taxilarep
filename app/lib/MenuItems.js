@@ -4,6 +4,7 @@ import {
     UserGroupIcon,
     CalendarIcon,
     DocumentChartBarIcon,
+    DocumentIcon,
   } from "@heroicons/react/24/outline";
   import { AlignLeftIcon, AlignRightIcon, BookCheckIcon, BookCopyIcon, DockIcon, FileAxis3D, Gamepad, HandshakeIcon, HelpCircleIcon, IndianRupee, NewspaperIcon, PaperclipIcon, PenBox, PenSquareIcon, Settings2Icon, UserCircle, UserRoundCheck } from "lucide-react";
 export const menuItems = [
@@ -143,6 +144,7 @@ export const menuItems = [
     },
     { label: "Mentorship Student", icon: <NewspaperIcon className="h-5 w-5" />, path: "/faculty/mentorship-assign-student" },
     { label: "Events", icon: <CalendarIcon className="h-5 w-5" />, path: "/events" },
+    { label: "Game Guides", icon: <DocumentIcon className="h-5 w-5" />, path: "/game-guides" },
     {label : "Simuations", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Startup Simuation",  icon: <Gamepad className="h-5 w-5" />, path:"/game/simulation"},
              {label:"Guesstimation",  icon: <Gamepad className="h-5 w-5" />, path:"/game/guesstimations"},
@@ -155,6 +157,10 @@ export const menuItems = [
           ]},
           {label : "Human Resource Development", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Netritva",  icon: <Gamepad className="h-5 w-5" />, path:"/game/netrvita"},
+          ]},
+          {label:"Project Management",  icon: <Gamepad className="h-5 w-5" />, path:"/game/project-management"},
+         {label : "Critical Thinking", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
+            {label:"Last City",  icon: <Gamepad className="h-5 w-5" />, path:"/game/lastcity"},
           ]},
           {label : "Strategy", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Taxila Capital Quest",  icon: <Gamepad className="h-5 w-5" />, path:"/game/quest"},
@@ -194,8 +200,12 @@ export const menuItems = [
           {label : "Human Resource Development", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Netritva",  icon: <Gamepad className="h-5 w-5" />, path:"/game/netrvita"},
           ]},
+          {label:"Project Management",  icon: <Gamepad className="h-5 w-5" />, path:"/game/project-management"},
           {label : "Strategy", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Taxila Capital Quest",  icon: <Gamepad className="h-5 w-5" />, path:"/game/quest"},
+          ]},
+          {label : "Critical Thinking", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
+            {label:"Last City",  icon: <Gamepad className="h-5 w-5" />, path:"/game/lastcity"},
           ]},
            {label:"Wordify",  icon: <Gamepad className="h-5 w-5" />, path:"/game/wordfy"},
           ]},
