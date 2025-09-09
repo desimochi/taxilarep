@@ -9,7 +9,7 @@ export default function Home() {
   const {state} = useContext(GlobalContext)
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-white text-center px-4">
-      <h1 className="text-6xl font-bold bg-gradient-to-r from-purple-600 to-red-500 text-transparent bg-clip-text">
+      <h1 className="text-2xl sm:text-5xl font-bold bg-gradient-to-r from-purple-600 to-red-500 text-transparent bg-clip-text">
         Welcome! {state.name && state.name}
       </h1>
       <p className="text-gray-600 mt-2">At the ERP of Taxila Business School</p>
@@ -17,7 +17,7 @@ export default function Home() {
         Click on the Dashboard to get started
       </p>
       
-      <div className="flex space-x-8 mt-10">
+      <div className="flex sm:space-x-8 mt-10">
         <div className="flex flex-col items-center">
           <AcademicCapIcon className="h-10 w-10" />
           <p className="text-sm text-gray-600 mt-2">Academic Information</p>
