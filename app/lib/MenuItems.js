@@ -166,6 +166,9 @@ export const menuItems = [
             {label:"Taxila Capital Quest",  icon: <Gamepad className="h-5 w-5" />, path:"/game/quest"},
             {label:"Indian Business Strategy",  icon: <Gamepad className="h-5 w-5" />, path:"/game/indian-business"},
           ]},
+          {label : "Consultancy", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
+            {label:"Taxila Ecosystem",  icon: <Gamepad className="h-5 w-5" />, path:"/game/taxila-eco"},
+          ]},
            {label:"Wordify",  icon: <Gamepad className="h-5 w-5" />, path:"/game/wordfy"},
           ]},
   ];
@@ -208,6 +211,9 @@ export const menuItems = [
           ]},
           {label : "Critical Thinking", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Last City",  icon: <Gamepad className="h-5 w-5" />, path:"/game/lastcity"},
+          ]},
+           {label : "Consultancy", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
+            {label:"Taxila Ecosystem",  icon: <Gamepad className="h-5 w-5" />, path:"/game/taxila-eco"},
           ]},
            {label:"Wordify",  icon: <Gamepad className="h-5 w-5" />, path:"/game/wordfy"},
           ]},

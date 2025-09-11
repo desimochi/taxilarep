@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taxila Ecosystem Simulation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f172a;
+            color: #d1d5db;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+        #simulation-container {
+            perspective: 2500px;
+        }
+        .aurora-panel {
+            background-color: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(51, 65, 85, 0.7);
+            border-radius: 1rem;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            transform-style: preserve-3d;
+        }
+        .center-panel { transform: rotateY(0deg) translateZ(30px) scale(1.02); }
+        .right-panel { transform: rotateY(-4deg) scale(0.98); }
+
+        /* --- Live Ecosystem Panel --- */
+        .ecosystem-panel {
+            transform: rotateY(4deg) scale(0.98);
+            background: radial-gradient(ellipse at center, rgba(15, 23, 42, 0.5) 0%, rgba(15, 23, 42, 0.8) 70%);
+            position: relative;
+            overflow: hidden;
+        }
+        #ecosystem-canvas {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .ecosystem-panel.drag-over {
+            border-color: #22d3ee;
+            transform: rotateY(4deg) scale(1.0);
+            box-shadow: 0 0 25px rgba(34, 211, 238, 0.3);
+        }
+        #ecosystem-arenas {
+            position: relative;
+            z-index: 2;
+            height: 100%;
+        }
+
+        .arena-node {
+            position: absolute;
+            width: 110px; height: 110px;
+            border-radius: 50%;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            transition: all 0.5s ease;
+            cursor: default;
+            background: rgba(15, 23, 42, 0.5);
+        }
+        .arena-node::before {
+            content: '';
+            position: absolute;
+            top: -2px; left: -2px; right: -2px; bottom: -2px;
+            border-radius: 50%;
+            border: 2px solid;
+            opacity: 0.5;
+            transition: all 0.3s ease;
+            animation: node-pulse 6s infinite ease-in-out;
+        }
+        .arena-node:hover::before {
+            opacity: 1;
+            transform: scale(1.1);
+            box-shadow: 0 0 15px;
+        }
+
+        @keyframes node-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+
+        .arena-node .arena-title { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+        .ventures-container { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 4px; margin-top: 4px; }
+        .venture-icon {
+            width: 22px; height: 22px;
+            border-radius: 50%; display: flex;
+            align-items: center; justify-content: center;
+            color: white; opacity: 0;
+            animation: icon-fade-in 0.5s forwards;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        @keyframes icon-fade-in {
+            to { opacity: 1; }
+        }
+
+        /* --- End Live Ecosystem Styles --- */
+        
+        .kpi-box {
+            position: relative;
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.8));
+            padding: 1rem 1.5rem; border-radius: 0.75rem; border: 1px solid #334155;
+            box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+        }
+        .kpi-value { transition: all 0.5s ease; }
+        .kpi-value.positive { color: #4ade80; transform: scale(1.05); }
+        .kpi-value.negative { color: #f87171; transform: scale(0.95); }
+
+        .opportunity-card {
+            background-color: rgba(15, 23, 42, 0.7);
+            border: 1px solid #334155; border-radius: 0.75rem;
+            padding: 1rem; cursor: grab; transform: translateZ(0);
+            transition: all 0.2s ease-out;
+        }
+        .opportunity-card:hover {
+            transform: translateZ(40px) scale(1.05);
+            background-color: rgba(30, 41, 59, 0.9); border-color: #475569;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .opportunity-card.dragging { opacity: 0.5; transform: scale(0.95); }
+        .balance-sheet-tooltip {
+            position: fixed; background-color: rgba(15, 23, 42, 0.9); color: white;
+            border-radius: 0.75rem; padding: 1rem; border: 1px solid #334155;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3); z-index: 1000; width: 260px;
+            opacity: 0; visibility: hidden; pointer-events: none;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            transform: translateX(20px); backdrop-filter: blur(10px);
+        }
+        .balance-sheet-tooltip.show { opacity: 1; visibility: visible; transform: translateX(0); }
+        
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 10px #0ea5e9, 0 0 20px #0ea5e9; }
+            50% { box-shadow: 0 0 20px #0ea5e9, 0 0 40px #0ea5e9; }
+        }
+        .total-value-box { animation: pulse-glow 4s ease-in-out infinite; }
+        
+        .notification {
+            position: fixed; bottom: 1.5rem; left: 50%;
+            transform: translateX(-50%) translateY(200%);
+            padding: 1rem 1.5rem; border-radius: 0.5rem; color: white;
+            z-index: 1000; transition: transform 0.5s ease-in-out;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            background-color: rgba(30, 41, 59, 0.8); border: 1px solid #334155;
+            backdrop-filter: blur(5px);
+        }
+        .notification.show { transform: translateX(-50%) translateY(0); }
+        .modal-overlay {
+            position: fixed; inset: 0; background-color: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 50; transition: opacity 0.3s ease;
+        }
+        .modal-overlay.hidden { opacity: 0; pointer-events: none; }
+    </style>
+</head>
+<body>
+    
+    <div id="name-modal" class="modal-overlay">
+        <div class="aurora-panel p-8 max-w-md text-center transform scale-95 transition-transform duration-300">
+            <h2 class="text-3xl font-bold text-white mb-2">Welcome, Strategist</h2>
+            <p class="text-slate-300 mb-6">Enter your name to begin the simulation.</p>
+            <input type="text" id="player-name-input" placeholder="e.g., Prof. C. K. Prahalad" class="w-full bg-slate-900/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:ring-2 focus:ring-cyan-400 focus:outline-none mb-4">
+            <div class="flex gap-4 mb-4">
+                <button id="load-game-btn" class="flex-1 bg-slate-700 text-white font-bold py-3 px-4 rounded-lg hover:bg-slate-600 transition-colors">Load Game</button>
+                <button id="start-sim-btn" class="flex-1 bg-gradient-to-r from-fuchsia-500 to-cyan-500 text-white font-bold py-3 px-4 rounded-lg hover:from-fuchsia-600 hover:to-cyan-600 transition-colors">Start New Simulation</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="simulation-container" class="max-w-screen-2xl mx-auto p-4 md:p-6 lg:p-8 opacity-0 transition-opacity duration-500">
+        <header class="mb-8 text-center relative">
+            <h1 class="text-4xl font-extrabold text-white tracking-tight">
+                Taxila Ecosystem Simulation
+                <span class="block text-2xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 to-cyan-300 mt-1">- Invest Smartly -</span>
+            </h1>
+            <p class="text-slate-400 mt-4">Created at <span class="font-semibold text-slate-300">Taxila Business School</span></p>
+            <div id="player-display" class="absolute top-0 right-0 text-right"></div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div class="lg:col-span-4 aurora-panel ecosystem-panel p-6" id="ecosystem-drop-zone">
+                <h2 class="text-xl font-bold text-white mb-4 text-center absolute top-6 left-1/2 -translate-x-1/2 z-10">Your Ecosystem</h2>
+                <canvas id="ecosystem-canvas"></canvas>
+                <div id="ecosystem-arenas" class="relative w-full h-full min-h-[500px]"></div>
+            </div>
+
+            <div class="lg:col-span-5 flex flex-col gap-6 center-panel">
+                <div class="kpi-box text-center"><h3 class="text-sm font-semibold text-slate-400 uppercase tracking-widest">Turn</h3><p id="turn-value" class="text-5xl font-bold text-white">1 / 10</p></div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="kpi-box"><h3 class="text-sm font-semibold text-slate-400 uppercase tracking-widest flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v.01" /></svg>Capital</h3><p id="capital-value" class="kpi-value text-3xl font-semibold text-sky-300">$1000 M</p></div>
+                    <div class="kpi-box"><h3 class="text-sm font-semibold text-slate-400 uppercase tracking-widest flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>Revenue</h3><p id="revenue-value" class="kpi-value text-3xl font-semibold text-sky-300">$150 M</p></div>
+                    <div class="kpi-box"><h3 class="text-sm font-semibold text-slate-400 uppercase tracking-widest flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>Customers</h3><p id="users-value" class="kpi-value text-3xl font-semibold text-sky-300">5.0 M</p></div>
+                    <div class="kpi-box"><h3 class="text-sm font-semibold text-slate-400 uppercase tracking-widest">Investments</h3><p id="investments-value" class="text-3xl font-semibold text-white">0 / 2</p></div>
+                </div>
+                <div class="kpi-box bg-gradient-to-br from-sky-500 to-indigo-600 text-white total-value-box"><h3 class="text-sm font-semibold text-sky-200 uppercase tracking-widest">Total Ecosystem Value</h3><p id="value-value" class="kpi-value text-4xl font-bold">$1500 M</p></div>
+                <button id="next-turn-btn" class="w-full bg-gradient-to-r from-fuchsia-500 to-cyan-500 text-white font-bold py-4 px-4 rounded-lg hover:from-fuchsia-600 hover:to-cyan-600 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-cyan-300 text-lg shadow-lg hover:shadow-cyan-500/50 hover:scale-105">End Turn & Calculate Results</button>
+                <div class="flex gap-4">
+                    <button id="save-game-btn" class="flex-1 bg-slate-700 text-white font-bold py-3 px-4 rounded-lg hover:bg-slate-600 transition-colors">Save Game</button>
+                    <button id="load-game-main-btn" class="flex-1 bg-slate-700 text-white font-bold py-3 px-4 rounded-lg hover:bg-slate-600 transition-colors">Load Game</button>
+                </div>
+                <div class="aurora-panel p-4">
+                     <div class="flex justify-between items-center mb-3">
+                        <h2 class="text-xl font-bold text-white text-center flex-grow">Hall of Fame</h2>
+                        <button id="clear-leaderboard-btn" class="text-xs text-slate-500 hover:text-red-400 transition-colors" title="Clear all scores">Clear</button>
+                    </div>
+                    <div id="leaderboard" class="space-y-2"></div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-3 aurora-panel right-panel flex flex-col p-6">
+                <h2 class="text-xl font-bold text-white mb-2">Investment Opportunities</h2>
+                <p class="text-sm text-slate-400 mb-4">Drag to invest. Hover for financials.</p>
+                <div id="opportunities-container" class="flex-grow space-y-3 overflow-y-auto pr-2 -mr-2"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="balance-sheet-tooltip-container"></div>
+    <div id="notification-banner" class="notification"></div>
+    <div id="game-over-modal" class="modal-overlay hidden">
+        <div class="aurora-panel p-8 max-w-lg text-center"><h2 class="text-3xl font-bold text-white mb-4">Simulation Complete</h2><p class="text-slate-300 mb-6">Congratulations, <span id="final-player-name" class="font-bold text-white"></span>! You have completed 10 turns. Here are your final results:</p><div class="kpi-box bg-gradient-to-br from-sky-500 to-indigo-600 text-white mb-6"><h3 class="text-sm font-semibold text-sky-200 uppercase tracking-widest">Final Ecosystem Value</h3><p id="final-value" class="text-5xl font-bold">$0 M</p></div><button id="restart-btn" class="w-full bg-gradient-to-r from-fuchsia-500 to-cyan-500 text-white font-bold py-3 px-4 rounded-lg hover:from-fuchsia-600 hover:to-cyan-600 transition-colors">REPLAY</button></div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const CONFIG = { TOTAL_TURNS: 10, STARTING_CAPITAL: 1000, STARTING_REVENUE: 150, STARTING_USERS: 5, MAX_INVESTMENTS_PER_TURN: 2, OPPORTUNITIES_PER_TURN: 4, INTEREST_RATE: 0.02, ORGANIC_GROWTH_RATE: 0.03, SYNERGY_BONUS: 0.07, VALUE_MULTIPLIER_REVENUE: 8, VALUE_MULTIPLIER_USERS: 50, LEADERBOARD_SIZE: 5 };
+        
+        const ARENAS = { 
+            'Mobility': { color: 'rgb(14, 165, 233)', icon: 'M', borderColor: 'border-sky-400' }, 
+            'Health': { color: 'rgb(239, 68, 68)', icon: 'H', borderColor: 'border-red-400' }, 
+            'Finance': { color: 'rgb(16, 185, 129)', icon: 'F', borderColor: 'border-emerald-400' }, 
+            'Housing': { color: 'rgb(168, 85, 247)', icon: 'H', borderColor: 'border-purple-400' }, 
+            'Commerce': { color: 'rgb(245, 158, 11)', icon: 'C', borderColor: 'border-amber-400' } 
+        };
+
+        const VENTURE_ICONS = {
+            'm1': `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V8.618a1 1 0 01.553-.894L9 5l6 3 6-3 6 3v7.764a1 1 0 01-.553.894L15 20l-6-3-6 3z" /></svg>`,
+            'm3': `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>`,
+            'h1': `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>`,
+            'h3': `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M15 21v-2a6 6 0 00-12 0v2" /></svg>`,
+            'f1': `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>`,
+            'm2': `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l2-2h8zM17 16v-2a2 2 0 00-2-2H9" /></svg>`,
+            'h2': `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>`,
+            'f2': `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`,
+            'ho2': `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>`,
+            'c2': `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>`,
+            'ho3': `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" /></svg>`,
+            'c3': `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>`,
+            'f3': `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v.01" /></svg>`,
+            'h4': `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.94 17.94A10.07 10.07 0 0112 20c-4.418 0-8-3.582-8-8s3.582-8 8-8 8 3.582 8 8a10.07 10.07 0 01-2.06 6.06L12 12V2" /></svg>`,
+            'm4': `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>`,
+            'c4': `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>`,
+            'ho4': `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>`,
+            'h5': `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>`,
+            'm5': `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2h10a2 2 0 002-2v-1a2 2 0 012-2h1.945M7.704 4.045l1.414 1.414M1.414 1.414L2.828 2.828m18.384 1.216l-1.414 1.414M16.296 4.045l-1.414 1.414" /></svg>`,
+            'f4': `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-14L4 7m8 4v10M4 7v10l8 4" /></svg>`,
+        };
+
+        const ALL_OPPORTUNITIES = [
+            // Original 10
+            { id: 'm1', name: 'GoRide', arena: 'Mobility', type: 'Build', cost: 80, revenue: 15, users: 1.5, synergies: ['Commerce', 'Health'], 
+                balanceSheet: { assets: {total: 80, 'Dev Cost': 50, cash: 30}, liabilities: {total: 0}, equity: 80 } },
+            { id: 'm3', name: 'AutoLease Direct', arena: 'Mobility', type: 'Partner', cost: 50, revenue: 10, users: 0.5, synergies: ['Finance'], 
+                balanceSheet: { assets: {total: 100, receivables: 60, cash: 40}, liabilities: {total: 50, payable: 50}, equity: 50 } },
+            { id: 'h1', name: 'WellFit+', arena: 'Health', type: 'Build', cost: 70, revenue: 12, users: 1.2, synergies: ['Finance'], 
+                balanceSheet: { assets: {total: 70, 'IP': 40, cash: 30}, liabilities: {total: 0}, equity: 70 } },
+            { id: 'h3', name: 'SeniorCare Connect', arena: 'Health', type: 'Partner', cost: 60, revenue: 14, users: 0.9, synergies: ['Housing'], 
+                balanceSheet: { assets: {total: 90, platform: 60, cash: 30}, liabilities: {total: 30, deferred: 30}, equity: 60 } },
+            { id: 'f1', name: 'PayCore Wallet', arena: 'Finance', type: 'Build', cost: 100, revenue: 20, users: 2.5, synergies: ['Commerce', 'Housing', 'Mobility'], 
+                balanceSheet: { assets: {total: 100, 'Tech Stack': 70, cash: 30}, liabilities: {total: 0}, equity: 100 } },
+            { id: 'm2', name: 'CityFleet Logistics', arena: 'Mobility', type: 'Buy', cost: 120, revenue: 25, users: 0.8, synergies: ['Commerce', 'Housing'], 
+                balanceSheet: { assets: {total: 200, tangible: 170, cash: 30}, liabilities: {total: 80, debt: 70, payable: 10}, equity: 120 } },
+            { id: 'h2', name: 'TeleDoc Now', arena: 'Health', type: 'Buy', cost: 150, revenue: 30, users: 2.0, synergies: ['Finance', 'Mobility'],
+                balanceSheet: { assets: {total: 250, intangible: 180, cash: 70}, liabilities: {total: 100, deferred: 60, debt: 40}, equity: 150 } },
+            { id: 'f2', name: 'InsuranTech', arena: 'Finance', type: 'Buy', cost: 110, revenue: 22, users: 1.0, synergies: ['Health', 'Housing'],
+                balanceSheet: { assets: {total: 300, investments: 220, cash: 80}, liabilities: {total: 190, reserves: 150, debt: 40}, equity: 110 } },
+            { id: 'ho2', name: 'SmartHome Solutions', arena: 'Housing', type: 'Buy', cost: 130, revenue: 28, users: 1.1, synergies: ['Commerce'],
+                balanceSheet: { assets: {total: 220, inventory: 80, patents: 70, cash: 70}, liabilities: {total: 90, credit: 50, debt: 40}, equity: 130 } },
+            { id: 'c2', name: 'GourmetBox Delivery', arena: 'Commerce', type: 'Buy', cost: 140, revenue: 26, users: 1.8, synergies: ['Mobility', 'Health'],
+                balanceSheet: { assets: {total: 230, brandValue: 150, equipment: 40, cash: 40}, liabilities: {total: 90, ventureDebt: 70, payable: 20}, equity: 140 } },
+            // New 10
+            { id: 'ho3', name: 'PropTech AI', arena: 'Housing', type: 'Build', cost: 90, revenue: 18, users: 0.7, synergies: ['Finance'],
+                balanceSheet: { assets: { total: 90, 'Software IP': 70, cash: 20 }, liabilities: { total: 0 }, equity: 90 } },
+            { id: 'c3', name: 'LocalCart', arena: 'Commerce', type: 'Partner', cost: 40, revenue: 9, users: 1.3, synergies: ['Mobility'],
+                balanceSheet: { assets: { total: 60, network: 45, cash: 15 }, liabilities: { total: 20, payable: 20 }, equity: 40 } },
+            { id: 'f3', name: 'Agri-Fin Connect', arena: 'Finance', type: 'Partner', cost: 65, revenue: 13, users: 0.8, synergies: ['Commerce'],
+                balanceSheet: { assets: { total: 100, loanBook: 80, cash: 20 }, liabilities: { total: 35, deposits: 35 }, equity: 65 } },
+            { id: 'h4', name: 'Synapse Neuro-tech', arena: 'Health', type: 'Buy', cost: 180, revenue: 35, users: 0.5, synergies: ['Finance'],
+                balanceSheet: { assets: { total: 250, patents: 200, cash: 50 }, liabilities: { total: 70, r_d_loans: 70 }, equity: 180 } },
+            { id: 'm4', name: 'EV ChargeGrid', arena: 'Mobility', type: 'Build', cost: 110, revenue: 20, users: 1.0, synergies: ['Housing', 'Commerce'],
+                balanceSheet: { assets: { total: 110, infrastructure: 90, cash: 20 }, liabilities: { total: 0 }, equity: 110 } },
+            { id: 'c4', name: 'ReWear Exchange', arena: 'Commerce', type: 'Partner', cost: 55, revenue: 11, users: 1.6, synergies: ['Finance', 'Mobility'],
+                balanceSheet: { assets: { total: 80, platform: 60, cash: 20 }, liabilities: { total: 25, partners: 25 }, equity: 55 } },
+            { id: 'ho4', name: 'Urban Co-Living', arena: 'Housing', type: 'Buy', cost: 160, revenue: 32, users: 0.6, synergies: ['Commerce', 'Health'],
+                balanceSheet: { assets: { total: 300, properties: 250, cash: 50 }, liabilities: { total: 140, mortgages: 120, payables: 20 }, equity: 160 } },
+            { id: 'h5', name: 'Gene-Life Analytics', arena: 'Health', type: 'Build', cost: 170, revenue: 30, users: 0.9, synergies: ['Finance'],
+                balanceSheet: { assets: { total: 170, 'Genetic Data': 120, lab_equip: 30, cash: 20 }, liabilities: { total: 0 }, equity: 170 } },
+            { id: 'm5', name: 'AeroDeliver Drones', arena: 'Mobility', type: 'Buy', cost: 190, revenue: 40, users: 0.4, synergies: ['Commerce', 'Health'],
+                balanceSheet: { assets: { total: 280, droneFleet: 220, ip: 40, cash: 20 }, liabilities: { total: 90, debt: 90 }, equity: 190 } },
+            { id: 'f4', name: 'BlockLend DeFi', arena: 'Finance', type: 'Build', cost: 75, revenue: 15, users: 2.2, synergies: ['Commerce'],
+                balanceSheet: { assets: { total: 75, smartContracts: 60, cash: 15 }, liabilities: { total: 0 }, equity: 75 } },
+        ];
+
+        let gameState;
+        const ui = {
+            simulationContainer: document.getElementById('simulation-container'), nameModal: document.getElementById('name-modal'), startSimBtn: document.getElementById('start-sim-btn'), playerNameInput: document.getElementById('player-name-input'), playerDisplay: document.getElementById('player-display'), turn: document.getElementById('turn-value'), capital: document.getElementById('capital-value'), revenue: document.getElementById('revenue-value'), users: document.getElementById('users-value'), ecosystemValue: document.getElementById('value-value'), investments: document.getElementById('investments-value'), opportunitiesContainer: document.getElementById('opportunities-container'), ecosystemArenas: document.getElementById('ecosystem-arenas'), ecosystemDropZone: document.getElementById('ecosystem-drop-zone'), nextTurnBtn: document.getElementById('next-turn-btn'), notificationBanner: document.getElementById('notification-banner'), gameOverModal: document.getElementById('game-over-modal'), finalValue: document.getElementById('final-value'), restartBtn: document.getElementById('restart-btn'), tooltipContainer: document.getElementById('balance-sheet-tooltip-container'), finalPlayerName: document.getElementById('final-player-name'), leaderboard: document.getElementById('leaderboard'), clearLeaderboardBtn: document.getElementById('clear-leaderboard-btn'), ecosystemCanvas: document.getElementById('ecosystem-canvas'),
+            loadGameBtn: document.getElementById('load-game-btn'), saveGameBtn: document.getElementById('save-game-btn'), loadGameMainBtn: document.getElementById('load-game-main-btn')
+        };
+        let activeTooltip = null;
+
+       
+        
+        // --- Main Logic ---
+        function main() {
+            const nameModalBox = ui.nameModal.querySelector('.aurora-panel');
+            requestAnimationFrame(() => { nameModalBox.style.transform = 'scale(1)'; });
+            ui.playerNameInput.value = 
+            ui.startSimBtn.addEventListener('click', () => {
+                const playerName = ui.playerNameInput.value.trim() || 'Strategist';
+                gameState = { playerName };
+                ui.playerDisplay.innerHTML = `<p class="text-slate-400 text-sm">Strategist:</p><p class="font-bold text-white text-lg">${gameState.playerName}</p>`;
+                ui.finalPlayerName.textContent = gameState.playerName;
+                ui.nameModal.classList.add('hidden');
+                ui.simulationContainer.style.opacity = '1';
+                initGame();
+            });
+            ui.loadGameBtn.addEventListener('click', () => {
+                loadGame();
+            });
+            ui.loadGameMainBtn.addEventListener('click', () => {
+                loadGame();
+            });
+            ui.playerNameInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') ui.startSimBtn.click(); });
+        }
+
+        function initGame() {
+            Object.assign(gameState, { turn: 1, capital: CONFIG.STARTING_CAPITAL, revenue: CONFIG.STARTING_REVENUE, users: CONFIG.STARTING_USERS, ecosystemValue: 0, ventures: [], investmentsThisTurn: 0, availableOpportunities: [...ALL_OPPORTUNITIES] });
+            calculateEcosystemValue(); renderEcosystem(); drawOpportunities(); updateDashboard();
+            ui.gameOverModal.classList.add('hidden');
+        }
+function getUserId() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get("userId") || "guest";
+    }
+      async  function saveGame() {
+            const userId = getUserId();
+
+            if (!userId) return; // only exit if no userId found
+ const params = new URLSearchParams(window.location.search);
+ const name =  JSON.parse(decodeURIComponent(params.get("name")));
+            try {
+                const res = await fetch("https://erp.taxila.in/api/game/eco", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ userId, name, gameState }),
+                });
+
+                if (!res.ok) {
+                    console.error("Failed to save game state:", await res.text());
+                
+                } else {
+                     showNotification('Game saved successfully!');
+                }
+            } catch (err) {
+                console.error("Error saving game state:", err);
+            }
+          
+        }
+
+      async  function loadGame() {
+             const userId = getUserId();
+            const res = await fetch(`https://erp.taxila.in/api/game/eco?userId=${userId}`)
+            const savedData = await res.json();
+            const savedState = savedData.gameState
+            if (savedState) {
+                gameState = savedState;
+                ui.nameModal.classList.add('hidden');
+                ui.simulationContainer.style.opacity = '1';
+                ui.playerDisplay.innerHTML = `<p class="text-slate-400 text-sm">Strategist:</p><p class="font-bold text-white text-lg">${gameState.playerName}</p>`;
+                ui.finalPlayerName.textContent = gameState.playerName;
+                calculateEcosystemValue();
+                renderEcosystem();
+                drawOpportunities();
+                updateDashboard();
+                showNotification('Game loaded successfully!');
+            } else {
+                showNotification('No saved game found.');
+            }
+        }
+        
+        function calculateEcosystemValue() { gameState.ecosystemValue = gameState.revenue * CONFIG.VALUE_MULTIPLIER_REVENUE + gameState.users * CONFIG.VALUE_MULTIPLIER_USERS + gameState.capital; }
+        function showNotification(message) { ui.notificationBanner.textContent = message; ui.notificationBanner.classList.add('show'); setTimeout(() => ui.notificationBanner.classList.remove('show'), 3000); }
+        function flashKPI(el, change) { el.classList.remove('positive', 'negative'); void el.offsetWidth; if (change > 0) el.classList.add('positive'); if (change < 0) el.classList.add('negative'); setTimeout(() => el.classList.remove('positive', 'negative'), 1500); }
+        
+        function updateDashboard() {
+            const getVal = (el) => parseFloat(el.textContent.replace(/[^\d.]/g, ''));
+            const p = { capital: getVal(ui.capital), revenue: getVal(ui.revenue), users: getVal(ui.users), ecosystemValue: getVal(ui.ecosystemValue) };
+            ui.turn.textContent = `${gameState.turn} / ${CONFIG.TOTAL_TURNS}`; ui.capital.textContent = `$${Math.round(gameState.capital)} M`; ui.revenue.textContent = `$${Math.round(gameState.revenue)} M`; ui.users.textContent = `${gameState.users.toFixed(1)} M`; ui.ecosystemValue.textContent = `$${Math.round(gameState.ecosystemValue)} M`; ui.investments.textContent = `${gameState.investmentsThisTurn} / ${CONFIG.MAX_INVESTMENTS_PER_TURN}`;
+            flashKPI(ui.capital, gameState.capital - p.capital); flashKPI(ui.revenue, gameState.revenue - p.revenue); flashKPI(ui.users, gameState.users - p.users); flashKPI(ui.ecosystemValue, gameState.ecosystemValue - p.ecosystemValue);
+        }
+
+        function createOpportunityCard(opp) {
+            const card = document.createElement('div');
+            card.id = opp.id; card.className = `opportunity-card border-l-4 ${ARENAS[opp.arena].borderColor}`; card.draggable = true;
+            card.innerHTML = `<div class="flex justify-between items-start mb-2"><h4 class="font-bold text-white pr-2">${opp.name}</h4><span class="text-xs font-semibold px-2 py-1 rounded-full" style="background-color:${ARENAS[opp.arena].color}">${opp.arena}</span></div><div class="text-sm text-slate-400 mb-3">${opp.type} <span class="text-cyan-400 font-semibold ml-1 text-xs">(Hover for financials)</span></div><div class="space-y-1 text-sm"><div class="flex justify-between"><span>Cost:</span> <strong class="text-red-400">$${opp.cost} M</strong></div><div class="flex justify-between"><span>+Revenue:</span> <strong class="text-green-400">$${opp.revenue} M</strong></div><div class="flex justify-between"><span>+Customers:</span> <strong class="text-green-400">${opp.users} M</strong></div></div>${opp.synergies.length > 0 ? `<div class="mt-2 pt-2 border-t border-slate-700 text-xs text-slate-500">Synergies: ${opp.synergies.join(', ')}</div>` : ''}`;
+            card.addEventListener('dragstart', (e) => { e.dataTransfer.setData('text/plain', e.target.id); e.dataTransfer.effectAllowed = 'move'; hideBalanceSheet(); e.currentTarget.classList.add('dragging'); });
+            card.addEventListener('dragend', (e) => { e.currentTarget.classList.remove('dragging'); });
+            card.addEventListener('mouseenter', (e) => showBalanceSheet(e, opp));
+            card.addEventListener('mouseleave', hideBalanceSheet);
+            return card;
+        }
+
+        function showBalanceSheet(event, opp) {
+            hideBalanceSheet();
+            const cardElement = event.currentTarget;
+            if (!cardElement || !opp.balanceSheet) return;
+            const bs = opp.balanceSheet;
+            const tooltip = document.createElement('div');
+            tooltip.className = 'balance-sheet-tooltip';
+            tooltip.innerHTML = `<h4 class="font-bold text-lg mb-2 border-b border-slate-600 pb-1 text-white">${opp.name}</h4>
+                <div class="space-y-2 text-sm">
+                    <div><div class="flex justify-between font-semibold text-slate-300"><span>Assets</span><span>$${bs.assets.total} M</span></div>${Object.entries(bs.assets).filter(([k]) => k !== 'total').map(([k,v]) => `<div class="flex justify-between text-slate-400 pl-2"><span>${k.charAt(0).toUpperCase() + k.slice(1)}</span><span>$${v} M</span></div>`).join('')}</div>
+                    <div><div class="flex justify-between font-semibold text-slate-300"><span>Liabilities</span><span>$${bs.liabilities.total} M</span></div>${Object.entries(bs.liabilities).filter(([k]) => k !== 'total').map(([k,v]) => `<div class="flex justify-between text-slate-400 pl-2"><span>${k.charAt(0).toUpperCase() + k.slice(1)}</span><span>$${v} M</span></div>`).join('')}</div>
+                    <div class="flex justify-between font-bold border-t border-slate-600 mt-1 pt-1 text-base"><span>Equity</span><span class="text-emerald-400">$${bs.equity} M</span></div>
+                </div>`;
+            ui.tooltipContainer.appendChild(tooltip);
+            requestAnimationFrame(() => {
+                const cardRect = cardElement.getBoundingClientRect(); const tooltipRect = tooltip.getBoundingClientRect();
+                let top = cardRect.top + (cardRect.height / 2) - (tooltipRect.height / 2); let left = cardRect.left - tooltipRect.width - 15;
+                if (left < 10) left = cardRect.right + 15; if (top < 10) top = 10;
+                if (top + tooltipRect.height > window.innerHeight) top = window.innerHeight - tooltipRect.height - 10;
+                tooltip.style.top = `${top}px`; tooltip.style.left = `${left}px`;
+                tooltip.classList.add('show');
+            });
+            activeTooltip = tooltip;
+        }
+
+        function hideBalanceSheet() { if (activeTooltip) { activeTooltip.remove(); activeTooltip = null; } }
+        function drawOpportunities() { ui.opportunitiesContainer.innerHTML = ''; [...gameState.availableOpportunities].sort(() => 0.5 - Math.random()).slice(0, CONFIG.OPPORTUNITIES_PER_TURN).forEach(opp => ui.opportunitiesContainer.appendChild(createOpportunityCard(opp))); }
+        
+        function renderEcosystem() {
+            ui.ecosystemArenas.innerHTML = '';
+            const container = ui.ecosystemArenas;
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const radius = Math.min(width, height) / 2 * 0.7;
+
+            const arenaNames = Object.keys(ARENAS);
+            const angleStep = (2 * Math.PI) / arenaNames.length;
+            const nodePositions = {};
+
+            arenaNames.forEach((arenaName, index) => {
+                const angle = index * angleStep - Math.PI / 2;
+                const x = centerX + radius * Math.cos(angle) - 55;
+                const y = centerY + radius * Math.sin(angle) - 55;
+                nodePositions[arenaName] = { x: x + 55, y: y + 55 };
+
+                const ventures = gameState.ventures.filter(v => v.arena === arenaName);
+                const node = document.createElement('div');
+                node.className = 'arena-node';
+                node.style.left = `${x}px`;
+                node.style.top = `${y}px`;
+                node.style.borderColor = ARENAS[arenaName].color;
+                node.style.boxShadow = `0 0 10px ${ARENAS[arenaName].color}33`;
+                
+                let iconsHTML = ventures.map(v => `<div class="venture-icon" style="background-color: ${ARENAS[v.arena].color};">${VENTURE_ICONS[v.id] || ''}</div>`).join('');
+                
+                node.innerHTML = `
+                    <div class="arena-title" style="color: ${ARENAS[arenaName].color}">${arenaName}</div>
+                    <div class="ventures-container">${iconsHTML}</div>
+                `;
+                container.appendChild(node);
+            });
+            drawSynergyLines(nodePositions);
+        }
+
+        function drawSynergyLines(nodePositions) {
+            const canvas = ui.ecosystemCanvas;
+            const ctx = canvas.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = canvas.clientWidth * dpr;
+            canvas.height = canvas.clientHeight * dpr;
+            ctx.scale(dpr, dpr);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const existingSynergies = new Set();
+            gameState.ventures.forEach(venture => {
+                venture.synergies.forEach(synergyArena => {
+                    const hasSynergy = gameState.ventures.some(v => v.arena === synergyArena);
+                    if (hasSynergy) {
+                        const pair = [venture.arena, synergyArena].sort().join('-');
+                        existingSynergies.add(pair);
+                    }
+                });
+            });
+
+            existingSynergies.forEach(pair => {
+                const [arena1, arena2] = pair.split('-');
+                const pos1 = nodePositions[arena1];
+                const pos2 = nodePositions[arena2];
+                if(pos1 && pos2) {
+                    ctx.beginPath();
+                    ctx.moveTo(pos1.x, pos1.y);
+                    ctx.lineTo(pos2.x, pos2.y);
+                    const gradient = ctx.createLinearGradient(pos1.x, pos1.y, pos2.x, pos2.y);
+                    gradient.addColorStop(0, ARENAS[arena1].color);
+                    gradient.addColorStop(1, ARENAS[arena2].color);
+                    ctx.strokeStyle = gradient;
+                    ctx.lineWidth = 2;
+                    ctx.globalAlpha = 0.6;
+                    ctx.stroke();
+                }
+            });
+        }
+
+
+        function handleInvestment(oppId) {
+            if (gameState.investmentsThisTurn >= CONFIG.MAX_INVESTMENTS_PER_TURN) { showNotification(`Max ${CONFIG.MAX_INVESTMENTS_PER_TURN} investments`); return; }
+            const opp = ALL_OPPORTUNITIES.find(o => o.id === oppId); if (!opp) return;
+            if (gameState.capital < opp.cost) { showNotification('Not enough capital'); return; }
+            gameState.capital -= opp.cost; gameState.revenue += opp.revenue; gameState.users += opp.users; gameState.ventures.push(opp); gameState.investmentsThisTurn++;
+            
+            const cardToRemove = document.getElementById(oppId); if (cardToRemove) cardToRemove.remove();
+
+            const currentArenas = new Set(gameState.ventures.map(v => v.arena)); let synergyLinks = 0; opp.synergies.forEach(syn => { if (currentArenas.has(syn)) synergyLinks++; });
+            if (synergyLinks > 0) { const bonus = gameState.revenue * CONFIG.SYNERGY_BONUS * synergyLinks; gameState.revenue += bonus; showNotification(`Synergy! +${synergyLinks} link(s), +$${Math.round(bonus)}M revenue`); }
+            
+            calculateEcosystemValue(); renderEcosystem(); updateDashboard();
+        }
+        function advanceTurn() {
+            if (gameState.turn >= CONFIG.TOTAL_TURNS) { showGameOver(); return; }
+            const interest = gameState.capital * CONFIG.INTEREST_RATE;
+            gameState.capital += interest; gameState.revenue += gameState.revenue * CONFIG.ORGANIC_GROWTH_RATE;
+            gameState.turn++; gameState.investmentsThisTurn = 0;
+            showNotification(`Turn ${gameState.turn - 1} ended. Earned $${Math.round(interest)}M interest.`);
+            calculateEcosystemValue(); drawOpportunities(); updateDashboard();
+        }
+        
+        function showGameOver() {
+            const finalScore = Math.round(gameState.ecosystemValue);
+            ui.finalValue.textContent = `$${finalScore} M`;
+            ui.gameOverModal.classList.remove('hidden');
+
+            const leaderboard = db.load(DB_KEYS.LEADERBOARD, []);
+            const lowestHighScore = leaderboard.length < CONFIG.LEADERBOARD_SIZE ? 0 : leaderboard[leaderboard.length - 1].score;
+            if (finalScore > lowestHighScore) {
+                showNotification('Congratulations! New high score!');
+                leaderboard.push({ name: gameState.playerName, score: finalScore, date: new Date().toISOString() });
+                leaderboard.sort((a, b) => b.score - a.score);
+                const updatedLeaderboard = leaderboard.slice(0, CONFIG.LEADERBOARD_SIZE);
+                db.save(DB_KEYS.LEADERBOARD, updatedLeaderboard);
+                renderLeaderboard();
+            }
+        }
+
+        function handleDragOver(e) { e.preventDefault(); ui.ecosystemDropZone.classList.add('drag-over'); }
+        function handleDragLeave() { ui.ecosystemDropZone.classList.remove('drag-over'); }
+        function handleDrop(e) { e.preventDefault(); ui.ecosystemDropZone.classList.remove('drag-over'); const oppId = e.dataTransfer.getData('text/plain'); handleInvestment(oppId); }
+        
+        // Event Listeners
+        ui.ecosystemDropZone.addEventListener('dragover', handleDragOver);
+        ui.ecosystemDropZone.addEventListener('dragleave', handleDragLeave);
+        ui.ecosystemDropZone.addEventListener('drop', handleDrop);
+        ui.nextTurnBtn.addEventListener('click', advanceTurn);
+        ui.restartBtn.addEventListener('click', () => {
+            ui.gameOverModal.classList.add('hidden');
+            initGame();
+        });
+        ui.clearLeaderboardBtn.addEventListener('click', () => {
+            db.save(DB_KEYS.LEADERBOARD, []);
+            renderLeaderboard();
+            showNotification('Hall of Fame has been cleared.');
+        });
+        ui.saveGameBtn.addEventListener('click', saveGame);
+        window.addEventListener('resize', renderEcosystem);
+        
+        main();
+    });
+    </script>
+</body>
+</html>

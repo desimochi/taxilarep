@@ -28,9 +28,19 @@ const PDFViewer = () => {
       description: 'Faculty Guide for project-management Game'
     },
     {
+      name: 'Rat Race Guide',
+      url: '/rat-race-pdf.pdf', // File should be at public/manual.pdf
+      description: 'Faculty Guide for Rat Race Game'
+    },
+    {
       name: 'Indian Business Strategy Guide',
       url: '/indian-business.pdf', // File should be at public/manual.pdf
       description: 'Faculty Guide for Indian Business Strategy Game'
+    },
+    {
+      name: 'Taxila Ecosystem Guide',
+      url: '/taxila-eco.pdf', // File should be at public/manual.pdf
+      description: 'Faculty Guide for Taxila Ecosystem Game'
     }
   ];
 
