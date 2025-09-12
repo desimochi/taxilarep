@@ -9,6 +9,7 @@ import Image from "next/image";
 import Link from "next/link";
 import userImage from "@/public/userimage.jpg";
 import { LogOut, Settings2Icon, User2Icon } from "lucide-react";
+import RoleSearch from "@/components/Search";
 
 function Layout({ children }) {
   const pathname = usePathname();
@@ -76,24 +77,27 @@ function Layout({ children }) {
         type={state?.employee_type}
       />
       <aside className="w-full bg-white">
-        <div className="w-full h-[87px] p-8 flex items-center justify-between bg-white">
-          <input className="w-1/5 px-4 py-2 border rounded-sm text-gray-900 shadow-sm" placeholder="Search Now..." />
+        <div className="w-full  p-8 flex items-center justify-center gap-3 sm:justify-between bg-white">
+          <RoleSearch role={state?.role_id} type={state?.employee_type} />
           <div className="flex items-center gap-4 relative">
             <div
               onMouseEnter={() => setIsProfileMenuOpen(true)}
               onMouseLeave={() => setIsProfileMenuOpen(false)}
               className="relative"
             >
-              <button className="bg-black text-white py-2 px-12 rounded-md hover:bg-gray-800">
+              <button className="bg-black hidden sm:block text-white py-2 px-12 rounded-md hover:bg-gray-800">
                 {state?.name}
               </button>
+              <button className="bg-black block sm:hidden text-white p-3 rounded-full hover:bg-gray-800">
+                <User2Icon />
+              </button>
               <div
-                className={`absolute right-0 mt-2 w-64 z-50 bg-white dark:bg-gray-900 border rounded-lg shadow-md transition-all duration-300 ${
+                className={`absolute right-0 w-64 z-50 bg-white dark:bg-gray-900 border rounded-lg shadow-md transition-all duration-300 ${
                   isProfileMenuOpen ? "opacity-100 z-10" : "opacity-0 pointer-events-none"
                 }`}
               >
                 <div className="p-4 border-b dark:border-gray-700 flex items-center gap-3">
-                  <Image src={userImage} height={40} width={40} alt="user" />
+                  
                   <div>
                     <h3 className="font-semibold">{state?.name || "User"}</h3>
                     <p className="text-sm text-gray-500">{state?.email || "user@example.com"}</p>

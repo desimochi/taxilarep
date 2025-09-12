@@ -1,10 +1,25 @@
 // app/layout.js (server component)
 import "./globals.css";
-import { Roboto, Roboto_Mono } from "next/font/google";
+import { Roboto, Roboto_Mono, Poppins, Montserrat } from "next/font/google";
 import ClientLayout from "./ClientLayout"; // this will have all your useState logic
 
-const roboto = Roboto({ variable: "--font-roboto", subsets: ["latin"], weight: ["400", "700"] });
-const robotoMono = Roboto_Mono({ variable: "--font-roboto-mono", subsets: ["latin"], weight: ["400", "700"] });
+const roboto = Roboto({
+  variable: "--font-roboto",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
+
+const robotoMono = Roboto_Mono({
+  variable: "--font-roboto-mono",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
+
+const poppins = Montserrat({
+  variable: "--font-poppins",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"], // you can add more if needed
+});
 
 export const metadata = {
   title: "Taxila Business School ERP",
@@ -14,7 +29,9 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={`${roboto.variable} ${robotoMono.variable} antialiased`}>
+      <body
+        className={` ${poppins.variable} antialiased font-sans`}
+      >
         <ClientLayout>{children}</ClientLayout>
       </body>
     </html>

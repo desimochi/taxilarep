@@ -83,7 +83,7 @@ const Sidebar = ({ collapsed, toggleSidebar, role, type }) => {
       {item.path ? (
         <Link href={item.path}>
           <span
-            className={`flex items-center px-4 py-2 mt-2 rounded-md ${
+            className={`flex items-center px-4 py-2 mt-2 text-sm rounded-md ${
               pathname.includes(item.path)
                 ? "bg-black text-white"
                 : "text-gray-800 hover:bg-gray-200"
@@ -99,7 +99,7 @@ const Sidebar = ({ collapsed, toggleSidebar, role, type }) => {
           {/* Parent */}
           <button
             onClick={() => toggleMenu(item.label)}
-            className="flex items-center justify-between w-full px-4 py-2 mt-2 text-gray-800 hover:bg-gray-200 rounded-md"
+            className="flex items-center justify-between w-full text-sm px-4 py-2 mt-2 text-gray-800 hover:bg-gray-200 rounded-md"
             style={{ paddingLeft: `${level * 16 + 16}px` }}
           >
             <div className="flex items-center space-x-2">
@@ -171,7 +171,7 @@ const Sidebar = ({ collapsed, toggleSidebar, role, type }) => {
 
       {/* Desktop Sidebar */}
       <div
-        className={`hidden md:flex flex-col bg-white border-r-2 p-4 transition-all ${
+        className={`hidden md:flex flex-col bg-white border-r-2 p-4 shadow-lg z-50 transition-all ${
           collapsed ? "w-24" : "w-80"
         } h-screen`}
       >
