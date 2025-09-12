@@ -6,7 +6,7 @@ import {
     DocumentChartBarIcon,
     DocumentIcon,
   } from "@heroicons/react/24/outline";
-  import { AlignLeftIcon, AlignRightIcon, BookCheckIcon, BookCopyIcon, DockIcon, FileAxis3D, Gamepad, HandshakeIcon, HelpCircleIcon, IndianRupee, NewspaperIcon, PaperclipIcon, PenBox, PenSquareIcon, Settings2Icon, UserCircle, UserRoundCheck } from "lucide-react";
+  import { AlignLeftIcon, AlignRightIcon, BookCheckIcon, BookCopyIcon, Brain, BriefcaseBusiness, DockIcon, Dog, FileAxis3D, Gamepad, Globe, HandshakeIcon, HelpCircleIcon, IndianRupee, NewspaperIcon, PaperclipIcon, PenBox, PenSquareIcon, ProjectorIcon, Settings2Icon, Sheet, UserCircle, UserRoundCheck, WholeWord } from "lucide-react";
 export const menuItems = [
     { label: "Dashboard", icon: <HomeIcon className="h-5 w-5" />, path: "/admin/dashboard" },
     {
@@ -158,18 +158,20 @@ export const menuItems = [
           {label : "Human Resource Development", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Netritva",  icon: <Gamepad className="h-5 w-5" />, path:"/game/netrvita"},
           ]},
-          {label:"Project Management",  icon: <Gamepad className="h-5 w-5" />, path:"/game/project-management"},
+          {label:"Project Management",  icon: <ProjectorIcon className="h-5 w-5" />, path:"/game/project-management"},
          {label : "Critical Thinking", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Last City",  icon: <Gamepad className="h-5 w-5" />, path:"/game/lastcity"},
           ]},
-          {label : "Strategy", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
+          {label : "Strategy", icon: <Brain className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Taxila Capital Quest",  icon: <Gamepad className="h-5 w-5" />, path:"/game/quest"},
-            {label:"Indian Business Strategy",  icon: <Gamepad className="h-5 w-5" />, path:"/game/indian-business"},
+            {label:"Indian Business Strategy",  icon: <BriefcaseBusiness className="h-5 w-5" />, path:"/game/indian-business"},
           ]},
-          {label : "Consultancy", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
-            {label:"Taxila Ecosystem",  icon: <Gamepad className="h-5 w-5" />, path:"/game/taxila-eco"},
+         {label : "Consulting/Business Analytics", icon: <Sheet className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
+            {label:"Taxila Ecosystem",  icon: <Globe className="h-5 w-5" />, path:"/game/taxila-eco"},
+            {label:"Taxila Solve",  icon: <Dog className="h-5 w-5" />, path:"/game/taxila-solve"},
+            {label:"Sariska Hills",  icon: <Dog className="h-5 w-5" />, path:"/game/sariska"},
           ]},
-           {label:"Wordify",  icon: <Gamepad className="h-5 w-5" />, path:"/game/wordfy"},
+           {label:"Wordify",  icon: <WholeWord className="h-5 w-5" />, path:"/game/wordfy"},
           ]},
   ];
 
@@ -212,8 +214,10 @@ export const menuItems = [
           {label : "Critical Thinking", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Last City",  icon: <Gamepad className="h-5 w-5" />, path:"/game/lastcity"},
           ]},
-           {label : "Consultancy", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
+           {label : "Consulting/Business Analytics", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Taxila Ecosystem",  icon: <Gamepad className="h-5 w-5" />, path:"/game/taxila-eco"},
+            {label:"Taxila Solve",  icon: <Gamepad className="h-5 w-5" />, path:"/game/taxila-solve"},
+            {label:"Sariska Hills",  icon: <Dog className="h-5 w-5" />, path:"/game/sariska"},
           ]},
            {label:"Wordify",  icon: <Gamepad className="h-5 w-5" />, path:"/game/wordfy"},
           ]},

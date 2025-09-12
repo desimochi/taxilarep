@@ -41,6 +41,16 @@ const PDFViewer = () => {
       name: 'Taxila Ecosystem Guide',
       url: '/taxila-eco.pdf', // File should be at public/manual.pdf
       description: 'Faculty Guide for Taxila Ecosystem Game'
+    },
+    {
+      name: 'Taxila Solve Simulation Guide',
+      url: '/taxila-solve.pdf', // File should be at public/manual.pdf
+      description: 'Faculty Guide for Taxila Solve Simulation Game'
+    },
+    {
+      name: 'Sariska Hills Guide',
+      url: '/sariska-hills.pdf', // File should be at public/manual.pdf
+      description: 'Faculty Guide for Sariska Hills Game'
     }
   ];
 

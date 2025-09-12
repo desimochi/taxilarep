@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TAXILA SOLVE SIMULATION</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-bg: #f8f9fa;
+            --secondary-bg: #ffffff;
+            --border-color: #dee2e6;
+            --text-color: #212529;
+            --primary-accent: #0077b6;
+            --success-color: #2a9d8f;
+            --error-color: #e76f51;
+            --font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: #e9ecef;
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+            gap: 20px;
+        }
+
+        #header-container {
+            width: 100%;
+            max-width: 1400px;
+            text-align: center;
+            background-color: var(--secondary-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.07);
+            border: 1px solid var(--border-color);
+            box-sizing: border-box;
+        }
+
+        #header-container h1 {
+            margin: 0 0 5px 0;
+            color: var(--primary-accent);
+            font-size: 2.2rem;
+            font-weight: 700;
+        }
+
+        #header-container .subtitle {
+            margin: 0 0 20px 0;
+            font-size: 1rem;
+            color: #6c757d;
+        }
+
+        .user-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 20px;
+            align-items: center;
+            text-align: left;
+        }
+
+        .name-input-container {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 5px;
+        }
+
+        .name-input-container label {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--text-color);
+        }
+
+        .name-input-container input {
+            padding: 10px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-family: var(--font-family);
+            font-size: 1rem;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .name-input-container input:focus {
+            outline: none;
+            border-color: var(--primary-accent);
+            box-shadow: 0 0 0 3px rgba(0, 119, 182, 0.15);
+        }
+
+        #player-evaluation {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            background-color: var(--primary-bg);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-accent);
+        }
+
+        #player-rank {
+            color: var(--success-color);
+        }
+
+
+        #game-container {
+            display: grid;
+            grid-template-columns: 250px 1fr 300px;
+            gap: 20px;
+            width: 100%;
+            max-width: 1400px;
+            height: 800px;
+            background-color: var(--secondary-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.07);
+            padding: 20px;
+            box-sizing: border-box;
+            transition: filter 0.3s ease-in-out;
+        }
+
+        #game-container.locked {
+            pointer-events: none;
+            filter: blur(4px);
+        }
+
+        .panel {
+            background-color: var(--primary-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h2, h3 {
+            margin-top: 0;
+            color: var(--primary-accent);
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+            font-weight: 600;
+        }
+
+        #species-panel #filter-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        #species-panel button {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            background-color: var(--secondary-bg);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        #species-panel button:not(:last-child) {
+            border-right: none;
+        }
+
+        #species-panel button.active {
+            background-color: var(--primary-accent);
+            color: white;
+            border-color: var(--primary-accent);
+        }
+
+        #species-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        .species-card {
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--secondary-bg);
+            cursor: grab;
+            transition: box-shadow 0.2s, transform 0.2s;
+            user-select: none;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+        
+        .species-card.selected {
+            box-shadow: 0 0 0 4px var(--primary-accent);
+            transform: scale(1.05);
+        }
+
+        .species-card:hover {
+            box-shadow: 0 6px 14px rgba(0,0,0,0.1);
+            transform: translateY(-4px);
+        }
+        
+        .species-card.selected:hover {
+            box-shadow: 0 0 0 4px var(--primary-accent);
+            transform: scale(1.05);
+        }
+
+        .species-card.producer { border-left: 4px solid var(--success-color); }
+        .species-card.animal { border-left: 4px solid var(--error-color); }
+        .species-card.dragging {
+            opacity: 0.6;
+            transform: scale(0.95);
+        }
+
+        .species-icon {
+            font-size: 28px;
+            line-height: 1;
+        }
+
+        .species-name {
+            font-size: 12px;
+            font-weight: 500;
+            line-height: 1.2;
+            text-align: center;
+        }
+
+        #main-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        #map-container {
+            flex-basis: 50%;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><defs><pattern id="forest" patternUnits="userSpaceOnUse" width="100" height="100"><circle cx="20" cy="20" r="15" fill="%23a5d6a7" opacity="0.5"/><circle cx="70" cy="60" r="25" fill="%2381c784" opacity="0.6"/><circle cx="50" cy="90" r="10" fill="%2366bb6a" opacity="0.5"/><circle cx="90" cy="30" r="20" fill="%23a5d6a7" opacity="0.7"/></pattern></defs><rect width="100%" height="100%" fill="%23e8f5e9"/><rect width="100%" height="100%" fill="url(%23forest)"/></svg>');
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #location-marker {
+            width: 20px;
+            height: 20px;
+            background-color: var(--error-color);
+            border: 2px solid white;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            cursor: move;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        #ecosystem-builder {
+            flex-basis: 50%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        #food-chain-slots {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            flex-grow: 1;
+        }
+
+        .drop-zone {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 12px;
+            color: #adb5bd;
+            transition: background-color 0.2s, border-color 0.2s;
+            position: relative;
+            padding: 0;
+        }
+
+        .drop-zone.drag-over {
+            background-color: #cfe8ff;
+            border-color: var(--primary-accent);
+        }
+
+        .drop-zone .species-card {
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            cursor: default;
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 16px;
+            height: 16px;
+            background-color: var(--error-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 10px;
+            line-height: 16px;
+            text-align: center;
+            display: none;
+        }
+        .drop-zone .species-card:hover .remove-btn {
+            display: block;
+        }
+
+        #controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        #controls button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+        }
+
+        #controls button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        #check-button {
+            background-color: var(--primary-accent);
+            color: white;
+            flex-grow: 1;
+        }
+        #check-button:hover { background-color: #005f8a; }
+
+        #reset-button {
+            background-color: #6c757d;
+            color: white;
+        }
+        #reset-button:hover { background-color: #5a6268; }
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary-accent);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Info Panel */
+        #info-panel .info-section {
+            margin-bottom: 20px;
+        }
+
+        #info-panel ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            font-size: 14px;
+        }
+
+        #info-panel li {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        #info-panel li:last-child {
+            border-bottom: none;
+        }
+
+        #info-panel li span:first-child {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        #result-message {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 6px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        #result-message.success {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        #result-message.error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+        
+        /* Mobile-first and Responsive Styles */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            #header-container {
+                padding: 15px;
+            }
+
+            .user-info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            #player-evaluation {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            #game-container {
+                grid-template-columns: 1fr;
+                height: auto;
+                padding: 10px;
+            }
+
+            #main-panel {
+                flex-direction: column-reverse;
+            }
+
+            .panel {
+                padding: 10px;
+            }
+
+            #map-container {
+                min-height: 250px;
+            }
+
+            #food-chain-slots {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            #controls button {
+                padding: 10px 15px;
+                font-size: 14px;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="header-container">
+    <h1>TAXILA SOLVE SIMULATION</h1>
+    <p class="subtitle">Created at Taxila Business School, Jaipur.</p>
+    <div class="user-info-grid">
+        <div class="name-input-container">
+            <label for="user-name">Enter Your Name:</label>
+            <input type="text" id="user-name" placeholder="e.g., Jane Doe">
+        </div>
+        <div id="player-evaluation">
+            <div class="stat-item">
+                <span class="stat-label">Attempts</span>
+                <span class="stat-value" id="attempts-count">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Successes</span>
+                <span class="stat-value" id="success-count">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Success Rate</span>
+                <span class="stat-value" id="success-rate">0%</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Rank</span>
+                <span class="stat-value" id="player-rank">Novice</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="game-container" class="locked">
+    <div id="species-panel" class="panel">
+        <h2>Available Species</h2>
+        <div id="filter-buttons">
+            <button class="filter-btn active" data-range="1">Range A</button>
+            <button class="filter-btn" data-range="2">Range B</button>
+            <button class="filter-btn" data-range="3">Range C</button>
+        </div>
+        <div id="species-list"></div>
+    </div>
+
+    <div id="main-panel">
+        <div id="map-container">
+            <div id="location-marker"></div>
+        </div>
+        <div id="ecosystem-builder">
+            <h3>Build Your Ecosystem (Drag & Drop or Tap)</h3>
+            <div id="food-chain-slots">
+                <div class="drop-zone" data-slot-id="0">Slot 1</div>
+                <div class="drop-zone" data-slot-id="1">Slot 2</div>
+                <div class="drop-zone" data-slot-id="2">Slot 3</div>
+                <div class="drop-zone" data-slot-id="3">Slot 4</div>
+                <div class="drop-zone" data-slot-id="4">Slot 5</div>
+                <div class="drop-zone" data-slot-id="5">Slot 6</div>
+                <div class="drop-zone" data-slot-id="6">Slot 7</div>
+                <div class="drop-zone" data-slot-id="7">Slot 8</div>
+            </div>
+            <div id="controls">
+                <button id="reset-button">Reset</button>
+                <button id="check-button">
+                    <span id="check-text">Check Ecosystem Stability</span>
+                    <div id="check-loader" class="loader"></div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="info-panel" class="panel">
+        <div id="location-info" class="info-section">
+            <h3>Location Details</h3>
+            <ul>
+                <li><span>Altitude:</span> <span id="loc-altitude">N/A</span></li>
+                <li><span>Temperature:</span> <span id="loc-temperature">N/A</span></li>
+                <li><span>Precipitation:</span> <span id="loc-precipitation">N/A</span></li>
+                <li><span>Sunlight:</span> <span id="loc-sunlight">N/A</span></li>
+            </ul>
+        </div>
+        <div id="species-info" class="info-section">
+            <h3>Selected Species</h3>
+            <p>Hover over a species card to see details.</p>
+        </div>
+        <div id="result-message-container">
+             <div id="result-message" style="display: none;"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // --- DATA STORE ---
+    const speciesData = [
+        // Range A: Alpine Highlands (Solvable)
+        { id: 1, name: 'Alpine Buttercup', emoji: '🌼', type: 'Producer', caloriesProvided: 800, caloriesNeeded: 0, eats: [], range: 1, env: { altitude: [2000, 4000], temperature: [-5, 10] } },
+        { id: 2, name: 'Lichen', emoji: '🍄', type: 'Producer', caloriesProvided: 600, caloriesNeeded: 0, eats: [], range: 1, env: { altitude: [1500, 3500], temperature: [-10, 5] } },
+        { id: 3, name: 'Hardy Grass', emoji: '🌱', type: 'Producer', caloriesProvided: 1000, caloriesNeeded: 0, eats: [], range: 1, env: { altitude: [1000, 3000], temperature: [-15, 15] } },
+        { id: 4, name: 'Marmot', emoji: '🐿️', type: 'Animal', caloriesProvided: 1500, caloriesNeeded: 800, eats: [1, 3], range: 1, env: { altitude: [2000, 4000], precipitation: [50, 150] } },
+        { id: 5, name: 'Pika', emoji: '🐭', type: 'Animal', caloriesProvided: 500, caloriesNeeded: 400, eats: [2, 3], range: 1, env: { altitude: [2500, 4000], temperature: [-8, 8] } },
+        { id: 6, name: 'Ibex', emoji: '🐐', type: 'Animal', caloriesProvided: 2500, caloriesNeeded: 1200, eats: [2, 1, 3], range: 1, env: { altitude: [2200, 3800], precipitation: [40, 120] } },
+        { id: 7, name: 'Snow Vole', emoji: '🐁', type: 'Animal', caloriesProvided: 400, caloriesNeeded: 300, eats: [3, 1], range: 1, env: { altitude: [1800, 3500] } },
+        { id: 8, name: 'Weasel', emoji: '🐾', type: 'Animal', caloriesProvided: 800, caloriesNeeded: 500, eats: [5, 7], range: 1, env: { temperature: [-10, 15] } },
+        { id: 9, name: 'Golden Eagle', emoji: '🦅', type: 'Animal', caloriesProvided: 2000, caloriesNeeded: 1500, eats: [4, 5], range: 1, env: { altitude: [1500, 4000] } },
+        { id: 10, name: 'Snow Leopard', emoji: '🐆', type: 'Animal', caloriesProvided: 3500, caloriesNeeded: 2500, eats: [6], range: 1, env: { altitude: [2500, 4000] } },
+        { id: 11, name: 'Red Fox', emoji: '🦊', type: 'Animal', caloriesProvided: 1200, caloriesNeeded: 800, eats: [4, 5, 7], range: 1, env: { precipitation: [30, 180] } },
+        { id: 12, name: 'Goshawk', emoji: '🦅', type: 'Animal', caloriesProvided: 1300, caloriesNeeded: 700, eats: [5, 7], range: 1, env: { sunlight: [6, 12] } },
+        { id: 13, name: 'Lynx', emoji: '🐈', type: 'Animal', caloriesProvided: 2800, caloriesNeeded: 1800, eats: [4, 6], range: 1, env: { temperature: [-15, 10] } },
+
+        // Range B: Temperate Forest (Unsolvable by design)
+        { id: 14, name: 'Kelp', emoji: '🌿', type: 'Producer', caloriesProvided: 1200, caloriesNeeded: 0, eats: [], range: 2, env: { altitude: [0, 50], precipitation: [100, 200] } },
+        { id: 15, name: 'Wild Berries', emoji: '🍓', type: 'Producer', caloriesProvided: 700, caloriesNeeded: 0, eats: [], range: 2, env: { altitude: [200, 1000], sunlight: [5, 12] } },
+        { id: 16, name: 'Ferns', emoji: '🌿', type: 'Producer', caloriesProvided: 500, caloriesNeeded: 0, eats: [], range: 2, env: { sunlight: [3, 8], precipitation: [120, 200] } },
+        { id: 17, name: 'Deer', emoji: '🦌', type: 'Animal', caloriesProvided: 3000, caloriesNeeded: 1500, eats: [15, 16], range: 2, env: { precipitation: [80, 180] } },
+        { id: 18, name: 'Rabbit', emoji: '🐇', type: 'Animal', caloriesProvided: 800, caloriesNeeded: 500, eats: [15, 16], range: 2, env: { temperature: [4, 25] } },
+        { id: 19, name: 'Squirrel', emoji: '🐿️', type: 'Animal', caloriesProvided: 600, caloriesNeeded: 400, eats: [15], range: 2, env: { sunlight: [4, 12] } },
+        { id: 20, name: 'Boar', emoji: '🐗', type: 'Animal', caloriesProvided: 2000, caloriesNeeded: 1000, eats: [15, 16], range: 2, env: { altitude: [100, 900] } },
+        { id: 21, name: 'Fox', emoji: '🦊', type: 'Animal', caloriesProvided: 1500, caloriesNeeded: 900, eats: [18, 19], range: 2, env: { temperature: [0, 25] } },
+        { id: 22, name: 'Wolf', emoji: '🐺', type: 'Animal', caloriesProvided: 4000, caloriesNeeded: 3000, eats: [17, 20], range: 2, env: { altitude: [300, 1200] } },
+        { id: 23, name: 'Bear', emoji: '🐻', type: 'Animal', caloriesProvided: 5000, caloriesNeeded: 4000, eats: [17, 15, 18, 20], range: 2, env: { precipitation: [90, 200] } },
+        { id: 24, name: 'Owl', emoji: '🦉', type: 'Animal', caloriesProvided: 900, caloriesNeeded: 600, eats: [18, 19], range: 2, env: { sunlight: [2, 6] } },
+        { id: 25, name: 'Badger', emoji: '🦡', type: 'Animal', caloriesProvided: 1000, caloriesNeeded: 700, eats: [18], range: 2, env: { temperature: [4, 20] } },
+        { id: 26, name: 'Coyote', emoji: '🐺', type: 'Animal', caloriesProvided: 1800, caloriesNeeded: 1200, eats: [17, 18], range: 2, env: { altitude: [100, 1100] } },
+
+        // Range C: River Valley (Solvable but harder)
+        { id: 27, name: 'River Algae', emoji: '🌱', type: 'Producer', caloriesProvided: 900, caloriesNeeded: 0, eats: [], range: 3, env: { altitude: [100, 600], temperature: [10, 25] } },
+        { id: 28, name: 'Watercress', emoji: '🌿', type: 'Producer', caloriesProvided: 750, caloriesNeeded: 0, eats: [], range: 3, env: { altitude: [50, 500], precipitation: [120, 220] } },
+        { id: 29, name: 'Sedge', emoji: '🌾', type: 'Producer', caloriesProvided: 1100, caloriesNeeded: 0, eats: [], range: 3, env: { altitude: [100, 700], sunlight: [7, 12] } },
+        { id: 30, name: 'Minnow', emoji: '🐟', type: 'Animal', caloriesProvided: 300, caloriesNeeded: 200, eats: [27], range: 3, env: { temperature: [12, 24] } },
+        { id: 31, name: 'Vole', emoji: '🐁', type: 'Animal', caloriesProvided: 450, caloriesNeeded: 350, eats: [28, 29], range: 3, env: { altitude: [100, 800] } },
+        { id: 32, name: 'Beaver', emoji: '🦫', type: 'Animal', caloriesProvided: 2200, caloriesNeeded: 1500, eats: [29], range: 3, env: { precipitation: [100, 200] } },
+        { id: 33, name: 'Trout', emoji: '🐟', type: 'Animal', caloriesProvided: 1000, caloriesNeeded: 700, eats: [30], range: 3, env: { temperature: [8, 20] } },
+        { id: 34, name: 'Heron', emoji: '🦢', type: 'Animal', caloriesProvided: 1300, caloriesNeeded: 900, eats: [30, 33], range: 3, env: { sunlight: [4, 11] } },
+        { id: 35, name: 'Otter', emoji: '🦦', type: 'Animal', caloriesProvided: 1800, caloriesNeeded: 1100, eats: [33], range: 3, env: { altitude: [50, 600] } },
+        { id: 36, name: 'Kingfisher', emoji: '🐦', type: 'Animal', caloriesProvided: 500, caloriesNeeded: 300, eats: [30], range: 3, env: { precipitation: [80, 180] } },
+        { id: 37, name: 'Stoat', emoji: '🐾', type: 'Animal', caloriesProvided: 800, caloriesNeeded: 500, eats: [31], range: 3, env: { temperature: [4, 22] } },
+        { id: 38, name: 'Osprey', emoji: '🦅', type: 'Animal', caloriesProvided: 1600, caloriesNeeded: 1000, eats: [33], range: 3, env: { altitude: [0, 500] } },
+        { id: 39, name: 'Bobcat', emoji: '🐈', type: 'Animal', caloriesProvided: 2500, caloriesNeeded: 1700, eats: [31, 32], range: 3, env: { sunlight: [6, 12] } },
+    ];
+
+
+    // --- STATE MANAGEMENT ---
+    let currentRange = 1;
+    let selectedSpecies = new Array(8).fill(null);
+    let currentLocation = { altitude: 2000, temperature: 5, precipitation: 100, sunlight: 6 };
+    let draggedElement = null;
+    let attempts = 0;
+    let successes = 0;
+    let score = 0;
+    let selectedMobileSpeciesId = null;
+
+    // --- NEW: API Configuration and DOM elements for loading state ---
+    const API_BASE_URL = 'http://localhost:3000/api/game/taxila-sim';
+    const checkButton = document.getElementById('check-button');
+    const checkTextEl = document.getElementById('check-text');
+    const checkLoaderEl = document.getElementById('check-loader');
+
+
+    // --- DOM ELEMENTS ---
+    const gameContainer = document.getElementById('game-container');
+    const userNameInput = document.getElementById('user-name');
+    const speciesList = document.getElementById('species-list');
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const dropZones = document.querySelectorAll('.drop-zone');
+    const resetButton = document.getElementById('reset-button');
+    const resultMessage = document.getElementById('result-message');
+    const locationMarker = document.getElementById('location-marker');
+    const mapContainer = document.getElementById('map-container');
+    const speciesInfoPanel = document.getElementById('species-info');
+    const attemptsCountEl = document.getElementById('attempts-count');
+    const successCountEl = document.getElementById('success-count');
+    const successRateEl = document.getElementById('success-rate');
+    const playerRankEl = document.getElementById('player-rank');
+
+
+    // --- FUNCTIONS ---
+    function getUserId() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get("userId") || "guest";
+    }
+
+    // --- FIX: Updated the saveGameData function ---
+    async function saveGameData() {
+        const userId = getUserId();
+        const userName = userNameInput.value.trim();
+
+        if (!userId || !userName) {
+            console.warn("Cannot save game: User ID or name is missing.");
+            return;
+        }
+
+        const gameData = {
+            playerName: userName,
+            attempts: attempts,
+            successes: successes,
+            score: score,
+            currentRange: currentRange,
+            selectedSpecies: selectedSpecies.filter(s => s !== null).map(s => s.id),
+            currentLocation: currentLocation
+        };
+
+        try {
+            const response = await fetch(`${API_BASE_URL}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                // FIX: Send the userId and name at the top level, and the rest in a nested gameState object
+                body: JSON.stringify({ userId: userId, name: userName, gameState: gameData })
+            });
+
+            if (response.ok) {
+                console.log("Game saved successfully!");
+            } else {
+                const errorData = await response.json();
+                console.error("Failed to save game data. Server response:", response.status, errorData);
+                showResult(`Failed to save: ${errorData.message || 'Unknown error.'}`, 'error');
+            }
+        } catch (error) {
+            console.error("Network error while saving game:", error);
+            showResult('Network error. Could not save game.', 'error');
+        }
+    }
+
+    // FIX: Updated the loadGameData function
+    async function loadGameData() {
+        const userId = getUserId();
+        if (!userId || userId === "guest") {
+            console.warn("No valid user ID found, starting a new game.");
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE_URL}?userId=${userId}`);
+
+            if (response.ok) {
+                const apiData = await response.json();
+                
+                // FIX: Access the nested gameState object
+                const gameState = apiData.gameState;
+                if (!gameState) {
+                    console.warn("No saved game state found, starting a new game.");
+                    return;
+                }
+
+                // Update game state with loaded data, defaulting to 0 if null or undefined
+                userNameInput.value = apiData.name || "puneet"; // Use apiData.name instead of gameState.playerName
+                attempts = gameState.attempts || 0;
+                successes = gameState.successes || 0;
+                score = gameState.score || 0;
+                currentRange = gameState.currentRange || 1;
+                currentLocation = gameState.currentLocation || { altitude: 2000, temperature: 5, precipitation: 100, sunlight: 6 };
+
+                updatePlayerEvaluation();
+                updateLocationInfo();
+
+                resetDropZones();
+
+                selectedSpecies = new Array(8).fill(null);
+                const loadedSpeciesIds = gameState.selectedSpecies || [];
+                
+                // FIX: Populate the selectedSpecies array and render drop zones based on loaded data
+                if (Array.isArray(loadedSpeciesIds)) {
+                    loadedSpeciesIds.forEach((speciesId, index) => {
+                        const species = speciesData.find(s => s.id === speciesId);
+                        if (species && dropZones[index]) {
+                            selectedSpecies[index] = species;
+                            renderDropZone(dropZones[index], species);
+                        }
+                    });
+                } else {
+                    console.error("Loaded selectedSpecies is not an array. Starting fresh.");
+                }
+
+                filterButtons.forEach(btn => btn.classList.toggle('active', parseInt(btn.dataset.range) === currentRange));
+                renderSpeciesList();
+
+                const rect = mapContainer.getBoundingClientRect();
+                const x = ((currentLocation.altitude - 500) / 3500) * rect.width;
+                const y = ((currentLocation.temperature - (-15)) / 45) * rect.height;
+                locationMarker.style.left = `${x}px`;
+                locationMarker.style.top = `${y}px`;
+
+                console.log("Game loaded successfully!");
+                gameContainer.classList.remove('locked');
+            } else {
+                console.warn("No saved game found or failed to load. Starting a new game.");
+            }
+        } catch (error) {
+            console.error("Network error while loading game:", error);
+        }
+    }
+
+    function resetDropZones() {
+        dropZones.forEach((zone, i) => {
+            zone.innerHTML = `Slot ${i + 1}`;
+            zone.className = 'drop-zone';
+            zone.dataset.speciesId = '';
+        });
+        resultMessage.style.display = 'none';
+    }
+
+    function updatePlayerEvaluation() {
+        attemptsCountEl.textContent = attempts;
+        successCountEl.textContent = successes;
+
+        const rate = attempts > 0 ? ((successes / attempts) * 100).toFixed(0) : 0;
+        successRateEl.textContent = `${rate}%`;
+
+        let rank = 'Novice';
+        if (score >= 500) {
+            rank = 'Master Ecologist';
+        } else if (score >= 250) {
+            rank = 'Biologist';
+        } else if (score >= 100) {
+            rank = 'Student';
+        } else if (attempts > 3 && successes === 0) {
+            rank = 'Struggling';
+        }
+        playerRankEl.textContent = rank;
+    }
+
+    function renderSpeciesList() {
+        speciesList.innerHTML = '';
+        const filteredSpecies = speciesData.filter(s => s.range === currentRange);
+        filteredSpecies.forEach(species => {
+            const card = document.createElement('div');
+            card.className = `species-card ${species.type.toLowerCase()}`;
+            card.draggable = true;
+            card.dataset.speciesId = species.id;
+            card.innerHTML = `
+                <div class="species-icon">${species.emoji}</div>
+                <div class="species-name">${species.name}</div>
+            `;
+            // Add desktop drag-and-drop listeners
+            card.addEventListener('dragstart', handleDragStart);
+            card.addEventListener('dragend', handleDragEnd);
+            // Add mobile click listener
+            card.addEventListener('click', handleMobileSelectSpecies);
+            card.addEventListener('mouseover', () => showSpeciesInfo(species));
+            speciesList.appendChild(card);
+        });
+    }
+    
+    // --- Mobile-specific interaction functions ---
+    function handleMobileSelectSpecies(e) {
+        const speciesId = parseInt(e.currentTarget.dataset.speciesId, 10);
+        const allCards = document.querySelectorAll('.species-card');
+        allCards.forEach(card => card.classList.remove('selected'));
+        
+        // If a card is already selected, unselect it and return
+        if (selectedMobileSpeciesId === speciesId) {
+            selectedMobileSpeciesId = null;
+            return;
+        }
+
+        // Otherwise, select the new card
+        e.currentTarget.classList.add('selected');
+        selectedMobileSpeciesId = speciesId;
+    }
+
+    function handleMobileDropZoneClick(e) {
+        if (selectedMobileSpeciesId === null) {
+            showResult('Please select a species card first.', 'error');
+            return;
+        }
+
+        const species = speciesData.find(s => s.id === selectedMobileSpeciesId);
+        if (!species) { return; }
+
+        const slotId = parseInt(e.currentTarget.dataset.slotId);
+
+        if (species.range !== currentRange) {
+            showResult('All species must be from the same environmental range.', 'error');
+            selectedMobileSpeciesId = null;
+            document.querySelector('.species-card.selected')?.classList.remove('selected');
+            return;
+        }
+
+        if (selectedSpecies.some(s => s && s.id === species.id)) {
+            showResult('This species is already in the ecosystem.', 'error');
+            selectedMobileSpeciesId = null;
+            document.querySelector('.species-card.selected')?.classList.remove('selected');
+            return;
+        }
+
+        selectedSpecies[slotId] = species;
+        renderDropZone(e.currentTarget, species);
+        
+        selectedMobileSpeciesId = null;
+        document.querySelector('.species-card.selected')?.classList.remove('selected');
+    }
+
+    function showSpeciesInfo(species) {
+        if (!species) {
+            speciesInfoPanel.innerHTML = '<h3>Selected Species</h3><p>Hover over a species card to see details.</p>';
+            return;
+        }
+        const eatsNames = species.eats.map(id => speciesData.find(s => s.id === id)?.name).join(', ') || 'None';
+        const eatenByNames = speciesData.filter(s => s.eats.includes(species.id)).map(s => s.name).join(', ') || 'None';
+
+        let envHtml = Object.entries(species.env).map(([key, value]) => {
+            return `<li><span>${key.charAt(0).toUpperCase() + key.slice(1)}:</span> <span>${value.join(' - ')}</span></li>`;
+        }).join('');
+
+        speciesInfoPanel.innerHTML = `
+            <h3>${species.name}</h3>
+            <ul>
+                <li><span>Type:</span> <span>${species.type}</span></li>
+                <li><span>Calories Provided:</span> <span>${species.caloriesProvided}</span></li>
+                <li><span>Calories Needed:</span> <span>${species.caloriesNeeded}</span></li>
+                <li><span>Eats:</span> <span>${eatsNames}</span></li>
+                <li><span>Eaten By:</span> <span>${eatenByNames}</span></li>
+            </ul>
+            <h4>Environment Needs</h4>
+            <ul>${envHtml}</ul>
+        `;
+    }
+
+    function updateLocationInfo() {
+        document.getElementById('loc-altitude').textContent = currentLocation.altitude;
+        document.getElementById('loc-temperature').textContent = currentLocation.temperature;
+        document.getElementById('loc-precipitation').textContent = currentLocation.precipitation;
+        document.getElementById('loc-sunlight').textContent = currentLocation.sunlight;
+    }
+
+    async function resetGame() {
+        selectedSpecies.fill(null);
+        resetDropZones();
+        currentRange = 1;
+        filterButtons.forEach(btn => btn.classList.toggle('active', parseInt(btn.dataset.range) === currentRange));
+        renderSpeciesList();
+        // Reset state variables
+        attempts = 0;
+        successes = 0;
+        score = 0;
+        updatePlayerEvaluation();
+        // Save the reset state
+        await saveGameData();
+    }
+
+    // --- EVENT HANDLERS ---
+    function handleFilterClick(e) {
+        currentRange = parseInt(e.target.dataset.range);
+        filterButtons.forEach(btn => btn.classList.remove('active'));
+        e.target.classList.add('active');
+        renderSpeciesList();
+    }
+
+    function handleDragStart(e) {
+        draggedElement = e.currentTarget;
+        e.dataTransfer.setData('text/plain', e.currentTarget.dataset.speciesId);
+        e.dataTransfer.effectAllowed = 'move';
+        setTimeout(() => {
+            if (draggedElement) {
+                draggedElement.classList.add('dragging');
+            }
+        }, 0);
+    }
+
+    function handleDragEnd(e) {
+        if (draggedElement) {
+            if (document.body.contains(draggedElement)) {
+                draggedElement.classList.remove('dragging');
+            }
+            draggedElement = null;
+        }
+    }
+    document.addEventListener('dragend', handleDragEnd);
+
+    function handleDragOver(e) {
+        e.preventDefault();
+        e.currentTarget.classList.add('drag-over');
+    }
+
+    function handleDragLeave(e) {
+        e.currentTarget.classList.remove('drag-over');
+    }
+
+    function handleDrop(e) {
+        e.preventDefault();
+        e.currentTarget.classList.remove('drag-over');
+
+        if (!draggedElement) { return; }
+
+        const speciesId = parseInt(draggedElement.dataset.speciesId, 10);
+        if (isNaN(speciesId)) { return; }
+
+        const species = speciesData.find(s => s.id === speciesId);
+        if (!species) { return; }
+
+        const slotId = parseInt(e.currentTarget.dataset.slotId);
+
+        if (species.range !== currentRange) {
+            showResult('All species must be from the same environmental range.', 'error');
+            return;
+        }
+
+        if (selectedSpecies.some(s => s && s.id === speciesId)) {
+            showResult('This species is already in the ecosystem.', 'error');
+            return;
+        }
+
+        selectedSpecies[slotId] = species;
+        renderDropZone(e.currentTarget, species);
+    }
+
+    function renderDropZone(zone, species) {
+        zone.innerHTML = '';
+        zone.className = `drop-zone`;
+        zone.dataset.speciesId = species.id;
+
+        const card = document.createElement('div');
+        card.className = `species-card ${species.type.toLowerCase()}`;
+        card.innerHTML = `
+            <div class="species-icon">${species.emoji}</div>
+            <div class="species-name">${species.name}</div>
+        `;
+        card.addEventListener('mouseover', () => showSpeciesInfo(species));
+        card.addEventListener('click', handleMobileSelectSpecies); // Re-add mobile listener on placed cards
+
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'remove-btn';
+        removeBtn.textContent = '×';
+        removeBtn.onclick = (e) => {
+            e.stopPropagation();
+            const slotId = parseInt(zone.dataset.slotId);
+            selectedSpecies[slotId] = null;
+            zone.innerHTML = `Slot ${slotId + 1}`;
+            zone.className = 'drop-zone';
+            zone.dataset.speciesId = '';
+        };
+
+        card.appendChild(removeBtn);
+        zone.appendChild(card);
+    }
+
+    function handleMarkerDrag(e) {
+        e.preventDefault();
+        const rect = mapContainer.getBoundingClientRect();
+        let x = e.clientX - rect.left;
+        let y = e.clientY - rect.top;
+
+        x = Math.max(0, Math.min(x, rect.width));
+        y = Math.max(0, Math.min(y, rect.height));
+
+        locationMarker.style.left = `${x}px`;
+        locationMarker.style.top = `${y}px`;
+
+        const xPercent = x / rect.width;
+        const yPercent = y / rect.height;
+
+        currentLocation.altitude = Math.round(500 + (xPercent * 3500));
+        currentLocation.temperature = Math.round(-15 + (yPercent * 45));
+        currentLocation.precipitation = Math.round(30 + (xPercent * 200));
+        currentLocation.sunlight = Math.round(2 + ((1 - yPercent) * 10));
+
+        updateLocationInfo();
+    }
+
+    // --- VALIDATION LOGIC ---
+    async function checkEcosystem() {
+        resultMessage.style.display = 'none';
+
+        // Show loading state and disable button
+        checkButton.disabled = true;
+        checkTextEl.textContent = 'Checking...';
+        checkLoaderEl.style.display = 'block';
+
+        attempts++;
+        updatePlayerEvaluation();
+        await saveGameData();
+
+        const finalEcosystem = selectedSpecies.filter(s => s !== null);
+        if (finalEcosystem.length !== 8) {
+            showResult('Please select exactly 8 species.', 'error');
+            checkButton.disabled = false;
+            checkTextEl.textContent = 'Check Ecosystem Stability';
+            checkLoaderEl.style.display = 'none';
+            return;
+        }
+
+        const firstRange = finalEcosystem[0].range;
+        if (!finalEcosystem.every(s => s.range === firstRange)) {
+            showResult('All species must be from the same environmental range.', 'error');
+            score -= 25;
+            updatePlayerEvaluation();
+            checkButton.disabled = false;
+            checkTextEl.textContent = 'Check Ecosystem Stability';
+            checkLoaderEl.style.display = 'none';
+            return;
+        }
+
+        const locationValidation = validateLocation(finalEcosystem);
+        if (!locationValidation.isValid) {
+            showResult(`Location is not suitable. ${locationValidation.reason}`, 'error');
+            score -= 25;
+            updatePlayerEvaluation();
+            checkButton.disabled = false;
+            checkTextEl.textContent = 'Check Ecosystem Stability';
+            checkLoaderEl.style.display = 'none';
+            return;
+        }
+
+        const foodChainValidation = simulateFoodChain(finalEcosystem);
+        if (!foodChainValidation.isStable) {
+            showResult(`Ecosystem is not stable. ${foodChainValidation.reason}`, 'error');
+            score -= 25;
+            updatePlayerEvaluation();
+            checkButton.disabled = false;
+            checkTextEl.textContent = 'Check Ecosystem Stability';
+            checkLoaderEl.style.display = 'none';
+            return;
+        }
+
+        showResult('Success! The ecosystem is stable and the location is suitable.', 'success');
+        successes++;
+        score += 100;
+        updatePlayerEvaluation();
+        checkButton.disabled = false;
+        checkTextEl.textContent = 'Check Ecosystem Stability';
+        checkLoaderEl.style.display = 'none';
+    }
+
+    function validateLocation(ecosystem) {
+        for (const species of ecosystem) {
+            for (const [param, range] of Object.entries(species.env)) {
+                if (currentLocation[param] < range[0] || currentLocation[param] > range[1]) {
+                    return { isValid: false, reason: `${species.name} requires ${param} between ${range[0]}-${range[1]}.` };
+                }
+            }
+        }
+        return { isValid: true };
+    }
+
+    function simulateFoodChain(ecosystem) {
+        let simState = JSON.parse(JSON.stringify(ecosystem));
+        let animals = simState.filter(s => s.type === 'Animal');
+
+        animals.forEach(animal => {
+            let availableFoodSources = animal.eats
+                .map(preyId => simState.find(s => s.id === preyId))
+                .filter(prey => prey && prey.caloriesProvided > 0)
+                .sort((a, b) => b.caloriesProvided - a.caloriesProvided);
+
+            if (availableFoodSources.length > 0) {
+                const foodSource = availableFoodSources[0];
+                const caloriesEaten = Math.min(animal.caloriesNeeded, foodSource.caloriesProvided);
+                foodSource.caloriesProvided -= caloriesEaten;
+                animal.caloriesNeeded -= caloriesEaten;
+            }
+        });
+
+        for (const species of simState) {
+            if (species.caloriesProvided < 0) {
+                return { isStable: false, reason: `${species.name} was over-hunted and went extinct.` };
+            }
+            if (species.type === 'Animal' && species.caloriesNeeded > 0) {
+                return { isStable: false, reason: `${species.name} starved (could not find enough food).` };
+            }
+        }
+
+        return { isStable: true };
+    }
+
+    function showResult(message, type) {
+        resultMessage.textContent = message;
+        resultMessage.className = `result-message ${type}`;
+        resultMessage.style.display = 'block';
+    }
+
+    // --- INITIALIZATION ---
+
+    let isDraggingMarker = false;
+    locationMarker.addEventListener('mousedown', () => { isDraggingMarker = true; });
+    document.addEventListener('mouseup', () => { isDraggingMarker = false; });
+    document.addEventListener('mousemove', (e) => {
+        if (isDraggingMarker) {
+            handleMarkerDrag(e);
+        }
+    });
+    
+    // Add mobile touch events for marker
+    locationMarker.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        isDraggingMarker = true;
+    });
+    document.addEventListener('touchend', () => {
+        isDraggingMarker = false;
+    });
+    document.addEventListener('touchmove', (e) => {
+        if (isDraggingMarker) {
+            const touch = e.touches[0];
+            const event = new MouseEvent('mousemove', {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+            handleMarkerDrag(event);
+        }
+    });
+
+
+    dropZones.forEach(zone => {
+        // Desktop drag-and-drop listeners
+        zone.addEventListener('dragover', handleDragOver);
+        zone.addEventListener('dragleave', handleDragLeave);
+        zone.addEventListener('drop', handleDrop);
+        // Mobile tap listener
+        zone.addEventListener('click', handleMobileDropZoneClick);
+    });
+
+    filterButtons.forEach(btn => btn.addEventListener('click', handleFilterClick));
+    checkButton.addEventListener('click', checkEcosystem);
+    resetButton.addEventListener('click', resetGame);
+
+    userNameInput.addEventListener('input', () => {
+        if (userNameInput.value.trim() !== '') {
+            gameContainer.classList.remove('locked');
+        } else {
+            gameContainer.classList.add('locked');
+        }
+    });
+
+    // Initial render
+    renderSpeciesList();
+    updateLocationInfo();
+    updatePlayerEvaluation();
+    loadGameData();
+});
+</script>
+</body>
+</html>
