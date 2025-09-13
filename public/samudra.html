@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Samudra Rakshak: The 3D Ocean Simulation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            overscroll-behavior: none;
+        }
+        #ocean-grid-container canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            border-radius: 0.5rem;
+            cursor: grab;
+        }
+        #ocean-grid-container canvas:active {
+            cursor: grabbing;
+        }
+        .action-button:disabled {
+            filter: grayscale(90%);
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        .log-entry {
+            animation: fadeIn 0.5s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(17, 24, 39, 0.6);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+        }
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+            animation: zoomIn 0.3s ease-out;
+        }
+        @keyframes zoomIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 flex flex-col items-center justify-center min-h-screen p-2 md:p-4">
+
+    <div class="w-full max-w-7xl mx-auto text-center text-sm text-slate-500 pb-2">
+        Created at Taxila Business School, Jaipur.
+    </div>
+
+    <div id="game-container" class="w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+        <!-- Left Panel: Map & Actions -->
+        <div class="lg:col-span-2 bg-white rounded-xl shadow-lg p-4 md:p-6 flex flex-col">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 border-b border-slate-200 pb-4">
+                <div>
+                    <h1 class="text-2xl font-bold text-orange-600">Samudra Rakshak 3D</h1>
+                    <p class="text-sm text-slate-500">A strategic exercise in sustainable marine wealth.</p>
+                </div>
+                <button id="start-reset-button" class="mt-2 sm:mt-0 bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg shadow transition-transform transform hover:scale-105">
+                    Start Simulation
+                </button>
+            </div>
+            
+            <!-- 3D Ocean Grid Container -->
+            <div id="ocean-grid-container" class="aspect-square bg-blue-900 border border-blue-200 rounded-lg p-1 shadow-inner relative">
+                 <!-- Canvas will be inserted here -->
+                 <div id="tooltip" class="absolute hidden bg-slate-800 text-white text-xs rounded py-1 px-2 pointer-events-none transition-opacity duration-200">Tooltip</div>
+            </div>
+
+            <!-- Action Controls -->
+            <div id="action-panel" class="mt-4 pt-4 border-t border-slate-200 hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-semibold text-lg">Fleet Actions</h3>
+                    <p class="text-sm text-slate-600">Selected Sector: <span id="selected-sector-label" class="font-bold bg-slate-100 px-2 py-1 rounded">-</span></p>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <button id="action-explore" data-action="explore" class="action-button bg-gradient-to-br from-cyan-400 to-blue-600 hover:from-cyan-500 hover:to-blue-700 text-white rounded-lg p-3 text-sm font-semibold shadow transition-transform transform hover:scale-105">Explore<br><span class="text-xs font-normal">(₹5L)</span></button>
+                    <button id="action-fish" data-action="fish" class="action-button bg-green-500 hover:bg-green-600 text-white rounded-lg p-3 text-sm font-semibold shadow transition-transform transform hover:scale-105">Harvest<br><span class="text-xs font-normal">(Generates Income)</span></button>
+                    <button id="action-research" data-action="research" class="action-button bg-purple-500 hover:bg-purple-600 text-white rounded-lg p-3 text-sm font-semibold shadow transition-transform transform hover:scale-105">Research<br><span class="text-xs font-normal">(₹8L)</span></button>
+                    <button id="action-idle" data-action="idle" class="action-button bg-slate-400 hover:bg-slate-500 text-white rounded-lg p-3 text-sm font-semibold shadow transition-transform transform hover:scale-105">Idle Fleet<br><span class="text-xs font-normal">(No Cost)</span></button>
+                </div>
+                 <div class="mt-4 text-center">
+                    <button id="end-turn-button" class="w-full md:w-2/3 bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg text-lg transition-transform transform hover:scale-105 disabled:bg-slate-400 disabled:cursor-not-allowed disabled:transform-none">
+                        Confirm Action & End Turn
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Dashboard & Log -->
+        <div class="bg-white rounded-xl shadow-lg p-4 md:p-6 flex flex-col space-y-4">
+            <!-- Dashboard -->
+            <div>
+                <h2 class="text-xl font-bold border-b border-slate-200 pb-2 mb-3">Dashboard</h2>
+                <div class="grid grid-cols-2 gap-3 text-center">
+                    <div class="bg-slate-100 p-3 rounded-lg">
+                        <p class="text-sm text-slate-500">Turn</p>
+                        <p id="turn-display" class="text-2xl font-bold">0 / 20</p>
+                    </div>
+                    <div class="bg-slate-100 p-3 rounded-lg">
+                        <p class="text-sm text-slate-500">Budget</p>
+                        <p id="budget-display" class="text-2xl font-bold">₹100L</p>
+                    </div>
+                    <div class="bg-slate-100 p-3 rounded-lg">
+                        <p class="text-sm text-slate-500">Nayak</p>
+                        <p id="player-name-display" class="text-xl font-bold truncate">-</p>
+                    </div>
+                    <div class="bg-slate-100 p-3 rounded-lg">
+                        <p class="text-sm text-slate-500">Total Revenue</p>
+                        <p id="revenue-display" class="text-2xl font-bold">₹0L</p>
+                    </div>
+                    <div class="bg-slate-100 p-3 rounded-lg">
+                        <p class="text-sm text-slate-500">Overall Score</p>
+                        <p id="score-display" class="text-3xl font-bold text-orange-600">0 / 100</p>
+                    </div>
+                    <div class="bg-slate-100 p-3 rounded-lg">
+                        <p class="text-sm text-slate-500">Time Remaining</p>
+                        <p id="timer-display" class="text-3xl font-bold text-slate-700">35:00</p>
+                    </div>
+                    <div class="bg-slate-100 p-3 rounded-lg col-span-2">
+                        <p class="text-sm text-slate-500">Ocean Health</p>
+                        <div class="w-full bg-slate-200 rounded-full h-4 mt-1">
+                            <div id="ocean-health-bar" class="bg-green-500 h-4 rounded-full text-xs text-white flex items-center justify-center transition-all duration-500" style="width: 100%;">100%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Investments -->
+            <div id="investment-panel" class="hidden">
+                <h2 class="text-xl font-bold border-b border-slate-200 pb-2 mb-3">Capital Investments</h2>
+                <div class="space-y-3">
+                    <button id="invest-fleet" class="w-full text-left bg-slate-100 hover:bg-slate-200 p-3 rounded-lg transition disabled:opacity-50 disabled:hover:bg-slate-100">
+                        <p class="font-semibold">Upgrade Fleet Tech <span id="fleet-level-display" class="text-xs bg-orange-500 text-white rounded-full px-2 py-0.5">Lvl 1</span></p>
+                        <p class="text-sm text-slate-600">Cost: ₹<span id="fleet-cost-display">20</span>L. Improves harvest yield.</p>
+                    </button>
+                    <button id="invest-eco" class="w-full text-left bg-slate-100 hover:bg-slate-200 p-3 rounded-lg transition disabled:opacity-50 disabled:hover:bg-slate-100">
+                        <p class="font-semibold">Sustainable Methods <span id="eco-level-display" class="text-xs bg-green-500 text-white rounded-full px-2 py-0.5">Lvl 1</span></p>
+                        <p class="text-sm text-slate-600">Cost: ₹<span id="eco-cost-display">30</span>L. Reduces eco damage.</p>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Event Log -->
+            <div class="flex-grow flex flex-col min-h-0">
+                 <h2 class="text-xl font-bold border-b border-slate-200 pb-2 mb-3">Event Log</h2>
+                 <div id="event-log" class="flex-grow bg-slate-50 rounded-lg p-3 space-y-2 overflow-y-auto h-48 md:h-64 shadow-inner">
+                    <p class="text-slate-400 text-sm italic">Simulation has not started.</p>
+                 </div>
+            </div>
+            <!-- Status message area -->
+            <div id="status-message" class="text-center text-sm font-semibold mt-4 hidden"></div>
+        </div>
+    </div>
+    
+    <!-- Modal Container -->
+    <div id="modal-container"></div>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    // --- DOM ELEMENT CACHE ---
+    const elements = {
+        gridContainer: document.getElementById('ocean-grid-container'),
+        tooltip: document.getElementById('tooltip'),
+        startResetButton: document.getElementById('start-reset-button'),
+        turnDisplay: document.getElementById('turn-display'),
+        budgetDisplay: document.getElementById('budget-display'),
+        oceanHealthBar: document.getElementById('ocean-health-bar'),
+        eventLog: document.getElementById('event-log'),
+        selectedSectorLabel: document.getElementById('selected-sector-label'),
+        endTurnButton: document.getElementById('end-turn-button'),
+        actionPanel: document.getElementById('action-panel'),
+        investmentPanel: document.getElementById('investment-panel'),
+        modalContainer: document.getElementById('modal-container'),
+        investFleetBtn: document.getElementById('invest-fleet'),
+        investEcoBtn: document.getElementById('invest-eco'),
+        fleetLevelDisplay: document.getElementById('fleet-level-display'),
+        ecoLevelDisplay: document.getElementById('eco-level-display'),
+        fleetCostDisplay: document.getElementById('fleet-cost-display'),
+        ecoCostDisplay: document.getElementById('eco-cost-display'),
+        actionButtons: document.querySelectorAll('.action-button'),
+        playerNameDisplay: document.getElementById('player-name-display'),
+        revenueDisplay: document.getElementById('revenue-display'),
+        scoreDisplay: document.getElementById('score-display'),
+        timerDisplay: document.getElementById('timer-display'),
+        statusMessage: document.getElementById('status-message')
+    };
+
+    // --- GAME STATE ---
+    let gameState = {};
+    let timerInterval = null;
+    const INITIAL_STATE = {
+        gameStarted: false, playerName: 'Nayak', turn: 0, maxTurns: 20,
+        budget: 100, oceanHealth: 100, selectedSectorId: null, chosenAction: null,
+        gridData: [], fleetLevel: 1, ecoLevel: 1, totalRevenue: 0, score: 0,
+        timeRemaining: 35 * 60, // 35 minutes in seconds
+        investments: {
+            fleet: { baseCost: 20, currentCost: 20, multiplier: 1.8 },
+            eco: { baseCost: 30, currentCost: 30, multiplier: 1.6 }
+        }
+    };
+
+    // --- THREE.JS STATE ---
+    let scene, camera, renderer, gridGroup, raycaster, mouse;
+    let isDragging = false, previousMousePosition = { x: 0, y: 0 };
+    const sectorObjects = []; // To hold references to THREE.Mesh objects
+    let pointLight, gridPlane; // For interactive lighting
+
+    // --- GAME DATASETS ---
+    const DATASETS = [
+        {
+            name: "Rich Coral Reef",
+            description: "A vibrant, dense ecosystem teeming with resources, but dangerously fragile.",
+            generator: () => {
+                const data = [];
+                const reef_x_start = 3 + Math.floor(Math.random()*2);
+                const reef_y_start = 3 + Math.floor(Math.random()*2);
+                const reef_size = 4;
+                for (let y = 0; y < 10; y++) {
+                    for (let x = 0; x < 10; x++) {
+                        const id = y * 10 + x;
+                        const isReef = x >= reef_x_start && x < reef_x_start + reef_size && y >= reef_y_start && y < reef_y_start + reef_size;
+                        data.push({
+                            id, x, y, explored: false,
+                            resources: isReef ? 75 + Math.floor(Math.random() * 25) : 20 + Math.floor(Math.random() * 20),
+                            sensitivity: isReef ? 4 + Math.floor(Math.random() * 2) : 1 + Math.floor(Math.random() * 2),
+                            discoveryPotential: isReef ? Math.random() < 0.4 : Math.random() < 0.05
+                        });
+                    }
+                }
+                return data;
+            }
+        },
+        {
+            name: "Deep Ocean Trench",
+            description: "A sparse, mysterious deep-sea environment with hidden scientific wonders.",
+            generator: () => {
+                const data = [];
+                const trench_x = 6 + Math.floor(Math.random()*3);
+                for (let y = 0; y < 10; y++) {
+                    for (let x = 0; x < 10; x++) {
+                        const id = y * 10 + x;
+                        const isTrench = x === trench_x || x === trench_x - 1;
+                        data.push({
+                            id, x, y, explored: false,
+                            resources: isTrench ? 5 + Math.floor(Math.random() * 10) : 30 + Math.floor(Math.random() * 30),
+                            sensitivity: isTrench ? 1 : 1 + Math.floor(Math.random() * 3),
+                            discoveryPotential: isTrench ? Math.random() < 0.8 : Math.random() < 0.05
+                        });
+                    }
+                }
+                return data;
+            }
+        },
+        {
+            name: "Scattered Islands",
+            description: "Isolated pockets of abundance in a vast, open ocean.",
+            generator: () => {
+                const data = [];
+                const islands = [
+                    {x:2, y:2}, {x:7,y:3}, {x:4,y:7}, {x:8,y:8},
+                    {x:1, y:8}, {x:8,y:1}
+                ].sort(() => 0.5 - Math.random()).slice(0, 4); // Pick 4 random islands
+                for (let y = 0; y < 10; y++) {
+                    for (let x = 0; x < 10; x++) {
+                        const id = y * 10 + x;
+                        let isIsland = islands.some(isle => Math.abs(x - isle.x) <= 1 && Math.abs(y - isle.y) <= 1);
+                        data.push({
+                            id, x, y, explored: false,
+                            resources: isIsland ? 60 + Math.floor(Math.random() * 30) : 20 + Math.floor(Math.random() * 10),
+                            sensitivity: isIsland ? 3 + Math.floor(Math.random() * 2) : 1 + Math.floor(Math.random() * 2),
+                            discoveryPotential: isIsland ? Math.random() < 0.3 : Math.random() < 0.1
+                        });
+                    }
+                }
+                return data;
+            }
+        },
+        {
+            name: "Uncharted Territory",
+            description: "A completely unknown region with unpredictable challenges and rewards.",
+            generator: () => {
+                const data = [];
+                for (let y = 0; y < 10; y++) {
+                    for (let x = 0; x < 10; x++) {
+                        const id = y * 10 + x;
+                        data.push({
+                            id, x, y, explored: false,
+                            resources: 30 + Math.floor(Math.random() * 70),
+                            sensitivity: 1 + Math.floor(Math.random() * 5),
+                            discoveryPotential: Math.random() < 0.15
+                        });
+                    }
+                }
+                return data;
+            }
+        }
+    ];
+
+    // --- CORE GAME FUNCTIONS ---
+    function showStatusMessage(message, type = 'info') {
+        elements.statusMessage.textContent = message;
+        elements.statusMessage.className = 'text-center text-sm font-semibold mt-4 block';
+        if (type === 'error') {
+            elements.statusMessage.classList.add('text-red-500');
+        } else if (type === 'success') {
+            elements.statusMessage.classList.add('text-green-500');
+        } else {
+            elements.statusMessage.classList.add('text-slate-500');
+        }
+        clearTimeout(window.statusTimeout);
+        window.statusTimeout = setTimeout(() => {
+            elements.statusMessage.classList.add('hidden');
+        }, 3000);
+    }
+
+    // Placeholder for your API endpoint. Replace this with your actual URL.
+    const SAVE_GAME_API = 'http://localhost:3000/api/game/samudra';
+    const LOAD_GAME_API = 'http://localhost:3000/api/game/samudra';
+    function getUserId() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get("userId") || "guest";
+    }
+
+    async function saveGame() {
+        const userId = getUserId()
+        showStatusMessage('Saving game...', 'info');
+        try {
+            const saveState = { ...gameState };
+            // Stop the timer before saving to get the correct timeRemaining
+            clearInterval(timerInterval);
+            saveState.timeRemaining = gameState.timeRemaining;
+
+            const response = await fetch(SAVE_GAME_API, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({userId:userId, name:saveState.playerName, gameState:saveState})
+            });
+            if (!response.ok) {
+                throw new Error('Failed to save game');
+            }
+            showStatusMessage('Game saved successfully!', 'success');
+        } catch (error) {
+            console.error('Error saving game:', error);
+            showStatusMessage('Failed to save game.', 'error');
+        } finally {
+            // Restart the timer regardless of save success
+            startTimer(gameState.timeRemaining);
+        }
+    }
+
+    async function loadGame() {
+        const userId = getUserId()
+        showStatusMessage('Checking for saved game...');
+
+        try {
+            const response = await fetch(`${LOAD_GAME_API}?userId=${userId}`);
+            if (!response.ok) {
+                // If there's no saved game, start a new one
+                throw new Error('No saved game found');
+            }
+            const loadedState = await response.json();
+            showStatusMessage('Game loaded successfully!', 'success');
+            
+            // CORRECTED: Pass the entire gameState object to initializeGame
+            initializeGame(loadedState.gameState.playerName, loadedState.gameState);
+
+        } catch (error) {
+            console.error('Error loading game:', error);
+            showStatusMessage('No saved game found. Starting a new simulation.');
+            setupNewGame();
+        }
+    }
+
+    function setupNewGame() {
+        promptForPlayerName();
+    }
+    
+    function promptForPlayerName() {
+        const modalHTML = `
+            <div class="modal-backdrop">
+                <div class="modal-content">
+                    <h2 class="text-3xl font-bold text-orange-600 mb-2">Swagat, Nayak!</h2>
+                    <p class="text-slate-600 mb-4">Please enter your name to begin.</p>
+                    <input type="text" id="player-name-input" class="w-full px-4 py-2 border border-slate-300 rounded-lg mb-4 text-center text-lg" placeholder="e.g., Nayak Kumar" autofocus>
+                    <button id="begin-simulation-btn" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-lg">Begin Simulation</button>
+                </div>
+            </div>`;
+        elements.modalContainer.innerHTML = modalHTML;
+
+        const beginButton = document.getElementById('begin-simulation-btn');
+        const nameInput = document.getElementById('player-name-input');
+        
+        const startGameAction = () => {
+            const playerName = nameInput.value.trim();
+            elements.modalContainer.innerHTML = '';
+            initializeGame(playerName);
+        };
+        beginButton.addEventListener('click', startGameAction);
+        nameInput.addEventListener('keyup', (event) => { if (event.key === 'Enter') startGameAction(); });
+    }
+
+    function initializeGame(playerName, loadedState = null) {
+        if (loadedState) {
+            // Restore the full game state from the loaded object
+            gameState = loadedState;
+        } else {
+            gameState = JSON.parse(JSON.stringify(INITIAL_STATE));
+            gameState.gameStarted = true;
+            gameState.playerName = playerName || 'Nayak';
+            loadNewDataset(); // Only generate a new dataset for a new game
+        }
+        
+        if (!renderer) initThreeJS();
+
+        elements.actionPanel.classList.remove('hidden');
+        elements.investmentPanel.classList.remove('hidden');
+        elements.startResetButton.textContent = 'Reset Simulation';
+        
+        // Clear log and provide welcome message
+        elements.eventLog.innerHTML = '';
+        logEvent(`Welcome, ${gameState.playerName}. The simulation is beginning.`, 'system');
+        
+        // Start the timer with the correct loaded time or initial time
+        startTimer(gameState.timeRemaining);
+        // Render the entire UI based on the updated gameState
+        renderAll();
+        
+        elements.actionButtons.forEach(btn => btn.classList.remove('ring-2', 'ring-orange-500'));
+        updateActionButtonStates();
+    }
+
+    function loadNewDataset() {
+        const selectedDataset = DATASETS[Math.floor(Math.random() * DATASETS.length)];
+        gameState.gridData = selectedDataset.generator();
+        logEvent(`Briefing: You are exploring the '${selectedDataset.name}'. ${selectedDataset.description}`, 'system');
+    }
+
+    // --- 3D RENDERING & UI ---
+
+    function initThreeJS() {
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x0a192f);
+        const container = elements.gridContainer;
+        camera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.1, 1000);
+        camera.position.set(0, -10, 15); // Moved camera closer and higher
+        camera.lookAt(0, 0, 0);
+        renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(renderer.domElement);
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(5, -10, 10);
+        scene.add(directionalLight);
+
+        // Add a point light for mouse-over effects
+        pointLight = new THREE.PointLight(0xffffff, 0.7, 15);
+        pointLight.position.set(0,0,5);
+        scene.add(pointLight);
+
+        gridGroup = new THREE.Group();
+        gridGroup.rotation.x = -Math.PI / 6; // Increased initial tilt
+        scene.add(gridGroup);
+
+        // Add an invisible plane to cast rays against for the light effect
+        const planeGeometry = new THREE.PlaneGeometry(20, 20);
+        const planeMaterial = new THREE.MeshStandardMaterial({visible: false});
+        gridPlane = new THREE.Mesh(planeGeometry, planeMaterial);
+        gridPlane.name = "gridPlane";
+        gridGroup.add(gridPlane);
+
+        createStarfield();
+
+        raycaster = new THREE.Raycaster();
+        mouse = new THREE.Vector2();
+        renderer.domElement.addEventListener('mousedown', onMouseDown);
+        renderer.domElement.addEventListener('mousemove', onMouseMove);
+        renderer.domElement.addEventListener('mouseup', onMouseUp);
+        renderer.domElement.addEventListener('mouseleave', onMouseLeave);
+        renderer.domElement.addEventListener('wheel', onMouseWheel, { passive: false });
+        window.addEventListener('resize', onWindowResize);
+        animate();
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+        // Animate icons
+        gridGroup.children.forEach(child => {
+            const iconGroup = child.getObjectByName('iconGroup');
+            if(iconGroup) {
+                iconGroup.rotation.y += 0.01;
+            }
+        });
+        renderer.render(scene, camera);
+    }
+
+    function renderAll() {
+        render3DGrid();
+        renderDashboard();
+    }
+    
+    function render3DGrid() {
+        for (let i = gridGroup.children.length - 1; i >= 0; i--) {
+            const child = gridGroup.children[i];
+            if (child.name !== "gridPlane") {
+                if(child.geometry) child.geometry.dispose();
+                if(child.material) child.material.dispose();
+                gridGroup.remove(child);
+            }
+        }
+        
+        sectorObjects.length = 0;
+        const geometry = new THREE.BoxGeometry(0.9, 0.9, 1.2); // Taller blocks
+        const materialUnexplored = new THREE.MeshStandardMaterial({ 
+            color: 0x1e40af, roughness: 0.5, metalness: 0.2, 
+            transparent: true, opacity: 0.6 
+        });
+
+        gameState.gridData.forEach(cellData => {
+            const material = materialUnexplored.clone();
+            const sector = new THREE.Mesh(geometry, material);
+            sector.position.set(cellData.x - 4.5, cellData.y - 4.5, 0.6); // Sit on the plane
+            sector.userData = { id: cellData.id };
+            gridGroup.add(sector);
+            sectorObjects.push(sector);
+        });
+        updateGridVisuals();
+    }
+    
+    function updateGridVisuals() {
+        sectorObjects.forEach(sector => {
+            const cellData = gameState.gridData[sector.userData.id];
+            sector.material.emissive.setHex(0x000000);
+            
+            const iconGroup = sector.getObjectByName('iconGroup');
+            if (iconGroup) sector.remove(iconGroup);
+
+            if (cellData.explored) {
+                const res = cellData.resources;
+                if (res > 85) sector.material.color.setHex(0x10b981);
+                else if (res > 60) sector.material.color.setHex(0x34d399);
+                else sector.material.color.setHex(0x2dd4bf);
+                
+                sector.material.opacity = 0.7;
+
+                const newIconGroup = new THREE.Group();
+                newIconGroup.name = 'iconGroup';
+                newIconGroup.position.z = 0.7; // Position icons on top of the block
+
+                if (cellData.discoveryPotential) {
+                    const researchIcon = createIcon('research');
+                    newIconGroup.add(researchIcon);
+                }
+                if (cellData.sensitivity > 3) {
+                    const warningIcon = createIcon('warning');
+                    newIconGroup.add(warningIcon);
+                }
+                sector.add(newIconGroup);
+
+            } else {
+                sector.material.color.setHex(0x1e40af);
+                sector.material.opacity = 0.6;
+            }
+
+            if (gameState.selectedSectorId === cellData.id) {
+                sector.material.emissive.setHex(0xf97316);
+                sector.position.z = 0.8; // Elevate selected block
+                sector.material.opacity = 0.9;
+            } else {
+                 sector.position.z = 0.6; // Reset position
+            }
+        });
+    }
+
+    function createIcon(type) {
+        let geometry, material;
+        switch(type) {
+            case 'research':
+                geometry = new THREE.OctahedronGeometry(0.15, 0);
+                material = new THREE.MeshStandardMaterial({ color: 0x8b5cf6, emissive: 0x8b5cf6, emissiveIntensity: 0.6 });
+                break;
+            case 'warning':
+                geometry = new THREE.TorusGeometry(0.12, 0.05, 8, 16);
+                material = new THREE.MeshStandardMaterial({ color: 0xfb923c, emissive: 0xfb923c, emissiveIntensity: 0.6 });
+                break;
+        }
+        const icon = new THREE.Mesh(geometry, material);
+        if (type === 'warning') icon.rotation.x = Math.PI / 2;
+        return icon;
+    }
+
+    function createStarfield() {
+        const starVertices = [];
+        for (let i = 0; i < 10000; i++) {
+            const x = (Math.random() - 0.5) * 200;
+            const y = (Math.random() - 0.5) * 200;
+            const z = (Math.random() - 0.5) * 200;
+            starVertices.push(x, y, z);
+        }
+        const starGeometry = new THREE.BufferGeometry();
+        starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+        const starMaterial = new THREE.PointsMaterial({ color: 0xaaaaaa, size: 0.1 });
+        const stars = new THREE.Points(starGeometry, starMaterial);
+        scene.add(stars);
+    }
+    
+    function calculateCurrentScore() {
+        // Score is broken down into 4 components totaling 100.
+        
+        // 1. Budget Score (30 points): Target is 500L.
+        const budgetScore = (Math.min(gameState.budget, 500) / 500) * 30;
+
+        // 2. Revenue Score (20 points): Target is 600L.
+        const revenueScore = (Math.min(gameState.totalRevenue, 600) / 600) * 20;
+        
+        // 3. Ocean Health Score (40 points): Based on percentage of health remaining.
+        const healthScore = (Math.max(0, gameState.oceanHealth) / 100) * 40;
+
+        // 4. Time Efficiency Score (10 points): Based on percentage of time remaining.
+        const timeScore = (gameState.timeRemaining / (INITIAL_STATE.timeRemaining)) * 10;
+
+        gameState.score = Math.round(budgetScore + revenueScore + healthScore + timeScore);
+    }
+
+    function renderDashboard() {
+        elements.playerNameDisplay.textContent = gameState.playerName;
+        elements.turnDisplay.textContent = `${gameState.turn} / ${gameState.maxTurns}`;
+        elements.budgetDisplay.textContent = `₹${gameState.budget.toLocaleString()}L`;
+        elements.revenueDisplay.textContent = `₹${gameState.totalRevenue.toLocaleString()}L`;
+        elements.scoreDisplay.textContent = `${gameState.score} / 100`;
+        
+        const health = Math.max(0, gameState.oceanHealth);
+        elements.oceanHealthBar.style.width = `${health}%`;
+        elements.oceanHealthBar.textContent = `${Math.round(health)}%`;
+        elements.oceanHealthBar.classList.remove('bg-green-500', 'bg-yellow-500', 'bg-red-500');
+        if (health < 30) elements.oceanHealthBar.classList.add('bg-red-500');
+        else if (health < 60) elements.oceanHealthBar.classList.add('bg-yellow-500');
+        else elements.oceanHealthBar.classList.add('bg-green-500');
+
+        elements.fleetLevelDisplay.textContent = `Lvl ${gameState.fleetLevel}`;
+        elements.ecoLevelDisplay.textContent = `Lvl ${gameState.ecoLevel}`;
+        elements.fleetCostDisplay.textContent = gameState.investments.fleet.currentCost;
+        elements.ecoCostDisplay.textContent = gameState.investments.eco.currentCost;
+        elements.investFleetBtn.disabled = gameState.budget < gameState.investments.fleet.currentCost;
+        elements.investEcoBtn.disabled = gameState.budget < gameState.investments.eco.currentCost;
+    }
+
+    function logEvent(message, type = 'info') {
+        const entry = document.createElement('p');
+        entry.classList.add('text-sm', 'log-entry');
+        const turnLabel = `<span class="font-semibold text-slate-500">T${gameState.turn}:</span>`;
+        const typeStyles = {
+            system: 'font-bold text-orange-600', success: 'text-green-600',
+            warning: 'text-amber-600', danger: 'text-red-600', info: 'text-slate-700'
+        };
+        const messagePrefix = type === 'system' ? 'SYSTEM:' : turnLabel;
+        entry.innerHTML = `${messagePrefix} <span class="${typeStyles[type]}">${message}</span>`;
+        if (elements.eventLog.textContent.includes('Simulation has not started')) {
+            elements.eventLog.innerHTML = '';
+        }
+        elements.eventLog.appendChild(entry);
+        elements.eventLog.scrollTop = elements.eventLog.scrollHeight;
+    }
+
+    function updateTimerDisplay() {
+        const seconds = gameState.timeRemaining;
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        elements.timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+        
+        elements.timerDisplay.classList.remove('text-slate-700', 'text-amber-500', 'text-red-600');
+        if (seconds <= 60) { // 1 minute left
+            elements.timerDisplay.classList.add('text-red-600');
+        } else if (seconds <= 300) { // 5 minutes left
+            elements.timerDisplay.classList.add('text-amber-500');
+        } else {
+            elements.timerDisplay.classList.add('text-slate-700');
+        }
+    }
+
+    function startTimer(initialTime) {
+        clearInterval(timerInterval);
+        gameState.timeRemaining = initialTime;
+        updateTimerDisplay();
+
+        timerInterval = setInterval(() => {
+            gameState.timeRemaining--;
+            calculateCurrentScore(); // Recalculate score every second as time changes
+            elements.scoreDisplay.textContent = `${gameState.score} / 100`;
+            updateTimerDisplay();
+            if (gameState.timeRemaining <= 0) {
+                clearInterval(timerInterval);
+                endGame(false, "Time is up! The simulation has concluded.");
+            }
+        }, 1000);
+    }
+
+    // --- PLAYER ACTION HANDLING ---
+    function selectSector(id) {
+        if (!gameState.gameStarted) return;
+        gameState.selectedSectorId = id;
+        const sector = gameState.gridData[id];
+        elements.selectedSectorLabel.textContent = `(${sector.x}, ${sector.y})`;
+        updateActionButtonStates();
+        updateGridVisuals();
+    }
+
+    function chooseAction(action) {
+        if (!gameState.gameStarted) return;
+        gameState.chosenAction = action;
+        elements.actionButtons.forEach(btn => {
+            btn.classList.remove('ring-2', 'ring-orange-500', 'ring-offset-2');
+            if (btn.dataset.action === action) {
+                btn.classList.add('ring-2', 'ring-orange-500', 'ring-offset-2');
+            }
+        });
+        updateActionButtonStates();
+    }
+    
+    function updateActionButtonStates() {
+        const sector = gameState.gridData.find(s => s.id === gameState.selectedSectorId);
+        
+        const canAffordExplore = gameState.budget >= 5;
+        const canAffordResearch = gameState.budget >= 8;
+        document.getElementById('action-explore').disabled = !sector || sector.explored || !canAffordExplore;
+        document.getElementById('action-fish').disabled = !sector || !sector.explored;
+        document.getElementById('action-research').disabled = !sector || !sector.explored || !canAffordResearch;
+        document.getElementById('action-idle').disabled = !sector;
+
+        let isActionStillValid = false;
+        if (gameState.chosenAction) {
+            const chosenButton = document.querySelector(`.action-button[data-action="${gameState.chosenAction}"]`);
+            if (chosenButton && !chosenButton.disabled) {
+                isActionStillValid = true;
+            }
+        }
+
+        if (!isActionStillValid) {
+            gameState.chosenAction = null;
+            elements.actionButtons.forEach(btn => btn.classList.remove('ring-2', 'ring-orange-500', 'ring-offset-2'));
+        }
+
+        elements.endTurnButton.disabled = !(gameState.selectedSectorId !== null && gameState.chosenAction);
+    }
+
+    // --- TURN PROCESSING & GAME LOGIC ---
+    function processTurn() {
+        if (elements.endTurnButton.disabled) return;
+        gameState.turn++;
+        
+        const sector = gameState.gridData[gameState.selectedSectorId];
+        
+        const actions = {
+            'explore': () => {
+                gameState.budget -= 5; sector.explored = true;
+                logEvent(`Explored sector (${sector.x}, ${sector.y}). Cost: ₹5L.`);
+            },
+            'fish': () => {
+                const techBonus = 1 + (gameState.fleetLevel - 1) * 0.2;
+                const revenue = parseFloat((sector.resources * 0.08 * techBonus).toFixed(1));
+                gameState.budget += revenue;
+                gameState.totalRevenue += revenue;
+                const ecoModifier = 1 - (gameState.ecoLevel - 1) * 0.3;
+                const healthImpact = Math.max(0.2, sector.sensitivity * 0.6 * ecoModifier);
+                gameState.oceanHealth -= healthImpact;
+                sector.resources = Math.max(0, sector.resources - 15);
+                logEvent(`Harvested at (${sector.x}, ${sector.y}). Revenue: ₹${revenue.toLocaleString()}L. Health impact: -${healthImpact.toFixed(1)}%.`, 'success');
+            },
+            'research': () => {
+                gameState.budget -= 8;
+                if (sector.discoveryPotential && Math.random() > 0.4) {
+                    const bonus = 25; gameState.budget += bonus;
+                    logEvent(`Scientific breakthrough at (${sector.x}, ${sector.y})! Bonus: ₹${bonus}L.`, 'success');
+                    sector.discoveryPotential = false;
+                } else {
+                    logEvent(`Research at (${sector.x}, ${sector.y}) yielded no findings. Cost: ₹8L.`, 'info');
+                }
+            },
+            'idle': () => logEvent(`Fleet is idle at (${sector.x}, ${sector.y}). No cost or revenue.`, 'system')
+        };
+        actions[gameState.chosenAction]();
+
+        gameState.oceanHealth = Math.min(100, gameState.oceanHealth + 0.5);
+        
+        calculateCurrentScore();
+        
+        // Save the game state after a successful turn
+        saveGame();
+
+        gameState.selectedSectorId = null;
+        gameState.chosenAction = null;
+        elements.selectedSectorLabel.textContent = '-';
+        elements.actionButtons.forEach(btn => btn.classList.remove('ring-2', 'ring-orange-500', 'ring-offset-2'));
+        
+        renderAll();
+        updateActionButtonStates();
+
+        if (gameState.budget <= 0) endGame(false, "Your company has gone bankrupt!");
+        else if (gameState.oceanHealth <= 0) endGame(false, "The ocean ecosystem has collapsed!");
+        else if (gameState.turn >= gameState.maxTurns) endGame(true, "The 20-year simulation has concluded.");
+    }
+
+    function makeInvestment(type) {
+        const investment = gameState.investments[type];
+        if (gameState.budget >= investment.currentCost) {
+            gameState.budget -= investment.currentCost;
+            gameState[type + 'Level']++;
+            investment.currentCost = Math.round(investment.currentCost * investment.multiplier);
+            logEvent(`${type === 'fleet' ? 'Fleet Technology' : 'Sustainable Methods'} upgraded to Level ${gameState[type + 'Level']}.`, 'success');
+            calculateCurrentScore();
+            renderDashboard();
+            saveGame(); // Save after making an investment
+        }
+    }
+
+    function showConfirmationModal(message, onConfirm) {
+         const modalHTML = `
+            <div class="modal-backdrop">
+                <div class="modal-content">
+                    <h2 class="text-2xl font-bold text-amber-600 mb-4">Are you sure?</h2>
+                    <p class="text-slate-600 mb-6">${message}</p>
+                    <div class="flex justify-center gap-4">
+                        <button id="cancel-btn" class="w-1/2 bg-slate-300 hover:bg-slate-400 text-slate-800 font-bold py-2 px-4 rounded-lg">Cancel</button>
+                        <button id="confirm-btn" class="w-1/2 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg">Confirm</button>
+                    </div>
+                </div>
+            </div>`;
+        elements.modalContainer.innerHTML = modalHTML;
+        document.getElementById('confirm-btn').addEventListener('click', () => {
+            elements.modalContainer.innerHTML = ''; onConfirm();
+        });
+        document.getElementById('cancel-btn').addEventListener('click', () => {
+            elements.modalContainer.innerHTML = '';
+        });
+    }
+    
+    function endGame(success, message) {
+        clearInterval(timerInterval);
+        gameState.gameStarted = false;
+        
+        // Calculate final score breakdown
+        const budgetScore = (Math.min(gameState.budget, 500) / 500) * 30;
+        const revenueScore = (Math.min(gameState.totalRevenue, 600) / 600) * 20;
+        const healthScore = (Math.max(0, gameState.oceanHealth) / 100) * 40;
+        const timeScore = (gameState.timeRemaining / (INITIAL_STATE.timeRemaining)) * 10;
+        const finalScore = Math.round(budgetScore + revenueScore + healthScore + timeScore);
+        gameState.score = finalScore; // Ensure final score is set in state
+
+        const modalHTML = `
+            <div class="modal-backdrop">
+                <div class="modal-content">
+                    <h2 class="text-3xl font-bold ${success ? 'text-orange-600' : 'text-red-600'} mb-2">${success ? 'Simulation Complete' : 'Game Over'}</h2>
+                    <p class="text-slate-600 mb-4">${message}</p>
+                    <div class="bg-slate-100 p-4 rounded-lg mb-6 text-left text-sm">
+                        <p class="text-lg font-bold text-center mb-2">Final Report</p>
+                        <p class="flex justify-between">Final Budget: <span class="font-semibold">₹${gameState.budget.toLocaleString()}L</span></p>
+                        <p class="flex justify-between">Total Revenue: <span class="font-semibold">₹${gameState.totalRevenue.toLocaleString()}L</span></p>
+                        <p class="flex justify-between">Final Ocean Health: <span class="font-semibold">${Math.round(Math.max(0, gameState.oceanHealth))}%</span></p>
+                        <hr class="my-2 border-slate-300">
+                        <p class="text-base font-semibold text-center mb-1">Score Breakdown</p>
+                        <p class="flex justify-between">Budget & Revenue: <span class="font-semibold">${Math.round(budgetScore + revenueScore)} / 50</span></p>
+                        <p class="flex justify-between">Ocean Stewardship: <span class="font-semibold">${Math.round(healthScore)} / 40</span></p>
+                        <p class="flex justify-between">Time Efficiency: <span class="font-semibold">${Math.round(timeScore)} / 10</span></p>
+                        <hr class="my-2 border-slate-300">
+                        <p class="text-xl font-bold flex justify-between">Final Score: <span class="text-orange-700">${finalScore} / 100</span></p>
+                    </div>
+                    <button id="restart-game-btn" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-lg">Run Simulation Again</button>
+                </div>
+            </div>`;
+        elements.modalContainer.innerHTML = modalHTML;
+        document.getElementById('restart-game-btn').addEventListener('click', () => {
+            elements.modalContainer.innerHTML = '';
+            setupNewGame();
+        });
+    }
+
+    // --- 3D EVENT HANDLERS ---
+    
+    function onMouseDown(event) {
+        isDragging = true;
+        previousMousePosition.x = event.clientX;
+        previousMousePosition.y = event.clientY;
+    }
+    
+    function onMouseMove(event) {
+        const rect = renderer.domElement.getBoundingClientRect();
+        mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+        if (isDragging) {
+            const deltaMove = {
+                x: event.clientX - previousMousePosition.x,
+                y: event.clientY - previousMousePosition.y
+            };
+            gridGroup.rotation.y += deltaMove.x * 0.005;
+            gridGroup.rotation.x += deltaMove.y * 0.005;
+            previousMousePosition = { x: event.clientX, y: event.clientY };
+        } 
+        
+        raycaster.setFromCamera(mouse, camera);
+
+        const intersectsPlane = raycaster.intersectObject(gridPlane);
+        if (intersectsPlane.length > 0) {
+            pointLight.position.copy(intersectsPlane[0].point).add(new THREE.Vector3(0, 0, 2));
+        }
+
+        if (!isDragging) {
+            const intersects = raycaster.intersectObjects(sectorObjects);
+            if (intersects.length > 0) {
+                const id = intersects[0].object.userData.id;
+                const data = gameState.gridData[id];
+                let tooltipText;
+                if (data.explored) {
+                    tooltipText = `Sector (${data.x},${data.y})<br>Resources: ${data.resources}`;
+                } else {
+                    tooltipText = `Sector (${data.x},${data.y})<br>Unexplored`;
+                }
+                elements.tooltip.innerHTML = tooltipText;
+                elements.tooltip.style.left = `${event.clientX - rect.left + 15}px`;
+                elements.tooltip.style.top = `${event.clientY - rect.top + 15}px`;
+                elements.tooltip.classList.remove('hidden');
+
+            } else {
+                 elements.tooltip.classList.add('hidden');
+            }
+        }
+    }
+
+    function onMouseUp(event) {
+        const dx = event.clientX - previousMousePosition.x;
+        const dy = event.clientY - previousMousePosition.y;
+        if (Math.sqrt(dx*dx + dy*dy) < 5) {
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(sectorObjects);
+            if (intersects.length > 0) {
+                selectSector(intersects[0].object.userData.id);
+            }
+        }
+        isDragging = false;
+    }
+
+    function onMouseLeave() {
+        isDragging = false;
+        elements.tooltip.classList.add('hidden');
+    }
+
+    function onMouseWheel(event) {
+        event.preventDefault();
+        camera.position.z += event.deltaY * 0.01;
+        camera.position.z = Math.max(8, Math.min(20, camera.position.z));
+    }
+
+    function onWindowResize() {
+        const container = elements.gridContainer;
+        if(container.clientWidth > 0 && container.clientHeight > 0) {
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        }
+    }
+
+    // --- INITIAL EVENT LISTENERS ---
+    elements.startResetButton.addEventListener('click', () => {
+        if (gameState.gameStarted) {
+            showConfirmationModal("All progress will be lost.", setupNewGame);
+        } else {
+            setupNewGame();
+        }
+    });
+
+    elements.actionButtons.forEach(button => {
+        button.addEventListener('click', () => chooseAction(button.dataset.action));
+    });
+
+    elements.endTurnButton.addEventListener('click', processTurn);
+    elements.investFleetBtn.addEventListener('click', () => makeInvestment('fleet'));
+    elements.investEcoBtn.addEventListener('click', () => makeInvestment('eco'));
+
+    // Initial load: check for a saved game
+    loadGame();
+});
+</script>
+
+</body>
+</html>

@@ -6,7 +6,7 @@ import {
     DocumentChartBarIcon,
     DocumentIcon,
   } from "@heroicons/react/24/outline";
-  import { AlignLeftIcon, AlignRightIcon, BookCheckIcon, BookCopyIcon, Brain, BriefcaseBusiness, DockIcon, Dog, FileAxis3D, Gamepad, Globe, HandshakeIcon, HelpCircleIcon, IndianRupee, NewspaperIcon, PaperclipIcon, PenBox, PenSquareIcon, ProjectorIcon, Settings2Icon, Sheet, UserCircle, UserRoundCheck, WholeWord } from "lucide-react";
+  import { AlignLeftIcon, AlignRightIcon, BookCheckIcon, BookCopyIcon, Brain, BriefcaseBusiness, DockIcon, Dog, FileAxis3D, FishIcon, Gamepad, Globe, HandshakeIcon, HelpCircleIcon, IndianRupee, NewspaperIcon, PaperclipIcon, PenBox, PenSquareIcon, ProjectorIcon, Puzzle, Settings2Icon, Sheet, UserCircle, UserRoundCheck, WholeWord } from "lucide-react";
 export const menuItems = [
     { label: "Dashboard", icon: <HomeIcon className="h-5 w-5" />, path: "/admin/dashboard" },
     {
@@ -168,8 +168,9 @@ export const menuItems = [
           ]},
          {label : "Consulting/Business Analytics", icon: <Sheet className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Taxila Ecosystem",  icon: <Globe className="h-5 w-5" />, path:"/game/taxila-eco"},
-            {label:"Taxila Solve",  icon: <Dog className="h-5 w-5" />, path:"/game/taxila-solve"},
+            {label:"Taxila Solve",  icon: <Puzzle className="h-5 w-5" />, path:"/game/taxila-solve"},
             {label:"Sariska Hills",  icon: <Dog className="h-5 w-5" />, path:"/game/sariska"},
+            {label:"Samudra Rakshak",  icon: <FishIcon className="h-5 w-5" />, path:"/game/samudra-rakshak"},
           ]},
            {label:"Wordify",  icon: <WholeWord className="h-5 w-5" />, path:"/game/wordfy"},
           ]},
@@ -214,10 +215,11 @@ export const menuItems = [
           {label : "Critical Thinking", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Last City",  icon: <Gamepad className="h-5 w-5" />, path:"/game/lastcity"},
           ]},
-           {label : "Consulting/Business Analytics", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
-            {label:"Taxila Ecosystem",  icon: <Gamepad className="h-5 w-5" />, path:"/game/taxila-eco"},
-            {label:"Taxila Solve",  icon: <Gamepad className="h-5 w-5" />, path:"/game/taxila-solve"},
+          {label : "Consulting/Business Analytics", icon: <Sheet className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
+            {label:"Taxila Ecosystem",  icon: <Globe className="h-5 w-5" />, path:"/game/taxila-eco"},
+            {label:"Taxila Solve",  icon: <Puzzle className="h-5 w-5" />, path:"/game/taxila-solve"},
             {label:"Sariska Hills",  icon: <Dog className="h-5 w-5" />, path:"/game/sariska"},
+            {label:"Samudra Rakshak",  icon: <FishIcon className="h-5 w-5" />, path:"/game/samudra-rakshak"},
           ]},
            {label:"Wordify",  icon: <Gamepad className="h-5 w-5" />, path:"/game/wordfy"},
           ]},

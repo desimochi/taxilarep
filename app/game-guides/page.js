@@ -51,6 +51,11 @@ const PDFViewer = () => {
       name: 'Sariska Hills Guide',
       url: '/sariska-hills.pdf', // File should be at public/manual.pdf
       description: 'Faculty Guide for Sariska Hills Game'
+    },
+    {
+      name: 'Samundra Rakshak Guide',
+      url: '/samudra.pdf', // File should be at public/manual.pdf
+      description: 'Faculty Guide for Samundra Rakshak Game'
     }
   ];
 
