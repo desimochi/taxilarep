@@ -176,6 +176,7 @@ export const menuItems = [
             {label:"Samudra Rakshak",  icon: <FishIcon className="h-5 w-5" />, path:"/game/samudra-rakshak"},
           ]},
            {label:"Wordify",  icon: <WholeWord className="h-5 w-5" />, path:"/game/wordfy"},
+           {label:"Interview",  icon: <WholeWord className="h-5 w-5" />, path:"/game/interview-preparation"},
           ]},
   ];
 

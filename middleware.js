@@ -33,6 +33,7 @@ const facultyPaths = [
   "/subjects/details/component",
   "/subjects/details/component/sub-component",
   "/subjects/details/component/add-marks",
+  "/question-paper"
 ];
 
 export function middleware(req) {
@@ -112,6 +113,7 @@ export const config = {
     "/notice/:path*",
     "/course/:path*",
     "/see/events",
+    "/question-paper/:path*",
     "/attendance/class-attendance",
   ],
 };

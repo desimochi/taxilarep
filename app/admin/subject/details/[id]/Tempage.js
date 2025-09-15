@@ -102,6 +102,7 @@ export default function Tempage({id}) {
                         <Link className="bg-red-700 text-white py-1.5 px-8 rounded-sm shadow-lg" href={`/admin/attendance/${students?.id}`}>Attendance</Link>
                         <Link className="bg-green-700 text-white py-1.5 px-8 rounded-sm shadow-lg" href={`/syllabus/see-syllabus/${students?.id}`}>Syllabus</Link>
                          <Link className="bg-yellow-700 text-white py-1.5 px-8 rounded-sm shadow-lg" href={`/marks/${students?.id}?subName=${students?.subject?.name}`}>Marks</Link>
+                         <Link className="bg-violet-700 text-white py-1.5 px-8 rounded-sm shadow-lg" href={`/question-paper/${students?.id}?subName=${students?.subject?.name}`}>Question Paper</Link>
                 </div>
                            
                         </div>
