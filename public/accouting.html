@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accounting Cycle Simulation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; touch-action: none; }
+        .draggable-item { cursor: grab; transition: all 0.2s ease-in-out; }
+        .draggable-item:active { cursor: grabbing; }
+        .dragging { opacity: 0.5; transform: scale(1.05); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+        .drop-zone { transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out; }
+        .drag-over { background-color: #e0f2fe; border-color: #38bdf8 !important; }
+        .t-account { display: grid; grid-template-columns: 1fr 1fr; border-top: 2px solid #475569; }
+        .t-account .debit-side, .t-account .credit-side { min-height: 80px; padding: 4px; }
+        .t-account .debit-side { border-right: 1px solid #cbd5e1; }
+        .feedback-modal { display: none; animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        /* Hide scrollbar but allow scrolling */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .ratio-formula {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .ratio-formula .drop-zone {
+            min-width: 100px;
+            min-height: 40px;
+        }
+        .button-group {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800">
+
+    <!-- Loading Modal -->
+    <div id="loading-modal" class="fixed inset-0 bg-slate-900 bg-opacity-70 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 md:p-8 max-w-sm w-full text-center">
+            <div class="text-4xl animate-pulse">⏳</div>
+            <p class="mt-4 text-lg font-semibold text-slate-700">Loading Game...</p>
+        </div>
+    </div>
+
+    <!-- Name Entry Modal -->
+    <div id="name-entry-modal" class="fixed inset-0 bg-slate-900 bg-opacity-70 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 md:p-8 max-w-md w-full text-center transform transition-all" style="animation: fadeIn 0.3s ease-out;">
+            <h2 class="text-2xl font-bold mb-2 text-slate-800">Welcome to the Simulation</h2>
+            <p class="text-slate-600 mb-6">Created at Taxila Business School Jaipur</p>
+            <div class="space-y-4">
+                <input type="text" id="player-name-input" placeholder="Please enter your name" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <button id="start-new-game-button" class="w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-transform transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300">
+                    Start New Game
+                </button>
+                <button id="load-game-button-modal" class="w-full bg-gray-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-gray-700 transition-transform transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-gray-300">
+                    Load Existing Game
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="w-full max-w-7xl mx-auto p-4 md:p-6 opacity-0" id="main-content">
+        <!-- Header -->
+        <header class="text-center mb-6">
+            <h1 class="text-2xl md:text-3xl font-bold text-slate-900">Accounting Cycle Simulation</h1>
+            <p class="text-sm text-slate-500">Created at Taxila Business School Jaipur</p>
+            <p id="player-greeting" class="text-lg font-semibold text-slate-700 mt-2"></p>
+            <div class="mt-2 flex justify-center items-center space-x-6 text-slate-800">
+                <div id="score-card" class="text-lg font-semibold bg-white px-4 py-1 rounded-lg shadow-sm">Score: 0 / 100</div>
+                <div id="timer" class="text-lg font-semibold font-mono bg-white px-4 py-1 rounded-lg shadow-sm">25:00</div>
+            </div>
+            <p id="stage-instructions" class="text-slate-600 mt-2 text-base"></p>
+        </header>
+
+        <!-- Main Content Area -->
+        <main>
+            <!-- STAGE 1: Ledger Posting -->
+            <div id="stage-1" class="stage-container">
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    <div class="lg:col-span-1 bg-white p-4 rounded-xl shadow-md">
+                        <h2 class="text-lg font-semibold mb-3 text-center border-b pb-2">Transactions</h2>
+                        <div id="transactions-pool" class="space-y-2 max-h-[60vh] overflow-y-auto no-scrollbar">
+                        </div>
+                    </div>
+                    <div class="lg:col-span-3 bg-white p-4 rounded-xl shadow-lg">
+                        <h2 class="text-lg font-semibold mb-3 text-center border-b pb-2">Ledger Accounts (T-Accounts)</h2>
+                        <div class="relative">
+                            <div id="ledgers-container" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 max-h-[60vh] overflow-y-auto no-scrollbar pr-8">
+                            </div>
+                            <!-- Custom Scrollbar Sidebar -->
+                            <div class="absolute top-0 right-0 h-full w-6 flex flex-col justify-center items-center">
+                                <button id="scroll-up-button" class="bg-slate-200 hover:bg-slate-300 text-slate-600 rounded-full p-1 transition mb-2 opacity-50 hover:opacity-100">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                                    </svg>
+                                </button>
+                                <button id="scroll-down-button" class="bg-slate-200 hover:bg-slate-300 text-slate-600 rounded-full p-1 transition opacity-50 hover:opacity-100">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STAGE 2: Trial Balance -->
+            <div id="stage-2" class="stage-container hidden">
+                 <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    <div class="lg:col-span-1 bg-white p-4 rounded-xl shadow-md">
+                        <h2 class="text-lg font-semibold mb-3 text-center border-b pb-2">Ledger Balances</h2>
+                        <div id="ledger-balances-pool" class="space-y-3">
+                        </div>
+                    </div>
+                    <div class="lg:col-span-3 bg-white p-4 rounded-xl shadow-lg">
+                        <h2 class="text-lg font-semibold mb-3 text-center border-b pb-2">Trial Balance</h2>
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b-2 border-slate-700">
+                                    <th class="p-2 text-left text-sm">Account</th>
+                                    <th class="p-2 text-right w-40 text-sm">Debit</th>
+                                    <th class="p-2 text-right w-40 text-sm">Credit</th>
+                                </tr>
+                            </thead>
+                            <tbody id="trial-balance-body" class="divide-y divide-slate-200">
+                            </tbody>
+                            <tfoot>
+                                <tr class="font-bold border-t-4 border-slate-700">
+                                    <td class="p-2 text-right">Totals</td>
+                                    <td id="tb-debit-total" class="p-2 text-right font-mono">₹ 0</td>
+                                    <td id="tb-credit-total" class="p-2 text-right font-mono">₹ 0</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STAGE 3: Financial Statements -->
+            <div id="stage-3" class="stage-container hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    <div class="lg:col-span-1 bg-white p-4 rounded-xl shadow-md">
+                        <h2 class="text-lg font-semibold mb-3 text-center border-b pb-2">Trial Balance Accounts</h2>
+                        <div id="tb-accounts-pool" class="space-y-3">
+                        </div>
+                    </div>
+                    <div class="lg:col-span-3 bg-white p-4 rounded-xl shadow-lg space-y-6">
+                        <!-- P&L Statement -->
+                        <div>
+                            <h2 class="text-lg font-semibold mb-3 text-center border-b pb-2">Profit & Loss Statement</h2>
+                            <div class="px-2">
+                                <h3 class="font-semibold text-base">Revenue</h3>
+                                <div id="pl-revenue" class="drop-zone border border-dashed rounded p-2 min-h-[40px]"></div>
+                                <h3 class="font-semibold text-base mt-3">Expenses</h3>
+                                <div id="pl-expenses" class="drop-zone border border-dashed rounded p-2 min-h-[80px]"></div>
+                                <div class="text-right font-bold mt-2 text-base">Net Profit: <span id="net-profit-total" class="font-mono">₹ 0</span></div>
+                            </div>
+                        </div>
+                         <!-- Balance Sheet -->
+                        <div>
+                             <h2 class="text-lg font-semibold mb-3 text-center border-b pb-2">Balance Sheet</h2>
+                             <div class="grid grid-cols-2 gap-4 px-2">
+                                 <div>
+                                     <h3 class="font-semibold text-base">Assets</h3>
+                                     <div id="bs-assets" class="drop-zone border border-dashed rounded p-2 min-h-[150px]"></div>
+                                     <div class="text-right font-bold mt-2 text-base">Total: <span id="bs-asset-total" class="font-mono">₹ 0</span></div>
+                                 </div>
+                                 <div>
+                                     <h3 class="font-semibold text-base">Liabilities</h3>
+                                     <div id="bs-liabilities" class="drop-zone border border-dashed rounded p-2 min-h-[80px]"></div>
+                                     <h3 class="font-semibold text-base mt-3">Equity</h3>
+                                     <div id="bs-equity" class="drop-zone border border-dashed rounded p-2 min-h-[80px]"></div>
+                                     <div class="text-right font-bold mt-2 text-base">Total: <span id="bs-le-total" class="font-mono">₹ 0</span></div>
+                                 </div>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STAGE 4: Financial Ratios -->
+            <div id="stage-4" class="stage-container hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    <div class="lg:col-span-1 bg-white p-4 rounded-xl shadow-md">
+                        <h2 class="text-lg font-semibold mb-3 text-center border-b pb-2">Statement Values</h2>
+                        <div id="ratio-values-pool" class="space-y-3">
+                        </div>
+                    </div>
+                    <div class="lg:col-span-3 bg-white p-4 rounded-xl shadow-lg">
+                        <h2 class="text-lg font-semibold mb-3 text-center border-b pb-2">Financial Ratio Analysis</h2>
+                        <div id="ratios-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Action Buttons -->
+        <footer class="mt-6 text-center">
+            <div class="button-group">
+                <button id="save-game-button" class="bg-gray-600 text-white font-bold py-2 px-5 rounded-lg shadow-md hover:bg-gray-700 transition-transform transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-gray-300">
+                    Save Game
+                </button>
+                <button id="load-game-button" class="bg-gray-600 text-white font-bold py-2 px-5 rounded-lg shadow-md hover:bg-gray-700 transition-transform transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-gray-300">
+                    Load Game
+                </button>
+            </div>
+            <div class="button-group">
+                <button id="check-button" class="bg-blue-600 text-white font-bold py-2 px-5 rounded-lg shadow-md hover:bg-blue-700 transition-transform transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300">
+                    Check My Work
+                </button>
+                 <button id="next-stage-button" class="hidden bg-green-600 text-white font-bold py-2 px-5 rounded-lg shadow-md hover:bg-green-700 transition-transform transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300">
+                    Proceed to Next Stage
+                </button>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Feedback Modal -->
+    <div id="feedback-modal" class="feedback-modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 md:p-8 max-w-md w-full text-center">
+            <div id="modal-icon" class="text-5xl mb-4"></div>
+            <h2 id="modal-title" class="text-xl font-bold mb-2"></h2>
+            <div id="modal-body" class="text-slate-600 space-y-2"></div>
+            <button id="close-modal-button" class="mt-6 bg-blue-600 text-white font-bold py-2 px-5 rounded-lg hover:bg-blue-700 transition">
+                Continue
+            </button>
+        </div>
+    </div>
+    <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+
+        // --- GAME DATA ---
+        const accounts = {
+            'cash': { name: 'Cash', type: 'Asset', normalBalance: 'Debit' },
+            'accountsReceivable': { name: 'Accounts Receivable', type: 'Asset', normalBalance: 'Debit' },
+            'equipment': { name: 'Equipment', type: 'Asset', normalBalance: 'Debit' },
+            'accountsPayable': { name: 'Accounts Payable', type: 'Liability', normalBalance: 'Credit' },
+            'loanPayable': { name: 'Loan Payable', type: 'Liability', normalBalance: 'Credit' },
+            'shareCapital': { name: 'Share Capital', type: 'Equity', normalBalance: 'Credit' },
+            'retainedEarnings': { name: 'Retained Earnings', type: 'Equity', normalBalance: 'Credit'},
+            'serviceRevenue': { name: 'Service Revenue', type: 'Revenue', normalBalance: 'Credit' },
+            'rentExpense': { name: 'Rent & Expenses', type: 'Expense', normalBalance: 'Debit' },
+            'salariesExpense': { name: 'Salaries Expense', type: 'Expense', normalBalance: 'Debit' },
+        };
+
+        const transactions = [
+            { id: 't1', desc: 'Issued shares for ₹50,000 cash', amount: 50000, debit: 'cash', credit: 'shareCapital' },
+            { id: 't2', desc: 'Took a bank loan of ₹20,000', amount: 20000, debit: 'cash', credit: 'loanPayable' },
+            { id: 't3', desc: 'Purchased equipment for ₹15,000 cash', amount: 15000, debit: 'equipment', credit: 'cash' },
+            { id: 't4', desc: 'Provided services for ₹30,000 on credit', amount: 30000, debit: 'accountsReceivable', credit: 'serviceRevenue' },
+            { id: 't5', desc: 'Paid monthly rent of ₹5,000', amount: 5000, debit: 'rentExpense', credit: 'cash' },
+            { id: 't6', desc: 'Paid salaries of ₹10,000', amount: 10000, debit: 'salariesExpense', credit: 'cash' },
+            { id: 't7', desc: 'Received ₹15,000 from customers', amount: 15000, debit: 'cash', credit: 'accountsReceivable' },
+            { id: 't8', desc: 'Purchased supplies for ₹2,000 on credit', amount: 2000, debit: 'rentExpense', credit: 'accountsPayable' }, // Simplified as rent exp
+        ];
+
+        // --- API ENDPOINTS ---
+         const API_BASE_URL = 'http://localhost:3000/api/game/accouting'; 
+        
+        // --- STATE & LOCAL STORAGE ---
+        let gameState = {
+            currentStage: 1,
+            draggedItem: null,
+            ledgerBalances: {},
+            finalBalances: {},
+            playerName: '',
+            score: 0,
+            timerId: null,
+            timeRemaining: 25 * 60,
+            stageComplete: [false, false, false, false],
+        };
+
+        
+
+        // --- DOM ELEMENTS ---
+        const loadingModal = document.getElementById('loading-modal');
+        const nameEntryModal = document.getElementById('name-entry-modal');
+        const playerNameInput = document.getElementById('player-name-input');
+        const startNewGameButton = document.getElementById('start-new-game-button');
+        const loadGameModalButton = document.getElementById('load-game-button-modal');
+        const mainContent = document.getElementById('main-content');
+        const playerGreeting = document.getElementById('player-greeting');
+        const scoreCard = document.getElementById('score-card');
+        const timerDisplay = document.getElementById('timer');
+        
+        const stageContainers = document.querySelectorAll('.stage-container');
+        const instructions = document.getElementById('stage-instructions');
+        const checkButton = document.getElementById('check-button');
+        const nextStageButton = document.getElementById('next-stage-button');
+        const saveGameButton = document.getElementById('save-game-button');
+        const loadGameButton = document.getElementById('load-game-button');
+        const modal = document.getElementById('feedback-modal');
+        
+        // --- UTILITY & CORE GAME FUNCTIONS ---
+        const formatCurrency = (amount) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 }).format(amount);
+        
+        function showModal(isSuccess, title, message) {
+            modal.querySelector('#modal-icon').innerHTML = isSuccess ? '🎉' : '🤔';
+            modal.querySelector('#modal-title').textContent = title;
+            modal.querySelector('#modal-title').className = `text-xl font-bold mb-2 ${isSuccess ? 'text-green-600' : 'text-red-600'}`;
+            modal.querySelector('#modal-body').innerHTML = `<p>${message}</p>`;
+            modal.style.display = 'flex';
+            document.getElementById('close-modal-button').style.display = 'inline-block';
+        }
+
+        function updateScoreDisplay() {
+            scoreCard.textContent = `Score: ${Math.round(gameState.score)} / 100`;
+        }
+
+        function startTimer() {
+            if (gameState.timerId) clearInterval(gameState.timerId);
+            
+            gameState.timerId = setInterval(() => {
+                gameState.timeRemaining--;
+
+                const minutes = Math.floor(gameState.timeRemaining / 60);
+                const seconds = gameState.timeRemaining % 60;
+
+                timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+                if (gameState.timeRemaining <= 0) {
+                    clearInterval(gameState.timerId);
+                    showModal(false, "Time's Up!", "You did not complete the simulation within the 25-minute time limit. The page will now refresh to start over.");
+                    document.getElementById('close-modal-button').style.display = 'none';
+                    setTimeout(() => {
+                        location.reload();
+                    }, 4000);
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(gameState.timerId);
+        }
+
+        function updateUIForStage() {
+            stageContainers.forEach(c => c.classList.add('hidden'));
+            document.getElementById(`stage-${gameState.currentStage}`).classList.remove('hidden');
+            
+            checkButton.classList.remove('hidden');
+            nextStageButton.classList.add('hidden');
+
+            const stageInstructions = {
+                1: 'Post each transaction to the correct Debit and Credit side of the T-Accounts.',
+                2: 'Drag each ledger balance to the correct column in the Trial Balance.',
+                3: 'Drag the accounts to build the P&L Statement and the Balance Sheet.',
+                4: 'Calculate the financial ratios by dragging the correct values into the formulas.'
+            };
+            instructions.textContent = stageInstructions[gameState.currentStage];
+        }
+
+        // --- DRAG & DROP LOGIC ---
+        function initializeDragAndDrop() {
+            const draggables = document.querySelectorAll('.draggable-item');
+            const dropZones = document.querySelectorAll('.drop-zone');
+
+            draggables.forEach(draggable => {
+                draggable.addEventListener('dragstart', (e) => {
+                    gameState.draggedItem = e.target;
+                    setTimeout(() => e.target.classList.add('dragging'), 0);
+                });
+                draggable.addEventListener('dragend', () => {
+                    if (gameState.draggedItem) {
+                       gameState.draggedItem.classList.remove('dragging');
+                    }
+                    gameState.draggedItem = null;
+                });
+            });
+
+            dropZones.forEach(zone => {
+                zone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    zone.classList.add('drag-over');
+                });
+                zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+                zone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    zone.classList.remove('drag-over');
+                    if (gameState.draggedItem) {
+                        // Prevent dropping multiple items in ratio formulas
+                        if (zone.classList.contains('ratio-drop-zone') && zone.children.length > 0) {
+                            // Swap items
+                            const parent = gameState.draggedItem.parentNode;
+                            parent.appendChild(zone.children[0]);
+                        }
+                        zone.appendChild(gameState.draggedItem);
+
+                        if (gameState.currentStage === 2) calculateTrialBalanceTotals();
+                        if (gameState.currentStage === 3) calculateFinancialStatementTotals();
+                        if (gameState.currentStage === 4) calculateRatios();
+                    }
+                });
+            });
+        }
+        
+        // --- STAGE 1: LEDGER POSTING ---
+        function renderStage1(initialState = transactions) {
+            const transPool = document.getElementById('transactions-pool');
+            transPool.innerHTML = '';
+            
+            const shuffledTransactions = initialState.sort(() => Math.random() - 0.5);
+            shuffledTransactions.forEach(t => {
+                const debitItem = `<div id="${t.id}-debit" class="draggable-item bg-blue-100 p-2 rounded-md shadow-sm text-sm" draggable="true" data-tid="${t.id}" data-type="debit" data-account="${t.debit}" data-amount="${t.amount}"><span class="font-semibold">${t.desc}</span><br><span class="font-mono">${formatCurrency(t.amount)} (Dr)</span></div>`;
+                const creditItem = `<div id="${t.id}-credit" class="draggable-item bg-pink-100 p-2 rounded-md shadow-sm text-sm" draggable="true" data-tid="${t.id}" data-type="credit" data-account="${t.credit}" data-amount="${t.amount}"><span class="font-semibold">${t.desc}</span><br><span class="font-mono">${formatCurrency(t.amount)} (Cr)</span></div>`;
+                transPool.innerHTML += debitItem + creditItem;
+            });
+
+            const ledgersContainer = document.getElementById('ledgers-container');
+            ledgersContainer.innerHTML = '';
+            for (const accId in accounts) {
+                ledgersContainer.innerHTML += `
+                    <div class="border rounded-lg bg-slate-50">
+                        <h4 class="font-bold text-center p-1 bg-slate-200 rounded-t-lg text-sm">${accounts[accId].name}</h4>
+                        <div class="grid grid-cols-2 text-center text-xs font-semibold text-slate-600 px-1 py-1 bg-slate-100">
+                            <span>Debit</span>
+                            <span>Credit</span>
+                        </div>
+                        <div class="t-account">
+                            <div class="debit-side drop-zone" data-account-id="${accId}" data-side="debit"></div>
+                            <div class="credit-side drop-zone" data-account-id="${accId}" data-side="credit"></div>
+                        </div>
+                    </div>`;
+            }
+            initializeDragAndDrop();
+        }
+
+        function checkStage1() {
+            let errors = 0;
+            const ledgers = document.querySelectorAll('.t-account .drop-zone');
+            
+            document.querySelectorAll('#ledgers-container .draggable-item').forEach(item => {
+                item.classList.remove('bg-red-300');
+                if (item.dataset.type === 'debit') item.classList.add('bg-blue-100'); else item.classList.add('bg-pink-100');
+            });
+            
+            ledgers.forEach(zone => {
+                zone.querySelectorAll('.draggable-item').forEach(item => {
+                    const correctAccount = item.dataset.account;
+                    const correctSide = item.dataset.type;
+                    if(zone.dataset.accountId !== correctAccount || zone.dataset.side !== correctSide) {
+                        errors++;
+                        item.classList.remove('bg-blue-100', 'bg-pink-100');
+                        item.classList.add('bg-red-300');
+                    }
+                });
+            });
+
+            if(document.getElementById('transactions-pool').children.length > 0) {
+                 showModal(false, 'Incomplete!', `You still have transaction parts left to post.`);
+                 return;
+            }
+            
+            if(errors > 0) {
+                showModal(false, 'Incorrect Postings', `You have ${errors} incorrect placements highlighted in red.`);
+            } else {
+                if (!gameState.stageComplete[0]) {
+                    gameState.score += 25;
+                    gameState.stageComplete[0] = true;
+                }
+                updateScoreDisplay();
+                showModal(true, 'Stage 1 Complete!', 'All transactions have been posted correctly.');
+                checkButton.classList.add('hidden');
+                nextStageButton.classList.remove('hidden');
+            }
+        }
+        
+        // --- STAGE 2: TRIAL BALANCE ---
+        function renderStage2(initialState = null) {
+            gameState.ledgerBalances = {};
+            for (const accId in accounts) gameState.ledgerBalances[accId] = 0;
+
+            document.querySelectorAll('#ledgers-container .t-account').forEach((ledger) => {
+                const accId = ledger.querySelector('.drop-zone').dataset.accountId;
+                let debitTotal = 0, creditTotal = 0;
+                ledger.querySelectorAll('.debit-side .draggable-item').forEach(item => debitTotal += Number(item.dataset.amount));
+                ledger.querySelectorAll('.credit-side .draggable-item').forEach(item => creditTotal += Number(item.dataset.amount));
+                gameState.ledgerBalances[accId] = debitTotal - creditTotal;
+            });
+            
+            const balancesPool = document.getElementById('ledger-balances-pool');
+            balancesPool.innerHTML = '';
+            const tbBody = document.getElementById('trial-balance-body');
+            tbBody.innerHTML = '';
+
+            for (const accId in accounts) {
+                const acc = accounts[accId];
+                const balance = gameState.ledgerBalances[accId];
+                if(balance === 0) continue;
+                
+                const finalBalance = Math.abs(balance);
+                const balanceType = (acc.normalBalance === 'Debit') ? (balance >= 0 ? 'Debit' : 'Credit') : (balance <= 0 ? 'Credit' : 'Debit');
+
+                balancesPool.innerHTML += `<div class="draggable-item bg-gray-200 p-2 rounded shadow-sm flex justify-between items-center text-sm" draggable="true" data-account-id="${accId}" data-balance="${finalBalance}" data-type="${balanceType}"><span>${acc.name}</span><span class="font-mono">${formatCurrency(finalBalance)}</span></div>`;
+                tbBody.innerHTML += `
+                    <tr>
+                        <td class="p-2 font-semibold text-sm">${acc.name}</td>
+                        <td class="drop-zone border-dashed border-2 h-14" data-account-id="${accId}" data-type="Debit"></td>
+                        <td class="drop-zone border-dashed border-2 h-14" data-account-id="${accId}" data-type="Credit"></td>
+                    </tr>`;
+            }
+            
+            if (initialState) {
+                initialState.balances.forEach(item => {
+                    const el = balancesPool.querySelector(`[data-account-id="${item.accountId}"]`);
+                    const targetZone = document.querySelector(`[data-account-id="${item.accountId}"][data-type="${item.type}"]`);
+                    if (el && targetZone) {
+                        targetZone.appendChild(el);
+                    }
+                });
+                calculateTrialBalanceTotals();
+            }
+
+            initializeDragAndDrop();
+        }
+
+        function calculateTrialBalanceTotals() {
+            let debitTotal = 0, creditTotal = 0;
+            document.querySelectorAll('#trial-balance-body tr').forEach(row => {
+                const debitCell = row.children[1], creditCell = row.children[2];
+                if(debitCell.children.length > 0) debitTotal += Number(debitCell.children[0].dataset.balance);
+                if(creditCell.children.length > 0) creditTotal += Number(creditCell.children[0].dataset.balance);
+            });
+            document.getElementById('tb-debit-total').textContent = formatCurrency(debitTotal);
+            document.getElementById('tb-credit-total').textContent = formatCurrency(creditTotal);
+            return { debitTotal, creditTotal };
+        }
+        
+        function checkStage2(){
+            let errors = 0;
+            document.querySelectorAll('#trial-balance-body tr').forEach(row => {
+                const debitCell = row.children[1], creditCell = row.children[2];
+                if (debitCell.children.length > 0) {
+                    const item = debitCell.children[0];
+                    if (item.dataset.accountId !== debitCell.dataset.accountId || item.dataset.type !== 'Debit') errors++;
+                }
+                if (creditCell.children.length > 0) {
+                    const item = creditCell.children[0];
+                    if (item.dataset.accountId !== creditCell.dataset.accountId || item.dataset.type !== 'Credit') errors++;
+                }
+            });
+
+            if (document.getElementById('ledger-balances-pool').children.length > 0) {
+                 showModal(false, 'Incomplete!', `You still have account(s) to place.`);
+                 return;
+            }
+             if (errors > 0) {
+                 showModal(false, 'Incorrect Placement', `You have ${errors} account(s) in the wrong column.`);
+                 return;
+            }
+
+            const { debitTotal, creditTotal } = calculateTrialBalanceTotals();
+            if (debitTotal !== creditTotal) {
+                showModal(false, 'Does Not Balance!', 'The debit and credit totals do not match.');
+            } else {
+                 if (!gameState.stageComplete[1]) {
+                    gameState.score += 25;
+                    gameState.stageComplete[1] = true;
+                }
+                 updateScoreDisplay();
+                 showModal(true, 'Stage 2 Complete!', 'The Trial Balance is correct and balanced.');
+                 checkButton.classList.add('hidden');
+                 nextStageButton.classList.remove('hidden');
+            }
+        }
+
+        // --- STAGE 3: FINANCIAL STATEMENTS ---
+        function renderStage3(initialState = null) {
+            const pool = document.getElementById('tb-accounts-pool');
+            pool.innerHTML = '';
+
+            for (const accId in gameState.ledgerBalances) {
+                const acc = accounts[accId];
+                if (gameState.ledgerBalances[accId] === 0) continue;
+                const balance = Math.abs(gameState.ledgerBalances[accId]);
+                pool.innerHTML += `<div class="draggable-item bg-gray-200 p-2 rounded shadow-sm flex justify-between items-center text-sm" draggable="true" data-account-id="${accId}" data-balance="${balance}" data-type="${acc.type}"><span class="font-semibold">${acc.name}</span><span class="font-mono">${formatCurrency(balance)}</span></div>`;
+            }
+
+            pool.innerHTML += `<div id="net-profit-item" class="draggable-item bg-green-200 p-2 rounded shadow-sm flex justify-between items-center text-sm hidden" draggable="true" data-account-id="netProfit" data-balance="0" data-type="Equity"><span class="font-semibold">Net Profit</span><span class="font-mono">₹ 0</span></div>`;
+            
+            if (initialState) {
+                initialState.accounts.forEach(item => {
+                    const el = pool.querySelector(`[data-account-id="${item.accountId}"]`);
+                    if (el) {
+                        const targetZone = document.getElementById(item.parentZone);
+                        if (targetZone) targetZone.appendChild(el);
+                    }
+                });
+                calculateFinancialStatementTotals();
+            }
+
+            initializeDragAndDrop();
+        }
+        
+        function calculateFinancialStatementTotals() {
+            let revenue = 0, expenses = 0, assets = 0, liabilities = 0, equity = 0;
+
+            document.querySelectorAll('#pl-revenue .draggable-item').forEach(i => revenue += Number(i.dataset.balance));
+            document.querySelectorAll('#pl-expenses .draggable-item').forEach(i => expenses += Number(i.dataset.balance));
+            const netProfit = revenue - expenses;
+            document.getElementById('net-profit-total').textContent = formatCurrency(netProfit);
+            
+            const netProfitItem = document.getElementById('net-profit-item');
+            if (netProfitItem) {
+                 if (document.querySelector('#pl-revenue').children.length > 0 || document.querySelector('#pl-expenses').children.length > 0) {
+                      netProfitItem.classList.remove('hidden');
+                      netProfitItem.dataset.balance = netProfit;
+                      netProfitItem.querySelector('.font-mono').textContent = formatCurrency(netProfit);
+                 } else {
+                     netProfitItem.classList.add('hidden');
+                 }
+            }
+
+            document.querySelectorAll('#bs-assets .draggable-item').forEach(i => assets += Number(i.dataset.balance));
+            document.querySelectorAll('#bs-liabilities .draggable-item').forEach(i => liabilities += Number(i.dataset.balance));
+            document.querySelectorAll('#bs-equity .draggable-item').forEach(i => equity += Number(i.dataset.balance));
+
+            document.getElementById('bs-asset-total').textContent = formatCurrency(assets);
+            document.getElementById('bs-le-total').textContent = formatCurrency(liabilities + equity);
+            
+            gameState.finalBalances = { assets, liabilities, equity, revenue, expenses, netProfit, leTotal: liabilities + equity };
+            return gameState.finalBalances;
+        }
+
+        function checkStage3() {
+            let errors = 0;
+            const statementZones = document.querySelectorAll('#stage-3 .drop-zone');
+            statementZones.forEach(zone => {
+                const correctType = {'pl-revenue': 'Revenue', 'pl-expenses': 'Expense', 'bs-assets': 'Asset', 'bs-liabilities': 'Liability', 'bs-equity': 'Equity'}[zone.id];
+                zone.querySelectorAll('.draggable-item').forEach(item => {
+                    if(item.dataset.type !== correctType) errors++;
+                });
+            });
+
+            if (document.getElementById('tb-accounts-pool').children.length > 0) {
+                  showModal(false, 'Incomplete!', `You still have account(s) to place in the statements.`);
+                  return;
+            }
+            if (errors > 0) {
+                  showModal(false, 'Incorrect Placement', `You have ${errors} account(s) in the wrong category.`);
+                  return;
+            }
+
+            const { assets, leTotal } = calculateFinancialStatementTotals();
+            if (Math.round(assets) !== Math.round(leTotal)) {
+                 showModal(false, 'Does Not Balance!', `The Balance Sheet is not balanced.`);
+            } else {
+                if (!gameState.stageComplete[2]) {
+                    gameState.score += 25;
+                    gameState.stageComplete[2] = true;
+                }
+                updateScoreDisplay();
+                showModal(true, 'Stage 3 Complete!', 'Financial Statements are correct and balanced.');
+                checkButton.classList.add('hidden');
+                nextStageButton.classList.remove('hidden');
+            }
+        }
+
+        // --- STAGE 4: FINANCIAL RATIOS ---
+        function renderStage4(initialState = null) {
+            const pool = document.getElementById('ratio-values-pool');
+            pool.innerHTML = '';
+            const container = document.getElementById('ratios-container');
+            container.innerHTML = '';
+
+            const { assets, liabilities, equity, revenue, netProfit } = gameState.finalBalances;
+            // Assuming Cash and AR are current assets, AP is current liability for simplicity
+            const currentAssets = Math.abs(gameState.ledgerBalances['cash']) + Math.abs(gameState.ledgerBalances['accountsReceivable']);
+            const currentLiabilities = Math.abs(gameState.ledgerBalances['accountsPayable']);
+
+            const values = {
+                currentAssets: { name: 'Current Assets', value: currentAssets },
+                currentLiabilities: { name: 'Current Liabilities', value: currentLiabilities },
+                totalAssets: { name: 'Total Assets', value: assets },
+                totalLiabilities: { name: 'Total Liabilities', value: liabilities },
+                totalEquity: { name: 'Total Equity', value: equity },
+                netProfit: { name: 'Net Profit', value: netProfit },
+                totalRevenue: { name: 'Total Revenue', value: revenue }
+            };
+
+            for (const key in values) {
+                if (values[key].value !== 0) {
+                     pool.innerHTML += `<div class="draggable-item bg-indigo-100 p-2 rounded shadow-sm flex justify-between items-center text-sm" draggable="true" data-id="${key}" data-value="${values[key].value}"><span class="font-semibold">${values[key].name}</span><span class="font-mono">${formatCurrency(values[key].value)}</span></div>`;
+                }
+            }
+
+            const ratios = {
+                currentRatio: { name: 'Current Ratio', num: 'currentAssets', den: 'currentLiabilities' },
+                debtToAsset: { name: 'Debt-to-Asset Ratio', num: 'totalLiabilities', den: 'totalAssets' },
+                roe: { name: 'Return on Equity', num: 'netProfit', den: 'totalEquity' },
+                profitMargin: { name: 'Net Profit Margin', num: 'netProfit', den: 'totalRevenue' }
+            };
+
+            for (const key in ratios) {
+                container.innerHTML += `
+                    <div id="${key}" class="bg-slate-50 border rounded-lg p-3">
+                        <h3 class="font-bold text-center mb-2">${ratios[key].name}</h3>
+                        <div class="ratio-formula">
+                            <div class="drop-zone ratio-drop-zone border-2 border-dashed rounded" data-side="numerator"></div>
+                            <span class="font-bold text-2xl">/</span>
+                            <div class="drop-zone ratio-drop-zone border-2 border-dashed rounded" data-side="denominator"></div>
+                        </div>
+                        <div class="text-center mt-2 text-xl font-bold font-mono text-indigo-600">= <span class="result">?</span></div>
+                    </div>`;
+            }
+
+            if (initialState) {
+                initialState.values.forEach(item => {
+                    const el = pool.querySelector(`[data-id="${item.id}"]`);
+                    if (el) {
+                        const targetZone = document.querySelector(`#${item.parentRatio} [data-side="${item.parentSide}"]`);
+                        if (targetZone) targetZone.appendChild(el);
+                    }
+                });
+                calculateRatios();
+            }
+
+            initializeDragAndDrop();
+        }
+
+        function calculateRatios() {
+            document.querySelectorAll('#ratios-container > div').forEach(card => {
+                const numEl = card.querySelector('[data-side="numerator"]').children[0];
+                const denEl = card.querySelector('[data-side="denominator"]').children[0];
+                const resultEl = card.querySelector('.result');
+                
+                if (numEl && denEl) {
+                    const numVal = Number(numEl.dataset.value);
+                    const denVal = Number(denEl.dataset.value);
+                    if (denVal !== 0) {
+                        resultEl.textContent = (numVal / denVal).toFixed(2);
+                    } else {
+                        resultEl.textContent = 'N/A';
+                    }
+                } else {
+                    resultEl.textContent = '?';
+                }
+            });
+        }
+        
+        function checkStage4() {
+             let errors = 0;
+             const ratios = {
+                currentRatio: { num: 'currentAssets', den: 'currentLiabilities' },
+                debtToAsset: { num: 'totalLiabilities', den: 'totalAssets' },
+                roe: { num: 'netProfit', den: 'totalEquity' },
+                profitMargin: { num: 'netProfit', den: 'totalRevenue' }
+            };
+
+            for (const key in ratios) {
+                const card = document.getElementById(key);
+                const numEl = card.querySelector('[data-side="numerator"]').children[0];
+                const denEl = card.querySelector('[data-side="denominator"]').children[0];
+
+                if (!numEl || !denEl) {
+                    showModal(false, 'Incomplete!', 'You must fill all parts of the ratio formulas.');
+                    return;
+                }
+                if(numEl.dataset.id !== ratios[key].num || denEl.dataset.id !== ratios[key].den) {
+                    errors++;
+                }
+            }
+
+            if (errors > 0) {
+                showModal(false, 'Incorrect Formulas', `You have placed ${errors} incorrect value(s) in the ratio formulas. Please check your work.`);
+            } else {
+                if (!gameState.stageComplete[3]) {
+                    gameState.score = 100; // Final score
+                    gameState.stageComplete[3] = true;
+                }
+                updateScoreDisplay();
+                stopTimer();
+                showModal(true, 'Simulation Complete!', `You have successfully completed the entire accounting cycle with a final score of ${Math.round(gameState.score)}. Great job!`);
+                checkButton.classList.add('hidden');
+                nextStageButton.classList.add('hidden');
+            }
+        }
+        
+        // --- API INTEGRATION ---
+        function getUserId() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get("userId") || "guest";
+    }
+        async function saveGame() {
+            const userId = getUserId();
+            const saveState = {
+                userId,
+                gameState: {
+                    ...gameState,
+                    draggedItem: null, // Don't save transient UI state
+                    timerId: null
+                },
+                uiState: {
+                    stage1: {
+                        transactions: Array.from(document.querySelectorAll('#transactions-pool .draggable-item')).map(el => ({
+                            id: el.id,
+                            tid: el.dataset.tid,
+                            type: el.dataset.type,
+                            account: el.dataset.account,
+                            amount: el.dataset.amount
+                        })),
+                        ledgers: {}
+                    },
+                    stage2: {
+                        balances: []
+                    },
+                    stage3: {
+                        accounts: []
+                    },
+                    stage4: {
+                        values: []
+                    }
+                }
+            };
+
+            // Capture state of ledgers (Stage 1)
+            document.querySelectorAll('#ledgers-container .t-account .drop-zone').forEach(zone => {
+                const zoneId = zone.dataset.accountId + '-' + zone.dataset.side;
+                saveState.uiState.stage1.ledgers[zoneId] = Array.from(zone.children).map(el => ({
+                    id: el.id,
+                    tid: el.dataset.tid,
+                    type: el.dataset.type,
+                    account: el.dataset.account,
+                    amount: el.dataset.amount
+                }));
+            });
+
+            // Capture state of Trial Balance (Stage 2)
+            document.querySelectorAll('#trial-balance-body .drop-zone .draggable-item').forEach(el => {
+                saveState.uiState.stage2.balances.push({
+                    accountId: el.dataset.accountId,
+                    type: el.dataset.type
+                });
+            });
+
+            // Capture state of Financial Statements (Stage 3)
+            document.querySelectorAll('#stage-3 .drop-zone .draggable-item').forEach(el => {
+                saveState.uiState.stage3.accounts.push({
+                    accountId: el.dataset.accountId,
+                    parentZone: el.parentNode.id
+                });
+            });
+
+            // Capture state of Ratios (Stage 4)
+            document.querySelectorAll('#ratios-container .drop-zone .draggable-item').forEach(el => {
+                saveState.uiState.stage4.values.push({
+                    id: el.dataset.id,
+                    parentRatio: el.closest('[id]').id,
+                    parentSide: el.parentNode.dataset.side
+                });
+            });
+
+            try {
+                const response = await fetch(`${API_BASE_URL}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({userId:userId, name:gameState.playerName, gameState:saveState})
+                });
+
+                if (response.ok) {
+                    showModal(true, 'Game Saved!', 'Your progress has been saved successfully.');
+                } else {
+                    showModal(false, 'Save Failed', `There was an error saving your game: ${response.statusText}`);
+                }
+            } catch (error) {
+                console.error('Save error:', error);
+                showModal(false, 'Save Failed', 'Could not connect to the save service.');
+            }
+        }
+
+        async function loadGame() {
+            const userId = getUserId();
+            loadingModal.classList.remove('hidden');
+            nameEntryModal.classList.add('hidden');
+            try {
+                const response = await fetch(`${API_BASE_URL}?userId=${userId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && data.gameState) {
+                        gameState = {
+                            ...gameState,
+                            ...data.gameState.gameState, // Correctly access nested gameState
+                            timeRemaining: data.gameState.gameState.timeRemaining || (25 * 60)
+                        };
+                        
+                        // Render UI based on saved state
+                        mainContent.style.opacity = '1';
+                        mainContent.style.transition = 'opacity 0.5s ease-in-out';
+                        playerGreeting.textContent = `Welcome back, ${gameState.playerName}!`;
+                        updateScoreDisplay();
+                        startTimer();
+                        
+                        // Load Stage 1 state
+                        renderStage1(); // Render empty transactions and ledgers
+                        
+                        if (data.gameState.uiState) {
+                           // Load Stage 1 transactions
+                           if (data.gameState.uiState.stage1) {
+                               const transactionsPool = document.getElementById('transactions-pool');
+                               transactionsPool.innerHTML = ''; // Clear existing items
+                               data.gameState.uiState.stage1.transactions.forEach(t => {
+                                   const el = createDraggableItem(t);
+                                   transactionsPool.appendChild(el);
+                               });
+
+                               // Load Stage 1 ledgers
+                               for (const zoneId in data.gameState.uiState.stage1.ledgers) {
+                                   const zone = document.querySelector(`[data-account-id="${zoneId.split('-')[0]}"][data-side="${zoneId.split('-')[1]}"]`);
+                                   if (zone) {
+                                       data.gameState.uiState.stage1.ledgers[zoneId].forEach(item => {
+                                           const el = createDraggableItem(item);
+                                           zone.appendChild(el);
+                                       });
+                                   }
+                               }
+                           }
+                            // Load Stage 2 state
+                            if (data.gameState.uiState.stage2) {
+                                renderStage2(data.gameState.uiState.stage2);
+                            }
+                            // Load Stage 3 state
+                            if (data.gameState.uiState.stage3) {
+                                renderStage3(data.gameState.uiState.stage3);
+                            }
+                            // Load Stage 4 state
+                            if (data.gameState.uiState.stage4) {
+                                renderStage4(data.gameState.uiState.stage4);
+                            }
+                        }
+
+                        updateUIForStage();
+                        loadingModal.classList.add('hidden');
+
+                    } else {
+                        // No saved game found, proceed with new game
+                        loadingModal.classList.add('hidden');
+                        nameEntryModal.classList.remove('hidden');
+                    }
+                } else {
+                    // API call failed, assume no saved game
+                    console.error('Load game failed:', response.statusText);
+                    loadingModal.classList.add('hidden');
+                    nameEntryModal.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Load error:', error);
+                loadingModal.classList.add('hidden');
+                nameEntryModal.classList.remove('hidden');
+            }
+        }
+
+        // --- Helper for creating draggable items from saved state
+        function createDraggableItem(itemData) {
+            const el = document.createElement('div');
+            el.id = itemData.id;
+            el.className = 'draggable-item p-2 rounded-md shadow-sm text-sm';
+            el.draggable = true;
+            el.dataset.tid = itemData.tid;
+            el.dataset.type = itemData.type;
+            el.dataset.account = itemData.account;
+            el.dataset.amount = itemData.amount;
+            
+            const isDebit = itemData.type === 'debit';
+            el.classList.add(isDebit ? 'bg-blue-100' : 'bg-pink-100');
+            
+            const originalTransaction = transactions.find(t => t.id === itemData.tid);
+            const desc = originalTransaction ? originalTransaction.desc : '';
+
+            el.innerHTML = `<span class="font-semibold">${desc}</span><br><span class="font-mono">${formatCurrency(itemData.amount)} (${isDebit ? 'Dr' : 'Cr'})</span>`;
+
+            return el;
+        }
+
+        // --- EVENT LISTENERS ---
+        checkButton.addEventListener('click', () => {
+            const checkFunctions = { 1: checkStage1, 2: checkStage2, 3: checkStage3, 4: checkStage4 };
+            checkFunctions[gameState.currentStage]();
+        });
+
+        nextStageButton.addEventListener('click', () => {
+            gameState.currentStage++;
+            const renderFunctions = { 2: renderStage2, 3: renderStage3, 4: renderStage4 };
+            renderFunctions[gameState.currentStage]();
+            updateUIForStage();
+        });
+
+        modal.querySelector('#close-modal-button').addEventListener('click', () => modal.style.display = 'none');
+        saveGameButton.addEventListener('click', saveGame);
+        loadGameButton.addEventListener('click', loadGame);
+        loadGameModalButton.addEventListener('click', loadGame);
+
+        // --- Custom Scrollbar Listeners ---
+        let scrollInterval;
+        const scrollAmount = 50;
+        const ledgersContainer = document.getElementById('ledgers-container');
+        const scrollUpButton = document.getElementById('scroll-up-button');
+        const scrollDownButton = document.getElementById('scroll-down-button');
+
+        const startScrolling = (direction) => {
+            if (scrollInterval) return;
+            ledgersContainer.scrollTop += direction * scrollAmount;
+            scrollInterval = setInterval(() => {
+                ledgersContainer.scrollTop += direction * scrollAmount;
+            }, 100);
+        };
+
+        const stopScrolling = () => {
+            clearInterval(scrollInterval);
+            scrollInterval = null;
+        };
+        
+        scrollUpButton.addEventListener('mousedown', () => startScrolling(-1));
+        scrollDownButton.addEventListener('mousedown', () => startScrolling(1));
+        document.body.addEventListener('mouseup', stopScrolling);
+        document.body.addEventListener('mouseleave', stopScrolling);
+        scrollUpButton.addEventListener('touchstart', (e) => { e.preventDefault(); startScrolling(-1); });
+        scrollDownButton.addEventListener('touchstart', (e) => { e.preventDefault(); startScrolling(1); });
+        scrollUpButton.addEventListener('touchend', stopScrolling);
+        scrollDownButton.addEventListener('touchend', stopScrolling);
+
+        // --- INITIALIZE ---
+        function init() {
+            playerGreeting.textContent = `Welcome, ${gameState.playerName}!`;
+            updateScoreDisplay();
+            startTimer();
+            renderStage1(transactions);
+            updateUIForStage();
+        }
+
+        startNewGameButton.addEventListener('click', () => {
+            const name = playerNameInput.value.trim();
+            if (name === '') {
+                showModal(false, 'Name Required', 'Please enter your name to begin.');
+                const tempCloseButton = modal.querySelector('#close-modal-button');
+                const newButton = tempCloseButton.cloneNode(true);
+                tempCloseButton.parentNode.replaceChild(newButton, tempCloseButton);
+                newButton.textContent = 'OK';
+                newButton.addEventListener('click', () => { modal.style.display = 'none' }, { once: true });
+                return;
+            }
+            gameState.playerName = name;
+            nameEntryModal.style.display = 'none';
+            mainContent.style.opacity = '1';
+            mainContent.style.transition = 'opacity 0.5s ease-in-out';
+            init();
+        });
+        
+        // Initial load check
+        loadGame();
+    });
+    </script>
+</body>
+</html>
