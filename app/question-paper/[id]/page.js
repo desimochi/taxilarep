@@ -3,7 +3,7 @@ import { authFetch } from "@/app/lib/fetchWithAuth";
 import BackButton from "@/components/ui/Backbutton";
 import { set } from "date-fns";
 import DOMPurify from "dompurify";
-import { ArrowLeft, BookIcon, EyeIcon, FileEdit, Loader2Icon, UploadCloud, X } from "lucide-react";
+import { ArrowLeft, BookIcon, Download, EyeIcon, FileEdit, Loader2Icon, UploadCloud, X } from "lucide-react";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import { useRouter } from 'next/navigation';
@@ -180,7 +180,7 @@ const handleSubmitEdit = async (e) => {
                     onClick={() => handleOpen(paper, paper.file)}
                     className="text-black hover:text-gray-700 transition-colors"
                   >
-                    <EyeIcon size={18} />
+                    <Download size={18} />
                   </button> 
                   <button
                     onClick={() => handleEdit(paper)}
@@ -253,22 +253,12 @@ const handleSubmitEdit = async (e) => {
             )}
             {previewOpen && (
               <>
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                <div className="bg-white rounded-lg shadow-lg max-w-3xl p-6 relative w-full h-full">
-                  <button
-                    className="absolute top-4 right-2 text-gray-600 hover:text-gray-800"
-                    onClick={() => setPrevirewOpen(false)}
-                    >
-                    <X className="h-6 w-6" />
-                    </button>
 
                     <iframe
                       src={`https://api.taxila.in/exam-paper-file/${editData.id}`}
                       className="w-full h-full border-none"
                         title="Document Preview"
                         />
-                </div>
-                </div>
                 </>)}
                 {editPaper && (
           <>
