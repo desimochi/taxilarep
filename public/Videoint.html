@@ -570,7 +570,8 @@
             }
             
             try {
-                videoStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                // Requesting both video and audio streams
+                videoStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
                 videoFeed.srcObject = videoStream;
                 videoFeed.classList.remove('hidden');
                 cameraBtn.classList.remove('hidden');
@@ -909,7 +910,7 @@
                 <div class="space-y-4">
                     <div><h4 class="text-lg font-bold mb-2 text-gray-800">Summary</h4><p class="text-gray-700 text-sm bg-gray-50 p-4 rounded-lg">${analysis.summary}</p></div>
                     <div><h4 class="text-lg font-bold mb-2 text-green-700">Strong Matches</h4><div class="text-gray-700 bg-green-50 p-4 rounded-lg">${createList(analysis.strengths)}</div></div>
-                    <div><h4 class="text-lg font-bold mb-2 text-red-700">Improvement Suggestions</h4><div class="text-gray-700 bg-red-50 p-4 rounded-lg">${createList(analysis.improvement_suggestions)}</div></div>
+                    <div><h5 class="text-lg font-bold mb-2 text-red-700">Improvement Suggestions</h5><div class="text-gray-700 bg-red-50 p-4 rounded-lg">${createList(analysis.improvement_suggestions)}</div></div>
                 </div>`;
         }
 
@@ -969,7 +970,7 @@
                 cvAnalysis: currentCvAnalysis,
                 videoUrl: null
             };
-             const YOUR_API_ENDPOINT = "https://erp.taxila.in/api/game/interview";
+             const YOUR_API_ENDPOINT = "http://localhost:3000/api/game/interview";
             try {
                 const response = await fetch(YOUR_API_ENDPOINT, {
                     method: 'POST',
