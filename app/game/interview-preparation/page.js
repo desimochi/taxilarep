@@ -23,5 +23,5 @@ export default function HtmlPage() {
         className="w-full h-full border-none"
       />
     </div>
-  );
+  ); 
 }
