@@ -821,7 +821,7 @@
             }
         }
 
-        async function handleRecordingStop() {
+        function handleRecordingStop() {
             if (videoStream) {
                 videoStream.getTracks().forEach(track => track.stop());
                 videoStream = null;
@@ -829,29 +829,31 @@
             videoFeed.classList.add('hidden');
             cameraBtn.classList.add('hidden');
             
-            let videoUrl = null;
+            let videoBlob = null;
             if (recordedChunks.length > 0) {
-                const videoBlob = new Blob(recordedChunks, { type: 'video/webm' });
-                videoUrl = await uploadVideo(videoBlob);
+                videoBlob = new Blob(recordedChunks, { type: 'video/webm' });
             }
 
             const unanalyzedEntries = interviewLog.filter(entry => !entry.feedback);
             if (unanalyzedEntries.length > 0) {
                 interviewFeedbackSection.classList.remove('hidden');
                 finalFeedbackLoader.classList.remove('hidden');
-                await getAndDisplayFeedback(unanalyzedEntries, finalFeedbackContent);
-                finalFeedbackLoader.classList.add('hidden');
+                getAndDisplayFeedback(unanalyzedEntries, finalFeedbackContent).then(() => {
+                    finalFeedbackLoader.classList.add('hidden');
+                    const finalScore = calculateAndDisplayOverallScore(interviewLog);
+                    saveSession(finalScore);
+                    showFinalReport(interviewLog, finalScore, videoBlob);
+                });
             } else {
                  interviewFeedbackSection.classList.add('hidden');
+                 const finalScore = calculateAndDisplayOverallScore(interviewLog);
+                 saveSession(finalScore);
+                 showFinalReport(interviewLog, finalScore, videoBlob);
             }
-            
-            const finalScore = calculateAndDisplayOverallScore(interviewLog);
-            await saveSession(finalScore, videoUrl);
-            showFinalReport(interviewLog, finalScore, videoUrl);
         }
 
 
-        function showFinalReport(log, score, videoUrl) {
+        function showFinalReport(log, score, videoBlob) {
             switchScreen(finalReportScreen);
             calculateAndDisplayOverallScore(log);
             finalFeedbackContent.innerHTML = '';
@@ -859,7 +861,8 @@
                 if(entry.feedback) displayFeedback(entry.feedback, entry.question, finalFeedbackContent);
             });
 
-            if (videoUrl) {
+            if (videoBlob) {
+                const videoUrl = URL.createObjectURL(videoBlob);
                 downloadVideoBtn.href = videoUrl;
                 downloadVideoBtn.classList.remove('hidden');
             } else {
@@ -949,36 +952,12 @@
             document.body.removeChild(link);
         }
 
-        async function uploadVideo(blob) {
-            if (!storage || !userId) {
-                console.warn("Firebase Storage not initialized or user not logged in. Skipping video upload.");
-                return null;
-            }
-            reportActionStatus.textContent = 'Uploading video...';
-            try {
-                const appId = typeof __app_id !== 'undefined' ? __app_id : 'taxilax';
-                const fileName = `${userId}-${new Date().toISOString()}.webm`;
-                const storageRef = ref(storage, `artifacts/${appId}/public/data/videos/${fileName}`);
-                
-                const uploadTask = await uploadBytes(storageRef, blob);
-                const downloadURL = await getDownloadURL(uploadTask.ref);
-                
-                reportActionStatus.textContent = 'Video saved successfully!';
-                setTimeout(() => { reportActionStatus.textContent = ''; }, 3000);
-                return downloadURL;
-            } catch (error) {
-                console.error("Video upload failed:", error);
-                reportActionStatus.textContent = 'Error saving video.';
-                setTimeout(() => { reportActionStatus.textContent = ''; }, 3000);
-                return null;
-            }
-        }
         function getUserId() {
                 const params = new URLSearchParams(window.location.search);
                 return params.get("userId") || "guest";
             }
         // --- HISTORY & STORAGE (with Firestore) ---
-        async function saveSession(score, videoUrl = null) {
+        async function saveSession(score) {
            const userId = getUserId();
             const session = {
                 date: new Date().toISOString(),
@@ -988,7 +967,7 @@
                 overallScore: score,
                 log: interviewLog,
                 cvAnalysis: currentCvAnalysis,
-                videoUrl: videoUrl
+                videoUrl: null
             };
              const YOUR_API_ENDPOINT = "http://localhost:3000/api/game/interview";
             try {
@@ -1075,10 +1054,8 @@
         });
         
         // Initial setup
-        initializeFirebase();
         switchScreen(welcomeScreen);
 
     </script>
 </body>
 </html>
-
