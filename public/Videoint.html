@@ -58,7 +58,7 @@
         }
         #videoFeed {
             position: fixed;
-            bottom: 20px;
+            bottom: 266px;
             right: 20px;
             width: 200px;
             height: 150px;
@@ -186,7 +186,7 @@
                 <h3 class="text-lg font-bold mb-2 text-gray-800">Your Answer:</h3>
                 <textarea id="answer" class="w-full h-32 p-3 border border-gray-200 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-500 transition" placeholder="Your transcribed answer will appear here..."></textarea>
                 <div id="status" class="text-center text-gray-600 my-3 h-6 font-semibold"></div>
-                <div class="flex items-center justify-center space-x-4">
+                <div class="flex items-center justify-center space-x-4 mt-2">
                     <button id="cameraBtn" class="p-3 btn-secondary rounded-full hover:shadow-md transition-transform transform hover:scale-110 flex items-center justify-center hidden">
                         <svg id="cameraIcon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.55a1 1 0 011.45.89V14.1a1 1 0 01-1.45.89L15 14M5 8h10a2 2 0 012 2v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4a2 2 0 012-2z"></path></svg>
                     </button>
@@ -571,7 +571,8 @@
             
             try {
                 // Requesting both video and audio streams
-                videoStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                videoStream = stream;
                 videoFeed.srcObject = videoStream;
                 videoFeed.classList.remove('hidden');
                 cameraBtn.classList.remove('hidden');
@@ -698,6 +699,13 @@
                 recordBtn.disabled = false;
                 statusEl.textContent = 'Tap the record button when you are ready to answer.';
             });
+            // Failsafe to ensure the button is enabled, even if the speak callback fails on mobile
+            setTimeout(() => {
+                recordBtn.disabled = false;
+                if(statusEl.textContent === ''){
+                     statusEl.textContent = 'Tap the record button when you are ready to answer.';
+                }
+            }, 3000);
         }
 
         function toggleRecording() {
