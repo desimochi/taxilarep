@@ -658,6 +658,7 @@
             endInterviewBtn.classList.add('hidden');
             answerEl.value = '';
             statusEl.textContent = '';
+            recordBtn.disabled = true;
 
             if (questionNumber === 1) {
                 currentQuestion = "Tell me about yourself.";
@@ -691,13 +692,12 @@
             
             const randomEmoji = questionEmojis[Math.floor(Math.random() * questionEmojis.length)];
             questionEl.textContent = `${randomEmoji} ${currentQuestion}`;
-            
-            const startRecordingCallback = () => {
-                statusEl.textContent = 'Get ready... recording will start in 3 seconds.';
-                setTimeout(() => { if (!isRecording) { toggleRecording(); } }, 3000);
-            };
 
-            speak(currentQuestion, startRecordingCallback);
+            // Speak the question and then enable the record button for user to tap
+            speak(currentQuestion, () => {
+                recordBtn.disabled = false;
+                statusEl.textContent = 'Tap the record button when you are ready to answer.';
+            });
         }
 
         function toggleRecording() {
@@ -716,7 +716,7 @@
         function updateCumulativeScoreDisplay() {
             const scoredEntries = interviewLog.filter(entry => entry.score > 0);
             if (scoredEntries.length > 0) {
-                const totalScore = scoredEntries.reduce((sum, item) => sum + item.score, 0);
+                const totalScore = scoredEntries.reduce((sum, item) => sum + (item.score || 0), 0);
                 const averageScore = totalScore / scoredEntries.length;
                 const percentageScore = Math.round((averageScore / 10) * 100);
                 cumulativeScoreDisplay.textContent = `Score: ${percentageScore}%`;
