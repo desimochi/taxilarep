@@ -48,7 +48,7 @@ export default function DownloadAdmitCard ({data, isOpen, onClose}){
       <div className="text-center">
         <p class="font-bold text-2xl">TAXILA BUSINESS SCHOOL</p>
         <p class="text-xs">PGDM Approved by AICTE, Ministry of HRD, Government of India</p>
-        <p class="text-xs font-semibold">PGDM Batch-{data.student_batch} {data.student_term} Examination (December 2024)</p>
+        <p class="text-xs font-semibold">PGDM Batch-{data.student_batch} {data.student_term} Examination </p>
       </div>
     </div>
   </div>

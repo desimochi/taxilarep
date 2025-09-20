@@ -160,6 +160,26 @@ const handleSubmit = async () => {
             />
           </td>
         </tr>
+         <tr>
+          <td className="px-6 py-3">Electricity Bill </td>
+          <td className="px-6 py-3">
+            <input
+              type="checkbox"
+              checked={formData.electcity_bill_fee_paid}
+              onChange={() => handleCheckboxChange('electcity_bill_fee_paid')}
+            />
+          </td>
+        </tr>
+          <tr>
+          <td className="px-6 py-3">Other Fee </td>
+          <td className="px-6 py-3">
+            <input
+              type="checkbox"
+              checked={formData.other_paid}
+              onChange={() => handleCheckboxChange('other_paid')}
+            />
+          </td>
+        </tr>
         <tr>
           <td className="px-6 py-3">Extra Penalty </td>
           <td className="px-6 py-3">
