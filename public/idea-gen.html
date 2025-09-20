@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Innovation Academy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .node { stroke-width: 2px; cursor: pointer; }
+        .node-label {
+            pointer-events: none;
+            user-select: none;
+            font-size: 12px;
+            font-weight: 500;
+            fill: #f3f4f6;
+            text-shadow: 0 0 4px #000, 0 0 4px #000;
+        }
+        .link { stroke: #4b5563; stroke-opacity: 0.6; }
+        .glow { filter: url(#glow); }
+        .idea-card { transition: all 0.2s ease-in-out; }
+        .idea-card:hover { transform: translateY(-4px); box-shadow: 0 8px 12px -3px rgba(0, 0, 0, 0.1); }
+        .idea-card.selected { border-color: #3b82f6; transform: translateY(-4px); box-shadow: 0 0 15px rgba(59, 130, 246, 0.5); }
+        .slot.filled { border-style: solid; }
+        .progress-bar { transition: width 0.3s ease-in-out; }
+        .problem-stat-bar { background-color: rgba(255, 255, 255, 0.1); }
+        .problem-stat-fill { transition: width 0.3s ease; }
+        #close-modal-btn { font-size: 2rem; line-height: 1; }
+        #toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            border-radius: 8px;
+            color: white;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+            z-index: 100;
+        }
+        #toast.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        #toast.success { background-color: #28a745; }
+        #toast.error { background-color: #dc3545; }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-200 flex flex-col items-center h-screen p-2">
+
+    <!-- Splash Screen Modal -->
+    <div id="splash-screen" class="fixed inset-0 bg-gray-900 bg-opacity-90 flex items-center justify-center z-50" style="display: none;">
+        <div class="bg-gray-800 p-8 rounded-lg shadow-xl text-center max-w-sm w-full">
+            <h2 class="text-2xl font-bold mb-2 text-white">Welcome to the</h2>
+            <h1 class="text-4xl font-bold mb-4 text-blue-400">Innovation Academy</h1>
+             <p class="text-xs text-gray-500 mb-6">Created at Taxila Business School, Jaipur</p>
+            <p class="text-gray-400 mb-6">Please enter your name to begin your journey.</p>
+            <input type="text" id="player-name-input" placeholder="Your Name" class="w-full bg-gray-700 border border-gray-600 rounded-md px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4">
+            <button id="begin-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-transform transform hover:scale-105">Begin</button>
+        </div>
+    </div>
+
+    <!-- Main Application Container (initially hidden) -->
+    <div id="app-container" class="w-full h-full flex flex-col items-center" style="display: none;">
+        <div class="w-full max-w-7xl text-center mb-2 flex-shrink-0">
+            <p class="text-sm text-gray-500">Created at Taxila Business School, Jaipur</p>
+            <h1 class="text-3xl font-bold text-white">Innovation Academy</h1>
+            <p id="subtitle" class="text-md text-gray-400">Phase 1: Observe how ideas are born and connect.</p>
+        </div>
+
+        <div class="w-full max-w-7xl flex-grow h-full min-h-0">
+            <!-- PHASE 1: OBSERVER -->
+            <div id="phase-1-observer" class="w-full h-full grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div class="md:col-span-2 bg-gray-800 rounded-lg relative overflow-hidden">
+                    <div id="simulation-canvas-container" class="w-full h-full"></div>
+                    <div id="tooltip" class="absolute bg-gray-900 text-white p-2 rounded-md shadow-lg opacity-0 pointer-events-none transition-opacity duration-200 text-sm"></div>
+                </div>
+                <div class="md:col-span-1 bg-gray-800 rounded-lg p-3 flex flex-col space-y-3">
+                    <h2 class="text-xl font-semibold border-b border-gray-700 pb-2">Control Panel</h2>
+                    <div class="flex-grow space-y-3 overflow-y-auto text-sm">
+                        <div>
+                            <h3 class="font-semibold mb-1">Simulation Controls</h3>
+                            <div class="flex space-x-2">
+                                <button id="start-stop-btn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded-md">Start</button>
+                                <button id="reset-sim-btn" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-3 rounded-md">Reset Sim</button>
+                            </div>
+                        </div>
+                         <div>
+                            <label for="speed-slider" class="font-semibold">Generation Speed: <span id="speed-value">1.0</span>x</label>
+                            <input type="range" id="speed-slider" min="0.1" max="5" step="0.1" value="1" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                        </div>
+                        <div>
+                            <h3 class="font-semibold mb-1">Creativity Model</h3>
+                            <div class="flex flex-col space-y-1">
+                                <label><input type="radio" name="model" value="combinatorial" checked> Combinatorial (A+B→C)</label>
+                                <label><input type="radio" name="model" value="exploratory"> Exploratory (A→A')</label>
+                                <label><input type="radio" name="model" value="hybrid"> Hybrid (Mix)</label>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold mb-1">Add Your Concept</h3>
+                            <div class="flex space-x-2">
+                                <input type="text" id="new-concept-input" placeholder="e.g., Quantum Physics" class="flex-grow bg-gray-700 border border-gray-600 rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                <button id="add-concept-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-1 px-3 rounded-md">Add</button>
+                            </div>
+                        </div>
+                         <div>
+                            <h3 class="font-semibold mb-1">Statistics</h3>
+                            <p>Total Ideas: <span id="total-nodes">0</span> | Connections: <span id="total-links">0</span></p>
+                        </div>
+                         <div>
+                            <h3 class="font-semibold mb-1">Game Actions</h3>
+                            <div class="flex flex-col space-y-2">
+                                <button id="save-game-btn-1" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-3 rounded-md">Save Game</button>
+                                <button id="reset-game-btn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-3 rounded-md">Reset All Progress</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pt-3 border-t border-gray-700">
+                        <h3 class="font-semibold mb-1 text-sm">Phase Goal</h3>
+                        <p class="text-xs text-gray-400">Observe until 50 ideas are generated to unlock the next phase.</p>
+                        <button id="proceed-btn" class="w-full mt-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-bold py-2 px-3 rounded-md text-sm" disabled>
+                            Proceed to IdeaCraft Challenge
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PHASE 2: IDEACRAFT (STABLE RESET LAYOUT) -->
+            <div id="phase-2-ideacraft" class="w-full h-full flex flex-col gap-3" style="display: none;">
+                <!-- Workbench -->
+                <div class="bg-gray-800 rounded-lg p-4 flex flex-col items-center justify-center">
+                    <h2 class="text-xl font-semibold mb-4">Workbench</h2>
+                    <div class="flex items-center justify-center gap-2 w-full">
+                        <div id="slot-1" class="slot w-2/5 h-36 bg-gray-700/50 rounded-lg border-2 border-dashed border-gray-600 flex items-center justify-center p-2"><span class="text-gray-500 text-sm">Select Idea 1</span></div>
+                        <div id="workbench-middle" class="w-1/5 h-36 flex flex-col items-center justify-center">
+                           <span class="text-3xl font-bold text-blue-500">+</span>
+                        </div>
+                        <div id="slot-2" class="slot w-2/5 h-36 bg-gray-700/50 rounded-lg border-2 border-dashed border-gray-600 flex items-center justify-center p-2"><span class="text-gray-500 text-sm">Select Idea 2</span></div>
+                    </div>
+                    <div class="mt-4 flex items-center gap-4">
+                        <button id="previewOutcomeBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg text-lg transition-all" style="display: none;">Preview Outcome</button>
+                        <div>
+                            <button id="combineBtn" class="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-500 disabled:cursor-not-allowed text-white font-bold py-2 px-6 rounded-lg text-lg transition-all" style="display: none;">Combine</button>
+                            <div id="action-feedback" class="mt-1 text-xs text-gray-400 opacity-0 text-center"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Wrapper -->
+                <div class="w-full flex-grow h-full min-h-0 grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <!-- Mindscape -->
+                    <div class="bg-gray-800 rounded-lg p-3 flex flex-col">
+                        <h2 class="text-xl font-semibold border-b border-gray-700 pb-2 mb-2">Mindscape</h2>
+                        <div id="mindscape" class="flex-grow overflow-y-auto pr-2 space-y-2 min-h-0"></div>
+                    </div>
+                    <!-- Objective & Resources -->
+                    <div class="bg-gray-800 rounded-lg p-3 flex flex-col gap-3">
+                        <div class="bg-gray-700/50 p-3 rounded-lg">
+                            <h2 class="text-lg font-semibold border-b border-gray-700 pb-1 mb-2">Objective</h2>
+                            <div id="problem-container"></div>
+                        </div>
+                        <div class="bg-gray-700/50 p-3 rounded-lg flex-grow">
+                            <h2 class="text-lg font-semibold border-b border-gray-700 pb-1 mb-2">Resources</h2>
+                            <label class="text-md">Cognitive Energy</label>
+                            <div class="w-full bg-gray-600 rounded-full h-5 mt-1">
+                                <div id="energyBar" class="progress-bar bg-green-500 h-5 rounded-full text-center text-black font-semibold text-xs flex items-center justify-center" style="width: 100%;">100/100</div>
+                            </div>
+                             <label class="text-md mt-3">Innovation Score</label>
+                            <div class="w-full bg-gray-600 rounded-full h-5 mt-1">
+                                <div id="scoreBar" class="progress-bar bg-yellow-500 h-5 rounded-full text-center text-black font-semibold text-xs flex items-center justify-center" style="width: 0%;">0/100</div>
+                            </div>
+                             <label class="text-md mt-3">Innovation Rank</label>
+                            <div id="rank-display" class="text-xl font-bold text-center mt-1 p-2 bg-gray-900 rounded-lg text-gray-400">Dumbo</div>
+                            <label class="text-md mt-3">Time Remaining</label>
+                            <div id="timer-display" class="text-lg font-bold text-center mt-1 p-2 bg-gray-900 rounded-lg">01:00:00</div>
+                            <button id="finish-challenge-btn" class="mt-4 w-full bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-2 px-4 rounded-lg" style="display: none;">Finish Challenge</button>
+                             <div class="mt-4 flex space-x-2">
+                                <button id="save-game-btn-2" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-3 rounded-md">Save Game</button>
+                                <button id="reset-game-btn-2" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-3 rounded-md">Reset Game</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analysis Modal -->
+    <div id="analysis-modal" class="fixed inset-0 bg-gray-900 bg-opacity-80 flex items-center justify-center z-50" style="display: none;">
+        <div class="bg-gray-800 p-6 rounded-lg shadow-xl max-w-md w-full relative">
+            <button id="close-modal-btn" class="absolute top-2 right-3 text-gray-400 hover:text-white">&times;</button>
+            <h2 id="modal-title" class="text-2xl font-bold mb-4 text-blue-400">New Idea Created!</h2>
+            <div id="modal-content" class="text-left">
+                <!-- Content will be injected by JS -->
+            </div>
+            <button id="modal-ok-btn" class="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">Continue</button>
+        </div>
+    </div>
+    
+    <!-- Game Over Modal -->
+    <div id="game-over-modal" class="fixed inset-0 bg-gray-900 bg-opacity-80 flex items-center justify-center z-50" style="display: none;">
+        <div class="bg-gray-800 p-6 rounded-lg shadow-xl max-w-md w-full text-center">
+            <h2 id="game-over-title" class="text-3xl font-bold mb-4 text-red-500">Time's Up!</h2>
+            <p id="game-over-message" class="text-gray-300 mb-4">Your IdeaCraft Challenge has concluded.</p>
+            <h3 class="text-lg font-semibold">Final Innovation Score:</h3>
+            <p id="final-score-display" class="text-4xl font-bold text-yellow-400 my-2">0</p>
+             <h3 class="text-lg font-semibold mt-4">Final Rank:</h3>
+            <p id="final-rank-display" class="text-3xl font-bold my-2 text-gray-400">Dumbo</p>
+            <h3 class="text-lg font-semibold mt-2">Time Taken:</h3>
+            <p id="time-taken-display" class="text-2xl font-bold text-gray-300 my-2">00:00</p>
+            <button id="restart-phase2-btn" class="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">Try Again</button>
+        </div>
+    </div>
+
+    <!-- Recharge Modal -->
+    <div id="recharge-modal" class="fixed inset-0 bg-gray-900 bg-opacity-90 flex items-center justify-center z-50" style="display: none;">
+        <div class="bg-gray-800 p-8 rounded-lg shadow-xl text-center max-w-sm w-full">
+            <h2 class="text-2xl font-bold mb-4 text-yellow-400">Energy Depleted!</h2>
+            <p class="text-gray-400 mb-2">This is your one-time emergency recharge.</p>
+            <p class="text-gray-400 mb-4">Please wait while your cognitive energy recharges.</p>
+            <div id="recharge-timer-display" class="text-4xl font-bold text-white my-4">05:00</div>
+        </div>
+    </div>
+
+    <div id="toast"></div>
+
+
+    <script>
+        // --- CONFIG & GLOBAL STATE ---
+        const API_ENDPOINT = 'https://erp.taxila.in/api/game/idea'; // Replace with your actual endpoint
+        let globalState = {
+            playerName: '',
+            currentPhase: 1,
+            observerData: null,
+            ideacraftData: null,
+        };
+
+        const splashScreen = document.getElementById('splash-screen');
+        const appContainer = document.getElementById('app-container');
+        const beginBtn = document.getElementById('begin-btn');
+        const playerNameInput = document.getElementById('player-name-input');
+       
+        // --- SAVE/LOAD/RESET LOGIC ---
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = ``; // Reset classes
+            toast.classList.add('show', type);
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function getUserId() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get("userId") || "guest";
+        }
+
+        async function saveGameState() {
+            const userId = getUserId();
+            const nameParam = new URLSearchParams(window.location.search).get("name");
+    const name = nameParam ? JSON.parse(decodeURIComponent(nameParam)) : 'Player';
+            globalState.observerData = ObserverApp.getState();
+            globalState.ideacraftData = IdeaCraftApp.getState();
+            try {
+                const response = await fetch(`${API_ENDPOINT}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({userId: userId, name: name, gameState: globalState})
+                });
+                if (!response.ok) throw new Error('Failed to save game.');
+                showToast("Game Saved Successfully!");
+            } catch (error) {
+                console.error('Error saving game state:', error);
+                showToast("Error saving game.", "error");
+            }
+        }
+
+        async function loadGameState() {
+            const userId = getUserId();
+            try {
+                const response = await fetch(`${API_ENDPOINT}?userId=${userId}`);
+                if (response.status === 404) {
+                     console.log("No saved game found. Starting new game.");
+                     startNewGame();
+                     return;
+                }
+                if (!response.ok) throw new Error('Failed to load game.');
+                
+                const savedData = await response.json();
+                
+                if (savedData && savedData.gameState) {
+                    globalState = savedData.gameState;
+                } else {
+                    console.error("Loaded data is not in the expected format:", savedData);
+                    throw new Error("Invalid game data format.");
+                }
+                
+                splashScreen.style.display = 'none';
+                appContainer.style.display = 'flex';
+                document.getElementById('subtitle').textContent = `Welcome back, ${globalState.playerName}!`;
+
+                ObserverApp.init(globalState.observerData);
+
+                if (globalState.currentPhase === 2) {
+                     switchToPhase2(true); // true indicates it's from a load
+                }
+
+                showToast("Game Loaded Successfully!");
+
+            } catch (error) {
+                console.error('Error loading game state:', error);
+                showToast("Could not load saved game. Starting new game.", "error");
+                startNewGame();
+            }
+        }
+        
+        async function resetGame() {
+            if (!confirm("Are you sure you want to reset all progress? This cannot be undone.")) {
+                return;
+            }
+            const userId = getUserId();
+            try {
+                const response = await fetch(`${API_ENDPOINT}?userId=${userId}`, { method: 'DELETE' });
+                if (!response.ok && response.status !== 404) { // 404 is okay, means no game existed
+                    throw new Error('Failed to reset game on server.');
+                }
+                showToast("Game data reset successfully.");
+            } catch (error) {
+                console.error('Error resetting game state on server:', error);
+                showToast("Error clearing saved data.", "error");
+            }
+            
+            setTimeout(() => location.reload(), 1000);
+        }
+        
+        function startNewGame() {
+             splashScreen.style.display = 'none';
+             appContainer.style.display = 'flex';
+             document.getElementById('subtitle').textContent = `Welcome, ${globalState.playerName}! Phase 1: Observe how ideas are born.`;
+             ObserverApp.init(); // Start with default state
+        }
+        
+        // --- INITIALIZATION ---
+        async function initializeGameOnLoad() {
+            const userId = getUserId();
+            // If no specific user is identified, we must show the splash screen to get a name.
+            if (userId === "guest") {
+                splashScreen.style.display = 'flex';
+                return;
+            }
+
+            try {
+                // Attempt to fetch data for the user identified in the URL.
+                const response = await fetch(`${API_ENDPOINT}?userId=${userId}`);
+                
+                if (response.status === 404) {
+                    // A user ID exists, but no saved game. Show splash screen to get their name for a new game.
+                    splashScreen.style.display = 'flex';
+                    return;
+                }
+                if (!response.ok) {
+                    throw new Error(`Server responded with status: ${response.status}`);
+                }
+
+                const savedData = await response.json();
+                
+                if (savedData && savedData.gameState) {
+                    globalState = savedData.gameState;
+                } else {
+                    // The data from the server was not in the expected format.
+                    throw new Error("Invalid game data format received from server.");
+                }
+                
+                // If we successfully load data, bypass the splash screen and start the game.
+                splashScreen.style.display = 'none';
+                appContainer.style.display = 'flex';
+                document.getElementById('subtitle').textContent = `Welcome back, ${globalState.playerName}!`;
+
+                // Initialize the game modules with the loaded state.
+                ObserverApp.init(globalState.observerData);
+                if (globalState.currentPhase === 2) {
+                    switchToPhase2(true);
+                }
+
+                showToast("Game Loaded Successfully!");
+
+            } catch (error) {
+                console.error('Automatic game load failed:', error);
+                showToast("Could not auto-load game.", "error");
+                // As a fallback, show the splash screen.
+                splashScreen.style.display = 'flex';
+            }
+        }
+
+        const handleBegin = () => {
+            const name = playerNameInput.value.trim();
+            if (name) {
+                globalState.playerName = name;
+                // Since this is for a new game, we don't load, we start fresh.
+                // The auto-loader handles returning players.
+                startNewGame();
+            } else {
+                playerNameInput.placeholder = "Please enter a name to continue!";
+                playerNameInput.classList.add('placeholder-red-400');
+            }
+        };
+
+        beginBtn.addEventListener('click', handleBegin);
+        playerNameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleBegin();
+        });
+
+        // --- MAIN CONTROLLER ---
+        const phase1El = document.getElementById('phase-1-observer');
+        const phase2El = document.getElementById('phase-2-ideacraft');
+        const subtitleEl = document.getElementById('subtitle');
+        const proceedBtn = document.getElementById('proceed-btn');
+
+        function switchToPhase2(fromLoad = false) {
+             ObserverApp.stop();
+             phase1El.style.display = 'none';
+             phase2El.style.display = 'flex';
+             subtitleEl.textContent = `${globalState.playerName}'s IdeaCraft Challenge!`;
+             globalState.currentPhase = 2;
+             
+             if(fromLoad) {
+                 IdeaCraftApp.init(null, globalState.ideacraftData);
+             } else {
+                 IdeaCraftApp.init(ObserverApp.getNodes());
+             }
+        }
+
+        proceedBtn.addEventListener('click', () => switchToPhase2(false));
+        document.getElementById('save-game-btn-1').addEventListener('click', saveGameState);
+        document.getElementById('save-game-btn-2').addEventListener('click', saveGameState);
+        document.getElementById('reset-game-btn').addEventListener('click', resetGame);
+        document.getElementById('reset-game-btn-2').addEventListener('click', resetGame);
+
+        // --- PHASE 1: OBSERVER APP ---
+        const ObserverApp = (() => {
+            let nodes = [], links = [], simulation, svg, width, height, timer, config = { running: false, model: 'combinatorial', speed: 1 };
+            const container = document.getElementById('simulation-canvas-container');
+            const tooltip = document.getElementById('tooltip');
+            const baseConcepts = ["AI", "Blockchain", "Art", "Ecology", "Social Media", "Gaming", "Health"];
+
+            function init(initialData = null) {
+                const rect = container.getBoundingClientRect();
+                width = rect.width;
+                height = rect.height;
+
+                d3.select(container).selectAll("*").remove(); // Clear previous SVG if any
+
+                svg = d3.select(container).append("svg")
+                    .attr("width", width)
+                    .attr("height", height)
+                    .attr("viewBox", [0, 0, width, height]);
+                
+                svg.append("defs").append("filter")
+                    .attr("id", "glow")
+                    .append("feGaussianBlur")
+                    .attr("stdDeviation", 3.5)
+                    .attr("result", "coloredBlur");
+
+                svg.append("g").attr("class", "links");
+                svg.append("g").attr("class", "nodes");
+                
+                simulation = d3.forceSimulation(nodes)
+                    .force("link", d3.forceLink(links).id(d => d.id).distance(80))
+                    .force("charge", d3.forceManyBody().strength(-300))
+                    .force("center", d3.forceCenter(width / 2, height / 2))
+                    .on("tick", ticked);
+
+                if (initialData) {
+                    setState(initialData);
+                } else {
+                    reset();
+                }
+                setupEventListeners();
+            }
+            
+            function setupEventListeners() {
+                document.getElementById('start-stop-btn').onclick = () => config.running ? stop() : start();
+                document.getElementById('reset-sim-btn').onclick = reset;
+                document.getElementById('add-concept-btn').onclick = () => {
+                    const input = document.getElementById('new-concept-input');
+                    if (input.value) addNode(input.value, 'base');
+                    input.value = '';
+                };
+                document.querySelectorAll('input[name="model"]').forEach(radio => {
+                    radio.onchange = (e) => config.model = e.target.value;
+                });
+                document.getElementById('speed-slider').oninput = (e) => {
+                    config.speed = parseFloat(e.target.value);
+                    document.getElementById('speed-value').textContent = config.speed.toFixed(1);
+                    if(config.running) {
+                        clearInterval(timer);
+                        timer = setInterval(generateNewIdea, 2000 / config.speed);
+                    }
+                };
+            }
+
+            function addNode(name, type = 'generated', parents = []) {
+                if (nodes.some(n => n.name === name)) return;
+                const newNode = { id: nodes.length, name, type, parents, influence: 0 };
+                nodes.push(newNode);
+                parents.forEach(pId => {
+                    links.push({ source: newNode.id, target: pId });
+                    const parentNode = nodes.find(n => n.id === pId);
+                    if(parentNode) parentNode.influence++;
+                });
+                update();
+                
+                if (nodes.length >= 50) {
+                    proceedBtn.disabled = false;
+                }
+            }
+
+            function generateNewIdea() {
+                if (nodes.length < 2) return;
+                const modelChoice = config.model === 'hybrid' ? (Math.random() < 0.5 ? 'combinatorial' : 'exploratory') : config.model;
+
+                if (modelChoice === 'combinatorial') {
+                    const [p1, p2] = d3.shuffle(nodes.slice())
+                        .slice(0, 2)
+                        .sort((a,b) => a.id - b.id);
+                    const newName = `${p1.name.split(' ')[0]} + ${p2.name.split(' ')[0]}`;
+                    addNode(newName, 'generated', [p1.id, p2.id]);
+                } else {
+                    const parent = d3.shuffle(nodes.slice())[0];
+                    const prefixes = ['Smart', 'Decentralized', 'Applied', 'Virtual'];
+                    const newName = `${prefixes[Math.floor(Math.random()*prefixes.length)]} ${parent.name}`;
+                    addNode(newName, 'generated', [parent.id]);
+                }
+            }
+            
+            function update() {
+                const nodeGroups = svg.select(".nodes").selectAll("g")
+                    .data(nodes, d => d.id)
+                    .join("g")
+                    .call(drag(simulation));
+                
+                nodeGroups.selectAll("*").remove(); 
+
+                nodeGroups.append("circle")
+                    .attr("class", d => `node ${d.influence > 3 ? 'glow' : ''}`)
+                    .attr("r", d => 16 + Math.sqrt(d.influence * 4))
+                    .attr("fill", d => d.type === 'base' ? '#10B981' : '#3B82F6')
+                    .attr("stroke", d => d.influence > 3 ? '#FBBF24' : '#9CA3AF')
+                    .on("mouseover", (event, d) => {
+                        tooltip.style("opacity", 1)
+                               .html(`<b>${d.name}</b><br>Influence: ${d.influence}<br>Type: ${d.type}`);
+                    })
+                    .on("mousemove", (event) => {
+                        tooltip.style("left", (event.pageX + 15) + "px")
+                               .style("top", (event.pageY + 15) + "px");
+                    })
+                    .on("mouseout", () => tooltip.style("opacity", 0));
+                
+                nodeGroups.append("text")
+                    .attr("class", "node-label")
+                    .attr("text-anchor", "middle")
+                    .attr("y", 5)
+                    .text(d => `${d.name} (${d.influence})`);
+
+                svg.select(".links").selectAll("line")
+                    .data(links)
+                    .join("line")
+                    .attr("class", "link");
+
+                simulation.nodes(nodes);
+                simulation.force("link").links(links);
+                simulation.alpha(1).restart();
+                
+                document.getElementById('total-nodes').textContent = nodes.length;
+                document.getElementById('total-links').textContent = links.length;
+            }
+            
+            function ticked() {
+                svg.selectAll(".link")
+                    .attr("x1", d => d.source.x)
+                    .attr("y1", d => d.source.y)
+                    .attr("x2", d => d.target.x)
+                    .attr("y2", d => d.target.y);
+
+                svg.select(".nodes").selectAll("g")
+                    .attr("transform", d => {
+                        const radius = 16 + Math.sqrt(d.influence * 4);
+                        d.x = Math.max(radius, Math.min(width - radius, d.x));
+                        d.y = Math.max(radius, Math.min(height - radius, d.y));
+                        return `translate(${d.x},${d.y})`;
+                    });
+            }
+
+            function drag(simulation) {
+                function dragstarted(event) { if (!event.active) simulation.alphaTarget(0.3).restart(); event.subject.fx = event.subject.x; event.subject.fy = event.subject.y; }
+                function dragged(event) { event.subject.fx = event.x; event.subject.fy = event.y; }
+                function dragended(event) { if (!event.active) simulation.alphaTarget(0); event.subject.fx = null; event.subject.fy = null; }
+                return d3.drag().on("start", dragstarted).on("drag", dragged).on("end", dragended);
+            }
+
+            function start() {
+                if (nodes.length === 0) reset();
+                config.running = true;
+                document.getElementById('start-stop-btn').textContent = "Stop";
+                timer = setInterval(generateNewIdea, 2000 / config.speed);
+            }
+            
+            function stop() {
+                config.running = false;
+                document.getElementById('start-stop-btn').textContent = "Start";
+                clearInterval(timer);
+            }
+
+            function reset() {
+                stop();
+                nodes = [];
+                links = [];
+                baseConcepts.forEach(name => addNode(name, 'base'));
+                proceedBtn.disabled = true;
+                update();
+            }
+            
+            function setState(data) {
+                stop();
+                nodes = data.nodes || [];
+                links = data.links || [];
+                 if (nodes.length >= 50) proceedBtn.disabled = false;
+                update();
+            }
+
+            return { init, start, stop, reset, getNodes: () => nodes, getState: () => ({ nodes, links }), setState };
+        })();
+
+        // --- PHASE 2: IDEACRAFT APP ---
+        const IdeaCraftApp = (() => {
+            let timerInterval = null;
+            let rechargeCountdownInterval = null;
+            let mindscapeEl, slot1El, slot2El, combineBtn, previewOutcomeBtn, actionFeedbackEl, problemContainerEl, energyBarEl, scoreBarEl, workbenchMiddleEl, analysisModalEl, modalTitleEl, modalContentEl, closeModalBtn, modalOkBtn, timerDisplayEl, gameOverModalEl, finalScoreDisplayEl, restartPhase2Btn, timeTakenDisplayEl, finishChallengeBtn, rechargeModalEl, rechargeTimerDisplayEl, rankDisplayEl, finalRankDisplayEl;
+            
+            let state = {};
+            const defaultState = { ideas: [], selectedIds: [], energy: 100, maxEnergy: 100, playerScore: 0, maxScore: 100, currentProblem: null, problemsSolved: 0, nextIdeaId: 0, outcomePreviewed: false, potentialCombination: null, timeRemaining: 3600, gameActive: true, rechargeUsed: false, isRecharging: false };
+
+            const problems = [
+                { title: "A New Way to Share Art", requirements: { novelty: 6, feasibility: 7, impact: 5 } },
+                { title: "Improve Online Communities", requirements: { novelty: 7, feasibility: 8, impact: 8 } },
+                { title: "A Transparent Voting System", requirements: { novelty: 9, feasibility: 6, impact: 9 } },
+            ];
+
+            function init(observerNodes, loadedState = null) {
+                // Cache DOM elements
+                mindscapeEl = document.getElementById('mindscape');
+                slot1El = document.getElementById('slot-1');
+                slot2El = document.getElementById('slot-2');
+                combineBtn = document.getElementById('combineBtn');
+                previewOutcomeBtn = document.getElementById('previewOutcomeBtn');
+                actionFeedbackEl = document.getElementById('action-feedback');
+                problemContainerEl = document.getElementById('problem-container');
+                energyBarEl = document.getElementById('energyBar');
+                scoreBarEl = document.getElementById('scoreBar');
+                workbenchMiddleEl = document.getElementById('workbench-middle');
+                analysisModalEl = document.getElementById('analysis-modal');
+                modalTitleEl = document.getElementById('modal-title');
+                modalContentEl = document.getElementById('modal-content');
+                closeModalBtn = document.getElementById('close-modal-btn');
+                modalOkBtn = document.getElementById('modal-ok-btn');
+                timerDisplayEl = document.getElementById('timer-display');
+                gameOverModalEl = document.getElementById('game-over-modal');
+                finalScoreDisplayEl = document.getElementById('final-score-display');
+                restartPhase2Btn = document.getElementById('restart-phase2-btn');
+                timeTakenDisplayEl = document.getElementById('time-taken-display');
+                finishChallengeBtn = document.getElementById('finish-challenge-btn');
+                rechargeModalEl = document.getElementById('recharge-modal');
+                rechargeTimerDisplayEl = document.getElementById('recharge-timer-display');
+                rankDisplayEl = document.getElementById('rank-display');
+                finalRankDisplayEl = document.getElementById('final-rank-display');
+
+                if (timerInterval) clearInterval(timerInterval);
+                if (rechargeCountdownInterval) clearInterval(rechargeCountdownInterval);
+
+                if (loadedState) {
+                    setState(loadedState);
+                } else {
+                    // Reset to default state
+                    state = JSON.parse(JSON.stringify(defaultState));
+
+                    observerNodes.forEach(node => {
+                        generateIdea({
+                            name: node.name,
+                            stats: {
+                                novelty: Math.ceil(Math.random() * 5 + 3),
+                                feasibility: Math.ceil(Math.random() * 5 + 4),
+                                impact: Math.ceil(Math.random() * 5 + node.influence),
+                            }
+                        });
+                    });
+                    state.currentProblem = problems[0];
+                    state.problemsSolved = 0;
+                }
+                
+                timerInterval = setInterval(updateTimer, 1000);
+                
+                // Event Listeners (ensure they are not duplicated)
+                combineBtn.onclick = handleCombine;
+                previewOutcomeBtn.onclick = handlePreviewOutcome;
+                finishChallengeBtn.onclick = () => endGame('score');
+                const closeModal = () => analysisModalEl.style.display = 'none';
+                closeModalBtn.onclick = closeModal;
+                modalOkBtn.onclick = closeModal;
+                restartPhase2Btn.onclick = () => {
+                    gameOverModalEl.style.display = 'none';
+                    init(observerNodes); // Restart phase 2 only
+                };
+
+                render();
+            }
+            
+            function setState(newState) {
+                state = { ...JSON.parse(JSON.stringify(defaultState)), ...newState };
+                // Ensure complex objects are handled correctly
+                state.currentProblem = problems[state.problemsSolved];
+            }
+            
+            function getState() {
+                // Make sure to not return a reference
+                return JSON.parse(JSON.stringify(state));
+            }
+
+            function updateTimer() {
+                if (state.timeRemaining > 0 && state.gameActive) {
+                    state.timeRemaining--;
+                } else if (state.gameActive) {
+                    endGame('time');
+                }
+                renderTimer();
+            }
+
+            function renderTimer() {
+                 const minutes = Math.floor(state.timeRemaining / 60);
+                 const seconds = state.timeRemaining % 60;
+                 const hours = Math.floor(minutes / 60);
+                 const displayMinutes = minutes % 60;
+                 timerDisplayEl.textContent = `${String(hours).padStart(2, '0')}:${String(displayMinutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            }
+
+            function handleEnergyDepletion() {
+                if (!state.rechargeUsed) {
+                    state.rechargeUsed = true;
+                    state.isRecharging = true;
+                    rechargeModalEl.style.display = 'flex';
+                    render();
+
+                    let rechargeSeconds = 300;
+                    rechargeCountdownInterval = setInterval(() => {
+                        rechargeSeconds--;
+                        const mins = Math.floor(rechargeSeconds / 60);
+                        const secs = rechargeSeconds % 60;
+                        rechargeTimerDisplayEl.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+                        if (rechargeSeconds <= 0) {
+                            clearInterval(rechargeCountdownInterval);
+                            state.energy = 80;
+                            state.isRecharging = false;
+                            rechargeModalEl.style.display = 'none';
+                            render();
+                        }
+                    }, 1000);
+
+                } else {
+                    endGame('energy');
+                }
+            }
+
+            function getRank(score) {
+                if (score <= 20) return { title: 'Dumbo', color: 'text-gray-400' };
+                if (score <= 40) return { title: 'Novice Thinker', color: 'text-blue-300' };
+                if (score <= 60) return { title: 'Idea Assembler', color: 'text-green-300' };
+                if (score <= 89) return { title: 'Creative Strategist', color: 'text-yellow-300' };
+                return { title: 'Great Innovator', color: 'text-purple-400' };
+            }
+
+            function endGame(reason) {
+                if (!state.gameActive) return;
+                clearInterval(timerInterval);
+                state.gameActive = false;
+                
+                const totalSecondsTaken = 3600 - state.timeRemaining;
+                const minutesTaken = Math.floor(totalSecondsTaken / 60);
+                const secondsTaken = totalSecondsTaken % 60;
+                timeTakenDisplayEl.textContent = `${String(minutesTaken).padStart(2, '0')}:${String(secondsTaken).padStart(2, '0')}`;
+                
+                finalScoreDisplayEl.textContent = state.playerScore;
+                
+                const finalRank = getRank(state.playerScore);
+                finalRankDisplayEl.textContent = finalRank.title;
+                finalRankDisplayEl.className = `text-3xl font-bold my-2 ${finalRank.color}`;
+
+                const titleEl = gameOverModalEl.querySelector('#game-over-title');
+                const messageEl = gameOverModalEl.querySelector('#game-over-message');
+                messageEl.textContent = "Your IdeaCraft Challenge has concluded."; // Reset message
+                
+                if (reason === 'score') {
+                    titleEl.textContent = "Challenge Complete!";
+                    titleEl.className = "text-3xl font-bold mb-4 text-green-500";
+                } else if (reason === 'energy') {
+                    titleEl.textContent = "Out of Energy!";
+                    titleEl.className = "text-3xl font-bold mb-4 text-red-500";
+                    messageEl.textContent = "Do not play like dumbos. Analyse and generate ideas.";
+                }
+                else {
+                    titleEl.textContent = "Time's Up!";
+                    titleEl.className = "text-3xl font-bold mb-4 text-red-500";
+                }
+
+                gameOverModalEl.style.display = 'flex';
+                render();
+            }
+            
+            function handlePreviewOutcome() {
+                if (!state.gameActive || state.isRecharging) return;
+                const ACTION_COST = 10;
+                if (state.energy < ACTION_COST) {
+                    showAnalysis(null, false, "energy");
+                    return;
+                }
+
+                const newEnergy = state.energy - ACTION_COST;
+
+                if (newEnergy <= 0) {
+                    state.energy = 0;
+                    handleEnergyDepletion();
+                } else {
+                    state.energy = newEnergy;
+                }
+                
+                if (state.selectedIds.length === 2) {
+                    const [id1, id2] = state.selectedIds;
+                    const p1 = state.ideas.find(i => i.id === id1);
+                    const p2 = state.ideas.find(i => i.id === id2);
+                    if (!p1 || !p2) { 
+                        return;
+                    }
+
+                    const newName = `${p1.name.split(' ')[0]} + ${p2.name.split(' ')[0]}`;
+                    const newStats = {
+                        novelty: Math.ceil((p1.stats.novelty + p2.stats.novelty) / 2 + Math.random()),
+                        feasibility: Math.ceil((p1.stats.feasibility + p2.stats.feasibility) / 2 + Math.random()),
+                        impact: Math.ceil((p1.stats.impact + p2.stats.impact) / 2 + Math.random()),
+                    };
+                    
+                    state.potentialCombination = { name: newName, stats: newStats };
+                    state.outcomePreviewed = true;
+                }
+                render();
+            }
+
+            function generateIdea(ideaData) {
+                const idea = { ...ideaData, id: state.nextIdeaId++ };
+                state.ideas.push(idea);
+            }
+            
+            window.selectIdea = function(id) {
+                if (!state.gameActive || state.isRecharging) return;
+                state.outcomePreviewed = false;
+                state.potentialCombination = null;
+                if (state.selectedIds.includes(id)) {
+                    state.selectedIds = state.selectedIds.filter(sid => sid !== id);
+                } else if (state.selectedIds.length < 2) {
+                    state.selectedIds.push(id);
+                }
+                render();
+            }
+
+            function handleCombine() {
+                const ACTION_COST = 10;
+                if (!state.gameActive || state.isRecharging) return;
+                if (state.selectedIds.length !== 2 || !state.outcomePreviewed || !state.potentialCombination) {
+                    return;
+                }
+                
+                if (state.ideas.some(i => i.name === state.potentialCombination.name)) {
+                    state.playerScore = Math.max(0, state.playerScore - 5);
+                    showAnalysis({ name: state.potentialCombination.name }, false, "duplicate");
+                    state.selectedIds = [];
+                    state.outcomePreviewed = false;
+                    state.potentialCombination = null;
+                    render();
+                    return;
+                }
+
+                const newIdeaData = { ...state.potentialCombination };
+                generateIdea(newIdeaData);
+                
+                state.energy = Math.min(state.maxEnergy, state.energy + ACTION_COST);
+                
+                const newIdea = state.ideas[state.ideas.length - 1];
+                const problemSolved = checkSolution(newIdea);
+                
+                if (problemSolved) {
+                    state.playerScore = Math.min(state.maxScore, state.playerScore + 15);
+                } else {
+                    state.playerScore = Math.max(0, state.playerScore - 2);
+                }
+
+                showAnalysis(newIdea, problemSolved, "success");
+                state.selectedIds = [];
+                state.outcomePreviewed = false;
+                state.potentialCombination = null;
+
+                render();
+            }
+            
+            function checkSolution(idea) {
+                if (!state.currentProblem || !state.currentProblem.requirements) return false;
+                const req = state.currentProblem.requirements;
+                const isSolved = idea.stats.novelty >= req.novelty && idea.stats.feasibility >= req.feasibility && idea.stats.impact >= req.impact;
+
+                if (isSolved) {
+                    state.problemsSolved++;
+                    if (state.problemsSolved < problems.length) {
+                        state.currentProblem = problems[state.problemsSolved];
+                    } else {
+                        state.currentProblem = { title: "All problems solved!", requirements: {novelty:99, feasibility:99, impact:99} };
+                    }
+                }
+                return isSolved;
+            }
+
+            function showAnalysis(idea, problemSolved, status) {
+                let analysisText = '';
+                let scoreChangeText = '';
+
+                switch (status) {
+                    case "success":
+                        modalTitleEl.textContent = problemSolved ? "Problem Solved!" : "New Idea Synthesized!";
+                        modalTitleEl.className = `text-2xl font-bold mb-4 ${problemSolved ? 'text-green-400' : 'text-blue-400'}`;
+                        analysisText = `<p class="mb-2">Your new concept, <strong>"${idea.name}"</strong>, has been created.</p>`;
+                        analysisText += `<div class="my-4 p-3 bg-gray-700/50 rounded-lg space-y-2">${createStatBar('Novelty', idea.stats.novelty)}${createStatBar('Feasibility', idea.stats.feasibility)}${createStatBar('Impact', idea.stats.impact)}</div>`;
+                        if (problemSolved) {
+                            analysisText += `<p class="text-green-300">This idea successfully meets the requirements of the objective. Excellent work! A new challenge awaits.</p>`;
+                            scoreChangeText = `<p class="mt-2 font-semibold text-yellow-300">Innovation Score +15</p>`;
+                        } else {
+                            analysisText += `<p class="text-gray-400">This combination shows promise. It has been added to your Mindscape for future use.</p>`;
+                            scoreChangeText = `<p class="mt-2 font-semibold text-red-400">Innovation Score -2</p>`;
+                        }
+                        break;
+                    
+                    case "duplicate":
+                        modalTitleEl.textContent = "Idea Already Exists";
+                        modalTitleEl.className = "text-2xl font-bold mb-4 text-yellow-400";
+                        analysisText = `<p>The idea <strong>"${idea.name}"</strong> already exists in your Mindscape.</p><p class="mt-2 text-gray-400">Try combining different ideas to create something truly new!</p>`;
+                        scoreChangeText = `<p class="mt-2 font-semibold text-red-400">Innovation Score -5</p>`;
+                        break;
+                        
+                    case "energy":
+                        modalTitleEl.textContent = "Insufficient Energy";
+                        modalTitleEl.className = "text-2xl font-bold mb-4 text-red-400";
+                        analysisText = `<p>You don't have enough Cognitive Energy to preview an outcome.</p><p class="mt-2 text-gray-400">Create new ideas to gain energy.</p>`;
+                        break;
+                }
+
+                modalContentEl.innerHTML = analysisText + scoreChangeText;
+                analysisModalEl.style.display = 'flex';
+            }
+
+            function createStatBar(label, value) {
+                const color = label === 'Novelty' ? 'blue' : (label === 'Feasibility' ? 'green' : 'purple');
+                return `<div class="flex items-center justify-between text-xs"><span class="font-semibold text-${color}-400">${label}</span><span>${value}</span></div><div class="w-full bg-gray-600 rounded-full h-1.5"><div class="bg-${color}-500 h-1.5 rounded-full" style="width: ${Math.min(value * 10, 100)}%"></div></div>`;
+            }
+            function createIdeaCard(idea) {
+                const onclickAttr = state.gameActive ? `onclick="selectIdea(${idea.id})"` : '';
+                const cursorClass = state.gameActive ? 'cursor-pointer' : 'cursor-default';
+                return `<div class="idea-card bg-gray-700 rounded-lg p-2 border-2 border-transparent ${cursorClass} ${state.selectedIds.includes(idea.id) ? 'selected' : ''}" ${onclickAttr}><h3 class="font-bold text-sm truncate">${idea.name}</h3><div class="space-y-1 mt-1">${createStatBar('Novelty', idea.stats.novelty)}${createStatBar('Feasibility', idea.stats.feasibility)}${createStatBar('Impact', idea.stats.impact)}</div></div>`;
+            }
+            function createPreviewCard(idea) {
+                return `<div class="idea-card h-full flex flex-col justify-center bg-gray-700/80 rounded-lg p-2 border-2 border-dashed border-gray-500 cursor-default"><h3 class="font-bold text-sm truncate">${idea.name}</h3><div class="space-y-1 mt-1">${createStatBar('Novelty', idea.stats.novelty)}${createStatBar('Feasibility', idea.stats.feasibility)}${createStatBar('Impact', idea.stats.impact)}</div></div>`;
+            }
+             function createProblemStatBar(label, current, required) {
+                const color = label === 'Novelty' ? 'blue' : (label === 'Feasibility' ? 'green' : 'purple');
+                return `<div class="mb-1"><div class="flex justify-between text-xs font-semibold"><span class="text-${color}-400">${label}</span><span>${current} / ${required}</span></div><div class="problem-stat-bar w-full h-2 rounded-full"><div class="problem-stat-fill bg-${color}-500 h-2 rounded-full" style="width: ${Math.min((current/required)*100, 100)}%"></div></div></div>`;
+            }
+            function render() {
+                 if (!mindscapeEl) return; // Don't render if not initialized
+                const ACTION_COST = 10;
+                mindscapeEl.innerHTML = state.ideas.map(createIdeaCard).join('');
+                const [id1, id2] = state.selectedIds;
+                slot1El.innerHTML = id1 !== undefined ? createIdeaCard(state.ideas.find(i=>i.id===id1)) : '<span class="text-gray-500 text-sm">Select Idea 1</span>';
+                slot2El.innerHTML = id2 !== undefined ? createIdeaCard(state.ideas.find(i=>i.id===id2)) : '<span class="text-gray-500 text-sm">Select Idea 2</span>';
+                
+                workbenchMiddleEl.innerHTML = `<span class="text-3xl font-bold text-blue-500">+</span>`;
+
+                if (state.outcomePreviewed && state.potentialCombination) {
+                    workbenchMiddleEl.innerHTML = createPreviewCard(state.potentialCombination);
+                }
+                
+                const buttonsDisabled = !state.gameActive || state.isRecharging;
+
+                if (state.selectedIds.length !== 2 || buttonsDisabled) {
+                    previewOutcomeBtn.style.display = 'none';
+                    combineBtn.style.display = 'none';
+                    combineBtn.disabled = true;
+                    actionFeedbackEl.style.opacity = '0';
+                } else if (!state.outcomePreviewed) {
+                    previewOutcomeBtn.style.display = 'inline-block';
+                    combineBtn.style.display = 'inline-block';
+                    combineBtn.disabled = true;
+                    actionFeedbackEl.textContent = `Preview Cost: ${ACTION_COST} Energy`;
+                    actionFeedbackEl.style.opacity = '1';
+                } else { 
+                    previewOutcomeBtn.style.display = 'none';
+                    combineBtn.style.display = 'inline-block';
+                    combineBtn.disabled = buttonsDisabled;
+                    actionFeedbackEl.textContent = `Reward: +${ACTION_COST} Energy`;
+                    actionFeedbackEl.style.opacity = '1';
+                }
+
+                if (state.currentProblem) {
+                    problemContainerEl.innerHTML = `<h3 class="font-bold text-md">${state.currentProblem.title}</h3><p class="text-xs text-gray-400 mb-2">Requirements:</p>${createProblemStatBar('Novelty', 0, state.currentProblem.requirements.novelty)}${createProblemStatBar('Feasibility', 0, state.currentProblem.requirements.feasibility)}${createProblemStatBar('Impact', 0, state.currentProblem.requirements.impact)}`;
+                }
+
+                if (state.playerScore >= state.maxScore && state.gameActive) {
+                    finishChallengeBtn.style.display = 'block';
+                } else {
+                    finishChallengeBtn.style.display = 'none';
+                }
+
+                energyBarEl.style.width = `${(state.energy / state.maxEnergy) * 100}%`;
+                energyBarEl.textContent = `${state.energy}/${state.maxEnergy}`;
+                
+                scoreBarEl.style.width = `${(state.playerScore / state.maxScore) * 100}%`;
+                scoreBarEl.textContent = `${state.playerScore}/${state.maxScore}`;
+
+                const rank = getRank(state.playerScore);
+                rankDisplayEl.textContent = rank.title;
+                rankDisplayEl.className = `text-xl font-bold text-center mt-1 p-2 bg-gray-900 rounded-lg ${rank.color}`;
+            }
+            return { init, getState, setState };
+        })();
+        
+        // --- KICKSTART THE APP ---
+        // Automatically initialize the game when the script loads.
+        initializeGameOnLoad();
+    </script>
+</body>
+</html>
+

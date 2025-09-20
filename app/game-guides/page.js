@@ -56,6 +56,16 @@ const PDFViewer = () => {
       name: 'Samundra Rakshak Guide',
       url: '/samudra.pdf', // File should be at public/manual.pdf
       description: 'Faculty Guide for Samundra Rakshak Game'
+    },
+    {
+      name: 'Innovation Academy Faculty Manual Guide',
+      url: '/innov.pdf', // File should be at public/manual.pdf
+      description: 'Faculty Guide for Innovation Academy Faculty Manual'
+    },
+     {
+      name: 'Six Sima Simulation Faculty guide',
+      url: '/six-sigms.pdf', // File should be at public/manual.pdf
+      description: 'Faculty Guide for Six Sima Simulation Faculty guide'
     }
   ];
 

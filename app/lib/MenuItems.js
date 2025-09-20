@@ -145,8 +145,8 @@ export const menuItems = [
     { label: "Mentorship Student", icon: <NewspaperIcon className="h-5 w-5" />, path: "/faculty/mentorship-assign-student" },
     { label: "Events", icon: <CalendarIcon className="h-5 w-5" />, path: "/events" },
     { label: "Game Guides", icon: <DocumentIcon className="h-5 w-5" />, path: "/game-guides" },
-    {label : "Simuations", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
-            {label:"Startup Simuation",  icon: <Gamepad className="h-5 w-5" />, path:"/game/simulation"},
+    {label : "Simulations", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
+            {label:"Startup Simulation",  icon: <Gamepad className="h-5 w-5" />, path:"/game/simulation"},
              {label:"Guesstimation",  icon: <Gamepad className="h-5 w-5" />, path:"/game/guesstimations"},
             {label : "Finance", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Rat Race 3d",  icon: <Gamepad className="h-5 w-5" />, path:"/game/rat-race"},
@@ -161,6 +161,7 @@ export const menuItems = [
           {label:"Project Management",  icon: <ProjectorIcon className="h-5 w-5" />, path:"/game/project-management"},
          {label : "Critical Thinking", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Last City",  icon: <Gamepad className="h-5 w-5" />, path:"/game/lastcity"},
+            {label:"Idea Generation",  icon: <Gamepad className="h-5 w-5" />, path:"/game/idea-generator"},
           ]},
           {label : "Accouting", icon: <Calculator className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Accouting Cycle",  icon: <CalendarCheck2Icon className="h-5 w-5" />, path:"/game/accounting-cycle"},
@@ -174,6 +175,9 @@ export const menuItems = [
             {label:"Taxila Solve",  icon: <Puzzle className="h-5 w-5" />, path:"/game/taxila-solve"},
             {label:"Sariska Hills",  icon: <Dog className="h-5 w-5" />, path:"/game/sariska"},
             {label:"Samudra Rakshak",  icon: <FishIcon className="h-5 w-5" />, path:"/game/samudra-rakshak"},
+          ]},
+          {label : "Quality Management", icon: <Calculator className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
+            {label:"Six Sigma Simulation",  icon: <CalendarCheck2Icon className="h-5 w-5" />, path:"/game/six-sigma"},
           ]},
            {label:"Wordify",  icon: <WholeWord className="h-5 w-5" />, path:"/game/wordfy"},
            {label:"Interview",  icon: <WholeWord className="h-5 w-5" />, path:"/game/interview-preparation"},
@@ -198,8 +202,8 @@ export const menuItems = [
     { label: "Attendance", icon: <UserRoundCheck className="h-5 w-5" />, path: "/student/attendance" },
     { label: "Class Schedule", icon: <BookCopyIcon className="h-5 w-5" />, path: "/student/class-schedule" },
     { label: "Exam Schedule", icon: <PenBox className="h-5 w-5" />, path: "/student/exam-schedule" },
-    {label : "Simuations", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
-            {label:"Startup Simuation",  icon: <Gamepad className="h-5 w-5" />, path:"/game/simulation"},
+    {label : "Simulations", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
+            {label:"Startup Simluation",  icon: <Gamepad className="h-5 w-5" />, path:"/game/simulation"},
              {label:"Guesstimation",  icon: <Gamepad className="h-5 w-5" />, path:"/game/guesstimations"},
             {label : "Finance", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Rat Race 3d",  icon: <Gamepad className="h-5 w-5" />, path:"/game/rat-race"},
@@ -218,6 +222,7 @@ export const menuItems = [
           ]},
           {label : "Critical Thinking", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Last City",  icon: <Gamepad className="h-5 w-5" />, path:"/game/lastcity"},
+            {label:"Idea Generation",  icon: <Gamepad className="h-5 w-5" />, path:"/game/idea-generator"},
           ]},
           {label : "Accouting", icon: <Calculator className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Accouting Cycle",  icon: <CalendarCheck2Icon className="h-5 w-5" />, path:"/game/accounting-cycle"},
@@ -227,6 +232,9 @@ export const menuItems = [
             {label:"Taxila Solve",  icon: <Puzzle className="h-5 w-5" />, path:"/game/taxila-solve"},
             {label:"Sariska Hills",  icon: <Dog className="h-5 w-5" />, path:"/game/sariska"},
             {label:"Samudra Rakshak",  icon: <FishIcon className="h-5 w-5" />, path:"/game/samudra-rakshak"},
+          ]},
+          {label : "Quality Management", icon: <Calculator className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
+            {label:"Six Sigma Simulation",  icon: <CalendarCheck2Icon className="h-5 w-5" />, path:"/game/six-sigma"},
           ]},
             {label:"Interview",  icon: <WholeWord className="h-5 w-5" />, path:"/game/interview-preparation"},
            {label:"Wordify",  icon: <Gamepad className="h-5 w-5" />, path:"/game/wordfy"},
