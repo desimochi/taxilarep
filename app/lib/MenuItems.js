@@ -71,7 +71,11 @@ export const menuItems = [
       icon: <NewspaperIcon className="h-5 w-5" />,
       path: "/notice/noticeboard" 
     },
-     
+      {
+      label: "Fail Students",
+      icon: <NewspaperIcon className="h-5 w-5" />,
+      path: "/fail-student" 
+    },
     {
       label: "Students",
       icon: <AcademicCapIcon className="h-5 w-5" />,

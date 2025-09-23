@@ -113,6 +113,7 @@ export const config = {
     "/notice/:path*",
     "/course/:path*",
     "/see/events",
+    "/fail-student",
     "/question-paper/:path*",
     "/attendance/class-attendance",
   ],
