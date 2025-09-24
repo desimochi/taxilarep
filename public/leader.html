@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TAXILA LEADERSHIP CHALLENGE</title>
+    <style>
+        :root {
+            --primary-bg: #1a1a2e;
+            --secondary-bg: #16213e;
+            --tertiary-bg: #0f3460;
+            --accent-color: #e94560;
+            --text-color: #dcdcdc;
+            --success-color: #4CAF50;
+            --warning-color: #ffc107;
+            --danger-color: #f44336;
+            --info-color: #2196F3;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--primary-bg);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1300px;
+            background-color: var(--secondary-bg);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+
+        .screen { padding: 25px; box-sizing: border-box; }
+        .hidden { display: none; }
+        #welcome-screen, #game-over-screen { text-align: center; }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+        .left-column { display: flex; flex-direction: column; gap: 20px; }
+        .right-column { display: flex; flex-direction: column; gap: 20px; }
+
+        h1 { font-size: 2.5rem; color: var(--accent-color); margin-bottom: 10px; }
+        h2 { font-size: 1.5rem; margin-top: 0; }
+        h3 { font-size: 1.2rem; border-bottom: 1px solid var(--tertiary-bg); padding-bottom: 8px; margin: 0 0 15px 0; }
+        
+        .action-btn, .secondary-btn {
+            padding: 10px 20px; font-size: 1rem; font-weight: bold; background-color: var(--accent-color);
+            color: white; border: none; border-radius: 8px; cursor: pointer; transition: background-color 0.3s ease;
+        }
+        .action-btn:hover:not(:disabled) { background-color: #c73850; }
+        .action-btn:disabled { background-color: #555; cursor: not-allowed; }
+
+        .secondary-btn { background-color: var(--tertiary-bg); }
+        .secondary-btn:hover:not(:disabled) { background-color: #1f4e81; }
+
+
+        .card { background-color: var(--primary-bg); padding: 20px; border-radius: 10px; }
+
+        header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; border-bottom: 2px solid var(--tertiary-bg); margin-bottom: 20px; }
+        #year-phase-display { font-size: 1.5rem; font-weight: bold; text-align: right; }
+        #dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; }
+        .kpi-card { background-color: var(--tertiary-bg); padding: 15px; border-radius: 10px; text-align: center; }
+        .kpi-card h4 { margin: 0 0 5px 0; font-size: 0.8rem; text-transform: uppercase; opacity: 0.8; }
+        .kpi-value { font-size: 1.5rem; font-weight: bold; }
+        #economy-status { padding: 5px 10px; border-radius: 5px; color: white; font-weight: bold; }
+
+        #action-tabs { display: flex; gap: 10px; margin-bottom: -1px; }
+        .tab-btn { padding: 10px 15px; background-color: var(--tertiary-bg); border: 1px solid var(--secondary-bg); border-bottom: none; border-radius: 8px 8px 0 0; cursor: pointer; font-size: 1rem; }
+        .tab-btn.active { background-color: var(--primary-bg); border-color: var(--tertiary-bg); }
+        .action-pane { border: 1px solid var(--tertiary-bg); border-radius: 0 8px 8px 8px; }
+        .action-item { margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--tertiary-bg); }
+        .action-item:last-child { border-bottom: none; margin-bottom: 0; }
+        .action-item p { margin: 5px 0; opacity: 0.9; }
+        input[type="number"], input[type="range"] { width: 100px; background-color: var(--primary-bg); border: 1px solid var(--tertiary-bg); color: var(--text-color); border-radius: 4px; padding: 5px;}
+        .impact-value { color: var(--info-color); font-weight: bold; }
+        
+        .budget-allocation { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .budget-item label { display: block; margin-bottom: 5px; }
+        .budget-item input[type="range"] { width: 100%; }
+        .budget-summary { margin-top: 15px; font-size: 1.1rem; }
+        .budget-summary span { font-weight: bold; }
+        .dept-budget-container { margin-bottom: 20px; }
+
+        #saved-games-container { margin-top: 30px; text-align: left;}
+        .saved-game-item { background-color: var(--tertiary-bg); padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;}
+        .saved-game-item button { margin-left: 10px; font-size: 0.9rem; padding: 5px 10px;}
+
+        #news-feed, #log-container { height: 180px; overflow-y: auto; }
+        .news-entry, .log-entry { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--tertiary-bg); font-size: 0.9rem; }
+        .log-year { font-weight: bold; color: var(--accent-color); }
+        .news-source { font-weight: bold; color: var(--info-color); }
+        .news-crisis { font-weight: bold; color: var(--danger-color); }
+
+        #game-over-message, #final-metrics { line-height: 1.6; margin-bottom: 20px; text-align: left; }
+        #final-metrics span { font-weight: bold; color: var(--warning-color); }
+        .api-message {
+            margin-top: 10px;
+            padding: 8px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        .api-message.success { background-color: var(--success-color); color: white; }
+        .api-message.error { background-color: var(--danger-color); color: white; }
+        .api-message.info { background-color: var(--info-color); color: white; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="welcome-screen" class="screen">
+        <h1>TAXILA LEADERSHIP CHALLENGE</h1>
+        <p>Created at Taxila Business School, on Project Leadership</p>
+        
+        <div class="card" style="margin-top:20px;">
+            <h3>Start a New Simulation</h3>
+            <input type="text" id="player-name-input" placeholder="Enter Your Name, CEO" style="width: 60%; padding: 12px; margin: 10px 0; background-color: var(--primary-bg); border: 1px solid var(--tertiary-bg); color: var(--text-color); border-radius: 8px; font-size: 1rem;">
+            <button id="start-game-btn" class="action-btn">New Game</button>
+        </div>
+        
+        <div id="saved-games-container" class="card">
+            <h3>Loading Simulation...</h3>
+            <div id="saved-games-list">
+                <p>Checking for a previous game...</p>
+            </div>
+            <div id="api-status-message" class="api-message hidden"></div>
+        </div>
+    </div>
+
+    <div id="annual-budget-screen" class="screen hidden">
+        <header>
+            <div>
+                <h1>Apex Innovations</h1>
+                <button id="save-game-btn-annual" onclick="saveGame()" class="secondary-btn save-game-btn" style="font-size: 0.9rem; padding: 5px 15px;">Save Simulation</button>
+            </div>
+            <div id="year-phase-display">
+                <span id="year-counter">Year 1</span><br>
+                <span id="phase-display">Budgeting Phase</span>
+            </div>
+        </header>
+        <h2 id="annual-budget-year-title">Year 1: Annual Budget Allocation</h2>
+        <p>Allocate your available cash to the core departments for the upcoming year.</p>
+        <div id="annual-budget-allocation" class="card budget-allocation">
+            <div class="budget-item">
+                <label for="rd-main-slider">Research & Development (<span id="rd-main-value-label">$0M</span>)</label>
+                <input type="range" id="rd-main-slider" min="0" max="100" value="0">
+            </div>
+             <div class="budget-item">
+                <label for="mkt-main-slider">Marketing (<span id="mkt-main-value-label">$0M</span>)</label>
+                <input type="range" id="mkt-main-slider" min="0" max="100" value="0">
+            </div>
+             <div class="budget-item">
+                <label for="ops-main-slider">Operations (<span id="ops-main-value-label">$0M</span>)</label>
+                <input type="range" id="ops-main-slider" min="0" max="100" value="0">
+            </div>
+             <div class="budget-item">
+                <label for="hr-main-slider">Human Resources (<span id="hr-main-value-label">$0M</span>)</label>
+                <input type="range" id="hr-main-slider" min="0" max="100" value="0">
+            </div>
+            <div class="budget-item">
+                <label for="fin-main-slider">Finance (<span id="fin-main-value-label">$0M</span>)</label>
+                <input type="range" id="fin-main-slider" min="0" max="100" value="0">
+            </div>
+        </div>
+        <div id="annual-budget-summary" class="card budget-summary">
+            Available Cash: <span id="available-cash-display"></span><br>
+            Total Allocated: <span id="total-allocated-display" style="color: var(--warning-color);"></span><br>
+            Remaining Cash: <span id="remaining-cash-display"></span>
+        </div>
+        <button id="finalize-annual-budget-btn" class="action-btn" style="margin-top: 20px;">Proceed to Departmental Planning</button>
+    </div>
+    
+    <div id="dept-budget-screen" class="screen hidden">
+        <header>
+            <div>
+                <h1>Apex Innovations</h1>
+                <button id="save-game-btn-dept" class="secondary-btn save-game-btn" style="font-size: 0.9rem; padding: 5px 15px;">Save Simulation</button>
+            </div>
+            <div id="year-phase-display">
+                <span id="year-counter">Year 1</span><br>
+                <span id="phase-display">Department Planning</span>
+            </div>
+        </header>
+        <h2 id="dept-budget-year-title">Year 1: Departmental Budget Planning</h2>
+        <p>Allocate the funds within each department. The total for each department cannot exceed its main budget.</p>
+
+        <div id="mkt-dept-budget" class="card dept-budget-container">
+            <h3>Marketing Budget: $<span id="mkt-total-budget">0</span>M</h3>
+            <div class="budget-allocation">
+                 <div class="budget-item">
+                    <label for="mkt_brand-slider">Brand Awareness (<span id="mkt_brand-value-label">$0M</span>)</label>
+                    <input type="range" id="mkt_brand-slider" min="0" max="100" value="0">
+                </div>
+                 <div class="budget-item">
+                    <label for="mkt_digital-slider">Digital Campaigns (<span id="mkt_digital-value-label">$0M</span>)</label>
+                    <input type="range" id="mkt_digital-slider" min="0" max="100" value="0">
+                </div>
+            </div>
+            <div class="budget-summary">
+                Allocated: <span id="mkt-allocated-display" style="color: var(--warning-color);">$0M</span>
+                <div class="impact-summary" style="font-size: 0.9em; opacity: 0.8; margin-top: 10px;">
+                    Est. Impact: <span id="mkt-impact-display" class="impact-value"></span>
+                </div>
+            </div>
+        </div>
+
+        <div id="ops-dept-budget" class="card dept-budget-container">
+            <h3>Operations Budget: $<span id="ops-total-budget">0</span>M</h3>
+            <div class="budget-allocation">
+                 <div class="budget-item">
+                    <label for="ops_qc-slider">Quality Control (<span id="ops_qc-value-label">$0M</span>)</label>
+                    <input type="range" id="ops_qc-slider" min="0" max="100" value="0">
+                </div>
+                <div class="budget-item">
+                    <label for="ops_efficiency-slider">Process Efficiency & Supply Chain (<span id="ops_efficiency-value-label">$0M</span>)</label>
+                    <input type="range" id="ops_efficiency-slider" min="0" max="100" value="0">
+                </div>
+            </div>
+             <div class="budget-summary">
+                Allocated: <span id="ops-allocated-display" style="color: var(--warning-color);">$0M</span>
+                <div class="impact-summary" style="font-size: 0.9em; opacity: 0.8; margin-top: 10px;">
+                    Est. Impact: <span id="ops-impact-display" class="impact-value"></span>
+                </div>
+            </div>
+        </div>
+
+        <div id="capex-dept-budget" class="card dept-budget-container">
+            <h3>Capital Expenditure (CapEx)</h3>
+            <p>Long-term investments in assets. This spending comes directly from cash reserves.</p>
+            <div class="budget-allocation">
+                <div class="budget-item">
+                    <label for="capex_expansion-slider">Factory Expansion (<span id="capex_expansion-value-label">$0M</span>)</label>
+                    <input type="range" id="capex_expansion-slider" min="0" max="50" value="0" step="5">
+                </div>
+                <div class="budget-item">
+                    <label for="capex_automation-slider">Automation (<span id="capex_automation-value-label">$0M</span>)</label>
+                    <input type="range" id="capex_automation-slider" min="0" max="50" value="0" step="10">
+                </div>
+            </div>
+            <div class="budget-summary">
+                 <div class="impact-summary" style="font-size: 0.9em; opacity: 0.8; margin-top: 10px;">
+                    Est. Impact: <span id="capex-impact-display" class="impact-value"></span>
+                </div>
+            </div>
+        </div>
+        
+        <div id="hr-dept-budget" class="card dept-budget-container">
+            <h3>HR Budget: $<span id="hr-total-budget">0</span>M</h3>
+            <div class="budget-allocation">
+                <div class="budget-item">
+                    <label for="hr_training-slider">Employee Training (<span id="hr_training-value-label">$0M</span>)</label>
+                    <input type="range" id="hr_training-slider" min="0" max="100" value="0">
+                </div>
+                <div class="budget-item">
+                    <label for="hr_salary-slider">Salaries & Benefits (<span id="hr_salary-value-label">$0M</span>)</label>
+                    <input type="range" id="hr_salary-slider" min="0" max="100" value="0">
+                </div>
+            </div>
+            <div class="budget-summary">
+                Allocated: <span id="hr-allocated-display" style="color: var(--warning-color);">$0M</span>
+                <div class="impact-summary" style="font-size: 0.9em; opacity: 0.8; margin-top: 10px;">
+                    Est. Impact: <span id="hr-impact-display" class="impact-value"></span>
+                </div>
+            </div>
+        </div>
+
+        <button id="finalize-dept-budget-btn" class="action-btn" style="margin-top: 20px;">Proceed to Action Phase</button>
+    </div>
+
+
+    <div id="game-ui" class="screen hidden">
+        <header>
+            <div>
+                <h1>Apex Innovations</h1>
+                <button id="save-game-btn-game" class="secondary-btn save-game-btn" style="font-size: 0.9rem; padding: 5px 15px;">Save Simulation</button>
+            </div>
+            <div id="year-phase-display">
+                <span id="year-counter">Year 1</span><br>
+                <span id="phase-display">Planning Phase</span>
+            </div>
+        </header>
+
+        <div class="main-layout">
+            <div class="left-column">
+                <section id="dashboard" class="card">
+                    <div class="kpi-card"><h4>Leadership Score</h4><div class="kpi-value" id="kpi-leadership">0 / 100</div></div>
+                    <div class="kpi-card"><h4>Company Valuation</h4><div class="kpi-value" id="kpi-valuation">$500M</div></div>
+                    <div class="kpi-card"><h4>Cash</h4><div class="kpi-value" id="kpi-cash">$50M</div></div>
+                    <div class="kpi-card"><h4>Debt</h4><div class="kpi-value" id="kpi-debt">$0M</div></div>
+                    <div class="kpi-card"><h4>Stock Price</h4><div class="kpi-value" id="kpi-stock">$100</div></div>
+                    <div class="kpi-card"><h4>Unit Price</h4><div class="kpi-value" id="kpi-price">$500</div></div>
+                    <div class="kpi-card"><h4>Economy</h4><div class="kpi-value" id="economy-status">Stable</div></div>
+                </section>
+
+                <div id="action-tabs">
+                    <button class="tab-btn active" onclick="showPane('pane-rd')">R&D</button>
+                    <button class="tab-btn" onclick="showPane('pane-mkt')">Marketing</button>
+                    <button class="tab-btn" onclick="showPane('pane-ops')">Operations</button>
+                    <button class="tab-btn" onclick="showPane('pane-hr')">HR</button>
+                    <button class="tab-btn" onclick="showPane('pane-finance')">Finance</button>
+                </div>
+
+                <section id="action-panes" class="card action-pane">
+                    <div id="pane-rd" class="action-pane-content"></div>
+                    <div id="pane-mkt" class="action-pane-content hidden"></div>
+                    <div id="pane-ops" class="action-pane-content hidden"></div>
+                    <div id="pane-hr" class="action-pane-content hidden"></div>
+                    <div id="pane-finance" class="action-pane-content hidden"></div>
+                </section>
+                <button id="end-phase-btn" class="action-btn">Finalize Plans & End Year</button>
+            </div>
+            <div class="right-column">
+                <section id="market-intel" class="card">
+                    <h3>Market Intelligence</h3>
+                    <div id="player-intel"></div>
+                    <div id="competitor-intel"></div>
+                </section>
+                <section id="news-container" class="card">
+                    <h3>Market News</h3>
+                    <div id="news-feed"></div>
+                </section>
+                <section id="log-card" class="card">
+                    <h3>CEO's Log</h3>
+                    <div id="log-container"></div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <div id="game-over-screen" class="screen hidden">
+        <h1 id="game-over-title">Simulation Ended</h1>
+        <p id="game-over-message"></p>
+        <div id="final-metrics"></div>
+        <button id="restart-game-btn" class="action-btn">Run New Simulation</button>
+    </div>
+</div>
+
+<script>
+    // --- CORE GAME ENGINE ---
+    const DOMElements = {
+        screens: { 
+            welcome: document.getElementById('welcome-screen'), 
+            annualBudget: document.getElementById('annual-budget-screen'),
+            deptBudget: document.getElementById('dept-budget-screen'),
+            game: document.getElementById('game-ui'), 
+            gameOver: document.getElementById('game-over-screen'), 
+        },
+        playerNameInput: document.getElementById('player-name-input'),
+        startGameBtn: document.getElementById('start-game-btn'),
+        restartGameBtn: document.getElementById('restart-game-btn'),
+        saveGameBtns: document.querySelectorAll('.save-game-btn'),
+        savedGamesList: document.getElementById('saved-games-list'),
+        apiMessage: document.getElementById('api-status-message'),
+        yearCounter: document.getElementById('year-counter'),
+        phaseDisplay: document.getElementById('phase-display'),
+        kpis: {
+            leadership: document.getElementById('kpi-leadership'),
+            valuation: document.getElementById('kpi-valuation'), cash: document.getElementById('kpi-cash'), debt: document.getElementById('kpi-debt'),
+            stock: document.getElementById('kpi-stock'), price: document.getElementById('kpi-price'), economy: document.getElementById('economy-status'),
+        },
+        intel: { 
+            player: document.getElementById('player-intel'), 
+            competitor: document.getElementById('competitor-intel'),
+        },
+        actionPanes: {
+            rd: document.getElementById('pane-rd'), mkt: document.getElementById('pane-mkt'), ops: document.getElementById('pane-ops'),
+            hr: document.getElementById('pane-hr'), finance: document.getElementById('pane-finance'),
+        },
+        annualBudget: {
+            sliders: { 
+                rd: document.getElementById('rd-main-slider'), 
+                mkt: document.getElementById('mkt-main-slider'),
+                ops: document.getElementById('ops-main-slider'),
+                hr: document.getElementById('hr-main-slider'),
+                fin: document.getElementById('fin-main-slider'),
+            },
+            labels: { 
+                rd: document.getElementById('rd-main-value-label'),
+                mkt: document.getElementById('mkt-main-value-label'),
+                ops: document.getElementById('ops-main-value-label'),
+                hr: document.getElementById('hr-main-value-label'),
+                fin: document.getElementById('fin-main-value-label'),
+            },
+            displays: { available: document.getElementById('available-cash-display'), allocated: document.getElementById('total-allocated-display'), remaining: document.getElementById('remaining-cash-display'), },
+            finalizeBtn: document.getElementById('finalize-annual-budget-btn'),
+            title: document.getElementById('annual-budget-year-title'),
+        },
+        deptBudget: {
+            mkt: {
+                total: document.getElementById('mkt-total-budget'),
+                allocated: document.getElementById('mkt-allocated-display'),
+                sliders: { brand: document.getElementById('mkt_brand-slider'), digital: document.getElementById('mkt_digital-slider')},
+                labels: { brand: document.getElementById('mkt_brand-value-label'), digital: document.getElementById('mkt_digital-value-label')},
+                impactDisplay: document.getElementById('mkt-impact-display')
+            },
+            ops: {
+                total: document.getElementById('ops-total-budget'),
+                allocated: document.getElementById('ops-allocated-display'),
+                sliders: { qc: document.getElementById('ops_qc-slider'), efficiency: document.getElementById('ops_efficiency-slider')},
+                labels: { qc: document.getElementById('ops_qc-value-label'), efficiency: document.getElementById('ops_efficiency-value-label')},
+                impactDisplay: document.getElementById('ops-impact-display')
+            },
+            capex: {
+                sliders: { expansion: document.getElementById('capex_expansion-slider'), automation: document.getElementById('capex_automation-slider') },
+                labels: { expansion: document.getElementById('capex_expansion-value-label'), automation: document.getElementById('capex_automation-value-label') },
+                impactDisplay: document.getElementById('capex-impact-display')
+            },
+            hr: {
+                total: document.getElementById('hr-total-budget'),
+                allocated: document.getElementById('hr-allocated-display'),
+                sliders: { training: document.getElementById('hr_training-slider'), salary: document.getElementById('hr_salary-slider')},
+                labels: { training: document.getElementById('hr_training-value-label'), salary: document.getElementById('hr_salary-value-label')},
+                impactDisplay: document.getElementById('hr-impact-display')
+            },
+            finalizeBtn: document.getElementById('finalize-dept-budget-btn'),
+            title: document.getElementById('dept-budget-year-title'),
+        },
+        tabs: document.querySelectorAll('.tab-btn'),
+        endPhaseBtn: document.getElementById('end-phase-btn'),
+        newsFeed: document.getElementById('news-feed'),
+        logContainer: document.getElementById('log-container'),
+        gameOver: { title: document.getElementById('game-over-title'), message: document.getElementById('game-over-message'), metrics: document.getElementById('final-metrics'), }
+    };
+
+    let gameState = {};
+    let saveGameId = null;
+    const API_ENDPOINT = 'http://localhost:3000/api/game/leader'; // Replace with your actual API endpoint
+
+    function showApiMessage(message, type) {
+        const msgEl = DOMElements.apiMessage;
+        msgEl.textContent = message;
+        msgEl.className = `api-message ${type}`;
+        msgEl.classList.remove('hidden');
+        setTimeout(() => msgEl.classList.add('hidden'), 5000);
+    }
+
+
+    // --- GAME DATA & CONFIGURATION ---
+    const RND_PROJECTS = {
+        p1: { name: "NextGen Engine", cost: 20, duration: 3, effect: { quality: 25, unitCost: -20 } },
+        p2: { name: "AI Integration", cost: 30, duration: 4, effect: { quality: 15, brandReputation: 20 } },
+        p3: { name: "Sustainable Materials", cost: 15, duration: 2, effect: { quality: 10, brandReputation: 10, morale: 5 } },
+        p4: { name: "Process Innovation", cost: 25, duration: 2, effect: { unitCost: -30, supplyChainStability: 10 } },
+    };
+
+    const ECONOMY = {
+        BOOM: { name: "Boom", color: "#4CAF50", marketGrowth: 1.15, interestRate: 0.04 },
+        STABLE: { name: "Stable", color: "#2196F3", marketGrowth: 1.05, interestRate: 0.05 },
+        RECESSION: { name: "Recession", color: "#ffc107", marketGrowth: 0.95, interestRate: 0.07 },
+        DEPRESSION: { name: "Depression", color: "#f44336", marketGrowth: 0.85, interestRate: 0.10 },
+    };
+    const CRISIS_EVENTS = [
+        { name: "Supply Chain Disruption", message: "A key supplier has gone bankrupt, reducing supply chain stability.", effect: { supplyChainStability: -30 }, duration: 1 },
+        { name: "PR Scandal", message: "A negative news story has damaged our brand reputation.", effect: { brandReputation: -20 }, duration: 2 },
+        { name: "Factory Accident", message: "A factory accident has temporarily reduced our production capacity.", effect: { capacity: -50000 }, duration: 1 },
+        { name: "Union Strike", message: "Union strikes over pay disputes have severely hit employee morale.", effect: { morale: -25 }, duration: 1 },
+    ];
+    const TAX_RATE = 0.25;
+    const LOAN_TERM = 3;
+    const MAX_SHARE_ISSUE = 100;
+
+    // --- INITIALIZATION ---
+    function init() {
+        DOMElements.startGameBtn.addEventListener('click', startNewGame);
+        DOMElements.restartGameBtn.addEventListener('click', () => { 
+            switchScreen('welcome');
+            loadLatestGame();
+        });
+        DOMElements.saveGameBtns.forEach(btn => btn.addEventListener('click', saveGame));
+        DOMElements.endPhaseBtn.addEventListener('click', runYearEnd);
+        DOMElements.annualBudget.finalizeBtn.addEventListener('click', finalizeAnnualBudget);
+        DOMElements.deptBudget.finalizeBtn.addEventListener('click', finalizeDeptBudget);
+        Object.values(DOMElements.annualBudget.sliders).forEach(s => s.addEventListener('input', updateAnnualBudgetDisplay));
+        
+        Object.values(DOMElements.deptBudget.mkt.sliders).forEach(s => s.addEventListener('input', () => updateDeptBudgetDisplay('mkt')));
+        Object.values(DOMElements.deptBudget.ops.sliders).forEach(s => s.addEventListener('input', () => updateDeptBudgetDisplay('ops')));
+        Object.values(DOMElements.deptBudget.hr.sliders).forEach(s => s.addEventListener('input', () => updateDeptBudgetDisplay('hr')));
+        Object.values(DOMElements.deptBudget.capex.sliders).forEach(s => s.addEventListener('input', updateCapexDisplay));
+        
+        // This is the new on-load logic
+        loadLatestGame();
+    }
+
+    function switchScreen(screenName) {
+        Object.values(DOMElements.screens).forEach(s => s.classList.add('hidden'));
+        DOMElements.screens[screenName].classList.remove('hidden');
+    }
+
+    // New function to handle starting a new game from the button click
+    function startNewGame() {
+        const playerName = DOMElements.playerNameInput.value.trim();
+        if (!playerName) { showApiMessage("Please enter a name.", 'error'); return; }
+        startGame(playerName);
+    }
+    
+    function startGame(playerName) {
+        gameState = {
+            year: 1, ceoName: playerName, economy: ECONOMY.STABLE,
+            firstYearCompleted: false,
+            currentPhase: 'annualBudget',
+            player: createCompany("Apex Innovations", playerName, 40, 70, 65, 100, 500),
+            competitors: [
+                createCompany("InnovateCorp", "AI", 35, 80, 75, 0, 550, true),
+                createCompany("ValueGiant", "AI", 25, 60, 50, 0, 450, true),
+            ],
+            log: [], news: [], activeCrises: [],
+        };
+        saveGameId = null; // Reset save game ID for a new session
+        addToLog(`CEO ${gameState.ceoName} takes command.`);
+        startYear();
+    }
+
+    function createCompany(name, ceo, marketShare, quality, brandReputation, cash, price, isAI = false) {
+        return {
+            name, ceo, isAI, cash: isAI ? 0 : 100, debt: 0, outstandingLoans: [], profit: 5, stock: 100, valuation: 500,
+            marketShare, quality, brandReputation, morale: 75,
+            capacity: 200000, unitsSold: 0, unitCost: 350, price,
+            capacityUtilization: 0, inefficiencyCosts: 0,
+            supplyChainStability: 80, skillLevel: 60, analystRating: "Hold",
+            sharesIssuedThisYear: 0,
+            activeProjects: {}, 
+            budgets: { 
+                rd: 0, finance: 0, capex: { expansion: 0, automation: 0 },
+                mkt: { total: 0, brand: 0, digital: 0 }, 
+                ops: { total: 0, qc: 0, efficiency: 0 }, 
+                hr:  { total: 0, training: 0, salary: 0 }
+            },
+            lastYearProfit: 5, lastYearMarketShare: marketShare, lastYearQuality: quality, lastYearMorale: 75
+        };
+    }
+
+    // --- ANNUAL CYCLE ---
+    function startYear() {
+        DOMElements.endPhaseBtn.disabled = false;
+        gameState.currentPhase = 'annualBudget';
+        DOMElements.phaseDisplay.textContent = "Budgeting Phase";
+        updateEconomy();
+        gameState.player.sharesIssuedThisYear = 0;
+        showAnnualBudgetScreen();
+    }
+
+    function runYearEnd() {
+        DOMElements.endPhaseBtn.disabled = true;
+        DOMElements.phaseDisplay.textContent = "Executing...";
+        
+        const p = gameState.player;
+        p.lastYearProfit = p.profit;
+        p.lastYearMarketShare = p.marketShare;
+        p.lastYearQuality = p.quality;
+        p.lastYearMorale = p.morale;
+
+        handleCrises();
+        if(Math.random() < 0.33) triggerRandomCrisis();
+
+        progressProjects(gameState.player);
+        gameState.competitors.forEach(c => progressProjects(c));
+        
+        runCompetitorAI(gameState.competitors);
+        
+        simulateMarket();
+        calculateFinancials(gameState.player);
+        gameState.competitors.forEach(c => calculateFinancials(c));
+        
+        checkLoanRepayments();
+        generateDynamicNews();
+        
+        // Auto-save before checking for game over
+       
+
+        if (checkGameOver()) return;
+
+        gameState.firstYearCompleted = true;
+        gameState.year++;
+        startYear();
+    }
+
+    // --- RENDERING & UI ---
+    function renderAll() {
+        renderDashboard();
+        renderIntel();
+        renderActionPanes();
+        renderNewsAndLogs();
+    }
+
+    function renderDashboard() {
+        const p = gameState.player;
+        DOMElements.yearCounter.textContent = `Year ${gameState.year}`;
+        DOMElements.kpis.valuation.textContent = `$${p.valuation.toFixed(0)}M`;
+        DOMElements.kpis.cash.textContent = `$${p.cash.toFixed(0)}M`;
+        DOMElements.kpis.debt.textContent = `$${p.debt.toFixed(0)}M`;
+        DOMElements.kpis.stock.textContent = `$${p.stock.toFixed(2)}`;
+        DOMElements.kpis.price.textContent = `$${p.price.toFixed(0)}`;
+        DOMElements.kpis.leadership.textContent = `${calculateLeadershipScore(p).toFixed(0)} / 100`;
+        DOMElements.kpis.economy.textContent = gameState.economy.name;
+        DOMElements.kpis.economy.style.backgroundColor = gameState.economy.color;
+    }
+
+    function renderIntel() {
+        const p = gameState.player;
+        const priceFactor = p.price > 0 ? Math.max(0.1, (1000 - p.price) / 500) : 0;
+        const digitalMultiplier = 1 + (p.budgets.mkt.digital / 20);
+
+        DOMElements.intel.player.innerHTML = `<h3>${p.name} (You)</h3>
+            <p>Share: ${p.marketShare.toFixed(1)}% | Quality: ${p.quality.toFixed(0)} | Reputation: ${p.brandReputation.toFixed(0)}</p>
+            <p>Skill: ${p.skillLevel.toFixed(0)} | Utilization: ${(p.capacityUtilization * 100).toFixed(0)}% | Supply Chain: ${p.supplyChainStability.toFixed(0)}%</p>
+            <p>Analyst Rating: <span class="impact-value">${p.analystRating}</span></p>
+            <div id="sales-drivers-summary" style="font-size: 0.9em; opacity: 0.8; margin-top:10px; border-top: 1px solid var(--tertiary-bg); padding-top: 10px;">
+                Sales Drivers: Base(${ (p.quality + p.brandReputation * 1.5).toFixed(0) }) x Price(${priceFactor.toFixed(2)}) x Digital(${digitalMultiplier.toFixed(2)})
+            </div>`;
+        
+        DOMElements.intel.competitor.innerHTML = gameState.competitors.map(c => `
+            <h3>${c.name}</h3>
+            <p>Share: ${c.marketShare.toFixed(1)}% | Quality: ${c.quality.toFixed(0)} | Reputation: ${c.brandReputation.toFixed(0)} | Price: $${c.price.toFixed(0)}</p>
+        `).join('');
+    }
+
+    function renderActionPanes() {
+        const p = gameState.player;
+        const rdSuccessChance = Math.min(100, (p.budgets.rd / 20) * 100);
+        DOMElements.actionPanes.rd.innerHTML = `<h3>Research & Development</h3><p>Annual Budget: $${p.budgets.rd}M</p><p>Est. Project Success Chance: <span class="impact-value">${rdSuccessChance.toFixed(0)}%</span></p>` + Object.keys(RND_PROJECTS).map(id => {
+            const proj = RND_PROJECTS[id];
+            if (p.activeProjects[id]) return `<div class="action-item"><p><strong>${proj.name} (In Progress)</strong> - ${p.activeProjects[id].yearsLeft} years remaining.</p></div>`;
+            return `<div class="action-item"><p><strong>${proj.name}</strong></p><p>Cost: $${proj.cost}M | Duration: ${proj.duration} years</p><button class="action-btn" onclick="startProject('${id}')" ${p.cash < proj.cost ? 'disabled' : ''}>Fund</button></div>`;
+        }).join('');
+
+        const digitalMultiplier = 1 + (p.budgets.mkt.digital / 20);
+        DOMElements.actionPanes.mkt.innerHTML = `<h3>Marketing</h3>
+            <p>Brand Awareness Budget: $${p.budgets.mkt.brand}M</p>
+            <p>Digital Campaigns Budget: $${p.budgets.mkt.digital}M</p>
+            <div class="action-item">
+                <h4>Estimated Impact</h4>
+                <p>Brand Reputation Contribution: <span class="impact-value">+${(p.budgets.mkt.brand / 10).toFixed(1)}</span></p>
+                <p>Digital Campaign Multiplier: <span class="impact-value">${digitalMultiplier.toFixed(2)}x</span></p>
+            </div>`;
+        
+        DOMElements.actionPanes.ops.innerHTML = `<h3>Operations</h3>
+            <p>Quality Control Budget: $${p.budgets.ops.qc}M</p>
+            <p>Process Efficiency & Supply Chain Budget: $${p.budgets.ops.efficiency}M</p>
+            <p>CapEx - Expansion: $${p.budgets.capex.expansion}M | Automation: $${p.budgets.capex.automation}M</p>
+            <div class="action-item">
+                <p><strong>Set Product Price:</strong> <input type="number" id="price-input" value="${p.price}" step="10"></p>
+            </div>`;
+            
+        DOMElements.actionPanes.hr.innerHTML = `<h3>Human Resources</h3>
+            <p>Employee Training Budget: $${p.budgets.hr.training}M</p>
+            <p>Salaries & Benefits Budget: $${p.budgets.hr.salary}M</p>`;
+        
+        const outstandingLoansHTML = p.outstandingLoans.map(loan => `<li>$${loan.amount}M due in Year ${loan.dueYear}</li>`).join('');
+        const sharesAvailableToIssue = MAX_SHARE_ISSUE - p.sharesIssuedThisYear;
+        DOMElements.actionPanes.finance.innerHTML = `<h3>Corporate Finance</h3><p>Annual Budget: $${p.budgets.finance}M</p><p>Current Interest Rate: ${(gameState.economy.interestRate * 100).toFixed(1)}%</p>
+            <p>Annual Share Issuance Limit: $${sharesAvailableToIssue.toFixed(0)}M remaining</p>
+            <div class="action-item"> <p>Take Loan ($M): <input type="number" id="loan-amount" value="10" step="5"> <button class="action-btn" id="take-loan-btn">Borrow</button></p></div>
+            <div class="action-item"> <p>Repay Debt ($M): <input type="number" id="repay-amount" value="10" step="5"> <button class="action-btn" id="repay-debt-btn" ${p.debt <= 0 ? 'disabled' : ''}>Repay</button></p></div>
+            <div class="action-item"> <p>Share Buyback ($M): <input type="number" id="buyback-amount" value="10" step="5"> <button class="action-btn" id="buyback-shares-btn">Buyback</button></p></div>
+            <div class="action-item"> <p>Issue Shares ($M): <input type="number" id="issue-amount" value="10" step="5"> <button class="action-btn" id="issue-shares-btn" ${sharesAvailableToIssue <= 0 ? 'disabled' : ''}>Issue</button></p></div>
+            <div class="action-item"><h4>Outstanding Loans</h4><ul>${outstandingLoansHTML || "<li>None</li>"}</ul></div>`;
+        
+        document.getElementById('price-input').addEventListener('change', (e) => {
+            setPrice(e.target.value);
+        });
+        document.getElementById('take-loan-btn').addEventListener('click', () => {
+            takeLoan();
+        });
+        document.getElementById('repay-debt-btn').addEventListener('click', () => {
+            repayDebt();
+        });
+        document.getElementById('buyback-shares-btn').addEventListener('click', () => {
+            buybackShares();
+        });
+        document.getElementById('issue-shares-btn').addEventListener('click', () => {
+            issueShares();
+        });
+        document.getElementById('take-loan-btn').addEventListener('click', takeLoan);
+        document.getElementById('repay-debt-btn').addEventListener('click', repayDebt);
+        document.getElementById('buyback-shares-btn').addEventListener('click', buybackShares);
+        document.getElementById('issue-shares-btn').addEventListener('click', issueShares);
+        document.getElementById('price-input').addEventListener('change', (e) => setPrice(e.target.value));
+
+    }
+
+    function renderNewsAndLogs() {
+        DOMElements.newsFeed.innerHTML = gameState.news.map(n => `<div class="news-entry"><span class="${n.type === 'crisis' ? 'news-crisis' : 'news-source'}">${n.source}:</span> ${n.headline}</div>`).join('');
+        DOMElements.logContainer.innerHTML = gameState.log.map(l => `<div class="log-entry" style="color:${l.color || 'inherit'}"><span class="log-year">Y${l.year}:</span> ${l.message}</div>`).join('');
+        DOMElements.logContainer.scrollTop = DOMElements.logContainer.scrollHeight;
+    }
+
+    function showPane(paneId) {
+        document.querySelectorAll('.action-pane-content').forEach(p => p.classList.add('hidden'));
+        document.getElementById(paneId).classList.remove('hidden');
+        DOMElements.tabs.forEach(t => t.classList.remove('active'));
+        document.querySelector(`button[onclick="showPane('${paneId}')"]`).classList.add('active');
+    }
+
+    // --- BUDGETING ---
+    function showAnnualBudgetScreen() {
+        switchScreen('annualBudget');
+        DOMElements.annualBudget.title.textContent = `Year ${gameState.year}: Annual Budget Allocation`;
+        const maxAllocation = gameState.player.cash;
+        Object.values(DOMElements.annualBudget.sliders).forEach(slider => {
+            slider.max = maxAllocation;
+            slider.value = 0;
+        });
+        updateAnnualBudgetDisplay();
+    }
+
+    function updateAnnualBudgetDisplay() {
+        const p = gameState.player;
+        let totalAllocated = 0;
+        for(const key in DOMElements.annualBudget.sliders) {
+            const slider = DOMElements.annualBudget.sliders[key];
+            const value = parseFloat(slider.value);
+            // This check prevents the error when sliders are not yet on the screen
+            if (DOMElements.annualBudget.labels[key]) {
+                 DOMElements.annualBudget.labels[key].textContent = `$${value.toFixed(0)}M`;
+            }
+            totalAllocated += value;
+        }
+        const remaining = p.cash - totalAllocated;
+
+        DOMElements.annualBudget.displays.available.textContent = `$${p.cash.toFixed(0)}M`;
+        DOMElements.annualBudget.displays.allocated.textContent = `$${totalAllocated.toFixed(0)}M`;
+        DOMElements.annualBudget.displays.remaining.textContent = `$${remaining.toFixed(0)}M`;
+
+        if (remaining < 0) {
+            DOMElements.annualBudget.displays.remaining.style.color = 'var(--danger-color)';
+            DOMElements.annualBudget.finalizeBtn.disabled = true;
+        } else {
+            DOMElements.annualBudget.displays.remaining.style.color = 'var(--success-color)';
+            DOMElements.annualBudget.finalizeBtn.disabled = false;
+        }
+    }
+
+    function finalizeAnnualBudget() {
+        let totalAllocated = 0;
+        const p = gameState.player;
+        
+        p.budgets.rd = parseFloat(DOMElements.annualBudget.sliders.rd.value);
+        p.budgets.mkt.total = parseFloat(DOMElements.annualBudget.sliders.mkt.value);
+        p.budgets.ops.total = parseFloat(DOMElements.annualBudget.sliders.ops.value);
+        p.budgets.hr.total = parseFloat(DOMElements.annualBudget.sliders.hr.value);
+        p.budgets.finance = parseFloat(DOMElements.annualBudget.sliders.fin.value);
+        
+        totalAllocated = p.budgets.rd + p.budgets.mkt.total + p.budgets.ops.total + p.budgets.hr.total + p.budgets.finance;
+
+        p.cash -= totalAllocated;
+        addToLog(`Finalized main budget. Spent: $${totalAllocated.toFixed(0)}M.`);
+        
+        showDeptBudgetScreen();
+        
+    }
+
+    function showDeptBudgetScreen() {
+        switchScreen('deptBudget');
+        gameState.currentPhase = 'deptBudget';
+        const p = gameState.player;
+        DOMElements.deptBudget.title.textContent = `Year ${gameState.year}: Departmental & CapEx Planning`;
+
+        ['mkt', 'ops', 'hr'].forEach(dept => {
+            const deptUI = DOMElements.deptBudget[dept];
+            const deptBudget = p.budgets[dept];
+            deptUI.total.textContent = deptBudget.total;
+            Object.values(deptUI.sliders).forEach(s => { s.max = deptBudget.total; s.value = 0; });
+            updateDeptBudgetDisplay(dept);
+        });
+
+        Object.values(DOMElements.deptBudget.capex.sliders).forEach(s => { s.max = p.cash; s.value = 0; });
+        updateCapexDisplay();
+    }
+
+    function updateDeptBudgetDisplay(dept) {
+        const deptUI = DOMElements.deptBudget[dept];
+        const deptBudget = gameState.player.budgets[dept];
+        
+        let totalAllocated = 0;
+        const values = {};
+        for (const key in deptUI.sliders) {
+            const slider = deptUI.sliders[key];
+            const value = parseFloat(slider.value);
+            values[key] = value;
+            deptUI.labels[key].textContent = `$${value.toFixed(0)}M`;
+            totalAllocated += value;
+        }
+        
+        deptUI.allocated.textContent = `$${totalAllocated.toFixed(0)}M`;
+        if (totalAllocated > deptBudget.total) {
+            deptUI.allocated.style.color = 'var(--danger-color)';
+        } else {
+            deptUI.allocated.style.color = 'var(--success-color)';
+        }
+
+        let impactText = "";
+        if (dept === 'mkt') {
+            const brandImpact = values.brand / 10;
+            const digitalImpact = 1 + (values.digital / 20);
+            impactText = `Reputation: +${brandImpact.toFixed(1)}, Digital Multiplier: ${digitalImpact.toFixed(2)}x`;
+        } else if (dept === 'ops') {
+            const qualityImpact = values.qc / 10;
+            const efficiencyImpact = values.efficiency / 10;
+            impactText = `Quality: +${qualityImpact.toFixed(1)}, Unit Cost: -$${efficiencyImpact.toFixed(1)}, Supply Chain: +${efficiencyImpact.toFixed(1)}%`;
+        } else if (dept === 'hr') {
+            const moraleImpact = (values.salary / 5) + (values.training / 15);
+            const skillImpact = values.training / 5;
+            impactText = `Morale: +${moraleImpact.toFixed(1)}, Skill Level: +${skillImpact.toFixed(1)}`;
+        }
+        deptUI.impactDisplay.textContent = impactText;
+
+
+        checkAllDeptBudgets();
+        
+    }
+
+    function updateCapexDisplay() {
+        let expansionValue = 0;
+        let automationValue = 0;
+        for (const key in DOMElements.deptBudget.capex.sliders) {
+            const slider = DOMElements.deptBudget.capex.sliders[key];
+            const value = parseFloat(slider.value);
+            DOMElements.deptBudget.capex.labels[key].textContent = `$${value.toFixed(0)}M`;
+            if (key === 'expansion') expansionValue = value;
+            if (key === 'automation') automationValue = value;
+        }
+        const capacityImpact = expansionValue * 2;
+        const costImpact = automationValue / 2;
+        DOMElements.deptBudget.capex.impactDisplay.textContent = `Capacity: +${capacityImpact.toFixed(0)}k units, Unit Cost: -$${costImpact.toFixed(1)}`;
+
+        checkAllDeptBudgets();
+        
+    }
+
+
+    function checkAllDeptBudgets() {
+        let allValid = true;
+        ['mkt', 'ops', 'hr'].forEach(dept => {
+            const deptUI = DOMElements.deptBudget[dept];
+            const deptBudget = gameState.player.budgets[dept];
+            let totalAllocated = 0;
+            for (const key in deptUI.sliders) {
+                totalAllocated += parseFloat(deptUI.sliders[key].value);
+            }
+            if (totalAllocated > deptBudget.total) {
+                allValid = false;
+            }
+        });
+
+        let capexTotal = 0;
+        for (const key in DOMElements.deptBudget.capex.sliders) {
+            capexTotal += parseFloat(DOMElements.deptBudget.capex.sliders[key].value);
+        }
+        if (capexTotal > gameState.player.cash) {
+            allValid = false;
+        }
+
+        DOMElements.deptBudget.finalizeBtn.disabled = !allValid;
+    }
+
+    function finalizeDeptBudget() {
+        const p = gameState.player;
+        p.budgets.mkt.brand = parseFloat(DOMElements.deptBudget.mkt.sliders.brand.value);
+        p.budgets.mkt.digital = parseFloat(DOMElements.deptBudget.mkt.sliders.digital.value);
+        p.budgets.ops.qc = parseFloat(DOMElements.deptBudget.ops.sliders.qc.value);
+        p.budgets.ops.efficiency = parseFloat(DOMElements.deptBudget.ops.sliders.efficiency.value);
+        p.budgets.hr.training = parseFloat(DOMElements.deptBudget.hr.sliders.training.value);
+        p.budgets.hr.salary = parseFloat(DOMElements.deptBudget.hr.sliders.salary.value);
+
+        p.budgets.capex.expansion = parseFloat(DOMElements.deptBudget.capex.sliders.expansion.value);
+        p.budgets.capex.automation = parseFloat(DOMElements.deptBudget.capex.sliders.automation.value);
+        const totalCapex = p.budgets.capex.expansion + p.budgets.capex.automation;
+        p.cash -= totalCapex;
+
+        addToLog(`Departmental budgets & CapEx finalized. CapEx spending: $${totalCapex}M.`);
+        
+        switchScreen('game');
+        gameState.currentPhase = 'game';
+        renderAll();
+        
+    }
+
+
+    // --- PLAYER ACTIONS ---
+    function startProject(id) {
+        const proj = RND_PROJECTS[id];
+        if (gameState.player.cash >= proj.cost && !gameState.player.activeProjects[id]) {
+            gameState.player.cash -= proj.cost;
+            gameState.player.activeProjects[id] = { ...proj, id: id, yearsLeft: proj.duration };
+            addToLog(`Funded R&D: '${proj.name}'.`);
+            renderAll();
+            
+        }
+    }
+    function setPrice(value) {
+        const newPrice = parseInt(value);
+        if (!isNaN(newPrice) && newPrice > 0) {
+            gameState.player.price = newPrice;
+        } else {
+            document.getElementById('price-input').value = gameState.player.price;
+        }
+        renderAll();
+    }
+
+    function takeLoan() {
+        const amount = parseInt(document.getElementById('loan-amount').value);
+        const p = gameState.player;
+        if (amount > 0 && (p.debt + amount) <= p.valuation) {
+            p.debt += amount;
+            p.cash += amount;
+            p.outstandingLoans.push({ amount: amount, dueYear: gameState.year + LOAN_TERM });
+            addToLog(`Took a loan of $${amount}M, due in Year ${gameState.year + LOAN_TERM}.`);
+            renderAll();
+        } else if ((p.debt + amount) > p.valuation) {
+            addToLog(`Loan request denied. Total debt cannot exceed company valuation.`, 'var(--danger-color)');
+        }
+    }
+
+    function repayDebt() {
+        const amount = parseInt(document.getElementById('repay-amount').value);
+        const p = gameState.player;
+        const repayableAmount = Math.min(amount, p.debt, p.cash);
+        if (repayableAmount > 0) {
+            p.debt -= repayableAmount;
+            p.cash -= repayableAmount;
+            p.outstandingLoans.sort((a,b) => a.dueYear - b.dueYear);
+            let remainingRepayment = repayableAmount;
+            while(remainingRepayment > 0 && p.outstandingLoans.length > 0) {
+                let loan = p.outstandingLoans[0];
+                if (remainingRepayment >= loan.amount) {
+                    remainingRepayment -= loan.amount;
+                    p.outstandingLoans.shift();
+                } else {
+                    loan.amount -= remainingRepayment;
+                    remainingRepayment = 0;
+                }
+            }
+            addToLog(`Repaid $${repayableAmount.toFixed(0)}M of debt.`);
+            renderAll();
+        }
+    }
+
+    function buybackShares() {
+        const amount = parseInt(document.getElementById('buyback-amount').value);
+        const p = gameState.player;
+        if (amount > 0 && p.cash >= amount) {
+            p.cash -= amount;
+            p.stock += amount / 10;
+            addToLog(`Spent $${amount}M on share buybacks, boosting stock price.`);
+            renderAll();
+        }
+    }
+
+    function issueShares() {
+        const amount = parseInt(document.getElementById('issue-amount').value);
+        const p = gameState.player;
+        const issuableAmount = Math.min(amount, MAX_SHARE_ISSUE - p.sharesIssuedThisYear);
+
+        if (issuableAmount > 0) {
+            p.cash += issuableAmount;
+            p.stock -= issuableAmount / 15;
+            p.sharesIssuedThisYear += issuableAmount;
+            addToLog(`Raised $${issuableAmount.toFixed(0)}M by issuing new shares, diluting stock value.`);
+            renderAll();
+        } else if (amount > 0) {
+            addToLog(`Cannot issue more shares this year. Annual limit reached.`, 'var(--warning-color)');
+        }
+    }
+
+
+    // --- SIMULATION LOGIC ---
+    function updateEconomy() {
+        const rand = Math.random();
+        if (rand < 0.1) gameState.economy = ECONOMY.DEPRESSION;
+        else if (rand < 0.25) gameState.economy = ECONOMY.RECESSION;
+        else if (rand < 0.8) gameState.economy = ECONOMY.STABLE;
+        else gameState.economy = ECONOMY.BOOM;
+        addNews("Market Watch", `Economic forecast for Year ${gameState.year}: ${gameState.economy.name}.`);
+    }
+
+    function runCompetitorAI(competitors) {
+        competitors.forEach(c => {
+            if (c.name === "InnovateCorp") {
+                if (c.quality < gameState.player.quality + 10) c.quality += Math.random() * 4 + 1;
+                c.price = Math.max(c.price, gameState.player.price * 1.05);
+            } else {
+                if (c.unitCost > gameState.player.unitCost - 20) c.unitCost -= Math.random() * 10 + 5;
+                c.price = Math.min(c.price, gameState.player.price * 0.95);
+                if (c.brandReputation < gameState.player.brandReputation) c.brandReputation += 5;
+            }
+        });
+    }
+
+    function progressProjects(company) {
+        const rdBudgetFactor = company.isAI ? 1 : company.budgets.rd / 20;
+        if (!company.isAI && rdBudgetFactor < 0.75 && Object.keys(company.activeProjects).length > 0) {
+            addToLog("Low R&D funding may delay projects.", 'var(--warning-color)');
+        }
+
+        Object.values(company.activeProjects).forEach(p => {
+            if(Math.random() < rdBudgetFactor) p.yearsLeft--; 
+            
+            if (p.yearsLeft <= 0) {
+                for(const key in p.effect) company[key] += p.effect[key];
+                if(!company.isAI) {
+                    addToLog(`R&D project '${p.name}' completed!`, 'var(--success-color)');
+                    addNews("Industry Press", `${company.name} announces breakthrough with '${p.name}'.`);
+                }
+                delete company.activeProjects[p.id];
+            }
+        });
+    }
+
+    function simulateMarket() {
+        const allCompanies = [gameState.player, ...gameState.competitors];
+        const totalMarketValue = 500 * gameState.economy.marketGrowth;
+        
+        const p = gameState.player;
+        p.brandReputation += (p.budgets.mkt.brand / 10) - 1;
+        p.quality += (p.budgets.ops.qc / 10) - 1 + (p.skillLevel / 100);
+        p.unitCost -= (p.budgets.ops.efficiency / 10) + (p.skillLevel / 100);
+        p.morale += (p.budgets.hr.salary / 5) - 2;
+        p.skillLevel += (p.budgets.hr.training / 5) - 1;
+        
+        p.capacity += p.budgets.capex.expansion * 2000;
+        p.unitCost -= p.budgets.capex.automation / 2;
+
+        p.supplyChainStability += (p.budgets.ops.efficiency / 10) - 1;
+        p.supplyChainStability = Math.max(0, Math.min(100, p.supplyChainStability));
+        if (p.supplyChainStability < 50) p.unitCost *= 1.1;
+        
+        p.morale = Math.max(0, Math.min(100, p.morale));
+        p.quality = Math.max(0, Math.min(100, p.quality));
+        p.brandReputation = Math.max(0, Math.min(100, p.brandReputation));
+        p.skillLevel = Math.max(0, Math.min(100, p.skillLevel));
+        p.unitCost = Math.max(50, p.unitCost);
+
+        let totalScore = 0;
+        allCompanies.forEach(c => {
+            const priceFactor = Math.max(0.1, (1000 - c.price) / 500);
+            const digitalMultiplier = c.isAI ? 1.0 : 1 + (c.budgets.mkt.digital / 20);
+            c.marketScore = (c.quality + c.brandReputation * 1.5) * priceFactor * digitalMultiplier;
+            totalScore += c.marketScore;
+        });
+
+        allCompanies.forEach(c => {
+            c.marketShare = totalScore > 0 ? (c.marketScore / totalScore) * 100 : 33.3;
+            const demand = c.price > 0 ? (c.marketShare / 100) * (totalMarketValue * 1000000) / c.price : 0;
+            c.unitsSold = Math.min(demand, c.capacity);
+        });
+
+        p.capacityUtilization = p.capacity > 0 ? p.unitsSold / p.capacity : 0;
+        if (p.capacityUtilization > 0.95) {
+            p.morale -= 5;
+            p.quality -= 5;
+            addToLog("Factories are over-utilized, stressing workers and quality.", 'var(--warning-color)');
+        }
+        p.inefficiencyCosts = p.capacityUtilization < 0.5 ? (0.5 - p.capacityUtilization) * 20 : 0;
+    }
+
+    function calculateFinancials(c) {
+        if (c.isAI) return;
+
+        const revenue = c.unitsSold * c.price / 1000000;
+        const cogs = c.unitsSold * c.unitCost / 1000000;
+        const interest = c.debt * gameState.economy.interestRate;
+        
+        const turnoverRate = Math.max(0, 0.2 - (c.morale / 500));
+        const turnoverCost = turnoverRate * 20;
+        
+        const operatingCosts = 10 + c.quality / 10 + c.budgets.finance + c.inefficiencyCosts + turnoverCost;
+        
+        let grossProfit = revenue - cogs - interest - operatingCosts;
+        const tax = grossProfit > 0 ? grossProfit * TAX_RATE : 0;
+        c.profit = grossProfit - tax;
+        c.cash += c.profit;
+
+        if (c.profit > 50 && c.debt < c.valuation * 0.5) c.analystRating = "Strong Buy";
+        else if (c.profit > 10) c.analystRating = "Buy";
+        else if (c.profit > -10 && c.debt < c.valuation * 0.8) c.analystRating = "Hold";
+        else if (c.profit < -10) c.analystRating = "Sell";
+        else c.analystRating = "Strong Sell";
+
+        let analystMultiplier = 1.0;
+        if (c.analystRating === "Strong Buy") analystMultiplier = 1.1;
+        else if (c.analystRating === "Buy") analystMultiplier = 1.05;
+        else if (c.analystRating === "Sell") analystMultiplier = 0.95;
+        else if (c.analystRating === "Strong Sell") analystMultiplier = 0.9;
+        
+        c.stock += (c.profit / 10) + (c.marketShare - c.lastYearMarketShare);
+        c.stock *= analystMultiplier;
+        c.stock = Math.max(1, c.stock);
+
+        c.valuation = c.cash - c.debt + c.stock * 5 + c.marketShare * 3 + c.brandReputation * 2;
+    }
+
+    function triggerRandomCrisis() {
+        const crisis = CRISIS_EVENTS[Math.floor(Math.random() * CRISIS_EVENTS.length)];
+        gameState.activeCrises.push({...crisis});
+        addNews("CRISIS", crisis.message, 'crisis');
+    }
+
+    function handleCrises() {
+        gameState.activeCrises.forEach(crisis => {
+            for(const key in crisis.effect) {
+                gameState.player[key] += crisis.effect[key];
+            }
+            crisis.duration--;
+        });
+        const remainingCrises = gameState.activeCrises.filter(c => c.duration > 0);
+        if(remainingCrises.length < gameState.activeCrises.length) {
+            addToLog("A crisis has subsided.", 'var(--success-color)');
+        }
+        gameState.activeCrises = remainingCrises;
+    }
+
+    function checkLoanRepayments() {
+        const p = gameState.player;
+        const loansDue = p.outstandingLoans.filter(loan => loan.dueYear <= gameState.year);
+        if (loansDue.length > 0) {
+            const totalDue = loansDue.reduce((sum, loan) => sum + loan.amount, 0);
+            addToLog(`Loan payment of $${totalDue.toFixed(0)}M is due this year.`, 'var(--warning-color)');
+            if (p.cash >= totalDue) {
+                p.cash -= totalDue;
+                p.debt -= totalDue;
+                p.outstandingLoans = p.outstandingLoans.filter(loan => loan.dueYear > gameState.year);
+                addToLog(`Successfully repaid $${totalDue.toFixed(0)}M in loans.`, 'var(--success-color)');
+            } else {
+                gameState.loanDefault = true;
+            }
+        }
+    }
+
+    function generateDynamicNews() {
+        const p = gameState.player;
+        if(p.profit > 50 && p.profit > p.lastYearProfit * 1.5) addNews("Financial Times", `${p.name} reports record-breaking profits for Year ${gameState.year}.`);
+        if(p.profit < 0 && p.lastYearProfit > 0) addNews("Bloomberg", `${p.name} posts unexpected losses, raising investor concerns.`);
+        if(p.debt > p.valuation) addNews("DebtWire", `Concerns grow over ${p.name}'s debt load as it exceeds company valuation.`);
+        if(p.marketShare > p.lastYearMarketShare + 5) addNews("Market Watch", `${p.name} sees massive market share surge, shaking up the industry.`);
+        if(p.marketShare < p.lastYearMarketShare - 5) addNews("Market Watch", `${p.name} is losing significant ground to competitors.`);
+        if(p.quality > 90 && p.quality > p.lastYearQuality) addNews("TechCrunch", `${p.name} products praised for exceptional quality and innovation.`);
+        if(p.quality < 50 && p.quality < p.lastYearQuality) addNews("Consumer Reports", `Warning issued over declining product quality at ${p.name}.`);
+        if(p.morale > 90 && p.morale > p.lastYearMorale) addNews("HR News", `${p.name} voted one of the 'Best Places to Work' this year.`);
+        if(p.morale < 40 && p.morale < p.lastYearMorale) addNews("Glassdoor", `Reports of internal turmoil and low morale plague ${p.name}.`);
+    }
+
+    function calculateLeadershipScore(p) {
+        if (!gameState.firstYearCompleted) {
+            return 0;
+        }
+        const debtRatio = p.valuation > 0 ? p.debt / p.valuation : 2;
+        const financialSolvency = Math.max(0, (1 - debtRatio) * 15);
+        const profitability = Math.max(0, Math.min(10, p.profit / 5));
+        const financialScore = financialSolvency + profitability;
+
+        const marketShareScore = Math.max(0, (p.marketShare / 50) * 15);
+        const brandScore = Math.max(0, (p.brandReputation / 100) * 10);
+        const marketScore = marketShareScore + brandScore;
+
+        const qualityScore = Math.max(0, (p.quality / 100) * 15);
+        const efficiencyScore = Math.max(0, (p.supplyChainStability / 100) * 10);
+        const opsScore = qualityScore + efficiencyScore;
+
+        const moraleScore = Math.max(0, (p.morale / 100) * 15);
+        const skillScore = Math.max(0, (p.skillLevel / 100) * 10);
+        const hrScore = moraleScore + skillScore;
+
+        return Math.min(100, financialScore + marketScore + opsScore + hrScore);
+    }
+
+    function checkGameOver() {
+        let reason = "";
+        const p = gameState.player;
+        if (p.cash < 0) reason = `Bankruptcy! The company ran out of cash.`;
+        else if (gameState.loanDefault) reason = `Loan Default! You failed to repay your loans on time. The board has terminated your contract.`;
+        else if (p.stock <= 10) reason = `Stock price collapsed! The board has fired you.`;
+        else if (p.marketShare < 35 && gameState.firstYearCompleted) reason = `Market dominance lost! Your market share fell below the board's 35% mandate.`;
+        else if (p.quality < 60 && gameState.firstYearCompleted) reason = `Product crisis! Your product quality fell below the acceptable standard of 60.`;
+        else if (p.brandReputation < 60 && gameState.firstYearCompleted) reason = `Brand collapse! Your company's reputation has fallen below the critical level of 60.`;
+        else if (p.skillLevel < 60 && gameState.firstYearCompleted) reason = `Talent drain! Employee skill level has dropped below the 60-point threshold, impacting productivity.`;
+        else if (p.supplyChainStability < 75 && gameState.firstYearCompleted) reason = `Operational failure! Supply chain stability dropped below 75%, causing major disruptions.`;
+        else if (p.debt > p.valuation) reason = `Crippling Debt! Your debt has exceeded the company's entire valuation.`
+        else if (gameState.year > 10) reason = `You have successfully completed a 10-year tenure as CEO!`;
+
+        if (reason) {
+            DOMElements.gameOver.message.textContent = reason;
+            DOMElements.gameOver.title.textContent = (gameState.year > 10) ? "Successful Tenure!" : "Forced Resignation";
+            DOMElements.gameOver.metrics.innerHTML = `Final Leadership Score: <span>${calculateLeadershipScore(p).toFixed(0)} / 100</span><br>Final Valuation: <span>$${p.valuation.toFixed(0)}M</span><br>Peak Stock Price: <span>$${p.stock.toFixed(2)}</span><br>Final Market Share: <span>${p.marketShare.toFixed(1)}%</span>`;
+            switchScreen('gameOver');
+            return true;
+        }
+        return false;
+    }
+function getUserId() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get("userId") || "guest";
+    }
+      function getUserName() {
+                const params = new URLSearchParams(window.location.search);
+                return params.get("name") || "guest";
+            }
+    // --- API Functions for Load/Save ---
+    async function saveGame() {
+       console.log("Auto-saving game...");
+        const userId = getUserId();
+        const saveUrl = `${API_ENDPOINT}`;
+        const username = getUserName()
+        
+
+        try {
+            const response = await fetch(saveUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({userId:userId, name:username, gameState:gameState})
+            });
+
+            if (response.ok) {
+                showApiMessage('Game saved successfully!', 'success');
+            } else {
+                const errorText = await response.text();
+            }
+        } catch (error) {
+            console.error('Save game failed:', error);
+        }
+    }
+
+    // Updated function to handle automatic load on start
+  async function loadLatestGame() {
+    const loadUrl = `${API_ENDPOINT}?userId=${getUserId()}`;
+    DOMElements.savedGamesList.innerHTML = '<p>Checking for a previous game...</p>';
+
+    try {
+        const response = await fetch(loadUrl);
+        const data = await response.json();
+        
+        // This check now correctly handles a single game object.
+        if (data && Object.keys(data).length > 0) {
+            gameState = data.gameState;
+            saveGameId = data.id;
+            addToLog(`Loaded simulation for CEO ${gameState.ceoName}.`);
+            
+            if (gameState.currentPhase === 'annualBudget') {
+                showAnnualBudgetScreen();
+            } else if (gameState.currentPhase === 'deptBudget') {
+                showDeptBudgetScreen();
+            } else {
+                switchScreen('game');
+                renderAll();
+            }
+            DOMElements.savedGamesList.innerHTML = `<p>Resuming simulation for <strong>${gameState.ceoName}</strong>...</p>`;
+            showApiMessage('Game loaded successfully!', 'success');
+        } else {
+            // The API returned an empty object, indicating no saved game
+            showApiMessage('No saved game found. Starting a new simulation.', 'info');
+            DOMElements.savedGamesList.innerHTML = `<p>No saved simulations found. Start a new game!</p>`;
+            startNewGameAfterLoad();
+        }
+    } catch (error) {
+        console.error('Load games failed:', error);
+        DOMElements.savedGamesList.innerHTML = '<p>Network error or invalid API endpoint.</p>';
+        showApiMessage('Network error or invalid API endpoint. Starting a new simulation.', 'error');
+        startNewGameAfterLoad();
+    }
+}
+    
+    // Helper function to start a new game after a failed load, using a default name
+    function startNewGameAfterLoad() {
+         DOMElements.playerNameInput.value = "CEO";
+         startGame(DOMElements.playerNameInput.value);
+    }
+    
+    // The following functions are no longer in use due to the new auto-save/auto-load logic.
+    window.loadGame = async (gameId) => {};
+    window.deleteGame = async (gameId) => {};
+
+
+    // --- UTILITY FUNCTIONS ---
+    function addToLog(message, color) { 
+        if (!gameState.log) gameState.log = [];
+        gameState.log.unshift({ year: gameState.year, message, color }); 
+        if (gameState.log.length > 50) gameState.log.pop(); 
+        if (DOMElements.screens.game.classList.contains('hidden') === false) {
+             renderNewsAndLogs();
+        }
+    }
+    function addNews(source, headline, type = 'news') { 
+        if (!gameState.news) gameState.news = [];
+        gameState.news.unshift({ source, headline, type }); 
+        if (gameState.news.length > 20) gameState.news.pop();
+        if (DOMElements.screens.game.classList.contains('hidden') === false) {
+             renderNewsAndLogs();
+        }
+    }
+
+    // --- STARTUP ---
+    init();
+</script>
+</body>
+</html>

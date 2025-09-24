@@ -112,6 +112,11 @@ export const menuItems = [
       icon: <IndianRupee className="h-5 w-5" />,
       subMenu: [
         { label: "Fee Management", path: "/fees-management" },
+          {
+      label: "Fail Students",
+      icon: <NewspaperIcon className="h-5 w-5" />,
+      path: "/fail-student" 
+    },
       ],
     },
     {
@@ -161,6 +166,10 @@ export const menuItems = [
           ]},
           {label : "Human Resource Development", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Netritva",  icon: <Gamepad className="h-5 w-5" />, path:"/game/netrvita"},
+          ]},
+          {label : "Project Management", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
+            {label:"Project Taxila",  icon: <ProjectorIcon className="h-5 w-5" />, path:"/game/project-management"},
+            {label:"Ledership Challange ",  icon: <ProjectorIcon className="h-5 w-5" />, path:"/game/leadership-challange"},
           ]},
           {label:"Project Management",  icon: <ProjectorIcon className="h-5 w-5" />, path:"/game/project-management"},
          {label : "Critical Thinking", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
@@ -219,7 +228,10 @@ export const menuItems = [
           {label : "Human Resource Development", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Netritva",  icon: <Gamepad className="h-5 w-5" />, path:"/game/netrvita"},
           ]},
-          {label:"Project Management",  icon: <Gamepad className="h-5 w-5" />, path:"/game/project-management"},
+           {label : "Project Management", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
+            {label:"Project Taxila",  icon: <ProjectorIcon className="h-5 w-5" />, path:"/game/project-management"},
+            {label:"Ledership Challange ",  icon: <ProjectorIcon className="h-5 w-5" />, path:"/game/leadership-challange"},
+          ]},
           {label : "Strategy", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Taxila Capital Quest",  icon: <Gamepad className="h-5 w-5" />, path:"/game/quest"},
             {label:"Indian Business Strategy",  icon: <Gamepad className="h-5 w-5" />, path:"/game/indian-business"},

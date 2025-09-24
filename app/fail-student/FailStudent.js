@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
-export default function ResultsTable({ results }) {
+export default function ResultsTable({ results, type }) {
      const [searchTerm, setSearchTerm] = useState("");
        const filteredResults = results.filter((student) =>
     student.student_name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -88,6 +88,7 @@ const exportData = (type = "xlsx") => {
               <th className="px-4 py-2 border">Internal Marks</th>
               <th className="px-4 py-2 border">Total Marks</th>
               <th className="px-4 py-2 border">Status</th>
+              <th className="px-4 py-2 border">Amount</th>
             </tr>
           </thead>
          <tbody>
@@ -138,6 +139,11 @@ const exportData = (type = "xlsx") => {
                       }`}
                     >
                       {subj.status}
+                    </td>
+                     <td
+                      className={`px-4 py-2 border text-center font-semibold `}
+                    >
+                      {type === 'main' ? '750' : type === 'resit-1' ? '1250' : type === 'resit-2' ? student.resit_2_amount : '-' }
                     </td>
                   </tr>
                 ));
