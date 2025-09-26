@@ -89,87 +89,110 @@ const exportData = (type = "xlsx") => {
               <th className="px-4 py-2 border">Total Marks</th>
               <th className="px-4 py-2 border">Status</th>
               <th className="px-4 py-2 border">Amount</th>
+              <th className="px-4 py-2 border">Total</th>
             </tr>
           </thead>
          <tbody>
-            {filteredResults.map((student, idx) => {
-              if (student.subjects && student.subjects.length > 0) {
-                return student.subjects.map((subj, i) => (
-                  <tr
-                    key={`${idx}-${i}`}
-                    className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}
-                  >
-                    {i === 0 && (
-                      <>
-                        <td
-                          className="px-4 py-2 border font-medium"
-                          rowSpan={student.subjects.length}
-                        >
-                          {student.student_name}
-                        </td>
-                        <td
-                          className="px-4 py-2 border text-gray-600"
-                          rowSpan={student.subjects.length}
-                        >
-                          {student.student || "-"}
-                        </td>
-                        <td
-                          className="px-4 py-2 border text-gray-600"
-                          rowSpan={student.subjects.length}
-                        >
-                          {student.term}
-                        </td>
-                      </>
-                    )}
-                    <td className="px-4 py-2 border">{subj.subject}</td>
-                    <td className="px-4 py-2 border text-center">
-                      {subj.external_marks}
-                    </td>
-                    <td className="px-4 py-2 border text-center">
-                      {subj.internal_marks}
-                    </td>
-                    <td className="px-4 py-2 border text-center">
-                      {subj.total_marks}
-                    </td>
-                    <td
-                      className={`px-4 py-2 border text-center font-semibold ${
-                        subj.status === "Pass"
-                          ? "text-green-600"
-                          : "text-red-600"
-                      }`}
-                    >
-                      {subj.status}
-                    </td>
-                     <td
-                      className={`px-4 py-2 border text-center font-semibold `}
-                    >
-                      {type === 'main' ? '750' : type === 'resit-1' ? '1250' : type === 'resit-2' ? student.resit_2_amount : '-' }
-                    </td>
-                  </tr>
-                ));
-              }
+  {filteredResults.map((student, idx) => {
+    if (student.subjects && student.subjects.length > 0) {
+      // ✅ calculate per-subject fee
+      const perSubjectFee =
+        type === "main"
+          ? 750
+          : type === "resit-1"
+          ? 1250
+          : type === "resit-2"
+          ? student.resit_2_amount
+          : 0;
 
-              return (
-                <tr key={idx} className="bg-yellow-50">
-                  <td className="px-4 py-2 border font-medium">
-                    {student.student_name}
-                  </td>
-                  <td className="px-4 py-2 border text-gray-600">
-                    {student.student || "-"}
-                  </td>
-                  <td className="px-4 py-2 border text-gray-600">
-                    {student.term}
-                  </td>
-                  <td
-                    className="px-4 py-2 border text-center text-red-500 font-medium"
-                    colSpan={5}
-                  >
-                    {student.message || "Result not announced yet"}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
+      // ✅ total amount = subjects count × perSubjectFee
+      const totalAmount =
+        perSubjectFee && student.subjects.length > 0
+          ? perSubjectFee * student.subjects.length
+          : "-";
+
+      return student.subjects.map((subj, i) => (
+        <tr
+          key={`${idx}-${i}`}
+          className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}
+        >
+          {i === 0 && (
+            <>
+              <td
+                className="px-4 py-2 border font-medium"
+                rowSpan={student.subjects.length}
+              >
+                {student.student_name}
+              </td>
+              <td
+                className="px-4 py-2 border text-gray-600"
+                rowSpan={student.subjects.length}
+              >
+                {student.student || "-"}
+              </td>
+              <td
+                className="px-4 py-2 border text-gray-600"
+                rowSpan={student.subjects.length}
+              >
+                {student.term}
+              </td>
+            </>
+          )}
+          <td className="px-4 py-2 border">{subj.subject}</td>
+          <td className="px-4 py-2 border text-center">
+            {subj.external_marks}
+          </td>
+          <td className="px-4 py-2 border text-center">
+            {subj.internal_marks}
+          </td>
+          <td className="px-4 py-2 border text-center">
+            {subj.total_marks}
+          </td>
+          <td
+            className={`px-4 py-2 border text-center font-semibold ${
+              subj.status === "Pass" ? "text-green-600" : "text-red-600"
+            }`}
+          >
+            {subj.status}
+          </td>
+          <td className="px-4 py-2 border text-center font-semibold">
+            {perSubjectFee || "-"}
+          </td>
+          {i === 0 && (
+            <td
+              className="px-4 py-2 border text-center font-bold text-blue-600"
+              rowSpan={student.subjects.length}
+            >
+              {totalAmount}
+            </td>
+          )}
+        </tr>
+      ));
+    }
+
+    return (
+      <tr key={idx} className="bg-yellow-50">
+        <td className="px-4 py-2 border font-medium">
+          {student.student_name}
+        </td>
+        <td className="px-4 py-2 border text-gray-600">
+          {student.student || "-"}
+        </td>
+        <td className="px-4 py-2 border text-gray-600">
+          {student.term}
+        </td>
+        <td
+          className="px-4 py-2 border text-center text-red-500 font-medium"
+          colSpan={7} // ✅ increased because now we added one more column
+        >
+          {student.message || "Result not announced yet"}
+        </td>
+      </tr>
+    );
+  })}
+</tbody>
+
+
         </table>
       </div>
     </div>
