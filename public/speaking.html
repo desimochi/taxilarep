@@ -380,86 +380,93 @@
             }
         }
 
-        async function startRecording() {
-            if (!recognition) return;
-            try {
-                mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-                webcamFeed.srcObject = mediaStream;
-                webcamFeed.classList.remove('hidden');
-                videoPlayback.classList.add('hidden');
-                videoPlaceholder.classList.add('hidden');
-                
-                isRecording = true;
-                finalTranscript = '';
-                videoBlob = null;
-                videoLocalUrl = null;
-                analysisText = '';
-                
-                // Reset right panel to transcript view
-                rightPanelTitle.textContent = 'Live Transcript';
-                rightPanelContent.innerHTML = initialRightPanelHTML;
-                
-                buttonText.textContent = 'Stop Recording';
-                buttonIcon.innerHTML = `<path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zm12-1.5A1.5 1.5 0 0115.5 6v8a1.5 1.5 0 01-1.5 1.5h-1a1.5 1.5 0 01-1.5-1.5V6A1.5 1.5 0 0112.5 4.5h1z" clip-rule="evenodd"></path>`;
-                toggleRecordingBtn.classList.remove('bg-violet-600', 'hover:bg-violet-700');
-                toggleRecordingBtn.classList.add('bg-red-600', 'hover:bg-red-700', 'pulse');
-                listeningIndicator.classList.remove('hidden');
-                listeningIndicator.classList.add('flex');
-                downloadControls.classList.add('hidden');
-                downloadAnalysisBtn.classList.add('hidden');
-                playImprovedSpeechBtn.classList.add('hidden');
-                statusEl.textContent = 'I\'m listening. Speak whenever you\'re ready.';
+    async function startRecording() {
+    try {
+        mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        webcamFeed.srcObject = mediaStream;
+        webcamFeed.classList.remove('hidden');
+        videoPlayback.classList.add('hidden');
+        videoPlaceholder.classList.add('hidden');
 
-                recordedChunks = [];
-                mediaRecorder = new MediaRecorder(mediaStream);
-                mediaRecorder.ondataavailable = (event) => {
-                    if (event.data.size > 0) {
-                        recordedChunks.push(event.data);
-                    }
-                };
+        isRecording = true;
+        finalTranscript = '';
+        videoBlob = null;
+        videoLocalUrl = null;
+        analysisText = '';
 
-                mediaRecorder.onstop = () => {
-                    videoBlob = new Blob(recordedChunks, { type: 'video/webm' });
-                    videoLocalUrl = URL.createObjectURL(videoBlob); // Store the URL
-                    videoPlayback.src = videoLocalUrl;
-                    webcamFeed.classList.add('hidden');
-                    videoPlayback.classList.remove('hidden');
-                    downloadControls.classList.remove('hidden');
+        rightPanelTitle.textContent = 'Live Transcript';
+        rightPanelContent.innerHTML = initialRightPanelHTML;
 
-                    if (finalTranscript.trim().length > 5) {
-                        // Pass the final transcript and the local video URL for processing and saving
+        buttonText.textContent = 'Stop Recording';
+        buttonIcon.innerHTML = `<path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0-12-2V6zm12-1.5A1.5 1.5 0 0115.5 6v8a1.5 1.5 0 01-1.5 1.5h-1a1.5 1.5 0 01-1.5-1.5V6A1.5 1.5 0 0112.5 4.5h1z" clip-rule="evenodd"></path>`;
+        toggleRecordingBtn.classList.remove('bg-violet-600', 'hover:bg-violet-700');
+        toggleRecordingBtn.classList.add('bg-red-600', 'hover:bg-red-700', 'pulse');
+        listeningIndicator.classList.remove('hidden');
+        listeningIndicator.classList.add('flex');
+        downloadControls.classList.add('hidden');
+        downloadAnalysisBtn.classList.add('hidden');
+        playImprovedSpeechBtn.classList.add('hidden');
+        statusEl.textContent = "I'm listening. Speak whenever you're ready.";
 
-                
-                        getTaxilaFeedback(finalTranscript, videoLocalUrl); 
-                    } else {
-                         rightPanelTitle.textContent = 'Analysis';
-                        rightPanelContent.innerHTML = '<p>Not enough speech was detected to provide feedback.</p>';
-                        // Save session even if no analysis was done
-                        saveSession(finalTranscript, 'No analysis generated due to insufficient speech.', videoLocalUrl);
-                    }
-                    
-                    if (mediaStream) {
-                        mediaStream.getTracks().forEach(track => track.stop());
-                    }
-                };
-                
-                // Set language for speech recognition
-                recognition.lang = userProfile.language || 'en-US';
-                recognition.start();
-                mediaRecorder.start();
-
-            } catch(e) {
-                console.error("Could not start recording:", e);
-                let errorMessage = "Could not start recording. Please ensure you have given camera and microphone permissions and that they are not being used by another application.";
-                if (e.name === "NotAllowedError" || e.name === "PermissionDeniedError") {
-                    errorMessage = "Camera and Microphone access was denied. Please allow access in your browser settings to use the coach.";
-                }
-                rightPanelTitle.textContent = 'Error';
-                rightPanelContent.innerHTML = `<p class="text-red-500 font-semibold p-4">${errorMessage}</p>`;
-                isRecording = false;
+        recordedChunks = [];
+        mediaRecorder = new MediaRecorder(mediaStream);
+        mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+                recordedChunks.push(event.data);
             }
+        };
+
+        mediaRecorder.onstop = () => {
+            videoBlob = new Blob(recordedChunks, { type: 'video/webm' });
+            videoLocalUrl = URL.createObjectURL(videoBlob);
+            videoPlayback.src = videoLocalUrl;
+            webcamFeed.classList.add('hidden');
+            videoPlayback.classList.remove('hidden');
+            downloadControls.classList.remove('hidden');
+
+            if (finalTranscript.trim().length > 5) {
+                getTaxilaFeedback(finalTranscript, videoLocalUrl);
+            } else {
+                rightPanelTitle.textContent = 'Analysis';
+                rightPanelContent.innerHTML = '<p>Not enough speech was detected to provide feedback.</p>';
+                saveSession(finalTranscript, 'No analysis generated due to insufficient speech.', videoLocalUrl);
+            }
+
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(track => track.stop());
+            }
+        };
+
+        // 🔑 Handle Speech Recognition
+        if (recognition) {
+            recognition.lang = userProfile.language || 'en-US';
+
+            // Android fix: force non-continuous
+            if (/Android/i.test(navigator.userAgent)) {
+                recognition.continuous = false;
+            } else {
+                recognition.continuous = true;
+            }
+
+            recognition.start();
+        } else {
+            console.warn("SpeechRecognition not supported, fallback to audio-only recording.");
         }
-        
+
+        mediaRecorder.start();
+
+    } catch (e) {
+        console.error("Could not start recording:", e);
+        let errorMessage = "Could not start recording. Please ensure you have given camera and microphone permissions and that they are not being used by another application.";
+        if (e.name === "NotAllowedError" || e.name === "PermissionDeniedError") {
+            errorMessage = "Camera and Microphone access was denied. Please allow access in your browser settings to use the coach.";
+        }
+        rightPanelTitle.textContent = 'Error';
+        rightPanelContent.innerHTML = `<p class="text-red-500 font-semibold p-4">${errorMessage}</p>`;
+        isRecording = false;
+    }
+}
+
         function stopRecording() {
             if (!isRecording) return; // Prevent double-calls
             isRecording = false; // Set state immediately to prevent auto-restart
