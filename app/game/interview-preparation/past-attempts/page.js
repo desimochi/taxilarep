@@ -115,7 +115,7 @@ export default function Page() {
   const totalQuestions = userData.sessions?.reduce((sum, session) => sum + (session.log?.length || 0), 0) || 0;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 p-6 py-24">
         <BackButton />
       <div className="px-8 mt-3">
         {/* Header */}
@@ -155,8 +155,8 @@ export default function Page() {
                   className="p-6 cursor-pointer hover:bg-gray-50 transition-colors"
                   onClick={() => toggleSessionExpansion(sessionIndex)}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-6">
+                  <div className="flex flex-col sm:flex-row items-center justify-between">
+                    <div className="flex flex-col sm:flex-row items-center space-x-6">
                       <div className="flex items-center space-x-2">
                         <User className="w-5 h-5 text-gray-500" />
                         <span className="font-semibold text-lg">{session.playerName || 'Unknown'}</span>
