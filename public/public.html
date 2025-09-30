@@ -55,6 +55,7 @@
 </head>
 <body class="bg-slate-100">
 
+    <!-- Welcome Page -->
     <div id="welcomePage" class="flex flex-col items-center justify-center min-h-screen p-8 text-center bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 text-white">
         <div class="max-w-3xl">
             <svg class="w-20 h-20 mx-auto mb-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -71,6 +72,7 @@
         </div>
     </div>
 
+    <!-- Main App Page (Initially Hidden) -->
     <div id="appPage" class="hidden flex items-center justify-center min-h-screen py-8 px-4">
         <div class="w-full max-w-6xl mx-auto">
             <div class="bg-white rounded-2xl shadow-2xl p-6 md:p-10">
@@ -85,6 +87,7 @@
                      <button id="editProfileBtn" class="mt-4 text-sm text-indigo-600 hover:underline font-semibold">Change Topic / Profile</button>
                 </header>
                 
+                <!-- Score Display -->
                 <div id="scoreContainer" class="hidden text-center mb-6 p-6 bg-slate-50 rounded-xl">
                     <div class="flex justify-around items-center">
                         <div>
@@ -105,6 +108,7 @@
                 
                 <main>
                     <div class="grid md:grid-cols-2 gap-6 md:gap-8">
+                        <!-- Left Column: Video -->
                         <div class="bg-slate-900 rounded-lg overflow-hidden aspect-video flex items-center justify-center border-4 border-slate-200">
                             <video id="webcamFeed" class="w-full h-full object-cover" autoplay muted playsinline></video>
                              <video id="videoPlayback" class="w-full h-full object-cover hidden" controls></video>
@@ -117,6 +121,7 @@
                             </div>
                         </div>
 
+                        <!-- Right Column: Transcript / Analysis -->
                         <div class="flex flex-col h-72 md:h-full">
                             <h2 id="rightPanelTitle" class="text-xl font-semibold text-slate-800 mb-3 flex-shrink-0">Live Transcript</h2>
                             <div id="rightPanelContent" class="w-full flex-grow bg-slate-50 border-2 border-slate-200 rounded-lg p-4 overflow-y-auto text-slate-600 leading-relaxed">
@@ -126,6 +131,7 @@
                         </div>
                     </div>
 
+                    <!-- Controls -->
                     <div class="flex flex-col sm:flex-row items-center justify-center gap-4 my-8">
                         <button id="toggleRecordingBtn" class="w-full sm:w-auto flex items-center justify-center gap-3 px-8 py-4 bg-violet-600 text-white font-semibold rounded-full shadow-lg hover:bg-violet-700 active:scale-95 transition-all duration-200 ease-in-out text-lg transform hover:scale-105">
                              <svg id="buttonIcon" class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 001.553.832l3-2a1 1 0 000-1.664l-3-2z"></path></svg>
@@ -137,6 +143,7 @@
                         </div>
                     </div>
 
+                    <!-- Download Controls -->
                     <div id="downloadControls" class="hidden flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
                         <button id="downloadVideoBtn" class="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-full shadow-lg hover:bg-emerald-700 active:scale-95 transition-all duration-200">
                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
@@ -152,7 +159,8 @@
                         </button>
                     </div>
 
-                     <div class="text-center text-slate-600 h-6">
+                     <!-- Status Area -->
+                    <div class="text-center text-slate-600 h-6">
                         <p id="status"></p>
                     </div>
 
@@ -164,6 +172,7 @@
         </div>
     </div>
 
+    <!-- Profile Modal -->
     <div id="profileModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50 hidden">
         <div class="bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 text-white rounded-2xl shadow-2xl p-6 md:p-10 w-full max-w-2xl transform transition-all max-h-full overflow-y-auto">
             <h2 class="text-3xl font-bold text-white mb-2">Tell Us About Yourself</h2>
@@ -284,7 +293,6 @@
         let recordedChunks = [];
         let mediaStream;
         let videoBlob = null;
-        let videoLocalUrl = null; // Added: For saving the session
         let analysisText = '';
         const initialRightPanelHTML = rightPanelContent.innerHTML;
         let startTime;
@@ -297,71 +305,6 @@
             const formattedSeconds = String(remainingSeconds).padStart(2, '0');
             return `${formattedMinutes}:${formattedSeconds}`;
         }
-        
-        function getUserId() {
-            const params = new URLSearchParams(window.location.search);
-            return params.get("userId") || "guest";
-        }
-
-        // --- Data Saving Function (Updated to include score) ---
-        const API_ENDPOINT = 'https://erp.taxila.in/api/game/public-speaking'; 
-        
-        /**
-         * Extracts the score from the analysis text.
-         * @param {string} analysis - The full analysis text potentially containing "FINAL_SCORE: XX/100".
-         * @returns {number|null} The score as a number, or null if not found.
-         */
-        function extractScore(analysis) {
-             const scoreRegex = /FINAL_SCORE:\s*(\d{1,3})\/100/;
-             const match = analysis.match(scoreRegex);
-             return match ? parseInt(match[1], 10) : null;
-        }
-
-        async function saveSession(transcript, analysis, videoBlobUrl, durationInSeconds) {
-            statusEl.textContent = 'Saving session data to your API...';
-            const userId = getUserId()
-            
-            // Extract the score for saving
-            const score = extractScore(analysis);
-
-            // Collect the data to send
-            const sessionData = {
-                timestamp: new Date().toISOString(),
-                duration: durationInSeconds,
-                score: score, // Added: Score
-                profile: userProfile,
-                transcript: transcript,
-                analysis: analysis,
-                // The videoBlobUrl is a local browser URL and cannot be saved remotely this way.
-                note: 'Video file must be uploaded separately using a dedicated endpoint.'
-            };
-
-            try {
-                const response = await fetch(API_ENDPOINT, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({userId:userId, session:sessionData}),
-                });
-
-                if (!response.ok) {
-                    const errorDetails = await response.text();
-                    throw new Error(`API returned status ${response.status}: ${errorDetails.substring(0, 100)}...`);
-                }
-                
-                const result = await response.json();
-                
-                const sessionId = result.sessionId || 'N/A';
-                statusEl.textContent = `Analysis complete! Review your video alongside the feedback on the right. | Session saved successfully! (API ID: ${sessionId})`;
-                console.log("Session saved via API. Response:", result);
-
-            } catch (e) {
-                console.error("Error saving session via API: ", e);
-                statusEl.textContent = `Analysis complete! Review your video alongside the feedback on the right. | Data saving failed: ${e.message}`;
-            }
-        }
-        // --- End of Data Saving Function ---
 
         // --- Event Listeners ---
         getStartedBtn.addEventListener('click', () => {
@@ -468,9 +411,8 @@
                 isRecording = true;
                 finalTranscript = '';
                 videoBlob = null;
-                videoLocalUrl = null; 
                 analysisText = '';
-                startTime = Date.now(); 
+                startTime = Date.now();
                 
                 // Reset UI elements
                 scoreContainer.classList.add('hidden');
@@ -498,23 +440,19 @@
 
                 mediaRecorder.onstop = () => {
                     videoBlob = new Blob(recordedChunks, { type: 'video/webm' });
-                    videoLocalUrl = URL.createObjectURL(videoBlob); 
-                    videoPlayback.src = videoLocalUrl;
+                    const videoUrl = URL.createObjectURL(videoBlob);
+                    videoPlayback.src = videoUrl;
                     webcamFeed.classList.add('hidden');
                     videoPlayback.classList.remove('hidden');
                     downloadControls.classList.remove('hidden');
 
-                    const durationInSeconds = startTime ? Math.round((Date.now() - startTime) / 1000) : 0; 
+                    const durationInSeconds = startTime ? Math.round((Date.now() - startTime) / 1000) : 0;
 
                     if (finalTranscript.trim().length > 5) {
-                        getTaxilaFeedback(finalTranscript, durationInSeconds, videoLocalUrl); 
+                        getTaxilaFeedback(finalTranscript, durationInSeconds);
                     } else {
                          rightPanelTitle.textContent = 'Analysis';
                         rightPanelContent.innerHTML = '<p>Not enough speech was detected to provide feedback.</p>';
-                        // For insufficient speech, the analysis text is the message, and score is 0/null
-                        const noSpeechAnalysis = "No analysis generated due to insufficient speech.";
-                        analysisText = noSpeechAnalysis; // Set analysisText for download
-                        saveSession(finalTranscript, noSpeechAnalysis, videoLocalUrl, durationInSeconds); 
                     }
                     
                     if (mediaStream) {
@@ -608,7 +546,7 @@
             }
         }
 
-        async function getTaxilaFeedback(speechText, durationInSeconds, videoUrl) { 
+        async function getTaxilaFeedback(speechText, durationInSeconds) {
             statusEl.textContent = 'Analyzing your speech and video... This might take a moment.';
             rightPanelTitle.textContent = 'Taxila Analysis';
             rightPanelContent.innerHTML = '<div class="flex items-center justify-center h-full"><svg class="animate-spin h-8 w-8 text-violet-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span class="ml-3 text-slate-500">Analyzing...</span></div>';
@@ -643,20 +581,19 @@
             Finally, conclude your entire analysis with a single line containing an overall score out of 100, based on all the factors you've analyzed (content, body language, AND duration). A well-paced, substantial presentation is often around 7 minutes (420 seconds). A very short speech (under 30 seconds) should receive a proportionally lower score, regardless of how well it was delivered. The format MUST be exactly: FINAL_SCORE: XX/100`;
 
             const userQuery = `Here is the transcript: "${speechText}"`;
-            let generatedAnalysis = '';
 
             try {
                 const textFeedback = await callGeminiAPI(systemPrompt, userQuery);
-                generatedAnalysis = textFeedback;
                 
                 let score = null;
                 let cleanedFeedback = textFeedback;
 
-                const scoreMatch = textFeedback.match(/FINAL_SCORE:\s*(\d{1,3})\/100/);
+                const scoreRegex = /FINAL_SCORE:\s*(\d{1,3})\/100/;
+                const scoreMatch = textFeedback.match(scoreRegex);
 
                 if (scoreMatch && scoreMatch[1]) {
                     score = scoreMatch[1];
-                    cleanedFeedback = textFeedback.replace(/FINAL_SCORE:\s*(\d{1,3})\/100/, '').trim(); 
+                    cleanedFeedback = textFeedback.replace(scoreRegex, '').trim(); 
                 }
 
                 analysisText = cleanedFeedback; 
@@ -668,31 +605,20 @@
                 }
                 
                 rightPanelContent.innerHTML = `<div class="text-left whitespace-pre-wrap">${cleanedFeedback.replace(/###\s*(.*)/g, '<strong class="block mt-4 mb-2 text-slate-800">$1</strong>').replace(/\*\s*(.*)/g, '<span class="block ml-4">&#8226; $1</span>')}</div>`;
+                statusEl.textContent = 'Analysis complete! Review your video alongside the feedback on the right.';
                 downloadAnalysisBtn.classList.remove('hidden');
                 playImprovedSpeechBtn.classList.remove('hidden');
-                
-                // --- END GAME: SAVE DATA ---
-                await saveSession(speechText, generatedAnalysis, videoUrl, durationInSeconds);
-
 
             } catch (error) {
                 console.error('Error getting Taxila feedback:', error);
-                const errorAnalysis = `Sorry, I encountered an error while analyzing your speech: ${error.message}`;
-                rightPanelContent.innerHTML = `<p class="text-red-500">${errorAnalysis}</p>`;
+                rightPanelContent.innerHTML = '<p class="text-red-500">Sorry, I encountered an error while analyzing your speech. Please try again.</p>';
                 statusEl.textContent = 'Analysis failed.';
-                
-                 // Save the session even on analysis failure
-                await saveSession(speechText, errorAnalysis, videoUrl, durationInSeconds);
             }
         }
-function getapiKey() {
-                const params = new URLSearchParams(window.location.search);
-                return params.get("apiKey") || "guest";
-            }
-            const apiKey = getapiKey();
+
         async function callGeminiAPI(systemPrompt, userQuery, retries = 3, delay = 1000) {
-            const apiKey = getapiKey();
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+            const apiKey = ""; 
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
 
             const payload = {
                 contents: [{ parts: [{ text: userQuery }] }],
@@ -751,14 +677,7 @@ function getapiKey() {
                 console.error("No analysis text available to download.");
                 return;
             }
-            // Re-add the score to the downloaded analysis if it was removed for display
-            let finalDownloadText = analysisText;
-            const currentScore = scoreDisplay.textContent.trim();
-            if (currentScore && currentScore !== '0' && !analysisText.includes("FINAL_SCORE:")) {
-                 finalDownloadText = analysisText + `\n\nFINAL_SCORE: ${currentScore}/100`;
-            }
-            
-            const blob = new Blob([finalDownloadText], { type: 'text/plain;charset=utf-8' });
+            const blob = new Blob([analysisText], { type: 'text/plain;charset=utf-8' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             document.body.appendChild(a);
@@ -772,3 +691,4 @@ function getapiKey() {
     </script>
 </body>
 </html>
+
