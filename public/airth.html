@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARTHNITI - Economic Simulator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .slider-thumb::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 18px; height: 18px; background: #a855f7; cursor: pointer; border-radius: 50%; border: 3px solid #1e293b; box-shadow: 0 0 5px rgba(0,0,0,0.3); }
+        .slider-thumb::-moz-range-thumb { width: 18px; height: 18px; background: #a855f7; cursor: pointer; border-radius: 50%; border: 3px solid #1e293b; box-shadow: 0 0 5px rgba(0,0,0,0.3); }
+        .modal-backdrop { background-color: rgba(15, 23, 42, 0.8); backdrop-filter: blur(5px); }
+        .kpi-value { font-size: 1.25rem; line-height: 1.75rem; transition: color 0.5s ease-in-out; }
+        #progress-bar { transition: width 5s linear; }
+        .card { background-color: #1e293b; border: 1px solid #334155; }
+        .main-game { display: none; } /* Hide the main content until initialized */
+    </style>
+    <!-- Removed Firebase SDKs as per user request -->
+</head>
+<body class="bg-slate-900 text-slate-300 antialiased">
+
+    <!-- Name Entry Modal -->
+    <div id="name-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center z-50">
+        <div class="card p-8 rounded-2xl shadow-2xl text-center max-w-sm mx-4">
+            <h2 class="text-3xl font-bold mb-2 text-purple-400">ARTHNITI</h2>
+            <p class="text-sm mb-6 text-slate-400">A Taxila Business School Initiative</p>
+            <label for="player-name-input" class="block text-md font-medium mb-2 text-slate-300">Enter your name to begin:</label>
+            <input type="text" id="player-name-input" class="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-center text-lg focus:ring-purple-500 focus:border-purple-500 placeholder-slate-500" placeholder="Finance Minister...">
+            <button id="start-game-btn" class="mt-6 w-full bg-purple-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:bg-purple-700 transition-all transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-purple-500">Begin Mandate</button>
+        </div>
+    </div>
+
+    <!-- Continue Game Modal -->
+    <div id="continue-modal" class="hidden fixed inset-0 modal-backdrop flex items-center justify-center z-50">
+        <div class="card p-8 rounded-2xl shadow-2xl text-center max-w-sm mx-4">
+            <h2 class="text-3xl font-bold mb-2 text-purple-400">Welcome Back, <span id="continue-player-name" class="font-extrabold"></span>!</h2>
+            <p class="text-sm mb-6 text-slate-400">Mandate in Progress: Year <span id="saved-year" class="font-bold text-slate-300"></span>, Quarter <span id="saved-quarter" class="font-bold text-slate-300"></span></p>
+            <div class="flex space-x-4">
+                <button id="continue-btn" class="w-1/2 bg-green-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:bg-green-700 transition-all transform hover:scale-105">Continue Mandate</button>
+                <button id="new-game-btn" class="w-1/2 bg-gray-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:bg-gray-700 transition-all transform hover:scale-105">Start New Mandate</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="main-content" class="container mx-auto p-4 max-w-7xl main-game">
+        <header class="text-center mb-6">
+            <h1 class="text-3xl md:text-4xl font-bold text-purple-400">ARTHNITI</h1>
+            <p class="text-sm font-medium uppercase tracking-widest text-purple-300 mt-2">Five Years Mandate</p>
+            <p class="text-md text-slate-400">TAXILA BUSINESS SCHOOL</p>
+        </header>
+
+        <main class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+            <!-- Left Column: Economic Dashboard -->
+            <section class="lg-col-span-1 card p-5 rounded-xl">
+                <h2 class="text-xl font-bold mb-4 border-b border-slate-700 pb-3 text-slate-100">Economic Dashboard</h2>
+                <div class="space-y-3">
+                    <!-- KPI Items with SVG Icons -->
+                    <div class="flex justify-between items-center"><div class="flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg><span class="text-md font-medium text-slate-300">GDP:</span></div><span id="gdp-value" class="font-semibold kpi-value text-sky-400"></span></div>
+                    <div class="flex justify-between items-center"><div class="flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg><span class="text-md font-medium text-slate-300">GDP Growth (YoY):</span></div><span id="gdp-growth-value" class="font-semibold kpi-value text-sky-400"></span></div>
+                    <div class="flex justify-between items-center"><div class="flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path><path d="m12 16-4-4 1.5-1.5 2.5 2.5 5-5L19 10l-7 7z"></path></svg><span class="text-md font-medium text-slate-300">Inflation (CPI):</span></div><span id="inflation-value" class="font-semibold kpi-value text-sky-400"></span></div>
+                    <div class="flex justify-between items-center"><div class="flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg><span class="text-md font-medium text-slate-300">Unemployment:</span></div><span id="unemployment-value" class="font-semibold kpi-value text-sky-400"></span></div>
+                    <div class="flex justify-between items-center"><div class="flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg><span class="text-md font-medium text-slate-300">Public Approval:</span></div><span id="approval-value" class="font-semibold kpi-value text-sky-400"></span></div>
+                    <div class="flex justify-between items-center"><div class="flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg><span class="text-md font-medium text-slate-300">Fiscal Deficit:</span></div><span id="fiscal-deficit-value" class="font-semibold kpi-value text-sky-400"></span></div>
+                    <div class="flex justify-between items-center"><div class="flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg><span class="text-md font-medium text-slate-300">Forex Reserves:</span></div><span id="forex-reserves-value" class="font-semibold kpi-value text-sky-400"></span></div>
+                    <div class="flex justify-between items-center"><div class="flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400"><path d="m2 16 2.1-11.4a1 1 0 0 1 1-.6h15.8a1 1 0 0 1 1 .6L22 16"></path><path d="M2 16h20"></path><path d="M14.5 16.5a2.5 2.5 0 0 1-5 0"></path></svg><span class="text-md font-medium text-slate-300">Sensex:</span></div><span id="sensex-value" class="font-semibold kpi-value text-sky-400"></span></div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-slate-700">
+                    <h3 class="text-lg font-bold mb-2 text-slate-100">Current Financial Year</h3>
+                    <div class="flex justify-between items-center text-md text-slate-300"><span>Year: <span id="year-value" class="font-semibold text-purple-400"></span></span><span>Quarter: <span id="quarter-value" class="font-semibold text-purple-400"></span></span></div>
+                </div>
+            </section>
+
+            <!-- Middle Column: Policy Levers -->
+            <section class="lg:col-span-1 card p-5 rounded-xl">
+                <h2 class="text-xl font-bold mb-2 border-b border-slate-700 pb-3 text-slate-100">Policy Levers</h2>
+                <p class="text-center text-slate-400 mb-4">Finance Minister <span id="player-name-display" class="font-bold text-purple-400"></span></p>
+                <div class="space-y-4">
+                    <div><label for="interest-rate" class="block text-md font-medium mb-1.5">RBI Repo Rate</label><div class="flex items-center space-x-3"><input type="range" id="interest-rate" name="policy-lever" min="4.5" max="8.5" step="0.25" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer slider-thumb"><span id="interest-rate-value" class="font-semibold text-purple-400 w-16 text-center"></span></div></div>
+                    <div><label for="crr-rate" class="block text-md font-medium mb-1.5">Cash Reserve Ratio (CRR)</label><div class="flex items-center space-x-3"><input type="range" id="crr-rate" name="policy-lever" min="3.5" max="7.5" step="0.25" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer slider-thumb"><span id="crr-rate-value" class="font-semibold text-purple-400 w-16 text-center"></span></div></div>
+                    <div><label for="tax-rate" class="block text-md font-medium mb-1.5">Average GST Rate</label><div class="flex items-center space-x-3"><input type="range" id="tax-rate" name="policy-lever" min="15" max="22" step="0.5" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer slider-thumb"><span id="tax-rate-value" class="font-semibold text-purple-400 w-16 text-center"></span></div></div>
+                    <div><label for="customs-duty" class="block text-md font-medium mb-1.5">Average Customs Duty</label><div class="flex items-center space-x-3"><input type="range" id="customs-duty" name="policy-lever" min="5" max="15" step="0.5" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer slider-thumb"><span id="customs-duty-value" class="font-semibold text-purple-400 w-16 text-center"></span></div></div>
+                    <div><label for="infra-spending" class="block text-md font-medium mb-1.5">Infrastructure Spending</label><div class="flex items-center space-x-3"><input type="range" id="infra-spending" name="policy-lever" min="15" max="35" step="1" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer slider-thumb"><span id="infra-spending-value" class="font-semibold text-purple-400 w-24 text-center"></span></div></div>
+                    <div><label for="welfare-spending" class="block text-md font-medium mb-1.5">Welfare & Subsidy Spending</label><div class="flex items-center space-x-3"><input type="range" id="welfare-spending" name="policy-lever" min="15" max="35" step="1" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer slider-thumb"><span id="welfare-spending-value" class="font-semibold text-purple-400 w-24 text-center"></span></div></div>
+                </div>
+                <div class="mt-6 text-center space-y-3">
+                    <button id="end-quarter-btn" class="w-full bg-purple-600 text-white font-bold py-3 px-8 rounded-lg shadow-md hover:bg-purple-700 transition-all transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-purple-500 disabled:bg-slate-600 disabled:scale-100 disabled:cursor-not-allowed">End Quarter & Enact Policies</button>
+                    <div id="progress-container" class="mt-3 hidden"><p class="text-sm text-slate-400 mb-1">Simulating Economic Impact...</p><div class="w-full bg-slate-700 rounded-full h-1.5"><div id="progress-bar" class="bg-purple-500 h-1.5 rounded-full" style="width: 0%"></div></div></div>
+                    <div class="flex justify-between items-center space-x-2">
+                         <button id="save-exit-btn" class="flex-1 bg-sky-600 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-sky-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-sky-500 text-sm">Save & Exit</button>
+                         <button id="resign-btn" class="flex-1 text-sm font-medium text-slate-500 hover:text-red-400 transition-colors py-2 px-4">Terminate Mandate</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Column: Strategic Briefing -->
+            <section class="lg:col-span-1 card p-5 rounded-xl flex flex-col">
+                <h2 class="text-xl font-bold mb-4 border-b border-slate-700 pb-3 text-slate-100">Strategic Briefing</h2>
+                <div class="bg-slate-800 p-4 rounded-lg mb-4"><h3 class="font-semibold text-md text-slate-100">Economic Outlook</h3><p id="news-headline" class="text-slate-300 text-sm mt-1"></p></div>
+                <div id="event-container" class="space-y-3 flex-grow"></div>
+                <div class="bg-slate-800 p-4 rounded-lg mt-4"><h3 class="font-semibold text-md text-slate-100" id="policy-info-title">Policy Advisor</h3><p id="policy-info-desc" class="text-slate-300 text-sm mt-1"></p></div>
+            </section>
+        </main>
+    </div>
+    
+    <!-- Game Over Modal -->
+    <div id="game-over-modal" class="hidden fixed inset-0 modal-backdrop flex items-center justify-center z-50">
+        <div class="card p-8 rounded-2xl shadow-2xl text-center max-w-sm mx-4">
+            <h2 class="text-3xl font-bold mb-4 text-slate-100">Mandate Concluded</h2>
+            <p id="game-over-message" class="text-lg mb-6"></p>
+            <button id="restart-btn" class="bg-purple-600 text-white font-bold py-3 px-8 rounded-lg shadow-md hover:bg-purple-700 transition-transform transform hover:scale-105">New Mandate</button>
+        </div>
+    </div>
+
+<script>
+    (function() {
+        'use strict';
+        const initialGameState = { gdp: 315, gdpGrowth: 7.8, inflation: 4.8, unemployment: 7.1, publicApproval: 60, fiscalDeficit: 5.6, forexReserves: 640, sensex: 74000, interestRate: 6.5, crrRate: 4.5, taxRate: 18, customsDuty: 10, infraSpending: 22, welfareSpending: 20, year: 1, quarter: 1, maxYear: 6, pendingInfraImpact: 0, recessionQuarters: 0, gameEnded: false };
+        const policyInfo = { "interest-rate": { title: "RBI Repo Rate", desc: "Higher rates combat inflation but can slow GDP growth and dampen market sentiment." }, "crr-rate": { title: "Cash Reserve Ratio (CRR)", desc: "A higher CRR reduces the money supply, helping to fight inflation but risking a slowdown in growth." }, "tax-rate": { title: "Average GST Rate", desc: "Increasing GST reduces the fiscal deficit and can cool inflation, but may harm GDP growth and public approval." }, "customs-duty": { title: "Average Customs Duty", desc: "Higher duties protect domestic industry and reduce deficits but can increase inflation for consumers." }, "infra-spending": { title: "Infrastructure Spending", desc: "Drives long-term GDP growth and jobs, but effects are delayed and it increases the fiscal deficit now." }, "welfare-spending": { title: "Welfare & Subsidy Spending", desc: "Provides an immediate boost to public approval and consumption, but significantly adds to the fiscal deficit." } };
+        const marketInputs = [
+            { id: 1, name: "Rising Crude Oil Prices", type: "Threat", description: "Global crude prices are up 15%, impacting our import bill.", projection: "Projects: +0.7% Inflation, -$15B Forex", effects: { inflation: 0.7, forexReserves: -15 }, counter: { lever: 'interestRate', direction: 'increase' } },
+            { id: 2, name: "Strong FII Outflows", type: "Threat", description: "Foreign investors are pulling money from emerging markets.", projection: "Projects: -1500 Sensex, -$20B Forex", effects: { sensex: -1500, forexReserves: -20 }, counter: { lever: 'taxRate', direction: 'decrease' } },
+            { id: 3, name: "Weakening Rupee", type: "Threat", description: "The Rupee has depreciated by 4% against the dollar.", projection: "Projects: +0.5% Inflation", effects: { inflation: 0.5 }, counter: { lever: 'interestRate', direction: 'increase' } },
+            { id: 4, name: "Supply Chain Bottlenecks", type: "Threat", description: "Congestion at major ports is delaying shipments.", projection: "Projects: +0.6% Inflation, -0.3% GDP Growth", effects: { inflation: 0.6, baseGrowth: -0.003 }, counter: { lever: 'infraSpending', direction: 'increase' } },
+            { id: 5, name: "Global Tech Rally", type: "Opportunity", description: "A surge in global tech stocks is boosting our IT sector.", projection: "Projects: +2500 Sensex, +$10B Forex", effects: { sensex: 2500, forexReserves: 10 }, counter: { lever: 'taxRate', direction: 'increase' } },
+            { id: 6, name: "Rating Agency Upgrade", type: "Opportunity", description: "A global rating agency has upgraded India's sovereign rating.", projection: "Projects: +2000 Sensex, +$18B Forex", effects: { sensex: 2000, forexReserves: 18 }, counter: { lever: 'infraSpending', direction: 'increase' } },
+            { id: 7, name: "Falling Commodity Prices", type: "Opportunity", description: "Global prices for key industrial commodities are falling.", projection: "Projects: -0.8% Inflation, +0.4% GDP Growth", effects: { inflation: -0.8, baseGrowth: 0.004 }, counter: { lever: 'customsDuty', direction: 'decrease' } },
+            { id: 8, name: "Bumper Harvest", type: "Opportunity", description: "Excellent weather has led to a record agricultural output.", projection: "Projects: -0.6% Inflation, +0.3% GDP Growth", effects: { inflation: -0.6, baseGrowth: 0.003 }, counter: { lever: 'welfareSpending', direction: 'decrease' } }
+        ];
+
+        let gameState = {};
+        let activeEvents = [];
+        let playerName = "Guest";
+        
+        const API_URL = 'https://erp.taxila.in/api/game/arthniti'; // Use a specific endpoint for this game
+        
+        // --- API-based Database Functions (Copied/Adapted from project.html logic) ---
+        function getUserId() {
+            // Get userId from URL parameters or fallback to a default
+            const params = new URLSearchParams(window.location.search);
+            return params.get("userId") || "guest";
+        }
+        
+        async function saveGame() {
+            if (gameState.gameEnded) return;
+
+            const userId = getUserId();
+            const stateToSave = {
+                gameState: { ...gameState },
+            };
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: userId, name: playerName, gameState: stateToSave })
+                });
+                
+                if (response.ok) {
+                    console.log("Game saved successfully.");
+                } else {
+                    console.error("Failed to save progress.", response.statusText);
+                }
+            } catch (error) {
+                console.error("Network error saving game:", error);
+            }
+        }
+
+        async function loadGame() {
+            const userId = getUserId();
+            try {
+                const response = await fetch(`${API_URL}?userId=${userId}`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (response.ok) {
+                    const savedData = await response.json();
+                    
+                    if (savedData && savedData.gameState && Object.keys(savedData.gameState).length > 0) {
+                        const loadedGameState = savedData.gameState.gameState;
+                        
+                        // Set the global game state and player name
+                        gameState = loadedGameState;
+                        playerName = savedData.name;
+                        
+                        console.log("Game loaded successfully.");
+                        return true;
+                    }
+                }
+                return false;
+            } catch (error) {
+                console.error("Failed to load game:", error);
+                return false;
+            }
+        }
+        
+        async function clearSave() {
+             const userId = getUserId();
+             try {
+                // Assuming the API uses a DELETE method to clear the state
+                const response = await fetch(`${API_URL}?userId=${userId}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                if (response.ok) {
+                    console.log("Save file cleared successfully.");
+                }
+            } catch (error) {
+                console.error("Error clearing save:", error);
+            }
+        }
+        
+        // --- UI and Game Logic Functions ---
+
+        function applyColorLogic(element, currentValue, previousValue, higherIsBetter) {
+            element.classList.remove('text-green-400', 'text-red-400', 'text-sky-400');
+            if (currentValue > previousValue) {
+                element.classList.add(higherIsBetter ? 'text-green-400' : 'text-red-400');
+            } else if (currentValue < previousValue) {
+                element.classList.add(higherIsBetter ? 'text-red-400' : 'text-green-400');
+            } else {
+                element.classList.add('text-sky-400');
+            }
+        }
+
+        function updateDisplay(prevState = null) {
+            document.getElementById('gdp-value').textContent = `₹${gameState.gdp.toFixed(2)} Lakh Cr`;
+            document.getElementById('gdp-growth-value').textContent = `${gameState.gdpGrowth.toFixed(2)}%`;
+            document.getElementById('inflation-value').textContent = `${gameState.inflation.toFixed(1)}%`;
+            document.getElementById('unemployment-value').textContent = `${gameState.unemployment.toFixed(1)}%`;
+            document.getElementById('approval-value').textContent = `${Math.round(gameState.publicApproval)}%`;
+            document.getElementById('fiscal-deficit-value').textContent = `${gameState.fiscalDeficit.toFixed(1)}% of GDP`;
+            document.getElementById('forex-reserves-value').textContent = `$${Math.round(gameState.forexReserves)}B`;
+            document.getElementById('sensex-value').textContent = `${Math.round(gameState.sensex).toLocaleString()}`;
+            document.getElementById('year-value').textContent = gameState.year;
+            document.getElementById('quarter-value').textContent = gameState.quarter;
+            document.getElementById('player-name-display').textContent = playerName; // Update player name on display
+
+            // Update policy sliders and values to match loaded state
+             document.getElementById('interest-rate').value = gameState.interestRate;
+             updateSliderValue('interest-rate');
+             document.getElementById('crr-rate').value = gameState.crrRate;
+             updateSliderValue('crr-rate');
+             document.getElementById('tax-rate').value = gameState.taxRate;
+             updateSliderValue('tax-rate');
+             document.getElementById('customs-duty').value = gameState.customsDuty;
+             updateSliderValue('customs-duty');
+             document.getElementById('infra-spending').value = gameState.infraSpending;
+             updateSliderValue('infra-spending');
+             document.getElementById('welfare-spending').value = gameState.welfareSpending;
+             updateSliderValue('welfare-spending');
+
+            if (prevState) {
+                applyColorLogic(document.getElementById('gdp-value'), gameState.gdp, prevState.gdp, true);
+                applyColorLogic(document.getElementById('gdp-growth-value'), gameState.gdpGrowth, prevState.gdpGrowth, true);
+                applyColorLogic(document.getElementById('inflation-value'), gameState.inflation, prevState.inflation, false);
+                applyColorLogic(document.getElementById('unemployment-value'), gameState.unemployment, prevState.unemployment, false);
+                applyColorLogic(document.getElementById('approval-value'), gameState.publicApproval, prevState.publicApproval, true);
+                applyColorLogic(document.getElementById('fiscal-deficit-value'), gameState.fiscalDeficit, prevState.fiscalDeficit, false);
+                applyColorLogic(document.getElementById('forex-reserves-value'), gameState.forexReserves, prevState.forexReserves, true);
+                applyColorLogic(document.getElementById('sensex-value'), gameState.sensex, prevState.sensex, true);
+            }
+        }
+        
+        function startSimulationDelay() { 
+            const btn = document.getElementById('end-quarter-btn'); 
+            const progressContainer = document.getElementById('progress-container'); 
+            const progressBar = document.getElementById('progress-bar'); 
+            btn.disabled = true; 
+            document.getElementById('save-exit-btn').disabled = true; // Disable save during simulation
+            progressContainer.classList.remove('hidden'); 
+            progressBar.style.width = '0%'; 
+            setTimeout(() => { progressBar.style.width = '100%'; }, 10); 
+            setTimeout(() => { 
+                endQuarter(); 
+                progressContainer.classList.add('hidden'); 
+                progressBar.style.width = '0%'; 
+                if (document.getElementById('game-over-modal').classList.contains('hidden')) { 
+                    btn.disabled = false;
+                    document.getElementById('save-exit-btn').disabled = false; 
+                } 
+            }, 5000); 
+        }
+        
+        function selectAndDisplayMarketInputs() { 
+            const eventContainer = document.getElementById('event-container'); 
+            eventContainer.innerHTML = ''; 
+            activeEvents = []; 
+            // In a real load/save, activeEvents should be restored from gameState.
+            // For now, we regenerate them if none exist (i.e., new game or after a quarter tick).
+            const shuffledInputs = marketInputs.sort(() => 0.5 - Math.random()); 
+            const inputCount = 3; 
+            for (let i = 0; i < inputCount; i++) { 
+                const input = shuffledInputs[i]; 
+                activeEvents.push(input); 
+                const isThreat = input.type === 'Threat'; 
+                const card = `<div class="bg-slate-800 p-3 rounded-lg border-l-4 ${isThreat ? 'border-red-500' : 'border-green-500'}"><h4 class="font-bold text-sm ${isThreat ? 'text-red-400' : 'text-green-400'}">${input.type.toUpperCase()}: ${input.name}</h4><p class="text-xs text-slate-400 mt-1">${input.description}</p><p class="text-xs font-semibold text-slate-200 mt-2">${input.projection}</p></div>`; 
+                eventContainer.innerHTML += card; 
+            } 
+        }
+
+        function calculatePublicApproval(prevState, currentState) { 
+            let approvalScore = prevState.publicApproval; 
+            const inflationPenalty = (currentState.inflation - 4.5) * -4.0; approvalScore += inflationPenalty; 
+            const unemploymentPenalty = (currentState.unemployment - 6.5) * -3.5; approvalScore += unemploymentPenalty; 
+            const growthBonus = (currentState.gdpGrowth - 7.0) * 2.0; approvalScore += Math.min(growthBonus, 10); 
+            const welfareBonus = (currentState.welfareSpending - initialGameState.welfareSpending) * 0.8; approvalScore += welfareBonus; 
+            if (prevState.sensex > 0) { const sensexChangePercent = ((currentState.sensex / prevState.sensex) - 1) * 100; approvalScore += sensexChangePercent * 0.5; } 
+            const forexDrop = prevState.forexReserves - currentState.forexReserves; if (forexDrop > 25) { approvalScore -= (forexDrop - 25) * 0.3; } 
+            if (currentState.fiscalDeficit > 7.0) { approvalScore -= (currentState.fiscalDeficit - 7.0) * 0.2; } return approvalScore; 
+        }
+
+        async function endQuarter() {
+            if (gameState.gameEnded) return;
+            const prevState = { ...gameState };
+            const currentPolicies = { interestRate: parseFloat(document.getElementById('interest-rate').value), crrRate: parseFloat(document.getElementById('crr-rate').value), taxRate: parseFloat(document.getElementById('tax-rate').value), customsDuty: parseFloat(document.getElementById('customs-duty').value), infraSpending: parseFloat(document.getElementById('infra-spending').value), welfareSpending: parseFloat(document.getElementById('welfare-spending').value), };
+            gameState = { ...gameState, ...currentPolicies };
+            let eventEffects = { baseGrowth: 0, inflation: 0, unemployment: 0, forexReserves: 0, sensex: 0 };
+            activeEvents.forEach(event => { const lever = event.counter.lever; const direction = event.counter.direction; let isCountered = false; if (direction === 'increase' && gameState[lever] > initialGameState[lever]) { isCountered = true; } if (direction === 'decrease' && gameState[lever] < initialGameState[lever]) { isCountered = true; } const effectiveness = isCountered ? 0.3 : 1.0; for (const key in event.effects) { eventEffects[key] = (eventEffects[key] || 0) + (event.effects[key] * effectiveness); } });
+            const totalSpending = gameState.infraSpending + gameState.welfareSpending;
+            let taxRevenue = (prevState.gdp * 0.1) * (gameState.taxRate / 18) + (gameState.customsDuty - initialGameState.customsDuty) * 0.5;
+            gameState.fiscalDeficit = ((totalSpending - taxRevenue) / prevState.gdp) * 100;
+            let baseGrowth = 1.012 + (initialGameState.interestRate - gameState.interestRate) * 0.0015 + (initialGameState.crrRate - gameState.crrRate) * 0.0018 + (initialGameState.taxRate - gameState.taxRate) * 0.0008 - (gameState.customsDuty - initialGameState.customsDuty) * 0.0005 + (gameState.welfareSpending - initialGameState.welfareSpending) * 0.0003 + prevState.pendingInfraImpact;
+            if (prevState.fiscalDeficit > 6) baseGrowth -= (prevState.fiscalDeficit - 6) * 0.001;
+            if (prevState.inflation > 6) baseGrowth -= (prevState.inflation - 6) * 0.001;
+            baseGrowth += eventEffects.baseGrowth;
+            gameState.pendingInfraImpact = (gameState.infraSpending - initialGameState.infraSpending) * 0.0009;
+            const prevYearGDP = prevState.gdp / (1 + prevState.gdpGrowth / 100);
+            gameState.gdp = prevState.gdp * baseGrowth;
+            gameState.gdpGrowth = ((gameState.gdp / prevYearGDP) - 1) * 100;
+            gameState.recessionQuarters = (baseGrowth < 1) ? prevState.recessionQuarters + 1 : 0;
+            gameState.inflation += (initialGameState.interestRate - gameState.interestRate) * -0.4 + (initialGameState.crrRate - gameState.crrRate) * -0.5 + (gameState.customsDuty - initialGameState.customsDuty) * 0.1 + ((totalSpending - (initialGameState.infraSpending + initialGameState.welfareSpending)) * 0.05) + eventEffects.inflation;
+            gameState.unemployment -= (baseGrowth - 1) * 25 + (gameState.welfareSpending - initialGameState.welfareSpending) * 0.05 + (gameState.infraSpending - initialGameState.infraSpending) * 0.08 - eventEffects.unemployment;
+            gameState.forexReserves -= (gameState.gdp - prevState.gdp) * 15 + (gameState.customsDuty - initialGameState.customsDuty) * -0.8 - eventEffects.forexReserves;
+            gameState.sensex += (gameState.gdpGrowth - prevState.gdpGrowth) * 500 - Math.max(0, gameState.fiscalDeficit - 5.8) * 1000 - Math.max(0, gameState.inflation - 6) * 1500 + eventEffects.sensex;
+            gameState.publicApproval = calculatePublicApproval(prevState, gameState);
+            Object.keys(gameState).forEach(key => { if (typeof gameState[key] === 'number') { const clamps = { inflation: [1, 20], unemployment: [4, 15], publicApproval: [0, 100], forexReserves: [0, 2000], sensex: [30000, 150000], fiscalDeficit: [2, 15] }; if (clamps[key]) gameState[key] = Math.max(clamps[key][0], Math.min(clamps[key][1], gameState[key])); } });
+            
+            // Increment quarter/year and SAVE
+            gameState.quarter++;
+            if (gameState.quarter > 4) { gameState.quarter = 1; gameState.year++; }
+            
+            await saveGame(); // Save game state after every quarter
+            
+            updateDisplay(prevState);
+            generateNews();
+            checkWinLoss();
+            if (document.getElementById('game-over-modal').classList.contains('hidden')) { selectAndDisplayMarketInputs(); }
+        }
+
+        function generateNews() { 
+            if (gameState.inflation > 8) document.getElementById('news-headline').textContent = "INFLATION CRISIS: Soaring prices are hurting families across the nation, public anger is growing."; 
+            else if (gameState.unemployment > 9) document.getElementById('news-headline').textContent = "JOBS CRISIS: Unemployment numbers are rising sharply, putting pressure on the government."; 
+            else if (gameState.gdpGrowth < 4) document.getElementById('news-headline').textContent = "STAGNATION WARNING: Economic growth is sluggish, failing to create enough opportunities."; 
+            else if (gameState.gdpGrowth > 8 && gameState.inflation < 6 && gameState.unemployment < 7) document.getElementById('news-headline').textContent = "GOLDILOCKS ECONOMY: Growth is strong, and both inflation and unemployment are under control."; 
+            else document.getElementById('news-headline').textContent = "The economy remains stable this quarter, but underlying pressures remain."; 
+        }
+        
+        async function checkWinLoss() {
+            let reason = '';
+            
+            if (gameState.publicApproval < 40) reason = "Your Public Approval has collapsed below 40%, and you have been asked to resign!";
+            else if (gameState.inflation > 10) reason = "Inflation has exceeded the 10% red line, triggering a cost of living crisis and ending your term!";
+            else if (gameState.forexReserves < 250) reason = "Forex Reserves have fallen below the critical $250B mark, causing a balance of payments crisis!";
+            else if (gameState.recessionQuarters >= 2) reason = "The economy has fallen into a deep recession, ending your mandate!";
+            else if (gameState.unemployment > 12) reason = "Mass unemployment has led to widespread social unrest.";
+            else if (gameState.fiscalDeficit > 9) reason = "The fiscal deficit is out of control, sparking a debt crisis!";
+            else if (gameState.year >= gameState.maxYear) {
+                endGame(`Congratulations! You have successfully completed your term with an approval rating of ${Math.round(gameState.publicApproval)}%.`, true);
+                return;
+            }
+            
+            if (reason) endGame(reason);
+        }
+
+        async function endGame(message, isWin = false) { 
+            gameState.gameEnded = true;
+            await clearSave(); // Clear save data on game over/win
+            const modal = document.getElementById('game-over-modal'); 
+            const msgElement = document.getElementById('game-over-message'); 
+            msgElement.textContent = message; 
+            msgElement.className = `text-lg mb-6 ${isWin ? 'text-green-400' : 'text-red-400'}`; 
+            modal.classList.remove('hidden'); 
+            document.getElementById('end-quarter-btn').disabled = true;
+            document.getElementById('save-exit-btn').disabled = true;
+        }
+        
+        function restartGame() {
+            gameState = { ...initialGameState };
+            // Set initial policies to their minimum (austerity budget)
+            document.querySelectorAll('input[name="policy-lever"]').forEach(slider => {
+                const minValue = parseFloat(slider.min);
+                slider.value = minValue;
+                const key = slider.id.replace(/-(\w)/g, (_, c) => c.toUpperCase());
+                if (gameState.hasOwnProperty(key)) {
+                    gameState[key] = minValue;
+                }
+                updateSliderValue(slider.id);
+            });
+
+            updateDisplay(); 
+            document.querySelectorAll('.kpi-value').forEach(el => {
+                el.classList.remove('text-green-400', 'text-red-400');
+                el.classList.add('text-sky-400');
+            });
+            
+            selectAndDisplayMarketInputs();
+            document.getElementById('news-headline').textContent = 'A new mandate begins. Initial policies are set to minimums to reflect an austerity budget. Adjust them to guide the economy.';
+            
+            document.getElementById('game-over-modal').classList.add('hidden');
+            document.getElementById('end-quarter-btn').disabled = false;
+            document.getElementById('save-exit-btn').disabled = false;
+            document.getElementById('main-content').classList.remove('main-game'); // Ensure it's visible if hidden
+            document.getElementById('continue-modal').classList.add('hidden');
+            document.getElementById('name-modal').classList.add('hidden');
+        }
+
+        function updateSliderValue(sliderId) { 
+            const slider = document.getElementById(sliderId); 
+            const value = slider.value; 
+            const displayEl = document.getElementById(`${slider.id}-value`); 
+            if (slider.id.includes('rate') || slider.id.includes('duty')) { 
+                displayEl.textContent = `${parseFloat(value).toFixed(2)}%`; 
+            } else { 
+                displayEl.textContent = `₹${value} L Cr`; 
+            } 
+        }
+        
+        function showPolicyInfo(sliderId) {
+            const info = policyInfo[sliderId];
+            document.getElementById('policy-info-title').textContent = info.title;
+            document.getElementById('policy-info-desc').textContent = info.desc;
+        }
+
+        let gameInitialized = false;
+
+        function initializeGame(isResuming = false) {
+            if (!gameInitialized) {
+                gameInitialized = true;
+                // Setup event listeners once
+                document.getElementById('end-quarter-btn').addEventListener('click', startSimulationDelay);
+                document.getElementById('restart-btn').addEventListener('click', () => {
+                    document.getElementById('game-over-modal').classList.add('hidden');
+                    document.getElementById('name-modal').classList.remove('hidden');
+                });
+                document.getElementById('resign-btn').addEventListener('click', async () => {
+                     // The endGame function handles the clearSave call
+                     await endGame("You have voluntarily resigned from your post as Finance Minister.");
+                });
+                 document.getElementById('save-exit-btn').addEventListener('click', async () => {
+                    await saveGame();
+                    document.getElementById('main-content').classList.add('main-game'); // Hide game
+                    document.getElementById('name-modal').classList.remove('hidden');
+                });
+                document.querySelectorAll('input[name="policy-lever"]').forEach(slider => {
+                    slider.addEventListener('input', () => updateSliderValue(slider.id));
+                    slider.addEventListener('focus', () => showPolicyInfo(slider.id));
+                    slider.addEventListener('mouseover', () => showPolicyInfo(slider.id));
+                });
+            }
+            
+            if (!isResuming) {
+                restartGame();
+            } else {
+                 // Load display elements based on the loaded gameState
+                 document.getElementById('main-content').classList.remove('main-game'); // Show game
+                 document.getElementById('continue-modal').classList.add('hidden');
+                 updateDisplay();
+                 selectAndDisplayMarketInputs(); // Regenerate market events
+            }
+            
+            showPolicyInfo('interest-rate');
+        }
+        
+        // --- Initialization and Event Handlers ---
+        
+        function showNameEntry() {
+             document.getElementById('name-modal').classList.remove('hidden');
+             document.getElementById('continue-modal').classList.add('hidden');
+             document.getElementById('main-content').classList.add('main-game');
+        }
+        
+        function showContinueScreen() {
+            document.getElementById('name-modal').classList.add('hidden');
+            document.getElementById('main-content').classList.add('main-game');
+            document.getElementById('continue-modal').classList.remove('hidden');
+            document.getElementById('continue-player-name').textContent = playerName;
+            document.getElementById('saved-year').textContent = gameState.year;
+            document.getElementById('saved-quarter').textContent = gameState.quarter;
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const nameModal = document.getElementById('name-modal');
+            const startGameBtn = document.getElementById('start-game-btn');
+            const playerNameInput = document.getElementById('player-name-input');
+            const continueBtn = document.getElementById('continue-btn');
+            const newGameBtn = document.getElementById('new-game-btn');
+            
+            // 1. Check for Saved Game
+            if (await loadGame()) {
+                showContinueScreen();
+            } else {
+                showNameEntry();
+            }
+            
+            // 2. Set up initial event handlers for Modals
+            
+            startGameBtn.addEventListener('click', () => {
+                playerName = playerNameInput.value.trim() || "Guest";
+                nameModal.classList.add('hidden');
+                initializeGame(false); // Start a new game
+            });
+
+            playerNameInput.addEventListener('keyup', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    startGameBtn.click();
+                }
+            });
+            
+            continueBtn.addEventListener('click', () => {
+                initializeGame(true); // Resume game
+            });
+            
+            newGameBtn.addEventListener('click', async () => {
+                await clearSave();
+                document.getElementById('continue-modal').classList.add('hidden');
+                document.getElementById('name-modal').classList.remove('hidden');
+                // The next click on startGameBtn will initiate a clean new game via initializeGame(false)
+            });
+        });
+    })();
+</script>
+
+</body>
+</html>
