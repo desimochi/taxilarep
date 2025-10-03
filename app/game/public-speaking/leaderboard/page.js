@@ -1,11 +1,15 @@
 "use client";
 
+import { GlobalContext } from "@/components/GlobalContext";
+import { EyeIcon } from "@heroicons/react/24/outline";
 import { ArrowBigLeft } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 
 export default function LeaderboardPage() {
   const [leaderboard, setLeaderboard] = useState([]);
+   const {state} = useContext(GlobalContext)
   const [loading, setLoading] = useState(true);
     const router = useRouter()
   useEffect(() => {
@@ -36,7 +40,7 @@ function formatTime(seconds) {
   if (loading) {
     return <div className="p-6 text-lg font-semibold">Loading leaderboard...</div>;
   }
-
+console.log(state)
   return (
     <div className="p-8 min-h-screen bg-black">
         <div className="px-8 py-8">
@@ -54,6 +58,7 @@ function formatTime(seconds) {
               <th className="p-3 ">Duration (in Seconds)</th>
               <th className="p-3 ">Score</th>
               <th className="p-3 ">Played At</th>
+              {state.user_type !== "STUDENT" && <th className="p-3 ">See Analysis</th>}
             </tr>
           </thead>
           <tbody>
@@ -71,6 +76,7 @@ function formatTime(seconds) {
                 <td className="p-3   text-gray-500">
                   {row.date ? new Date(row.date).toLocaleString() : "-"}
                 </td>
+                {state.user_type !== "STUDENT" && <th className="p-3 flex justify-center cursor-pointer "><Link href={`/game/public-speaking/${row._id}`}><EyeIcon className="h-5 w-5" /></Link></th>}
               </tr>
             )) : <tr className="bg-white/10 backdrop-blur-sm text-gray-100 text-sm text-center"><td className="p-3" colSpan={8}>No Data Available</td></tr>}
           </tbody>
