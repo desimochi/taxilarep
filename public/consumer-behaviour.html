@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hyper-Competitive Consumer Simulation (INR)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Dancing+Script:wght@400..700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            overscroll-behavior: none;
+        }
+        .card {
+            background-color: #1e293b; /* bg-slate-800 */
+            border-radius: 0.75rem;
+            border: 1px solid #334155; /* border-slate-700 */
+            padding: 1rem;
+            transition: all 0.3s ease;
+        }
+        .slider-track { background: #475569; }
+        .slider-thumb {
+            -webkit-appearance: none; appearance: none; width: 1.25rem; height: 1.25rem;
+            background: #3b82f6; cursor: pointer; border-radius: 9999px;
+            border: 2px solid white; box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none; width: 1.25rem; height: 1.25rem;
+            background: #3b82f6; cursor: pointer; border-radius: 9999px;
+            border: 2px solid white; box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+        }
+        .progress-bar-bg { background-color: #334155; }
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0,0,0,0.7); display: flex;
+            align-items: center; justify-content: center; z-index: 50;
+            transition: opacity 0.3s ease;
+        }
+        .slider-output {
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out;
+            pointer-events: none;
+        }
+        input[type=range]:active + .slider-output,
+        input[type=range]:focus + .slider-output {
+            opacity: 1;
+        }
+        .stat-change {
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.1rem 0.4rem;
+            border-radius: 9999px;
+        }
+        .positive { background-color: rgba(74, 222, 128, 0.1); color: #86efac; }
+        .negative { background-color: rgba(248, 113, 113, 0.1); color: #fca5a5; }
+        
+        /* Custom modal for alerts */
+        #custom-alert-modal {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0,0,0,0.7); display: flex;
+            align-items: center; justify-content: center; z-index: 60;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        #custom-alert-modal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-gray-300">
+
+    <!-- Custom Alert Modal (Replaces alert() and confirm()) -->
+    <div id="custom-alert-modal" class="hidden">
+        <div class="card max-w-sm w-full p-6 text-center bg-slate-800 border-slate-700">
+            <h3 id="alert-title" class="text-xl font-bold text-white mb-3"></h3>
+            <p id="alert-message" class="text-gray-300 mb-6"></p>
+            <div id="alert-actions" class="flex justify-end space-x-3">
+                <button id="alert-cancel-btn" class="hidden bg-slate-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-slate-700 transition duration-300">Cancel</button>
+                <button id="alert-ok-btn" class="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Welcome Modal -->
+    <div id="welcome-modal" class="modal-overlay">
+        <div class="card max-w-lg w-full text-center p-8">
+            <h1 class="text-2xl font-bold text-white">Hyper-Competitive Consumer Simulation</h1>
+            <p class="text-gray-400 mt-2 font-semibold">Created at TAXILA BUSINESS SCHOOL</p>
+            <div class="mt-6 space-y-4 text-left">
+                <div>
+                    <label for="player-name" class="font-semibold text-sm text-gray-300">Your Name</label>
+                    <input type="text" id="player-name" class="w-full mt-1 p-2 bg-slate-700 border border-slate-600 rounded-md text-white focus:ring-2 focus:ring-blue-500" placeholder="e.g., Rohan Kumar">
+                </div>
+                <div>
+                    <label for="company-name" class="font-semibold text-sm text-gray-300">Your Company Name</label>
+                    <input type="text" id="company-name" class="w-full mt-1 p-2 bg-slate-700 border border-slate-600 rounded-md text-white focus:ring-2 focus:ring-blue-500" placeholder="e.g., Jaipur Innovative Tech">
+                </div>
+            </div>
+            <div class="mt-6">
+                <button id="start-btn" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300 disabled:bg-slate-500 disabled:cursor-not-allowed" disabled>Start Simulation</button>
+            </div>
+             <div class="mt-4">
+                 <button id="load-game-btn-welcome" class="w-full bg-slate-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-slate-700 transition duration-300">Load Existing Game</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Simulation Container -->
+    <div id="simulation-container" class="max-w-7xl mx-auto p-4 md:p-6 hidden">
+        <header class="mb-6 flex justify-between items-start">
+            <div>
+                <h1 id="header-company-name" class="text-3xl font-bold text-white">Your Company</h1>
+                <p class="text-base text-gray-400 mt-1">Hyper-Competitive Consumer Simulation</p>
+            </div>
+            <div class="flex-shrink-0 space-y-2">
+                <div class="flex space-x-2 justify-end">
+                    <button id="save-game-btn" class="bg-yellow-600 text-white font-semibold text-sm py-2 px-4 rounded-lg hover:bg-yellow-700 transition duration-300 flex items-center">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+                        Save Game
+                    </button>
+                    <button id="load-game-btn-header" class="bg-green-600 text-white font-semibold text-sm py-2 px-4 rounded-lg hover:bg-green-700 transition duration-300 flex items-center">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 0020.322 18H21v-3.5M4 12v3.5h-.582m15.356-2A8.001 8.001 0 013.678 6H3v3.5"></path></svg>
+                        Load Game
+                    </button>
+                </div>
+                <div class="text-right">
+                    <p id="current-time" class="text-2xl font-bold text-white"></p>
+                    <p id="current-date" class="text-sm text-gray-400"></p>
+                </div>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            <div class="lg:col-span-1 space-y-5">
+                <div class="card">
+                      <h2 id="quarter-title" class="text-xl font-bold mb-3 border-b border-slate-700 pb-2 text-white"></h2>
+                      <div id="decision-panel"></div>
+                      <button id="next-quarter-btn" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300 mt-4 disabled:bg-slate-500 disabled:cursor-not-allowed">Finalize Decisions & End Quarter</button>
+                      <div id="progress-bar-container" class="mt-3 w-full bg-slate-700 rounded-full h-2 hidden">
+                          <div id="progress-bar-fill" class="bg-blue-600 h-2 rounded-full" style="width: 0%; transition: width 5s linear;"></div>
+                      </div>
+                </div>
+                 <div class="card">
+                    <h2 class="text-xl font-bold mb-3 text-white">Create Ad Campaign (Required)</h2>
+                      <p class="text-xs text-gray-400 mb-2">You can only sell to the segment you target. A relevant message can boost sales by up to 50%. A misleading one can reduce them by 50%.</p>
+                    <div class="space-y-3">
+                        <div>
+                            <label for="ad-campaign-target" class="font-semibold text-xs">Target Segment</label>
+                            <select id="ad-campaign-target" class="w-full mt-1 p-2 text-sm bg-slate-700 border border-slate-600 rounded-md text-white focus:ring-2 focus:ring-blue-500"></select>
+                        </div>
+                        <div>
+                             <label for="ad-campaign-message" class="font-semibold text-xs">Campaign Message</label>
+                            <textarea id="ad-campaign-message" class="w-full h-20 mt-1 p-2 text-sm bg-slate-700 border border-slate-600 rounded-md text-white focus:ring-2 focus:ring-blue-500" placeholder="e.g., The most affordable and reliable choice for Jaipur!"></textarea>
+                             <div id="plagiarism-warning" class="text-red-500 text-xs mt-1 hidden font-semibold">Cannot copy a competitor's ad campaign message.</div>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center mt-3 border-t border-slate-700 pt-2">
+                        <span class="text-sm font-semibold">Campaign Cost:</span>
+                        <span id="ad-campaign-cost" class="font-bold text-red-400 text-sm">₹0</span>
+                    </div>
+                </div>
+                <div class="card bg-yellow-900/20 border-yellow-800/50">
+                    <h2 class="text-xl font-bold mb-2 text-yellow-300">Market News</h2>
+                    <div id="market-event-container">
+                       <p class="text-yellow-400 text-sm">The market is stable this quarter. Focus on your core strategy.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2 space-y-5">
+                <div class="card">
+                    <h2 class="text-xl font-bold mb-3 text-white">Live Market Dashboard</h2>
+                    <table class="w-full text-left text-sm">
+                        <thead>
+                            <tr class="border-b border-slate-700">
+                                <th class="py-2 font-semibold">Company</th>
+                                <th class="py-2 text-center font-semibold">QTR Sales</th>
+                                <th class="py-2 text-center font-semibold">Cumulative Sales</th>
+                                <th class="py-2 text-center font-semibold">Quality</th>
+                                <th class="py-2 text-center font-semibold">Awareness</th>
+                                <th class="py-2 text-center font-semibold">Total Budget</th>
+                            </tr>
+                        </thead>
+                        <tbody id="main-dashboard-body"></tbody>
+                    </table>
+                </div>
+                 <div class="card">
+                    <h2 class="text-xl font-bold mb-3 text-white">Competitor Watch</h2>
+                    <div id="competitor-container" class="space-y-4"></div>
+                </div>
+                <div class="card">
+                    <h2 class="text-xl font-bold mb-3 text-white">Consumer Segments</h2>
+                    <div id="segments-container" class="space-y-4"></div>
+                </div>
+                 <div id="report-card" class="card hidden">
+                    <h2 class="text-xl font-bold mb-3 text-white">Quarterly Report</h2>
+                    <div id="report-content" class="text-sm text-gray-300 space-y-2"></div>
+                </div>
+            </div>
+        </div>
+        
+        <footer class="text-center py-6">
+            <p class="text-gray-500 font-semibold text-sm">Created at TAXILA BUSINESS SCHOOL</p>
+        </footer>
+    </div>
+    
+    <!-- End Game Modal -->
+    <div id="end-game-modal" class="modal-overlay hidden">
+        <div class="card max-w-lg w-full p-8">
+            <h2 id="end-game-title" class="text-2xl font-bold text-center text-white">Simulation Over</h2>
+            <p id="end-game-summary" class="text-center text-gray-400 mt-2">Here is your final performance report.</p>
+            <div class="mt-6 space-y-3 text-white">
+                <div class="flex justify-between font-semibold"><span id="final-sales-player-label">Your Final Sales:</span><span id="final-sales-player" class="font-bold"></span></div>
+                <div class="flex justify-between text-gray-400 text-sm"><span>InnovateNext Sales:</span><span id="final-sales-in" class="font-semibold"></span></div>
+                <div class="flex justify-between text-gray-400 text-sm"><span>ValueFirst Sales:</span><span id="final-sales-vf" class="font-semibold"></span></div>
+            </div>
+            <div class="mt-6"><button id="view-cert-btn" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300">View Certificate</button></div>
+        </div>
+    </div>
+
+    <!-- Certificate Modal -->
+    <div id="certificate-modal" class="modal-overlay hidden">
+        <div class="card max-w-3xl w-full p-8 bg-slate-800 text-slate-300">
+             <div id="certificate" class="w-full p-8 border-4 border-yellow-300 bg-slate-900 text-white">
+                <div class="text-center">
+                    <h1 class="text-4xl font-bold text-yellow-300" style="font-family: 'EB Garamond', serif;">TAXILA BUSINESS SCHOOL</h1>
+                    <p class="mt-4 text-lg" style="font-family: 'Calibri Light', sans-serif;">presents this</p>
+                    <h2 class="text-5xl font-bold mt-2 text-yellow-300" style="font-family: 'EB Garamond', serif;">Certificate of Completion</h2>
+                    <p class="mt-4 text-lg" style="font-family: 'Calibri Light', sans-serif;">to</p>
+                    <p id="cert-player-name" class="text-4xl mt-2 text-white" style="font-family: 'EB Garamond', serif; font-style: italic;"></p>
+                    <p class="mt-4 max-w-xl mx-auto text-base" style="font-family: 'Calibri Light', sans-serif;">for successfully completing the Hyper-Competitive Consumer Simulation and demonstrating outstanding strategic decision-making and market analysis.</p>
+                </div>
+                <div class="flex justify-between items-end mt-16">
+                    <div>
+                        <p id="cert-date" class="text-sm border-t-2 border-slate-400 pt-1" style="font-family: 'Calibri Light', sans-serif;"></p>
+                        <p class="text-xs font-bold" style="font-family: 'Calibri Light', sans-serif;">Date</p>
+                    </div>
+                    <div>
+                        <p class="text-2xl" style="font-family: 'Dancing Script', cursive;">Alka Jain</p>
+                        <p class="text-sm border-t-2 border-slate-400 pt-1 font-bold" style="font-family: 'Calibri Light', sans-serif;">Prof Alka Jain, PhD</p>
+                        <p class="text-xs font-bold" style="font-family: 'Calibri Light', sans-serif;">Director</p>
+                    </div>
+                </div>
+            </div>
+            <div id="cert-actions" class="mt-6 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
+                <button id="download-cert-btn" class="w-full bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 transition duration-300">Download Certificate</button>
+                <button id="share-linkedin-btn" class="w-full bg-blue-700 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-800 transition duration-300">Share on LinkedIn</button>
+            </div>
+             <div id="cert-restart-container" class="mt-4 text-center">
+                 <button id="restart-from-cert-btn" class="text-sm text-slate-500 hover:text-slate-400">Run Simulation Again</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const MAX_QUARTERS = 20;
+            let gameState = {};
+            let startTime = Date.now();
+            let quarterTimer = null;
+            let quarterStartTime = 0;
+            
+            // --- Custom API Configuration (DO NOT CHANGE) ---
+            const SAVE_API_ENDPOINT = 'https://erp.taxila.in/api/game/consumer';
+            const LOAD_API_ENDPOINT = 'https://erp.taxila.in/api/game/consumer';
+            // --- End Custom API Configuration ---
+
+            const adKeywords = {
+                price: ['affordable', 'cheap', 'budget', 'value', 'deal', 'offer', 'discount', 'lowest price'],
+                quality: ['premium', 'best', 'quality', 'luxury', 'elite', 'advanced', 'unbeatable', 'superior'],
+                brand: ['reliable', 'trusted', 'choice', 'Jaipur', 'favorite', 'official']
+            };
+
+            const marketScenarios = [
+                (companyName) => ({ player: { budget: 160000000, technologyLevel: 20, brandAwareness: 50, price: 56000 }, innovateNext: { budget: 200000000, technologyLevel: 30, brandAwareness: 60, price: 62000 }, valueFirst: { budget: 120000000, technologyLevel: 15, brandAwareness: 40, price: 52000 } }),
+                (companyName) => ({ player: { budget: 100000000, technologyLevel: 15, brandAwareness: 40, price: 58000 }, innovateNext: { budget: 250000000, technologyLevel: 35, brandAwareness: 70, price: 64000 }, valueFirst: { budget: 150000000, technologyLevel: 18, brandAwareness: 50, price: 50000 } }),
+                (companyName) => ({ player: { budget: 200000000, technologyLevel: 28, brandAwareness: 65, price: 60000 }, innovateNext: { budget: 150000000, technologyLevel: 25, brandAwareness: 55, price: 62000 }, valueFirst: { budget: 100000000, technologyLevel: 12, brandAwareness: 35, price: 54000 } }),
+                (companyName) => ({ player: { budget: 150000000, technologyLevel: 18, brandAwareness: 45, price: 55000 }, innovateNext: { budget: 180000000, technologyLevel: 28, brandAwareness: 60, price: 61000 }, valueFirst: { budget: 180000000, technologyLevel: 20, brandAwareness: 60, price: 48000 } }),
+                (companyName) => ({ player: { budget: 140000000, technologyLevel: 22, brandAwareness: 50, price: 59000 }, innovateNext: { budget: 220000000, technologyLevel: 40, brandAwareness: 65, price: 64000 }, valueFirst: { budget: 130000000, technologyLevel: 10, brandAwareness: 40, price: 51000 } })
+            ];
+
+            const marketEvents = [
+                {
+                    title: "Government Tech Subsidy!",
+                    description: "The Rajasthan government announces a subsidy on tech goods, increasing demand among price-conscious buyers.",
+                    effect: (state) => {
+                        const budgetBuyers = state.consumerSegments.find(s => s.name === 'Budget Buyers');
+                        if (budgetBuyers) budgetBuyers.size *= 1.25;
+                        const savvyShoppers = state.consumerSegments.find(s => s.name === 'Savvy Shoppers');
+                        if (savvyShoppers) savvyShoppers.size *= 1.15;
+                        return "Demand from Budget Buyers and Savvy Shoppers has surged this quarter.";
+                    }
+                },
+                {
+                    title: "Digital India Summit in Jaipur",
+                    description: "A major tech conference in the city has boosted interest in high-performance gadgets.",
+                    effect: (state) => {
+                        const techEnthusiasts = state.consumerSegments.find(s => s.name === 'Tech Enthusiasts');
+                        if (techEnthusiasts) techEnthusiasts.size *= 1.40;
+                        return "The Tech Enthusiasts segment has grown significantly.";
+                    }
+                },
+                {
+                    title: "Economic Downturn",
+                    description: "Rising inflation is causing consumers to be more cautious with their spending, particularly on premium items.",
+                    effect: (state) => {
+                        const aspirational = state.consumerSegments.find(s => s.name === 'Aspirational Achievers');
+                        if (aspirational) aspirational.size *= 0.80;
+                        const mainstream = state.consumerSegments.find(s => s.name === 'Mainstream');
+                        if (mainstream) mainstream.size *= 0.90;
+                        return "Demand from Aspirational and Mainstream consumers has fallen.";
+                    }
+                },
+                {
+                    title: "Festive Season Spending",
+                    description: "With Diwali approaching, consumers have received bonuses and are looking to upgrade their lifestyle products.",
+                    effect: (state) => {
+                        const aspirational = state.consumerSegments.find(s => s.name === 'Aspirational Achievers');
+                        if (aspirational) aspirational.size *= 1.30;
+                        const mainstream = state.consumerSegments.find(s => s.name === 'Mainstream');
+                        if (mainstream) mainstream.size *= 1.15;
+                        return "Aspirational and Mainstream segments are larger this quarter due to festive spending.";
+                    }
+                },
+                {
+                    title: "Supply Chain Issues",
+                    description: "Global supply chain disruptions are making high-quality components scarce, making consumers wary of new tech.",
+                    effect: (state) => {
+                         const techEnthusiasts = state.consumerSegments.find(s => s.name === 'Tech Enthusiasts');
+                        if (techEnthusiasts) techEnthusiasts.sensitivities.quality *= 1.2;
+                         const savvyShoppers = state.consumerSegments.find(s => s.name === 'Savvy Shoppers');
+                        if (savvyShoppers) savvyShoppers.sensitivities.quality *= 1.1;
+                        return "Consumers, especially Tech Enthusiasts, are now more demanding about product quality.";
+                    }
+                }
+            ];
+            
+            const staticElements = {
+                welcomeModal: document.getElementById('welcome-modal'), startBtn: document.getElementById('start-btn'),
+                playerNameInput: document.getElementById('player-name'), companyNameInput: document.getElementById('company-name'),
+                simulationContainer: document.getElementById('simulation-container'), headerCompanyName: document.getElementById('header-company-name'),
+                finalSalesPlayerLabel: document.getElementById('final-sales-player-label'), decisionPanel: document.getElementById('decision-panel'),
+                nextQuarterBtn: document.getElementById('next-quarter-btn'), mainDashboardBody: document.getElementById('main-dashboard-body'),
+                segmentsContainer: document.getElementById('segments-container'), competitorContainer: document.getElementById('competitor-container'),
+                quarterTitle: document.getElementById('quarter-title'), marketEventContainer: document.getElementById('market-event-container'),
+                endGameModal: document.getElementById('end-game-modal'), finalSalesPlayer: document.getElementById('final-sales-player'),
+                finalSalesIn: document.getElementById('final-sales-in'), finalSalesVf: document.getElementById('final-sales-vf'),
+                adCampaignMessage: document.getElementById('ad-campaign-message'),
+                adCampaignCost: document.getElementById('ad-campaign-cost'), adCampaignTarget: document.getElementById('ad-campaign-target'),
+                plagiarismWarning: document.getElementById('plagiarism-warning'), reportCard: document.getElementById('report-card'),
+                reportContent: document.getElementById('report-content'), progressBarContainer: document.getElementById('progress-bar-container'),
+                progressBarFill: document.getElementById('progress-bar-fill'), currentTime: document.getElementById('current-time'),
+                currentDate: document.getElementById('current-date'),
+                endGameTitle: document.getElementById('end-game-title'),
+                endGameSummary: document.getElementById('end-game-summary'),
+                certificateModal: document.getElementById('certificate-modal'),
+                certPlayerName: document.getElementById('cert-player-name'),
+                certDate: document.getElementById('cert-date'),
+                downloadCertBtn: document.getElementById('download-cert-btn'),
+                shareLinkedInBtn: document.getElementById('share-linkedin-btn'),
+                restartFromCertBtn: document.getElementById('restart-from-cert-btn'),
+                certActions: document.getElementById('cert-actions'),
+                certRestartContainer: document.getElementById('cert-restart-container'),
+                viewCertBtn: document.getElementById('view-cert-btn'),
+                loadGameBtnWelcome: document.getElementById('load-game-btn-welcome'),
+                saveGameBtn: document.getElementById('save-game-btn'),
+                loadGameBtnHeader: document.getElementById('load-game-btn-header'),
+                customAlertModal: document.getElementById('custom-alert-modal'),
+                alertTitle: document.getElementById('alert-title'),
+                alertMessage: document.getElementById('alert-message'),
+                alertOkBtn: document.getElementById('alert-ok-btn'),
+                alertCancelBtn: document.getElementById('alert-cancel-btn'),
+            };
+            let decisionElements = {};
+
+            // --- Utility Functions ---
+
+            // Custom Alert/Confirmation Dialog (replaces alert() and confirm())
+            function customAlert(title, message, isConfirm = false) {
+                return new Promise(resolve => {
+                    staticElements.alertTitle.textContent = title;
+                    staticElements.alertMessage.textContent = message;
+                    
+                    if (isConfirm) {
+                        staticElements.alertCancelBtn.classList.remove('hidden');
+                        staticElements.alertOkBtn.textContent = 'Yes';
+                        staticElements.alertCancelBtn.addEventListener('click', () => {
+                            staticElements.customAlertModal.classList.remove('active');
+                            resolve(false);
+                        }, { once: true });
+                        staticElements.alertOkBtn.addEventListener('click', () => {
+                            staticElements.customAlertModal.classList.remove('active');
+                            resolve(true);
+                        }, { once: true });
+                    } else {
+                        staticElements.alertCancelBtn.classList.add('hidden');
+                        staticElements.alertOkBtn.textContent = 'OK';
+                        staticElements.alertOkBtn.addEventListener('click', () => {
+                            staticElements.customAlertModal.classList.remove('active');
+                            resolve(true);
+                        }, { once: true });
+                    }
+
+                    staticElements.customAlertModal.classList.remove('hidden');
+                    // Use a small delay for the opacity transition
+                    setTimeout(() => staticElements.customAlertModal.classList.add('active'), 10);
+                });
+            }
+
+            const formatCurrency = (val) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0, notation: 'compact' }).format(val);
+            
+            function getInitialGameState(playerName, companyName) {
+                const scenario = marketScenarios[Math.floor(Math.random() * marketScenarios.length)](companyName);
+                const standardInitialSales = 150000000;
+                const baseState = {
+                    playerName: playerName,
+                    quarter: 1, marketEvent: null,
+                    consumerSegments: [
+                        // Behavioral
+                        { name: 'Budget Buyers', category: 'Behavioral', size: 0.20, shares: {player: 0.10, innovateNext: 0.05, valueFirst: 0.40}, sensitivities: { price: 0.9, quality: 0.3, marketing: 0.4 }, growth: 0.02, keyDriver: 'Price', rules: { maxPrice: 56000, minQuality: 0 } },
+                        { name: 'Savvy Shoppers', category: 'Behavioral', size: 0.20, shares: {player: 0.15, innovateNext: 0.15, valueFirst: 0.25}, sensitivities: { price: 0.8, quality: 0.8, marketing: 0.3 }, growth: 0.015, keyDriver: 'Value', rules: { maxPrice: 60000, minQuality: 65 } },
+                        { name: 'Brand Loyalists', category: 'Behavioral', size: 0.05, shares: {player: 0.05, innovateNext: 0.10, valueFirst: 0.05}, sensitivities: { price: 0.3, quality: 0.5, marketing: 0.2 }, growth: 0, keyDriver: 'Legacy', rules: { maxPrice: Infinity, minQuality: 0 } },
+                        
+                        // Psychographic
+                        { name: 'Aspirational Achievers', category: 'Psychographic', size: 0.15, shares: {player: 0.10, innovateNext: 0.25, valueFirst: 0.10}, sensitivities: { price: 0.5, quality: 0.5, marketing: 0.9 }, growth: 0.02, keyDriver: 'Status', rules: { maxPrice: 64000, minQuality: 70 } },
+                        { name: 'Mainstream Followers', category: 'Psychographic', size: 0.10, shares: {player: 0.10, innovateNext: 0.15, valueFirst: 0.15}, sensitivities: { price: 0.6, quality: 0.6, marketing: 0.8 }, growth: -0.01, keyDriver: 'Brand', rules: { maxPrice: 62000, minQuality: 60 } },
+                        { name: 'Tech Enthusiasts', category: 'Psychographic', size: 0.10, shares: {player: 0.25, innovateNext: 0.30, valueFirst: 0.05}, sensitivities: { price: 0.2, quality: 0.9, marketing: 0.5 }, growth: 0.01, keyDriver: 'Quality', rules: { maxPrice: Infinity, minQuality: 75 } },
+
+                        // Demographic
+                        { name: 'Practical Professionals', category: 'Demographic', size: 0.10, shares: {player: 0.12, innovateNext: 0.10, valueFirst: 0.20}, sensitivities: { price: 0.7, quality: 0.7, marketing: 0.2 }, growth: -0.005, keyDriver: 'Reliability', rules: { maxPrice: 58000, minQuality: 70 } },
+                        { name: 'Young Students', category: 'Demographic', size: 0.10, shares: {player: 0.10, innovateNext: 0.05, valueFirst: 0.15}, sensitivities: { price: 0.9, quality: 0.2, marketing: 0.7 }, growth: 0.03, keyDriver: 'Price', rules: { maxPrice: 54000, minQuality: 0 } },
+                    ]
+                };
+                const fullState = {
+                    ...baseState,
+                    player: { ...scenario.player, id: 'player', name: companyName, sales: standardInitialSales },
+                    innovateNext: { ...scenario.innovateNext, id: 'innovateNext', name: 'InnovateNext', sales: standardInitialSales },
+                    valueFirst: { ...scenario.valueFirst, id: 'valueFirst', name: 'ValueFirst', sales: standardInitialSales }
+                };
+                ['player', 'innovateNext', 'valueFirst'].forEach(key => {
+                    fullState[key].productQuality = 50 + fullState[key].technologyLevel;
+                    fullState[key].lastQ = fullState[key].productQuality;
+                    fullState[key].lastB = fullState[key].brandAwareness;
+                    fullState[key].lastP = fullState[key].price;
+                    fullState[key].adMessage = fullState[key].adMessage || '';
+                    fullState[key].adTarget = fullState[key].adTarget || '';
+                    fullState[key].cumulativeSales = fullState[key].sales;
+                    fullState[key].budget = fullState[key].cumulativeSales * 0.12;
+                    fullState[key].zeroSalesQuarters = 0;
+                });
+                
+                fullState.player.maxMarketingSpend = fullState.player.budget * 0.5;
+                fullState.player.maxRndSpend = fullState.player.budget * 0.4;
+                
+                return fullState;
+            }
+            
+            function generateDecisionPanelHTML(maxMarketing, maxRnd) {
+                return `
+                <div class="space-y-6">
+                    <p class="text-xs text-gray-400 -mt-2">Your spending limits are based on your available budget for the quarter.</p>
+                    <div>
+                        <label for="price" class="font-semibold text-sm">Product Price</label>
+                        <div class="flex items-center justify-between text-xs text-gray-400 mt-2"><span>₹48k</span><span>₹64k</span></div>
+                        <div class="relative h-8">
+                            <input type="range" id="price" min="48000" max="64000" step="1000" value="56000" class="w-full h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer slider-track absolute top-1/2 -translate-y-1/2">
+                            <output id="price-output" class="slider-output absolute text-white text-xs font-bold px-2 py-1 bg-gray-800 rounded-md -top-2" style="transform: translateX(-50%);"></output>
+                        </div>
+                        <div class="text-center font-bold text-blue-400 text-base" id="price-value"></div>
+                    </div>
+                    <div>
+                        <label for="marketing" class="font-semibold text-sm">Marketing Budget (Base)</label>
+                        <div class="flex items-center justify-between text-xs text-gray-400 mt-2"><span>₹0</span><span>${formatCurrency(maxMarketing)}</span></div>
+                        <div class="relative h-8">
+                            <input type="range" id="marketing" min="0" max="${maxMarketing}" step="500000" value="${maxMarketing * 0.5}" class="w-full h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer slider-track absolute top-1/2 -translate-y-1/2">
+                            <output id="marketing-output" class="slider-output absolute text-white text-xs font-bold px-2 py-1 bg-gray-800 rounded-md -top-2" style="transform: translateX(-50%);"></output>
+                        </div>
+                        <div class="text-center font-bold text-blue-400 text-base" id="marketing-value"></div>
+                    </div>
+                    <div>
+                        <label for="rnd" class="font-semibold text-sm">R&D Investment</label>
+                        <div class="flex items-center justify-between text-xs text-gray-400 mt-2"><span>₹0</span><span>${formatCurrency(maxRnd)}</span></div>
+                        <div class="relative h-8">
+                            <input type="range" id="rnd" min="0" max="${maxRnd}" step="500000" value="${maxRnd * 0.5}" class="w-full h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer slider-track absolute top-1/2 -translate-y-1/2">
+                            <output id="rnd-output" class="slider-output absolute text-white text-xs font-bold px-2 py-1 bg-gray-800 rounded-md -top-2" style="transform: translateX(-50%);"></output>
+                        </div>
+                         <div class="text-center font-bold text-blue-400 text-base" id="rnd-value"></div>
+                    </div>
+                    <div class="border-t border-slate-700 pt-3">
+                        <div class="flex justify-between items-center font-semibold text-sm"><span>Total Spend:</span><span id="total-spend" class="text-red-400"></span></div>
+                    </div>
+                </div>`;
+            }
+
+            function formatStatChange(newVal, oldVal) {
+                 const diff = newVal - oldVal;
+                 if (Math.abs(diff) < 0.1) return '';
+                 const sign = diff > 0 ? '+' : '';
+                 const cls = diff > 0 ? 'positive' : 'negative';
+                 return `<span class="stat-change ${cls}">${sign}${Math.round(diff)}</span>`;
+            };
+            
+            function render() {
+                const player = gameState.player;
+                const companies = [player, gameState.innovateNext, gameState.valueFirst];
+                
+                staticElements.mainDashboardBody.innerHTML = companies.map(c => `
+                    <tr class="border-b border-slate-700 ${c.id === 'player' ? 'bg-blue-900/50 font-semibold' : ''}">
+                        <td class="py-2 text-white pl-1">${c.name}</td>
+                        <td class="py-2 text-center text-white">${formatCurrency(c.sales)}</td>
+                        <td class="py-2 text-center text-white">${formatCurrency(c.cumulativeSales)}</td>
+                        <td class="py-2 text-center">${Math.round(c.productQuality)}</td>
+                        <td class="py-2 text-center">${Math.round(c.brandAwareness)}</td>
+                        <td class="py-2 text-center">${formatCurrency(c.cumulativeSales * 0.12)}</td>
+                    </tr>
+                `).join('');
+
+                const year = Math.floor((gameState.quarter - 1) / 4) + 1;
+                const quarterInYear = ((gameState.quarter - 1) % 4) + 1;
+                staticElements.quarterTitle.textContent = `Year ${year}, Quarter ${quarterInYear}: Your Decisions`;
+                
+                const segmentsByCategory = {
+                    Demographic: [],
+                    Psychographic: [],
+                    Behavioral: []
+                };
+
+                gameState.consumerSegments.forEach(seg => {
+                    if (segmentsByCategory[seg.category]) {
+                        segmentsByCategory[seg.category].push(seg);
+                    }
+                });
+
+                let segmentsHTML = `<div class="space-y-4">`;
+                
+                segmentsHTML += `
+                    <div>
+                        <h3 class="text-lg font-bold text-blue-300 border-b-2 border-blue-800 pb-1 mb-3">Geographic Segmentation</h3>
+                        <div class="card"><p class="text-sm">The entire market for this simulation is focused on <span class="font-bold text-white">Jaipur, Rajasthan</span>. All strategies should be tailored to this urban Indian market.</p></div>
+                    </div>`;
+
+                for (const category in segmentsByCategory) {
+                    segmentsHTML += `
+                        <div>
+                            <h3 class="text-lg font-bold text-blue-300 border-b-2 border-blue-800 pb-1 mb-3">${category} Segmentation</h3>
+                            <div class="space-y-4">`;
+                    
+                    segmentsByCategory[category].forEach(seg => {
+                        const ourCustomers = Math.floor(seg.size * 1000000 * (seg.shares.player || 0));
+                        segmentsHTML += `
+                            <div class="p-3 border border-slate-700 rounded-lg">
+                                <div class="flex justify-between items-start mb-2">
+                                    <div><h3 class="font-semibold text-base text-white">${seg.name}</h3></div>
+                                   <span class="text-xs font-semibold px-2 py-1 bg-blue-500/20 text-blue-300 rounded-full">${seg.keyDriver}</span>
+                                </div>
+                                 <div class="flex w-full h-2.5 rounded-full overflow-hidden bg-slate-700 mb-2">
+                                     <div class="bg-blue-500" style="width: ${(seg.shares.player || 0) * 100}%" title="${gameState.player.name}"></div>
+                                     <div class="bg-purple-500" style="width: ${(seg.shares.innovateNext || 0) * 100}%" title="InnovateNext"></div>
+                                     <div class="bg-green-500" style="width: ${(seg.shares.valueFirst || 0) * 100}%" title="ValueFirst"></div>
+                                 </div>
+                                 <div class="text-center text-sm border-t border-slate-700 pt-2 mt-2">
+                                     <div><span class="font-semibold text-xs text-gray-400">Your Customers</span><p class="text-white">${ourCustomers.toLocaleString('en-IN')}</p></div>
+                                </div>
+                            </div>`;
+                    });
+
+                    segmentsHTML += `</div></div>`;
+                }
+                segmentsHTML += `</div>`;
+                staticElements.segmentsContainer.innerHTML = segmentsHTML;
+                
+                staticElements.competitorContainer.innerHTML = [gameState.innovateNext, gameState.valueFirst].map(c => `
+                    <div class="p-3 border border-slate-700 rounded-lg">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-semibold text-white">${c.name}</h3><span class="font-bold text-lg text-white">${formatCurrency(c.sales)}</span>
+                        </div>
+                        <div class="text-xs text-gray-400 mt-1 flex justify-between">
+                            <span>Q: ${Math.round(c.productQuality)} ${formatStatChange(c.productQuality, c.lastQ)}</span>
+                            <span>B: ${Math.round(c.brandAwareness)} ${formatStatChange(c.brandAwareness, c.lastB)}</span>
+                            <span>P: ${formatCurrency(c.price)}</span>
+                        </div>
+                        <div class="text-xs text-gray-400 mt-2 p-2 bg-slate-900 rounded">
+                            <p><strong>Targeting:</strong> ${c.adTarget}</p>
+                            <p class="italic">"${c.adMessage}"</p>
+                        </div>
+                    </div>`).join('');
+                
+                if (Object.keys(decisionElements).length > 0) updateSpendDisplay();
+            }
+
+            function updateSliderOutput(slider, output) {
+                if (!slider || !output) return;
+                const min = parseFloat(slider.min);
+                const max = parseFloat(slider.max);
+                const val = parseFloat(slider.value);
+                const percent = max > min ? (val - min) / (max - min) : 0;
+                const sliderWidth = slider.offsetWidth;
+                const thumbWidth = 20; 
+                const thumbPosition = percent * (sliderWidth - thumbWidth) + (thumbWidth / 2);
+                output.style.left = `${thumbPosition}px`;
+                output.textContent = formatCurrency(val);
+            }
+
+            function updateAdCampaignCost() {
+                if(!gameState.consumerSegments) return;
+                const message = staticElements.adCampaignMessage.value.toLowerCase();
+                const targetSegmentName = staticElements.adCampaignTarget.value;
+                const targetSegment = gameState.consumerSegments.find(s => s.name === targetSegmentName);
+                if (!targetSegment) {
+                    staticElements.adCampaignCost.textContent = formatCurrency(0);
+                    updateSpendDisplay();
+                    return;
+                };
+                
+                let keywordCost = 0;
+                Object.values(adKeywords).flat().forEach(keyword => {
+                    if (message.includes(keyword)) keywordCost += 250000;
+                });
+
+                const reachCost = targetSegment.size * 10000000;
+                
+                staticElements.adCampaignCost.textContent = formatCurrency(keywordCost + reachCost);
+                updateSpendDisplay();
+            }
+
+            function updateSpendDisplay() {
+                if (!decisionElements.marketingSlider) return;
+                
+                updateSliderOutput(decisionElements.priceSlider, decisionElements.priceOutput);
+                decisionElements.priceValue.textContent = formatCurrency(decisionElements.priceSlider.value);
+                updateSliderOutput(decisionElements.marketingSlider, decisionElements.marketingOutput);
+                decisionElements.marketingValue.textContent = formatCurrency(decisionElements.marketingSlider.value);
+                updateSliderOutput(decisionElements.rndSlider, decisionElements.rndOutput);
+                decisionElements.rndValue.textContent = formatCurrency(decisionElements.rndSlider.value);
+
+                const adCostText = staticElements.adCampaignCost.textContent;
+                const adCost = parseFloat(adCostText.replace(/[^0-9.]/g, '')) * (adCostText.includes('Cr') ? 10000000 : adCostText.includes('L') ? 100000 : 1) || 0;
+                
+                const marketingSpend = parseInt(decisionElements.marketingSlider.value);
+                const rndSpend = parseInt(decisionElements.rndSlider.value);
+                const totalSpend = marketingSpend + rndSpend + adCost;
+                const remainingBudget = gameState.player.budget - totalSpend;
+                
+                const playerAd = staticElements.adCampaignMessage.value.trim().toLowerCase();
+                const adMessageIsEmpty = playerAd === '';
+                const isPlagiarized = playerAd && (playerAd === gameState.innovateNext.adMessage.toLowerCase() || playerAd === gameState.valueFirst.adMessage.toLowerCase());
+
+                staticElements.plagiarismWarning.classList.toggle('hidden', !isPlagiarized);
+
+                decisionElements.totalSpend.textContent = formatCurrency(totalSpend);
+
+                staticElements.nextQuarterBtn.disabled = remainingBudget < 0 || adMessageIsEmpty || isPlagiarized;
+                staticElements.nextQuarterBtn.title = remainingBudget < 0 ? "You cannot overspend your budget." : (adMessageIsEmpty ? "You must create an ad campaign." : (isPlagiarized ? "Your ad message is too similar to a competitor." : ""));
+            }
+
+            function runAI(currentState) {
+                const { player, innovateNext: inAI, valueFirst: vfAI, consumerSegments } = currentState;
+                [inAI, vfAI].forEach(c => { c.lastQ = c.productQuality; c.lastB = c.brandAwareness; c.lastP = c.price; });
+
+                const segmentNames = consumerSegments.map(s => s.name);
+
+                inAI.adTarget = segmentNames[Math.floor(Math.random() * segmentNames.length)];
+                inAI.adMessage = `Experience the ${adKeywords.quality[Math.floor(Math.random() * adKeywords.quality.length)]} performance. The ${adKeywords.brand[Math.floor(Math.random() * adKeywords.brand.length)]} of Jaipur.`;
+                const inRND_spend = inAI.sales * 0.07;
+                inAI.budget -= inRND_spend;
+                inAI.technologyLevel += Math.sqrt(inRND_spend) / 800;
+                inAI.productQuality = Math.min(100, 50 + inAI.technologyLevel);
+
+                vfAI.adTarget = segmentNames[Math.floor(Math.random() * segmentNames.length)];
+                vfAI.adMessage = `The most ${adKeywords.price[Math.floor(Math.random() * adKeywords.price.length)]} deal in the city! Unbeatable value.`;
+                let vfPrice = Math.min(player.price, inAI.price) - 4000;
+                if (player.price < vfAI.lastP) vfPrice = player.price - 2000;
+                vfAI.price = Math.max(45000, vfPrice);
+                const vfRND_spend = vfAI.sales * 0.03;
+                vfAI.budget -= vfRND_spend;
+                vfAI.technologyLevel += Math.sqrt(vfRND_spend) / 1200;
+                vfAI.productQuality = Math.min(100, 50 + vfAI.technologyLevel);
+            }
+
+            function analyzeAdCampaign(player, message, targetSegment) {
+                if (!targetSegment) {
+                    return { multiplier: 1.0, message: "Your ad campaign was not targeted to a specific segment and had a minimal impact." };
+                }
+
+                const msg = message.toLowerCase();
+                let priceWords = 0, qualityWords = 0;
+                adKeywords.price.forEach(kw => { if (msg.includes(kw)) priceWords++; });
+                adKeywords.quality.forEach(kw => { if (msg.includes(kw)) qualityWords++; });
+
+                if (priceWords === 0 && qualityWords === 0) {
+                    return { multiplier: 1.0, message: `Your ad campaign for '${targetSegment.name}' was seen as generic and had a minimal impact.` };
+                }
+
+                const isPriceFocused = priceWords > qualityWords;
+                const isQualityFocused = qualityWords > priceWords;
+                
+                const isPriceSensitive = targetSegment.sensitivities.price > 0.7;
+                const isQualitySensitive = targetSegment.sensitivities.quality > 0.7;
+
+                const isProductCheap = player.price < 54000;
+                const isProductHighQuality = player.productQuality > 75;
+
+                if ((isPriceFocused && !isProductCheap) || (isQualityFocused && !isProductHighQuality)) {
+                    return { multiplier: 0.5, message: `Your ad was seen as misleading by '${targetSegment.name}', resulting in a SEVERE 50% penalty to your appeal.` };
+                }
+                
+                if ((isPriceFocused && isPriceSensitive) || (isQualityFocused && isQualitySensitive)) {
+                    return { multiplier: 1.5, message: `Your message resonated perfectly with the '${targetSegment.name}', providing a MASSIVE 50% boost to your appeal.` };
+                }
+
+                if ((isPriceFocused && !isPriceSensitive) || (isQualityFocused && !isQualitySensitive)) {
+                       return { multiplier: 1.0, message: `Your ad message did not align with the key drivers of the '${targetSegment.name}' segment and had no special effect.` };
+                }
+
+                return { multiplier: 1.0, message: `Your ad campaign for '${targetSegment.name}' had a standard impact.` };
+            }
+
+            function simulateQuarter() {
+                const playerDecisions = {
+                    price: parseInt(decisionElements.priceSlider.value),
+                    marketingSpend: parseInt(decisionElements.marketingSlider.value),
+                    rndSpend: parseInt(decisionElements.rndSlider.value),
+                    adMessage: staticElements.adCampaignMessage.value,
+                    adTarget: staticElements.adCampaignTarget.value,
+                };
+
+                const playerTargetedSegmentName = playerDecisions.adTarget;
+                const initialTargetedSegmentState = gameState.consumerSegments.find(s => s.name === playerTargetedSegmentName);
+                let initialCustomerCount = 0;
+                if (initialTargetedSegmentState) {
+                    initialCustomerCount = Math.floor(initialTargetedSegmentState.size * 1000000 * (initialTargetedSegmentState.shares.player || 0));
+                }
+                const forcePlayerSalesToZero = initialCustomerCount === 0;
+
+                const adCostText = staticElements.adCampaignCost.textContent;
+                const adCost = parseFloat(adCostText.replace(/[^0-9.]/g, '')) * (adCostText.includes('Cr') ? 10000000 : adCostText.includes('L') ? 100000 : 1) || 0;
+                const totalMarketingSpend = playerDecisions.marketingSpend + adCost;
+
+                const tempState = JSON.parse(JSON.stringify(gameState));
+
+                let eventReportMessage = null;
+                if (gameState.quarter > 1 && Math.random() < 0.5) {
+                    tempState.marketEvent = marketEvents[Math.floor(Math.random() * marketEvents.length)];
+                    eventReportMessage = tempState.marketEvent.effect(tempState);
+                    staticElements.marketEventContainer.innerHTML = `
+                        <h3 class="font-bold text-yellow-300 text-base">${tempState.marketEvent.title}</h3>
+                        <p class="text-yellow-400 text-sm mt-1">${tempState.marketEvent.description}</p>
+                    `;
+                } else {
+                    tempState.marketEvent = null;
+                    staticElements.marketEventContainer.innerHTML = '<p class="text-yellow-400 text-sm">The market is stable this quarter. Focus on your core strategy.</p>';
+                }
+                
+                gameState.player.price = playerDecisions.price;
+                
+                const adTargetSegment = gameState.consumerSegments.find(s => s.name === playerDecisions.adTarget);
+                const adResult = analyzeAdCampaign(gameState.player, playerDecisions.adMessage, adTargetSegment);
+                const ruleViolationReports = [];
+
+                runAI(tempState); 
+                
+                const player = tempState.player;
+                player.budget -= (totalMarketingSpend + playerDecisions.rndSpend);
+                
+                const techIncrease = Math.sqrt(playerDecisions.rndSpend) / 1000;
+                player.technologyLevel += techIncrease;
+                player.productQuality = Math.min(100, 50 + player.technologyLevel);
+                
+                player.brandAwareness = Math.min(100, player.brandAwareness + Math.sqrt(totalMarketingSpend) / 2000);
+                
+                const companies = [player, tempState.innovateNext, tempState.valueFirst];
+                companies.forEach(c => c.totalCustomers = 0);
+
+                tempState.consumerSegments.forEach(segment => {
+                    segment.size *= (1 + segment.growth);
+                    const customersInSegment = segment.size * 1000000;
+                    
+                    const competingCompanies = companies.filter(c => {
+                        const target = (c.id === 'player') ? playerDecisions.adTarget : c.adTarget;
+                        return target === segment.name;
+                    });
+
+                    if (competingCompanies.length === 0) { return; }
+
+                    const qualifiedCompetitors = [];
+                    competingCompanies.forEach(c => {
+                        let isDisqualified = false;
+                        if (c.price > segment.rules.maxPrice) {
+                            if (c.id === 'player') {
+                                ruleViolationReports.push(`You were disqualified from '${segment.name}' because your price of ${formatCurrency(c.price)} exceeded their ${formatCurrency(segment.rules.maxPrice)} limit.`);
+                            }
+                            isDisqualified = true;
+                        } else if (c.productQuality < segment.rules.minQuality) {
+                            if (c.id === 'player') {
+                                ruleViolationReports.push(`You were disqualified from '${segment.name}' because your quality score of ${Math.round(c.productQuality)} was below their minimum standard of ${segment.rules.minQuality}.`);
+                            }
+                           isDisqualified = true;
+                        }
+
+                        if (!isDisqualified) {
+                           qualifiedCompetitors.push(c);
+                        }
+                    });
+
+                    const appealScores = {};
+                    let totalAppeal = 0;
+                    qualifiedCompetitors.forEach(c => {
+                        const priceEffect = ((60000 - c.price) / 12000); 
+                        const qualityEffect = (c.productQuality / 50) - 1;
+                        const awarenessEffect = (c.brandAwareness / 50) - 1;
+                        let score = Math.max(1, 100 + (priceEffect * 100 * segment.sensitivities.price) + (qualityEffect * 100 * segment.sensitivities.quality) + (awarenessEffect * 100 * segment.sensitivities.marketing));
+                        
+                        if (c.id === 'player') { score *= adResult.multiplier; } else { score *= 1.5; }
+
+                        appealScores[c.id] = score;
+                        totalAppeal += score;
+                    });
+                    
+                    competingCompanies.forEach(c => segment.shares[c.id] = 0);
+
+                    if (totalAppeal > 0) {
+                        qualifiedCompetitors.forEach(c => {
+                            const share = appealScores[c.id] / totalAppeal;
+                            segment.shares[c.id] = share;
+                            c.totalCustomers += customersInSegment * share; 
+                        });
+                    }
+                });
+
+                const MIN_SHARE = 0.005; 
+                tempState.consumerSegments.forEach(segment => {
+                    companies.forEach(c => {
+                        if (!segment.shares[c.id] || segment.shares[c.id] < MIN_SHARE) {
+                            segment.shares[c.id] = MIN_SHARE;
+                        }
+                    });
+
+                    const shareSum = Object.values(segment.shares).reduce((a, b) => a + b, 0);
+                    if (shareSum > 0) {
+                        for (const id in segment.shares) {
+                            segment.shares[id] /= shareSum;
+                        }
+                    }
+                });
+                
+                companies.forEach(c => {
+                    c.totalCustomers = Math.floor(c.totalCustomers);
+                });
+                
+                const rndReport = `Your R&D investment increased your core Technology Level by ${techIncrease.toFixed(1)} points.`;
+                let fullReport = `<p class="font-semibold">Ad Campaign:</p><p>${adResult.message}</p><p class="font-semibold mt-2">R&D Report:</p><p>${rndReport}</p>`;
+                if (eventReportMessage) {
+                    fullReport += `<p class="font-semibold mt-2 text-yellow-300">Market Event Impact:</p><p>${eventReportMessage}</p>`;
+                }
+                if(ruleViolationReports.length > 0){
+                    fullReport += `<p class="font-semibold mt-2 text-red-400">Market Access Lost:</p><ul class="list-disc pl-5 text-red-400">`;
+                    ruleViolationReports.forEach(msg => { fullReport += `<li>${msg}</li>`; });
+                    fullReport += `</ul>`;
+                }
+                staticElements.reportCard.classList.remove('hidden');
+                staticElements.reportContent.innerHTML = fullReport;
+
+                gameState.consumerSegments = tempState.consumerSegments;
+                companies.forEach(c => {
+                    const mainCompany = gameState[c.id];
+                    
+                    if (c.id === 'player' && forcePlayerSalesToZero) {
+                        mainCompany.sales = 0;
+                    } else if (c.totalCustomers > 0) {
+                        mainCompany.sales = c.totalCustomers * c.price;
+                    } else {
+                        mainCompany.sales = 0;
+                    }
+                    
+                    mainCompany.sales = Math.min(mainCompany.sales, 500000000);
+
+                    if (c.id === 'player') {
+                        if (mainCompany.sales === 0) {
+                            mainCompany.zeroSalesQuarters = (mainCompany.zeroSalesQuarters || 0) + 1;
+                        } else {
+                             mainCompany.zeroSalesQuarters = 0;
+                        }
+                    }
+
+                    mainCompany.cumulativeSales += mainCompany.sales;
+                    mainCompany.budget = mainCompany.cumulativeSales * 0.12;
+                    mainCompany.technologyLevel = c.technologyLevel; 
+                    mainCompany.productQuality = c.productQuality;
+                    mainCompany.brandAwareness = c.brandAwareness;
+                    mainCompany.price = c.price;
+                    mainCompany.adMessage = c.adMessage; 
+                    mainCompany.adTarget = c.adTarget; 
+                });
+                
+                gameState.marketEvent = tempState.marketEvent;
+                gameState.player.maxMarketingSpend = gameState.player.budget * 0.5;
+                gameState.player.maxRndSpend = gameState.player.budget * 0.4;
+
+                if (gameState.player.zeroSalesQuarters >= 2) {
+                    endGame('bankruptcy');
+                    return;
+                }
+                
+                gameState.quarter++;
+                if (gameState.quarter > MAX_QUARTERS) {
+                    endGame('complete');
+                } else {
+                    render();
+                }
+            }
+            
+            function endGame(reason = 'complete') {
+                if (quarterTimer) clearInterval(quarterTimer);
+
+                let title = 'Simulation Over';
+                let summary = 'Here is your final performance report.';
+                let showCertButton = false;
+
+                if (reason === 'complete') {
+                    showCertButton = true;
+                    title = 'Simulation Complete!';
+                    summary = `Congratulations, ${gameState.playerName}! You navigated ${MAX_QUARTERS} quarters of intense market competition.`;
+                } else if (reason === 'bankruptcy') {
+                    title = 'Market Failure!';
+                    summary = 'Your company failed to generate sales for two consecutive quarters and has gone bankrupt.';
+                } else if (reason === 'timeout') {
+                    title = "Time's Up!";
+                    summary = 'You did not finalize your decisions for the quarter within the 5-minute time limit.';
+                }
+                
+                staticElements.endGameTitle.textContent = title;
+                staticElements.endGameSummary.textContent = summary;
+                
+                staticElements.decisionPanel.innerHTML = `<div class="text-center p-8"><h3 class="font-bold text-2xl text-white">${title}</h3><p class="text-gray-400">${summary}</p></div>`;
+                staticElements.nextQuarterBtn.style.display = 'none';
+                staticElements.finalSalesPlayerLabel.textContent = `${gameState.player.name}'s Final Sales:`;
+                staticElements.finalSalesPlayer.textContent = formatCurrency(gameState.player.cumulativeSales);
+                staticElements.finalSalesIn.textContent = formatCurrency(gameState.innovateNext.cumulativeSales);
+                staticElements.finalSalesVf.textContent = formatCurrency(gameState.valueFirst.cumulativeSales);
+                
+                staticElements.viewCertBtn.classList.toggle('hidden', !showCertButton);
+
+                // Show the end game modal first
+                staticElements.endGameModal.classList.remove('hidden');
+
+                // If complete, set up certificate data but wait for user to click button
+                if (reason === 'complete') {
+                    staticElements.certPlayerName.textContent = gameState.playerName;
+                    staticElements.certDate.textContent = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+                }
+            }
+
+            function showCertificate() {
+                 staticElements.endGameModal.classList.add('hidden');
+                 staticElements.certActions.classList.remove('hidden');
+                 staticElements.certRestartContainer.classList.remove('hidden');
+                 staticElements.certificateModal.classList.remove('hidden');
+            }
+
+            function startQuarterTimer() {
+                if (quarterTimer) clearInterval(quarterTimer);
+                quarterStartTime = Date.now();
+                quarterTimer = setInterval(() => {
+                    const elapsed = Date.now() - quarterStartTime;
+                    if (elapsed > 300000) { // 5 minutes
+                        endGame('timeout');
+                    }
+                }, 1000);
+            }
+            
+            function setupDecisionPanel(maxMarketing, maxRnd) {
+                staticElements.decisionPanel.innerHTML = generateDecisionPanelHTML(maxMarketing, maxRnd);
+                decisionElements = {
+                    priceSlider: document.getElementById('price'), marketingSlider: document.getElementById('marketing'),
+                    rndSlider: document.getElementById('rnd'), priceValue: document.getElementById('price-value'),
+                    marketingValue: document.getElementById('marketing-value'), rndValue: document.getElementById('rnd-value'),
+                    priceOutput: document.getElementById('price-output'),
+                    marketingOutput: document.getElementById('marketing-output'),
+                    rndOutput: document.getElementById('rnd-output'),
+                    totalSpend: document.getElementById('total-spend')
+                };
+
+                decisionElements.priceSlider.addEventListener('input', updateSpendDisplay);
+                decisionElements.marketingSlider.addEventListener('input', updateSpendDisplay);
+                decisionElements.rndSlider.addEventListener('input', updateSpendDisplay);
+            }
+
+            // Function to apply loaded state and re-render the UI
+            function applyGameState(state) {
+                gameState = state;
+                staticElements.headerCompanyName.textContent = state.player.name;
+                const targetSelect = staticElements.adCampaignTarget;
+                targetSelect.innerHTML = '';
+                state.consumerSegments.forEach(seg => {
+                    targetSelect.innerHTML += `<option value="${seg.name}">${seg.name}</option>`;
+                });
+                // Ensure all game elements are visible and properly configured
+                staticElements.welcomeModal.classList.add('hidden');
+                staticElements.simulationContainer.classList.remove('hidden');
+                staticElements.endGameModal.classList.add('hidden');
+                staticElements.certificateModal.classList.add('hidden');
+                staticElements.reportCard.classList.add('hidden');
+                staticElements.nextQuarterBtn.style.display = 'block';
+                staticElements.nextQuarterBtn.disabled = true;
+                staticElements.nextQuarterBtn.textContent = 'Finalize Decisions & End Quarter';
+                staticElements.progressBarContainer.classList.add('hidden');
+                staticElements.adCampaignMessage.value = '';
+                
+                // Set up the decision panel with current max spending limits
+                setupDecisionPanel(state.player.maxMarketingSpend, state.player.maxRndSpend);
+                
+                // Re-bind listeners that are cleared when decisionPanel is re-rendered
+                staticElements.adCampaignMessage.addEventListener('input', updateAdCampaignCost);
+                staticElements.adCampaignTarget.addEventListener('input', updateAdCampaignCost);
+                
+                // If the state was loaded mid-quarter, restore inputs and display
+                if (state.player.decisions) {
+                    decisionElements.priceSlider.value = state.player.decisions.price || state.player.price;
+                    decisionElements.marketingSlider.value = state.player.decisions.marketingSpend || state.player.maxMarketingSpend * 0.5;
+                    decisionElements.rndSlider.value = state.player.decisions.rndSpend || state.player.maxRndSpend * 0.5;
+                    staticElements.adCampaignTarget.value = state.player.decisions.adTarget || state.consumerSegments[0].name;
+                    staticElements.adCampaignMessage.value = state.player.decisions.adMessage || '';
+                }
+
+                updateAdCampaignCost(); // Update the display based on restored values
+                render();
+                startQuarterTimer();
+                customAlert("Game Loaded!", `Successfully loaded game state for ${state.player.name}, Quarter ${state.quarter}.`);
+            }
+            
+            function initializeGame(playerName, companyName) {
+                const newState = getInitialGameState(playerName, companyName);
+                applyGameState(newState);
+            }
+
+            function updateClock() {
+                const now = new Date();
+                const simulationStartDate = new Date('2025-10-04T17:29:00');
+                const elapsedMillis = Date.now() - startTime;
+                now.setTime(simulationStartDate.getTime() + elapsedMillis);
+                staticElements.currentTime.textContent = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+                staticElements.currentDate.textContent = now.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            }
+
+            // --- API Handlers ---
+
+            // Save Game logic using custom API endpoint
+             function getUserId() {
+            // Get userId from URL parameters or fallback to a default
+            const params = new URLSearchParams(window.location.search);
+            return params.get("userId") || "guest";
+        }
+            async function saveGame() {
+                const userId =  getUserId()
+                if (!gameState || !gameState.player) {
+                    customAlert('Save Error', 'No active game state to save.');
+                    return;
+                }
+
+                if (quarterTimer) clearInterval(quarterTimer);
+                
+                const saveState = JSON.parse(JSON.stringify(gameState));
+                
+                // Store current UI inputs in the state before saving
+                saveState.player.decisions = {
+                    price: parseInt(decisionElements.priceSlider.value),
+                    marketingSpend: parseInt(decisionElements.marketingSlider.value),
+                    rndSpend: parseInt(decisionElements.rndSlider.value),
+                    adMessage: staticElements.adCampaignMessage.value,
+                    adTarget: staticElements.adCampaignTarget.value,
+                };
+
+                try {
+                    const response = await fetch(SAVE_API_ENDPOINT, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        // In a real app, you would send a unique user ID here.
+                        body: JSON.stringify({ userId:userId , gameState: saveState })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`API returned status ${response.status}`);
+                    }
+                    
+                    const result = await response.json();
+                    
+                    // Re-start the timer after saving
+                    startQuarterTimer();
+                    customAlert('Game Saved!', `Your progress for Quarter ${saveState.quarter} has been saved successfully.`);
+                } catch (error) {
+                    // Re-start the timer after a failed attempt
+                    startQuarterTimer();
+                    console.error("Save Game Error:", error);
+                    customAlert('Save Failed', `Could not connect to the save API. Please check the console for details.`);
+                }
+            }
+
+            // Load Game logic using custom API endpoint
+            async function loadGame() {
+                const userId = getUserId()
+                const playerName = staticElements.playerNameInput.value.trim();
+                const companyName = staticElements.companyNameInput.value.trim();
+
+                if (playerName === '' || companyName === '') {
+                    customAlert('Load Error', 'Please enter your name and company name to identify your saved game.');
+                    return;
+                }
+                
+                const confirmed = await customAlert('Confirm Load', 'Loading a saved game will discard your current progress. Are you sure?', true);
+                if (!confirmed) return;
+
+                try {
+                    
+                    const response = await fetch(`${LOAD_API_ENDPOINT}?userId=${userId}`, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    });
+
+                    if (response.status === 404) {
+                        customAlert('Game Not Found', `No saved game found for user: ${playerName}.`);
+                        return;
+                    }
+                    
+                    if (!response.ok) {
+                        throw new Error(`API returned status ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    
+                    if (result.gameState) {
+                        applyGameState(result.gameState);
+                    } else {
+                        customAlert('Load Error', 'The loaded data was corrupted or incomplete.');
+                    }
+                } catch (error) {
+                    console.error("Load Game Error:", error);
+                    customAlert('Load Failed', `Could not connect to the load API or process data. Please check the console for details.`);
+                }
+            }
+            
+            // --- Event Listeners ---
+
+            staticElements.startBtn.addEventListener('click', () => {
+                const playerName = staticElements.playerNameInput.value.trim();
+                const companyName = staticElements.companyNameInput.value.trim();
+                startTime = Date.now();
+                
+                staticElements.welcomeModal.style.opacity = 0;
+                setTimeout(() => staticElements.welcomeModal.classList.add('hidden'), 300);
+                
+                staticElements.simulationContainer.classList.remove('hidden');
+                initializeGame(playerName, companyName);
+            });
+
+            staticElements.nextQuarterBtn.addEventListener('click', () => {
+                if (quarterTimer) clearInterval(quarterTimer);
+                const btn = staticElements.nextQuarterBtn;
+                const { progressBarContainer, progressBarFill } = staticElements;
+                btn.disabled = true;
+                btn.innerHTML = `<div class="flex items-center justify-center"><svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Simulating Quarter...</div>`;
+                progressBarContainer.classList.remove('hidden');
+                progressBarFill.style.width = '0%';
+                void progressBarFill.offsetWidth;
+                progressBarFill.style.width = '100%';
+                setTimeout(() => {
+                    simulateQuarter();
+                    if (gameState.quarter <= MAX_QUARTERS && (!gameState.player || gameState.player.zeroSalesQuarters < 2)) {
+                        setupDecisionPanel(gameState.player.maxMarketingSpend, gameState.player.maxRndSpend);
+                        btn.textContent = 'Finalize Decisions & End Quarter';
+                        progressBarContainer.classList.add('hidden');
+                        progressBarFill.style.transition = 'none';
+                        progressBarFill.style.width = '0%';
+                        staticElements.adCampaignMessage.value = '';
+                        updateAdCampaignCost();
+                        setTimeout(() => { progressBarFill.style.transition = 'width 5s linear'; }, 50);
+                        startQuarterTimer();
+                    }
+                }, 5000);
+            });
+
+            const restartFunc = () => {
+                if (quarterTimer) clearInterval(quarterTimer);
+                staticElements.endGameModal.classList.add('hidden');
+                staticElements.certificateModal.classList.add('hidden');
+                staticElements.simulationContainer.classList.add('hidden');
+                staticElements.welcomeModal.classList.remove('hidden');
+                staticElements.welcomeModal.style.opacity = 1;
+                staticElements.playerNameInput.value = '';
+                staticElements.companyNameInput.value = '';
+                checkWelcomeInputs();
+            };
+
+            // Certificate button handlers
+            staticElements.viewCertBtn.addEventListener('click', showCertificate);
+            staticElements.restartFromCertBtn.addEventListener('click', restartFunc);
+
+            // Save/Load buttons
+            staticElements.saveGameBtn.addEventListener('click', saveGame);
+            staticElements.loadGameBtnWelcome.addEventListener('click', loadGame);
+            staticElements.loadGameBtnHeader.addEventListener('click', loadGame);
+
+            staticElements.downloadCertBtn.addEventListener('click', () => {
+                const playerName = gameState.playerName;
+                const completionDate = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+
+                const svgContent = `
+                <svg width="840" height="594" xmlns="http://www.w3.org/2000/svg">
+                    <style>
+                        @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Dancing+Script:wght@400..700&display=swap');
+                        .title { font-family: 'EB Garamond', serif; font-weight: bold; font-size: 38px; fill: #1e293b; }
+                        .subtitle { font-family: 'Calibri Light', sans-serif; font-size: 20px; fill: #334155;}
+                        .name { font-family: 'EB Garamond', serif; font-style: italic; font-size: 42px; fill: #003366; }
+                        .body { font-family: 'Calibri Light', sans-serif; font-size: 16px; text-align: center; fill: #1e293b;}
+                        .signature { font-family: 'Dancing Script', cursive; font-size: 30px; fill: #1e293b;}
+                        .footer-text { font-family: 'Calibri Light', sans-serif; font-weight: bold; font-size: 12px; fill: #1e293b;}
+                    </style>
+                    <rect width="100%" height="100%" fill="#f1f5f9"/>
+                    <rect x="20" y="20" width="800" height="554" fill="none" stroke="#eab308" stroke-width="6"/>
+                    <rect x="25" y="25" width="790" height="544" fill="none" stroke="#1e293b" stroke-width="2"/>
+                    
+                    <text x="50%" y="100" text-anchor="middle" class="title">TAXILA BUSINESS SCHOOL</text>
+                    <text x="50%" y="160" text-anchor="middle" class="subtitle">presents this</text>
+                    <text x="50%" y="220" text-anchor="middle" class="title" fill="#eab308">Certificate of Completion</text>
+                    <text x="50%" y="270" text-anchor="middle" class="subtitle">to</text>
+                    <text x="50%" y="330" text-anchor="middle" class="name">${playerName}</text>
+                    
+                    <foreignObject x="170" y="360" width="500" height="100">
+                        <p xmlns="http://www.w3.org/1999/xhtml" class="body">
+                            for successfully completing the Hyper-Competitive Consumer Simulation and demonstrating outstanding strategic decision-making and market analysis.
+                        </p>
+                    </foreignObject>
+
+                    <line x1="100" y1="500" x2="300" y2="500" stroke="#1e293b" stroke-width="1"/>
+                    <text x="105" y="490" class="footer-text">${completionDate}</text>
+                    <text x="105" y="520" class="footer-text">Date</text>
+
+                    <text x="640" y="470" text-anchor="middle" class="signature">Alka Jain</text>
+                    <line x1="540" y1="500" x2="740" y2="500" stroke="#1e293b" stroke-width="1"/>
+                    <text x="640" y="520" text-anchor="middle" class="footer-text">Prof Alka Jain, PhD - Director</text>
+                </svg>`;
+
+                const blob = new Blob([svgContent], {type: 'image/svg+xml;charset=utf-8'});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'Taxila_Simulation_Certificate.svg';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            });
+
+            staticElements.shareLinkedInBtn.addEventListener('click', () => {
+                const shareUrl = 'https://taxila.in/';
+                const title = 'Completed the Hyper-Competitive Consumer Simulation';
+                const summary = `I successfully completed the challenging Hyper-Competitive Consumer Simulation from Taxila Business School, developing key skills in strategic marketing, resource allocation, and competitive analysis.`;
+                
+                const linkedInUrl = `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(title)}&summary=${encodeURIComponent(summary)}&source=${encodeURIComponent('Taxila Business School')}`;
+                
+                window.open(linkedInUrl, '_blank');
+            });
+
+            function checkWelcomeInputs() {
+                const name = staticElements.playerNameInput.value.trim();
+                const company = staticElements.companyNameInput.value.trim();
+                staticElements.startBtn.disabled = name === '' || company === '';
+            }
+            staticElements.playerNameInput.addEventListener('input', checkWelcomeInputs);
+            staticElements.companyNameInput.addEventListener('input', checkWelcomeInputs);
+            
+            setInterval(updateClock, 1000);
+            updateClock();
+            
+        });
+    </script>
+</body>
+</html>
