@@ -71,10 +71,11 @@ export default function ResueForm({ heading, batch, term, course, date, showterm
       if (!response.ok) throw new Error(data.message);
       setMessage("Added Successfully");
       setShowToast(true);
+      router.push(`/exam-components/result/confirm-result-announcement?batch=${batchValue}&term=${termValue}&type=${examType}&term_period=${termperiod}&exam_period=${examperiod}&course=${selectedCourses.join(",")}`);
       setTimeout(() => {
         setMessage("");
         setShowToast(false);
-        router.push(redirect);
+       
       }, 2000);
     } catch (err) {
       setError(err.message || "Something went wrong.");
