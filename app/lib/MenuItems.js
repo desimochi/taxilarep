@@ -6,7 +6,7 @@ import {
     DocumentChartBarIcon,
     DocumentIcon,
   } from "@heroicons/react/24/outline";
-  import { AlignLeftIcon, AlignRightIcon, BookCheckIcon, BookCopyIcon, Brain, Briefcase, BriefcaseBusiness, Calculator, CalendarCheck2Icon, DockIcon, Dog, FileAxis3D, FishIcon, Gamepad, Globe, HandshakeIcon, HelpCircleIcon, IndianRupee, NewspaperIcon, PaperclipIcon, PenBox, PenSquareIcon, ProjectorIcon, Puzzle, Settings2Icon, Sheet, SpeakerIcon, UserCircle, UserRoundCheck, WholeWord } from "lucide-react";
+  import { AlignLeftIcon, AlignRightIcon, Award, BookCheckIcon, BookCopyIcon, Brain, Briefcase, BriefcaseBusiness, Calculator, CalendarCheck2Icon, DockIcon, Dog, FileAxis3D, FishIcon, Gamepad, Globe, HandshakeIcon, HelpCircleIcon, IndianRupee, NewspaperIcon, PaperclipIcon, PenBox, PenSquareIcon, ProjectorIcon, Puzzle, Settings2Icon, Sheet, SpeakerIcon, UserCircle, UserRoundCheck, WholeWord } from "lucide-react";
 export const menuItems = [
     { label: "Dashboard", icon: <HomeIcon className="h-5 w-5" />, path: "/admin/dashboard" },
     {
@@ -71,6 +71,11 @@ export const menuItems = [
       icon: <NewspaperIcon className="h-5 w-5" />,
       path: "/notice/noticeboard" 
     },
+    {
+      label: "Toppers",
+      icon: <Award className="h-5 w-5" />,
+      path: "/toppers" 
+    },
       {
       label: "Fail Students",
       icon: <NewspaperIcon className="h-5 w-5" />,
@@ -116,7 +121,7 @@ export const menuItems = [
       label: "Fail Students",
       icon: <NewspaperIcon className="h-5 w-5" />,
       path: "/fail-student" 
-    },
+    }
       ],
     },
     {
