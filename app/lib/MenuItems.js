@@ -272,7 +272,7 @@ export const menuItems = [
            {label:"Public Speaking",  icon: <SpeakerIcon className="h-5 w-5" />, path:"/game/public-speaking"},
           ]},
      { label: "Marks", icon: <DocumentChartBarIcon className="h-5 w-5" />, path: "/student/marks" },
-    { label: "Result", icon: <PenBox className="h-5 w-5" />, path: "/exam-components/result/see-result" },
+    { label: "Result", icon: <PenBox className="h-5 w-5" />, path: "/exam-components/result/see-result/student" },
     { label: "Admit Card", icon: <FileAxis3D className="h-5 w-5" />, path: "/student/admit-card" },
     { label: "Notice", icon: <NewspaperIcon className="h-5 w-5" />, path: "/notice/noticeboard" },
      {
