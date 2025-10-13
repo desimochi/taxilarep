@@ -122,12 +122,10 @@ const handleCategoryChange = (e) => {
               <h1 className="text-3xl font-bold mb-2 font-sans"> Tickets Category</h1>
               <p className="text-sm text-gray-500 mb-8">Everything about parents meetings at Taxila Business School</p>
             </div>
-            {state.user_type !== "EMPLOYEE" ? (
               <button onClick={() => handleAddClick("Add")} className="bg-red-100 border border-red-800 text-red-800 flex gap-1 items-center px-8 py-2 rounded">
                 <TicketIcon className="h-5 w-5" />Raise A Ticket
               </button>
-            ):
-            <Link href={'/help/ticket-category'} className="bg-red-100 mb-3 sm:mb-0 border border-red-800 text-red-800 flex gap-1 items-center px-8 py-2 rounded">
+            {state.user_type === "EMPLOYEE" && <Link href={'/help/ticket-category'} className="bg-red-100 mb-3 sm:mb-0 border border-red-800 text-red-800 flex gap-1 items-center px-8 py-2 rounded">
                 <TicketIcon className="h-5 w-5" />Add Ticket Category
               </Link>
             }
