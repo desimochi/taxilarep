@@ -180,6 +180,9 @@ export default function Page() {
                   <th className="px-6 py-4 text-left text-sm font-semibold">
                     Credits × GP
                   </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold">
+                    Result
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -219,6 +222,9 @@ export default function Page() {
                     </td>
                     <td className="px-6 py-4 text-gray-600">
                       {student.total_credit_xgp}
+                    </td>
+                    <td className="px-6 py-4 text-gray-600">
+                      {student.is_pass_status? <span className="bg-green-50 text-green-800 px-1 py-0.5">Pass</span> : <span className="bg-red-50 text-red-800 px-1 py-0.5">Fail</span>}
                     </td>
                   </tr>
                 ))}

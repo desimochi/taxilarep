@@ -302,6 +302,12 @@ export default function StudentDetailPage() {
                             value={student.enrollment_number}
                             required
                         />
+                         <EditableField 
+                            label="AICTE Permanent Id" 
+                            name="aicte_permanent_id" 
+                            value={student.aicte_permanent_id}
+                            required
+                        />
                         <EditableField 
                             label="Gender" 
                             name="gender" 
