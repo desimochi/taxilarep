@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, use } from "react";
 import { authFetch } from "@/app/lib/fetchWithAuth";
 import Link from "next/link";
 import { ArrowLeft, DownloadCloudIcon, DownloadIcon } from "lucide-react";
@@ -15,6 +15,7 @@ export default function Page() {
     const [examPeriod, setExamPeriod] = useState("")
     const [fname, setFname] = useState("")
     const [sname, setSname] = useState("")
+    const [sr, setSr] = useState("")
     const [gpa, setGpa] = useState(0);
     const [cgpa, setCgpa] = useState(0);
     const {state} =  useContext(GlobalContext)
@@ -89,6 +90,7 @@ export default function Page() {
             setFname(data.extra?.father_name || 'NA')
             setSname(data.extra?.student_name || 'NA')
             setTermPeriod(data.extra.term_period)
+            setSr(data.extra?.sr_number)
             setExamPeriod(data.extra.exam_period)
             if(data.data.length>0){
                 setdisplay(false)
@@ -111,9 +113,9 @@ export default function Page() {
     return (
         <> 
        {modal && (
-  <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center">
+  <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center mt-24">
     <div className="bg-white rounded-xl shadow-lg p-6 max-w-7xl w-full relative">
-      <Marksheet data={result} cgpa={cgpa} gpa={gpa} term_period={termperiod} examPeriod={examPeriod} term={formData.term} father_name={fname} name={sname} enroll = {formData.enrollment_number}/>
+      <Marksheet data={result} cgpa={cgpa} gpa={gpa} term_period={termperiod} examPeriod={examPeriod} sr={sr} term={formData.term} father_name={fname} name={sname} enroll = {formData.enrollment_number}/>
 
       {/* Close button */}
       <button

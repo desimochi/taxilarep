@@ -65,7 +65,7 @@ export default function StudentDetailPage() {
             }
 
             const res = await authFetch(`student-viewset/${id}`, {
-                method: 'PATCH',
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
