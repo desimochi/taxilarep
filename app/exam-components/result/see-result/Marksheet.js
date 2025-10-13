@@ -65,7 +65,7 @@ export default function Marksheet({
   const centuryGothicCdn = "https://fonts.cdnfonts.com/css/century-gothic-paneuropean";
 
   return (
-    <div className="p-8 max-h-screen overflow-scroll h-fit mt-64" style={{ fontFamily: `'${fontName}', sans-serif` }}>
+    <div className="p-8 max-h-screen overflow-scroll h-fit" style={{ fontFamily: `'${fontName}', sans-serif` }}>
       {/* 1. Inject the CDN link directly into the component's rendered output. 
         This is a less common but valid approach for isolated component styling/resources.
         In a Next.js App Router, using the <head> of the root layout is usually better, 
@@ -96,37 +96,26 @@ export default function Marksheet({
 
       <div
         ref={printRef}
-        className="border p-8 text-base bg-white text-black leading-relaxed MarksheetContainer"
+        className="border p-8 pt-48 text-base bg-white text-black leading-relaxed MarksheetContainer flex flex-col justify-center"
       >
         <div className="flex justify-end">
           <p>
-            <strong>Serial No.:</strong> {sr}
+            <strong>Sr. No.:</strong> {sr}
           </p>
         </div>
-        <h1 className="text-center text-2xl font-bold mb-1">
-          Taxila Business School
-        </h1>
-        <p className="text-center text-lg">
-          Post Graduate Diploma In Management (PGDM)
-        </p>
-        <p className="text-center text-sm">
-          [Approved by AICTE, Ministry of HRD, Govt. of India]
-        </p>
-
-        <h2 className="text-center mt-6 text-xl underline font-semibold">
-          MARK CARD
-        </h2>
-
+<div className="flex flex-col items-center justify-center space-y-2 mt-20">
+  <p>
+            <strong>EXAMINATION:</strong> {examPeriod}
+          </p>
+          <p>
+            <strong>TERM:</strong> {term}
+          </p>
+          <p>
+           {term_period}
+          </p>
+</div>
         <div className="mt-8 space-y-2">
-          <p>
-            <strong>Examination:</strong> {term_period}
-          </p>
-          <p>
-            <strong>Term:</strong> Term {term}
-          </p>
-          <p>
-            <strong>Duration:</strong> {examPeriod}
-          </p>
+          
           <p>
             <strong>Enrollment No:</strong> {enroll}
           </p>
@@ -142,8 +131,8 @@ export default function Marksheet({
           <thead>
             <tr className="bg-gray-100 font-semibold">
               <th className="border px-2 py-2">Sr. No.</th>
-              <th className="border px-2 py-2">Course Name</th>
               <th className="border px-2 py-2">Course Code</th>
+              <th className="border px-2 py-2">Course Name</th>
               <th className="border px-2 py-2">Course Credit</th>
               <th className="border px-2 py-2">Marks</th>
               <th className="border px-2 py-2">Grade</th>
@@ -153,10 +142,10 @@ export default function Marksheet({
             {data.map((item, index) => (
               <tr key={index}>
                 <td className="border px-2 py-2 text-center">{index + 1}</td>
-                <td className="border px-2 py-2">{item.subject_name}</td>
                 <td className="border px-2 py-2 text-center">
                   {item.subject_code}
                 </td>
+                <td className="border px-2 py-2">{item.subject_name}</td>
                 <td className="border px-2 py-2 text-center">{item.credit}</td>
                 <td className="border px-2 py-2 text-center">
                   {item.scaled_total_marks}
