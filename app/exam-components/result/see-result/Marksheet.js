@@ -63,6 +63,7 @@ export default function Marksheet({
   // IMPORTANT: This is a placeholder for a CDN. 
   // You must replace this with the actual URL where your licensed Century Gothic font is hosted.
   const centuryGothicCdn = "https://fonts.cdnfonts.com/css/century-gothic-paneuropean";
+const totalCredit = data.reduce((sum, item) => sum + Number(item.credit || 0), 0);
 
   return (
     <div className="p-8 max-h-screen overflow-scroll h-fit" style={{ fontFamily: `'${fontName}', sans-serif` }}>
@@ -157,6 +158,7 @@ export default function Marksheet({
         </table>
 
         <div className="mt-6 font-semibold text-lg">
+          <p>Total Credit: {totalCredit}</p>
           <p>Grade Point Average (GPA): {gpa}</p>
           <p>Cumulative Grade Point Average (CGPA): {cgpa}</p>
         </div>
