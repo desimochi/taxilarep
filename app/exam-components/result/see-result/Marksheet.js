@@ -96,7 +96,7 @@ export default function Marksheet({
 
       <div
         ref={printRef}
-        className="border p-8 pt-48 text-base bg-white text-black leading-relaxed MarksheetContainer flex flex-col justify-center"
+        className=" p-8 pt-48 text-base bg-white text-black leading-relaxed MarksheetContainer flex flex-col justify-center"
       >
         <div className="flex justify-end">
           <p>
@@ -162,8 +162,8 @@ export default function Marksheet({
         </div>
 
         <div className="mt-8">
-          <Image src={examSign} alt="exam-sign" height={100} width={140} />
-          <p className="font-semibold">Examination Controller</p>
+         
+          <p className="font-semibold mt-16">Examination Controller</p>
           <p>Date of Issue: {formattedDate}</p>
           <p className="font-semibold">Taxila Business School, Jaipur</p>
         </div>
