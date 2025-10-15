@@ -65,7 +65,7 @@ function formatTime(seconds) {
                 <td className="p-3  font-bold">#{i + 1}</td>
                 <td className="p-3 ">{row?.name || "Unknown"}</td>
                 <td className="p-3 ">{row.comname || "-"}</td>
-                <td className="p-3 ">{row.score}</td>
+                <td className="p-3 ">{row.scoreOutOf100}</td>
                 <td className="p-3 ">{row.share}</td>
                 <td className="p-3 ">{row.turnover}</td>
                 <td className="p-3   text-gray-500">
