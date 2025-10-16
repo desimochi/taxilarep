@@ -97,14 +97,14 @@ const totalCredit = data.reduce((sum, item) => sum + Number(item.credit || 0), 0
 
       <div
         ref={printRef}
-        className=" p-8 pt-48 text-base bg-white text-black leading-relaxed MarksheetContainer flex flex-col justify-center"
+        className=" p-8 pt-48 text-xl  bg-white text-black leading-relaxed MarksheetContainer flex flex-col justify-center px-16"
       >
-        <div className="flex justify-end">
+        <div className="flex justify-end mt-4">
           <p>
             <strong>Sr. No.:</strong> {sr}
           </p>
         </div>
-<div className="flex flex-col items-center justify-center space-y-2 mt-20">
+<div className="flex flex-col items-center justify-center space-y-2 mt-20 ">
   <p>
             <strong>EXAMINATION:</strong> {examPeriod}
           </p>
@@ -115,7 +115,7 @@ const totalCredit = data.reduce((sum, item) => sum + Number(item.credit || 0), 0
            {term_period}
           </p>
 </div>
-        <div className="mt-8 space-y-2">
+        <div className="mt-4 space-y-2">
           
           <p>
             <strong>Enrollment No:</strong> {enroll}
@@ -128,7 +128,7 @@ const totalCredit = data.reduce((sum, item) => sum + Number(item.credit || 0), 0
           </p>
         </div>
 
-        <table className="w-full mt-8 border border-collapse text-base">
+        <table className="w-full mt-6 border border-collapse text-xl">
           <thead>
             <tr className="bg-gray-100 font-semibold">
               <th className="border px-2 py-2">Sr. No.</th>
@@ -157,7 +157,7 @@ const totalCredit = data.reduce((sum, item) => sum + Number(item.credit || 0), 0
           </tbody>
         </table>
 
-        <div className="mt-6 font-semibold text-lg">
+        <div className="mt-4 font-semibold text-xl">
           <p>Total Credit: {totalCredit}</p>
           <p>Grade Point Average (GPA): {gpa}</p>
           <p>Cumulative Grade Point Average (CGPA): {cgpa}</p>
@@ -167,7 +167,6 @@ const totalCredit = data.reduce((sum, item) => sum + Number(item.credit || 0), 0
          
           <p className="font-semibold mt-16">Examination Controller</p>
           <p>Date of Issue: {formattedDate}</p>
-          <p className="font-semibold">Taxila Business School, Jaipur</p>
         </div>
       </div>
     </div>
