@@ -115,7 +115,7 @@ export default function Page() {
        {modal && (
   <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center mt-24">
     <div className="bg-white rounded-xl shadow-lg p-6 max-w-7xl w-full relative">
-      <Marksheet data={result} cgpa={cgpa} gpa={gpa} term_period={termperiod} examPeriod={examPeriod} sr={sr} term={formData.term} father_name={fname} name={sname} enroll = {formData.enrollment_number}/>
+      <Marksheet data={result} type={formData.type} cgpa={cgpa} gpa={gpa} term_period={termperiod} examPeriod={examPeriod} sr={sr} term={formData.term} father_name={fname} name={sname} enroll = {formData.enrollment_number}/>
 
       {/* Close button */}
       <button

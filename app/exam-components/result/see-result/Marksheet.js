@@ -1,9 +1,10 @@
 "use client";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import examSign from "@/public/exam-sign.png";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import QRCode from "qrcode";
 
 export default function Marksheet({
   data,
@@ -12,13 +13,25 @@ export default function Marksheet({
   father_name,
   name,
   sr,
+  type,
   enroll,
   term,
   term_period,
   examPeriod,
 }) {
+  console.log(type)
   const printRef = useRef(null);
+const [qrUrl, setQrUrl] = useState("");
+;
+ useEffect(() => {
+    const verifyUrl = `https://taxila.in/marksheet?enrollement=${encodeURIComponent(
+      enroll
+    )}&type=${encodeURIComponent(type)}&term=${encodeURIComponent(term)}`;
 
+    QRCode.toDataURL(verifyUrl, { width: 180, margin: 2 })
+      .then((url) => setQrUrl(url))
+      .catch((err) => console.error(err));
+  }, [enroll, type, term]);
   const date = new Date();
   const dayName = date.toLocaleDateString("en-IN", { weekday: "long" });
   const day = String(date.getDate()).padStart(2, "0");
@@ -97,7 +110,7 @@ const totalCredit = data.reduce((sum, item) => sum + Number(item.credit || 0), 0
 
       <div
         ref={printRef}
-        className=" p-8 pt-48 text-xl  bg-white text-black leading-relaxed MarksheetContainer flex flex-col justify-center px-16"
+        className=" p-8 pt-48 text-xl  bg-white text-black leading-relaxed MarksheetContainer flex flex-col justify-center px-24"
       >
         <div className="flex justify-end mt-4">
           <p>
@@ -156,17 +169,24 @@ const totalCredit = data.reduce((sum, item) => sum + Number(item.credit || 0), 0
             ))}
           </tbody>
         </table>
-
+<div className="flex justify-between items-center">
+  <div>
         <div className="mt-4 font-semibold text-xl">
           <p>Total Credit: {totalCredit}</p>
           <p>Grade Point Average (GPA): {gpa}</p>
           <p>Cumulative Grade Point Average (CGPA): {cgpa}</p>
         </div>
 
-        <div className="mt-8">
-         
+         <div>
           <p className="font-semibold mt-16">Examination Controller</p>
           <p>Date of Issue: {formattedDate}</p>
+          </div>
+      </div>
+      {qrUrl && (
+          <div className="mt-12 flex flex-col items-center">
+            <img src={qrUrl} alt="QR Code" width={80} height={80} />
+          </div>
+        )}        
         </div>
       </div>
     </div>
