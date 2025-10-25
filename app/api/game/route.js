@@ -59,7 +59,9 @@ export async function POST(req) {
 
     // Fix: Destructure the _id field to remove it from the gameState object before updating.
     const { _id, ...stateToSave } = gameState;
-
+    if(stateToSave.day>90){
+      return new Response(JSON.stringify({ error: "Day exceeds maximum limit" }), { status: 400, headers: corsHeaders() });
+    }
     await collection.updateOne(
       { userId },
       { $set: { ...stateToSave, userId, updatedAt: new Date() } },

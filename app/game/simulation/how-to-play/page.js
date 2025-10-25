@@ -1,6 +1,6 @@
 "use client"
 import { useState, useEffect } from 'react';
-import { Factory, DollarSign, TrendingUp, Users, Truck, BarChart3, Building2, Target, Clock, Award, Play, ArrowRight, Zap, Droplets, Wind } from 'lucide-react';import { useRouter } from 'next/navigation';
+import { Factory, DollarSign, TrendingUp, Users, Truck, BarChart3, Building2, Target, Clock, Award, Play, ArrowRight, Zap, Droplets, Wind, Link } from 'lucide-react';import { useRouter } from 'next/navigation';
 ;
 
 const TaxilaStartupChallenge = () => {
@@ -8,7 +8,7 @@ const TaxilaStartupChallenge = () => {
   const [currentDay, setCurrentDay] = useState(1);
 const router  = useRouter()
 function handleClick(){
-  router.push('/simulation/game')
+  router.push('/game/simulation')
 }
   const gameFeatures = [
     { icon: Factory, title: "Manufacturing Plants", desc: "Build Air Purifiers, Water Purifiers, and Inverters" },
