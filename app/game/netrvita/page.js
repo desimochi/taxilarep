@@ -20,10 +20,7 @@ export default function HtmlPage() {
         </div>
 
         <h2 className="text-center mt-4"> Game Timings are Over </h2>
-      // <iframe
-      //   src={`/netrvita.html?userId=${encodedState}&name=${encodedStateName}`}
-      //   className="w-full h-full border-none"
-      // />
+  
       <AudioPopup isOpen={isOpen} setIsOpen={setIsOpen} />
     </div>
   );
