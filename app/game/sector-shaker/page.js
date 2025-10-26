@@ -16,10 +16,7 @@ export default function HtmlPage() {
             <Link href="/game/sector-shaker/how-to-play" className="bg-yellow-100 text-yellow-700 px-4 py-1 rounded-sm flex items-center gap-1"><HelpCircle /> Game Instructions</Link>
             <Link href="/game/sector-shaker/leaderboard" className="bg-green-100 text-green-700 px-4 py-1 rounded-sm flex items-center gap-1"> <Award /> See LeaderBoard</Link>
         </div>
-      <iframe
-        src={`/sectorshaker2.html?userId=${encodedState}&name=${encodedStateName}`}
-        className="w-full h-full border-none"
-      />
+    <h2 className="text-center mt-4">Game Timings are Over </h2>
     </div>
   );
 }
