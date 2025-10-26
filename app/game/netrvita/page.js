@@ -18,10 +18,12 @@ export default function HtmlPage() {
             <button onClick={()=>setIsOpen(true)} class="bg-yellow-100 text-yellow-700 px-4 py-1 rounded-sm flex items-center gap-1"><HelpCircle /> Game Instructions</button>
             <Link href="/game/netrvita/leaderboard" class="bg-green-100 text-green-700 px-4 py-1 rounded-sm flex items-center gap-1"> <Award /> See LeaderBoard</Link>
         </div>
-      <iframe
-        src={`/netrvita.html?userId=${encodedState}&name=${encodedStateName}`}
-        className="w-full h-full border-none"
-      />
+
+        <h2 className="text-center mt-4"> Game Timings are Over </h2>
+      // <iframe
+      //   src={`/netrvita.html?userId=${encodedState}&name=${encodedStateName}`}
+      //   className="w-full h-full border-none"
+      // />
       <AudioPopup isOpen={isOpen} setIsOpen={setIsOpen} />
     </div>
   );
