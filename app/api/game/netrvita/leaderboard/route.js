@@ -23,16 +23,32 @@ export async function GET() {
   const db = client.db();
   const users = await db.collection("netrvita").find({}).toArray();
 
-  const leaderboard = users.map((u) => ({
+  // Step 1: Calculate raw scores for everyone
+  let leaderboard = users.map((u) => ({
     name: u.name,
     userId: u.userId,
     score: calculateScore(u.gameState),
     marketShare: u.gameState.marketShare,
     budget: u.gameState.budget,
-    updatedAt:u.updatedAt
+    updatedAt: u.updatedAt,
   }));
 
+  // Step 2: Sort leaderboard by score (descending)
   leaderboard.sort((a, b) => b.score - a.score);
+
+  // Step 3: Normalize scores (highest = 100)
+  const maxScore = leaderboard[0]?.score || 0;
+  leaderboard = leaderboard.map((player) => ({
+    ...player,
+    normalizedScore: maxScore > 0 ? Math.round((player.score / maxScore) * 100) : 0,
+  }));
+
+  // Step 4: Calculate percentile
+  const totalPlayers = leaderboard.length;
+  leaderboard = leaderboard.map((player, index) => {
+    const percentile = ((totalPlayers - index - 1) / (totalPlayers - 1)) * 100;
+    return { ...player, percentile: Math.round(percentile * 100) / 100 };
+  });
 
   return NextResponse.json(leaderboard);
 }
