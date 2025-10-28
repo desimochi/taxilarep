@@ -60,7 +60,7 @@ const RoleCards = ({ role, type }) => {
   return (
     <div className="grid sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-4 w-full">
       {cards.map((item) => (
-        <Link key={item.label} href={item.path || "#"}>
+        <Link key={item.label}  href={item.label === "Simulations" ? "/game" : (item.path || "#")}>
           <div className="group bg-white border border-gray-100 p-6 flex flex-col items-center justify-center cursor-pointer transform transition-all hover:shadow-2xl hover:-translate-y-1 hover:bg-gradient-to-br from-gray-100 to-gray-50">
             {/* Icon */}
             <div className="w-16 h-16 flex items-center justify-center rounded-full bg-white text-gray-800 border text-3xl  group-hover:scale-110 transition">

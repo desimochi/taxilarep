@@ -159,7 +159,7 @@ export const menuItems = [
     { label: "Mentorship Student", icon: <NewspaperIcon className="h-5 w-5" />, path: "/faculty/mentorship-assign-student" },
     { label: "Events", icon: <CalendarIcon className="h-5 w-5" />, path: "/events" },
     { label: "Game Guides", icon: <DocumentIcon className="h-5 w-5" />, path: "/game-guides" },
-    {label : "Simulations", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
+    {label : "Simulations", icon: <Gamepad className="h-5 w-5" />,  hasSubMenu:true,  subMenu : [
             {label:"Startup Simulation",  icon: <Gamepad className="h-5 w-5" />, path:"/game/simulation"},
              {label:"Guesstimation",  icon: <Gamepad className="h-5 w-5" />, path:"/game/guesstimations"},
             {label : "Finance", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
@@ -197,6 +197,7 @@ export const menuItems = [
             {label:"Taxila Solve",  icon: <Puzzle className="h-5 w-5" />, path:"/game/taxila-solve"},
             {label:"Sariska Hills",  icon: <Dog className="h-5 w-5" />, path:"/game/sariska"},
             {label:"Samudra Rakshak",  icon: <FishIcon className="h-5 w-5" />, path:"/game/samudra-rakshak"},
+             {label:"Market Research-New Product Launch",  icon: <FishIcon className="h-5 w-5" />, path:"/game/product-launch"},
           ]},
           {label : "Quality Management", icon: <Calculator className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Six Sigma Simulation",  icon: <CalendarCheck2Icon className="h-5 w-5" />, path:"/game/six-sigma"},
@@ -263,6 +264,7 @@ export const menuItems = [
             {label:"Taxila Solve",  icon: <Puzzle className="h-5 w-5" />, path:"/game/taxila-solve"},
             {label:"Sariska Hills",  icon: <Dog className="h-5 w-5" />, path:"/game/sariska"},
             {label:"Samudra Rakshak",  icon: <FishIcon className="h-5 w-5" />, path:"/game/samudra-rakshak"},
+            {label:"Market Research-New Product Launch",  icon: <FishIcon className="h-5 w-5" />, path:"/game/product-launch"},
           ]},
           {label : "Quality Management", icon: <Calculator className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Six Sigma Simulation",  icon: <CalendarCheck2Icon className="h-5 w-5" />, path:"/game/six-sigma"},
@@ -392,6 +394,7 @@ export const menuItems = [
             {label:"Taxila Solve",  icon: <Puzzle className="h-5 w-5" />, path:"/game/taxila-solve"},
             {label:"Sariska Hills",  icon: <Dog className="h-5 w-5" />, path:"/game/sariska"},
             {label:"Samudra Rakshak",  icon: <FishIcon className="h-5 w-5" />, path:"/game/samudra-rakshak"},
+             {label:"Market Research-New Product Launch",  icon: <FishIcon className="h-5 w-5" />, path:"/game/product-launch"},
           ]},
           {label : "Quality Management", icon: <Calculator className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Six Sigma Simulation",  icon: <CalendarCheck2Icon className="h-5 w-5" />, path:"/game/six-sigma"},

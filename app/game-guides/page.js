@@ -66,6 +66,11 @@ const PDFViewer = () => {
       name: 'Six Sima Simulation Faculty guide',
       url: '/six-sigms.pdf', // File should be at public/manual.pdf
       description: 'Faculty Guide for Six Sima Simulation Faculty guide'
+    },
+    {
+      name: 'Product Launch Faculty guide',
+      url: '/productlaunch.pdf', // File should be at public/manual.pdf
+      description: 'Faculty Guide for Product Launch Faculty guide'
     }
   ];
 
