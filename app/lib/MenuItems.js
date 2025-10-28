@@ -206,6 +206,11 @@ export const menuItems = [
            {label:"Interview",  icon: <Briefcase className="h-5 w-5" />, path:"/game/interview-preparation"},
            {label:"Public Speaking",  icon: <SpeakerIcon className="h-5 w-5" />, path:"/game/public-speaking"},
           ]},
+           {
+      label: "Support",
+      icon: <HelpCircleIcon className="h-5 w-5" />,
+      path: "/help/support" 
+    },
   ];
 
   export const ITManager = [

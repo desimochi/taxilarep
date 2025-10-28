@@ -89,11 +89,29 @@ const handleCategoryChange = (e) => {
   };
 
   const handleSubmit = async () => {
-    const url = type === "Add" ? `student-ticket-viewset` : `student-ticket-viewset/${selectedFaculty.id}`;
-    const method = type === "Add" ? "POST" : "PUT";
-    const body = type === "Add"
-      ? { student: state.user_id, category, short_description: desc, email_list: selectedUsers }
-      : { student: state.user_id, category, short_description: desc, status, reply_solution: solution };
+    const userType = state.user_type === "STUDENT" ? "student" : "user";
+
+const url =
+  type === "Add"
+    ? `student-ticket-viewset`
+    : `student-ticket-viewset/${selectedFaculty?.id}`;
+
+const method = type === "Add" ? "POST" : "PUT";
+
+const body = type === "Add"
+  ? {
+      [userType]: state.user_id, // 👈 dynamic field name
+      category,
+      short_description: desc,
+      email_list: selectedUsers,
+    }
+  : {
+      [userType]: state.user_id, // 👈 dynamic field name
+      category,
+      short_description: desc,
+      status,
+      reply_solution: solution,
+    };
 
     try {
       const res = await authFetch(url, {
