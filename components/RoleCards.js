@@ -6,11 +6,12 @@ import {
   stumenuItems,
   FacmenuItems,
   ITManager,
-  EPGDMAdmin
+  EPGDMAdmin,
+  EPGDMStudnets
 } from "@/app/lib/MenuItems";
 import Link from "next/link";
 
-const RoleCards = ({ role, type }) => {
+const RoleCards = ({ role, type, batch }) => {
   // 🔹 Build menu based on role
   const getMenuByRole = (role, type) => {
     const roles = Array.isArray(role) ? role.map(String) : [String(role)];
@@ -27,9 +28,12 @@ const RoleCards = ({ role, type }) => {
               ? [...result, ...FacmenuItems, ...menuItems]
               : [...result, ...menuItems];
           break;
-        case "3":
-          result = [...result, ...stumenuItems];
-          break;
+         case "3":
+                  result = 
+                  batch === "EPGDM T-2" 
+                  ?[...result, ...EPGDMStudnets]
+                   : [...result, ...stumenuItems];
+                  break;
         case "4":
           result = [...result, ...FacmenuItems];
           break;

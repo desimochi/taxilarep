@@ -74,6 +74,7 @@ function Layout({ children }) {
         toggleMenu={toggleMenu}
         openMenus={openMenus}
         role={state?.role_id}
+        batch={state?.batch}
         type={state?.employee_type}
       />
       <aside className="w-full bg-white">

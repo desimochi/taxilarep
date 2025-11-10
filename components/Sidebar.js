@@ -11,7 +11,8 @@ import {
   stumenuItems,
   FacmenuItems,
   ITManager,
-  EPGDMAdmin
+  EPGDMAdmin, 
+  EPGDMStudnets
 } from "@/app/lib/MenuItems";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import {
@@ -21,8 +22,9 @@ import {
   X,
 } from "lucide-react";
 
-const Sidebar = ({ collapsed, toggleSidebar, role, type }) => {
+const Sidebar = ({ collapsed, toggleSidebar, role, type, batch }) => {
   const pathname = usePathname();
+  console.log(batch)
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openMenus, setOpenMenus] = useState({});
 
@@ -48,7 +50,10 @@ const Sidebar = ({ collapsed, toggleSidebar, role, type }) => {
               : [...result, ...menuItems];
           break;
         case "3":
-          result = [...result, ...stumenuItems];
+          result = 
+          batch === "EPGDM T-2" 
+          ?[...result, ...EPGDMStudnets]
+           : [...result, ...stumenuItems];
           break;
         case "4":
           result = [...result, ...FacmenuItems];

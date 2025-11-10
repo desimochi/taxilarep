@@ -483,3 +483,15 @@ export const EPGDMAdmin = [
       path: "/help/support" 
     },
   ];
+ export const EPGDMStudnets = [
+    { label: "Dashboard", icon: <HomeIcon className="h-5 w-5" />, path: "/student" },
+    { label: "Subject", icon: <BookCheckIcon className="h-5 w-5" />, path: "/student/subject" },
+     { label: "Marks", icon: <DocumentChartBarIcon className="h-5 w-5" />, path: "/student/marks" },
+     {
+      label: "Support",
+      icon: <HelpCircleIcon className="h-5 w-5" />,
+      path: "/help/support" 
+    },
+
+  ];
+  

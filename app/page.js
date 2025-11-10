@@ -68,7 +68,7 @@ export default function Home() {
         Quick Access Panel
       </h2>
       <hr className="border border-b-0.5 border-gray-200 w-20 mb-6 mx-auto sm:mx-0" />
-      <RoleCards role={state?.role_id} type={state?.employee_type} />
+      <RoleCards role={state?.role_id} type={state?.employee_type} batch = {state?.batch} />
 
      
     </div>
