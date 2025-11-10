@@ -9,6 +9,7 @@ import FullWidthLoader from "@/components/Loaader";
 import Link from "next/link";
 import DOMPurify from "dompurify";
 import BackButton from "@/components/ui/Backbutton";
+import VideoAssignmentPage from "@/components/VideoEPGDM";
 
 export default function Page() {
     const { id } = useParams()
@@ -162,7 +163,9 @@ export default function Page() {
                             
                         </div>
                         <div className="p-4 border border-gray-300 rounded-sm mt-4">
-                            <div className="flex flex-col sm:flex-row justify-between bg-red-50 p-2 py-5 rounded-sm ">
+                            <p>{students?.course?.name} </p>
+                            {students?.course[0]?.name ==='EPGDM' && <VideoAssignmentPage id={students?.id} />}
+                            {students?.course.name!=='EPGDM' && <> <div className="flex flex-col sm:flex-row justify-between bg-red-50 p-2 py-5 rounded-sm ">
                             <h3 className=" font-bold text-xl px-4 text-red-800">Syllabus of {students?.subject?.name || 'N/A'}</h3>
                             <button className="text-white mx-4 bg-red-800 py-1 px-8 rounded-sm" onClick={handlePrint}>Download PDF</button>
                         </div>
@@ -171,7 +174,8 @@ export default function Page() {
     className="text-gray-800 text-sm leading-relaxed p-4" 
     dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(data.description) }} 
   />
-)}</div>
+)}</> }
+</div>
                     </div>
                 </div>
             )}

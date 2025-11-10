@@ -28,9 +28,9 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en ">
       <body
-        className={` ${poppins.variable} antialiased font-sans`}
+        className={` ${robotoMono.variable} antialiased `}
       >
         <ClientLayout>{children}</ClientLayout>
       </body>

@@ -11,6 +11,7 @@ import {
   stumenuItems,
   FacmenuItems,
   ITManager,
+  EPGDMAdmin
 } from "@/app/lib/MenuItems";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import {
@@ -63,6 +64,9 @@ const Sidebar = ({ collapsed, toggleSidebar, role, type }) => {
           break;
         case "7":
           result = [...result, ...Accountant];
+          break;
+          case "8":
+          result = [...result, ...EPGDMAdmin];
           break;
         default:
           break;

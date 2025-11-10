@@ -6,6 +6,7 @@ import {
   stumenuItems,
   FacmenuItems,
   ITManager,
+  EPGDMAdmin
 } from "@/app/lib/MenuItems";
 import Link from "next/link";
 
@@ -43,6 +44,9 @@ const RoleCards = ({ role, type }) => {
           break;
         case "7":
           result = [...result, ...Accountant];
+          break;
+           case "8":
+          result = [...result, ...EPGDMAdmin];
           break;
         default:
           break;
