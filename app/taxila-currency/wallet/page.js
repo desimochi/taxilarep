@@ -7,6 +7,7 @@ import StudentsList from "./Students";
 import { GlobalContext } from "@/components/GlobalContext";
 import { authFetch } from "@/app/lib/fetchWithAuth";
 import ListSubject from "./Subjects";
+import StudentCurrencyTransaction from "./StudentCurrency";
 
 export default function Page(){
     const [send, setSend] = useState(false)
@@ -63,12 +64,14 @@ export default function Page(){
             </div>
        
             <hr className=" border  border-spacing-y-0.5 mb-6"/>
-            <div className="flex">
+            <div className="flex gap-2">
                 <div className="w-1/2">
             <ProjectPopupForm />
             <CurrencyProjectComponent />
             </div>
-
+<div className="w-1/2 mt-12">
+    <StudentCurrencyTransaction studentId= {state.user_id} />
+</div>
             
             </div>
             <ListSubject enrollment_number={projects?.student?.enrollment_number} state={state.user_id}/>
