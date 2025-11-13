@@ -157,6 +157,7 @@ export const menuItems = [
       path: "/notice/noticeboard" 
     },
     { label: "Mentorship Student", icon: <NewspaperIcon className="h-5 w-5" />, path: "/faculty/mentorship-assign-student" },
+     { label: "Taxila Curreny", icon: <IndianRupee className="h-5 w-5" />, path: "/taxila-currency/faculty" },
     { label: "Events", icon: <CalendarIcon className="h-5 w-5" />, path: "/events" },
     { label: "Game Guides", icon: <DocumentIcon className="h-5 w-5" />, path: "/game-guides" },
     {label : "Simulations", icon: <Gamepad className="h-5 w-5" />,  hasSubMenu:true,  subMenu : [
@@ -231,6 +232,7 @@ export const menuItems = [
     { label: "Attendance", icon: <UserRoundCheck className="h-5 w-5" />, path: "/student/attendance" },
     { label: "Class Schedule", icon: <BookCopyIcon className="h-5 w-5" />, path: "/student/class-schedule" },
     { label: "Exam Schedule", icon: <PenBox className="h-5 w-5" />, path: "/student/exam-schedule" },
+     { label: "Taxila Curreny", icon: <IndianRupee className="h-5 w-5" />, path: "/taxila-currency/wallet" },
     {label : "Simulations", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Startup Simluation",  icon: <Gamepad className="h-5 w-5" />, path:"/game/simulation"},
              {label:"Guesstimation",  icon: <Gamepad className="h-5 w-5" />, path:"/game/guesstimations"},

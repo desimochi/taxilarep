@@ -4,7 +4,7 @@ import { Eye, X, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { authFetch } from '@/app/lib/fetchWithAuth';
 import { GlobalContext } from '@/components/GlobalContext';
 
-export default function CurrencyProjectComponent() {
+export default function ProjectList({id}) {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -12,8 +12,9 @@ export default function CurrencyProjectComponent() {
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({});
   const [saving, setSaving] = useState(false);
-const {state} = useContext(GlobalContext)
-console.log(state)
+  const [currencyInputs, setCurrencyInputs] = useState({});
+  const [obtained_currency, setObtained_currency] = useState("")
+
   useEffect(() => {
     fetchProject();
   }, []);
@@ -21,7 +22,7 @@ console.log(state)
   const fetchProject = async () => {
     try {
       setLoading(true);
-      const response = await authFetch(`student-currency-project/${state.user_id}`);
+      const response = await authFetch(`student-currency-project/${id}`);
       const result = await response.json();
 
       if (result.code === 200) {
@@ -37,32 +38,37 @@ console.log(state)
     }
   };
 
-  const saveProject = async () => {
-    try {
-      setSaving(true);
-      const res = await authFetch(
-        `taxila-currency-add-obtain-currency/${editData.id}`,
-        {
-          method: "PUT",
-          body: JSON.stringify({obtained_currency})
-        }
-      );
+const saveProject = async (id, currencyValue) => {
+  try {
+    setSaving(true);
 
-      const result = await res.json();
+    const payload = {
+      obtained_currency: currencyValue, // 👈 Add this
+    };
 
-      if (result.code === 200) {
-        await fetchProject();
-        setSelectedProject(null);
-        setIsEditing(false);
-      } else {
-        alert("Failed to update project");
+    const res = await authFetch(
+      `taxila-currency-viewset/${id}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(payload)
       }
-    } catch (err) {
-      alert("Error saving: " + err.message);
-    } finally {
-      setSaving(false);
+    );
+
+    const result = await res.json();
+
+    if (result.code === 200) {
+      await fetchProject();
+      setSelectedProject(null);
+      setIsEditing(false);
+    } else {
+      alert("Failed to update project");
     }
-  };
+  } catch (err) {
+    alert("Error saving: " + err.message);
+  } finally {
+    setSaving(false);
+  }
+};
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -115,7 +121,7 @@ console.log(state)
   }
 
   return (
-    <div className="">
+    <div className="w-full">
       <div className=" mt-4">
         <div className="bg-white rounded-lg border border-gray-300 shadow-lg overflow-hidden">
           <div className='flex justify-between items-center'>
@@ -132,6 +138,7 @@ console.log(state)
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500">Project Name</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500">Status</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500">Actions</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500">Give Obtain Marks</th>
                 </tr>
               </thead>
 
@@ -159,6 +166,26 @@ console.log(state)
                       >
                         <Eye className="w-5 h-5" /> View / Edit
                       </button>
+                    </td>
+                    <td className="px-6 py-4">
+                         <div>
+                    <label className="font-semibold text-xs text-gray-700">Obtained Currency</label>
+                    <div className='flex gap-3'>
+<input
+  type="number"
+  value={currencyInputs[project.id] || ""}
+  onChange={(e) =>
+    setCurrencyInputs({
+      ...currencyInputs,
+      [project.id]: e.target.value,
+    })
+  }
+  className="w-full border px-3 py-2 rounded mt-1"
+/>
+                    <button onClick={()=>saveProject(project.id, currencyInputs[project.id])} className='bg-zinc-950 px-4 py-2 text-white w-80' >Give Currency</button>
+                    </div>
+                   
+                  </div>
                     </td>
                   </tr>
                 ))}
@@ -240,16 +267,9 @@ console.log(state)
                 <div className="grid md:grid-cols-2 gap-6">
 
                   {/* Project Name */}
-                  <div>
-                    <label className="font-semibold text-gray-700">Project Name</label>
-                    <input
-                      className="w-full border px-3 py-2 rounded mt-1"
-                      value={editData.project_name}
-                      onChange={(e) => setEditData({ ...editData, project_name: e.target.value })}
-                    />
-                  </div>
-
-                  {/* Status */}
+              
+                
+              {/* Status */}
                   <div>
                     <label className="font-semibold text-gray-700">Status</label>
                     <select
@@ -264,63 +284,33 @@ console.log(state)
                   </div>
 
                   {/* Student ID */}
-                  <div>
-                    <label className="font-semibold text-gray-700">Student ID</label>
-                    <input
-                      value={editData.student}
-                      onChange={(e) => setEditData({ ...editData, student: e.target.value })}
-                      className="w-full border px-3 py-2 rounded mt-1"
-                    />
-                  </div>
+                  
 
                   {/* Project Date */}
-                  <div>
-                    <label className="font-semibold text-gray-700">Project Date</label>
-                    <input
-                      type="date"
-                      value={editData.project_date?.split("T")[0]}
-                      onChange={(e) => setEditData({ ...editData, project_date: e.target.value })}
-                      className="w-full border px-3 py-2 rounded mt-1"
-                    />
-                  </div>
+              
 
                   {/* Project Days */}
+               
+
+                  {/* Taxila Currency */}
                   <div>
-                    <label className="font-semibold text-gray-700">Project Days</label>
+                    <label className="font-semibold text-gray-700">Taxila Currency</label>
                     <input
                       type="number"
-                      value={editData.project_days}
-                      onChange={(e) => setEditData({ ...editData, project_days: e.target.value })}
+                      value={editData.taxila_currency}
+                      onChange={(e) => setEditData({ ...editData, taxila_currency: e.target.value })}
                       className="w-full border px-3 py-2 rounded mt-1"
                     />
                   </div>
 
-                  {/* Taxila Currency */}
+                  {/* Obtained Currency */}
                  
 
                   {/* Project Description */}
-                  <div className="md:col-span-2">
-                    <label className="font-semibold text-gray-700">Project Description</label>
-                    <textarea
-                      rows={3}
-                      value={editData.project_description}
-                      onChange={(e) => setEditData({ ...editData, project_description: e.target.value })}
-                      className="w-full border px-3 py-2 rounded mt-1"
-                    ></textarea>
-                  </div>
+              
 
                   {/* Work Description */}
-                  <div className="md:col-span-2">
-                    <label className="font-semibold text-gray-700">Work Description</label>
-                    <textarea
-                      rows={3}
-                      value={editData.project_work_description}
-                      onChange={(e) =>
-                        setEditData({ ...editData, project_work_description: e.target.value })
-                      }
-                      className="w-full border px-3 py-2 rounded mt-1"
-                    ></textarea>
-                  </div>
+            
 
                   {/* Active */}
                   <div>
