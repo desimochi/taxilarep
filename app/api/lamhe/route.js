@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
+import { d } from "@vercel/blob/dist/create-folder-CqdraABG.cjs";
 
 // ---------------------------------------------
 // CORS CONFIG
@@ -61,7 +62,14 @@ export async function POST(request) {
     // Save to DB
     const client = await clientPromise;
     const db = client.db();
-
+    const exist  = await db.collection("registrations").findOne({ 'participant.email': participant.email })
+    if(exist){
+      return NextResponse.json(
+        { success: false, message: "You have already registered!" },
+        { status: 400, headers: getCorsHeaders(origin) }
+      );
+    }
+    
     await db.collection("registrations").insertOne({
       participant,
       events,
