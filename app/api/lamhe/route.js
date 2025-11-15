@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
-import { d } from "@vercel/blob/dist/create-folder-CqdraABG.cjs";
+
 
 // ---------------------------------------------
 // CORS CONFIG
@@ -69,7 +69,7 @@ export async function POST(request) {
         { status: 400, headers: getCorsHeaders(origin) }
       );
     }
-    
+
     await db.collection("registrations").insertOne({
       participant,
       events,
