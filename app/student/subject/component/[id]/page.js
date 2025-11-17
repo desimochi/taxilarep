@@ -202,44 +202,73 @@ export default function Page(){
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
           {additionalData.length > 0 ? (
             additionalData.map((subcomp) => (
+              console.log(subcomp),
               <div key={subcomp.id} className="border p-4 rounded-sm">
-                <div className="flex justify-between items-center">
-                <h5 className="mt-3 font-bold">{subcomp.name}</h5>
-                <span className=" flex gap-1 items-center text-sm text-red-600 underline"><EyeIcon className="h-4 w-4"/><Link href={`/student/subject/subcomponent/${subcomp.id}`}>See Details</Link></span>
-                </div>
-                    
-                <hr className="border border-b-2 border-red-600 w-12 mt-1" />
-                <div className="flex justify-between mt-4">
-                  <p className="font-bold">Start Date</p>
-                  <p>{subcomp?.start_date ? new Date(subcomp.start_date).toLocaleString("en-IN", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        timeZoneName: "short",
-      }) : "NA"}</p>
-                </div>
-                <div className="flex justify-between mt-4">
-                  <p className="font-bold">End Date</p>
-                  <p>{subcomp?.end_date ? new Date(subcomp.end_date).toLocaleString("en-IN", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        timeZoneName: "short",
-      }) : "NA"}</p>
-                </div>
-                <button
-                  onClick={() => handleOpenModal(subcomp.id)}  
-                  className="text-sm bg-red-600 w-full py-1.5 rounded-sm text-white shadow-sm hover:shadow-xl transition-shadow mt-6"
-                >
-                  Submit Answer
-                </button>
-              </div>
+  <div className="flex justify-between items-center">
+    <h5 className="mt-3 font-bold">{subcomp.name}</h5>
+    <span className="flex gap-1 items-center text-sm text-red-600 underline">
+      <EyeIcon className="h-4 w-4" />
+      <Link href={`/student/subject/subcomponent/${subcomp.id}`}>
+        See Details
+      </Link>
+    </span>
+  </div>
+
+  <hr className="border border-b-2 border-red-600 w-12 mt-1" />
+
+  <div className="flex justify-between mt-4">
+    <p className="font-bold">Start Date</p>
+    <p>
+      {subcomp?.start_date
+        ? new Date(subcomp.start_date).toLocaleString("en-IN", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            timeZoneName: "short",
+          })
+        : "NA"}
+    </p>
+  </div>
+
+  <div className="flex justify-between mt-4">
+    <p className="font-bold">End Date</p>
+    <p>
+      {subcomp?.end_date
+        ? new Date(subcomp.end_date).toLocaleString("en-IN", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            timeZoneName: "short",
+          })
+        : "NA"}
+    </p>
+  </div>
+
+  {/* 🔥 Disable if current time > end_date */}
+  {(() => {
+    const isExpired =
+      subcomp?.end_date && new Date() > new Date(subcomp.end_date);
+
+    return (
+      <button
+        onClick={() => !isExpired && handleOpenModal(subcomp.id)}
+        disabled={isExpired}
+        className={`text-sm w-full py-1.5 rounded-sm text-white shadow-sm transition-shadow mt-6 
+          ${isExpired ? "bg-gray-400 cursor-not-allowed" : "bg-red-600 hover:shadow-xl"}
+        `}
+      >
+        {isExpired ? "Submission Closed" : "Submit Answer"}
+      </button>
+    );
+  })()}
+</div>
+
             ))
           ) : (
         <p>Details Not Updated Yet</p>

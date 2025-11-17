@@ -93,14 +93,14 @@ export default function AnswerAdd({ id,setEditDetails, subcomponent, userID  }) 
           ...prev,
           { url: data.fileUrl, name: file.name, id: data.fileId },
         ]);
-
+console.log(data.fileUrl)
         if (type === "image") {
           editor.commands.insertContent(
             `<img src="${data.fileUrl}" class="h-30 w-30"/>`
           );
         } else {
           editor.commands.insertContent(
-            `<a href={data.fileUrl} target="_blank" rel="noopener noreferrer"> See File ${file.name}</a>`
+            `<a href="${data.fileUrl}" target="_blank" rel="noopener noreferrer"> See File ${file.name}</a>`
           );
         }
       }
