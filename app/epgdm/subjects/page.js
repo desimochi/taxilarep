@@ -30,7 +30,7 @@ export default function AssignedSubject({}){
       setLoading(true)
       try {
         const [response] = await Promise.all([
-          await authFetch(`subject-mapping-viewset?batch=${3}`)
+          await authFetch(`subject-mapping-viewset?course=${2}`)
       ])
 
         if (!response.ok) {

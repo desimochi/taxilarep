@@ -31,7 +31,7 @@ export default function Page() {
       try {
         const [resCategories, resTickets, resUsers] = await Promise.all([
           authFetch("ticket-category-viewset"),
-          authFetch(`${state.user_type === "STUDENT" ? `student-wise-ticket/${state.user_id}?page=${page}` : `student-ticket-viewset?page=${page}`}&page_size=10`),
+          authFetch(`${state.user_type === "STUDENT" ? `student-wise-ticket/${state.id}?page=${page}` : `student-ticket-viewset?page=${page}`}&page_size=10`),
           authFetch("employee-list"),
         ]);
         const [categories, tickets, users] = await Promise.all([
@@ -89,7 +89,7 @@ const handleCategoryChange = (e) => {
   };
 
   const handleSubmit = async () => {
-    const userType = state.user_type === "STUDENT" ? "student" : "user";
+    const userType = state.user_type === "STUDENT" ? "user" : "user";
 
 const url =
   type === "Add"
