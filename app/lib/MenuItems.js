@@ -6,7 +6,7 @@ import {
     DocumentChartBarIcon,
     DocumentIcon,
   } from "@heroicons/react/24/outline";
-  import { AlignLeftIcon, AlignRightIcon, Award, BookCheckIcon, BookCopyIcon, Brain, Briefcase, BriefcaseBusiness, Calculator, CalendarCheck2Icon, DockIcon, Dog, FileAxis3D, FishIcon, Gamepad, Globe, HandshakeIcon, HelpCircleIcon, IndianRupee, NewspaperIcon, PaperclipIcon, PenBox, PenSquareIcon, ProjectorIcon, Puzzle, Settings2Icon, Sheet, SpeakerIcon, UserCircle, UserRoundCheck, WholeWord } from "lucide-react";
+  import { AlignLeftIcon, AlignRightIcon, Award, BookCheckIcon, BookCopyIcon, Brain, Briefcase, BriefcaseBusiness, Calculator, CalendarCheck2Icon, DockIcon, Dog, FileAxis3D, FishIcon, Gamepad, Globe, HandshakeIcon, HelpCircleIcon, IndianRupee, NewspaperIcon, Paperclip, PaperclipIcon, PenBox, PenSquareIcon, ProjectorIcon, Puzzle, Settings2Icon, Sheet, SpeakerIcon, UserCircle, UserRoundCheck, WholeWord } from "lucide-react";
 export const menuItems = [
     { label: "Dashboard", icon: <HomeIcon className="h-5 w-5" />, path: "/admin/dashboard" },
     {
@@ -21,16 +21,19 @@ export const menuItems = [
         { label: "Batch Manager", path: "/course/batch-manager" },
         { label: "Subject Manager", path: "/course/subject-manager" },
         { label: "Class Schedule", path: "/course/course-schedule" },
+
         {label : "Terms Manager", hasSubMenu: true, subMenu :[
           { label: "Terms", path: "/terms" },
           { label: "Create Terms", path: "/terms/create-terms" },
         ]},
+        
         {label : "Mentorship Manager", hasSubMenu: true, subMenu :[
           { label: "Assign Student", path: "/mentorship/assign-student" },
           { label: "Assigned Students", path: "/mentorship/assigned-students" },
         ]},
       ],
     },
+    { label: "Leave Management", icon: <Paperclip className="h-5 w-5" />, path: "/leaves" },
     {
       label: "Examination",
       icon: <PenSquareIcon className="h-5 w-5" />,
@@ -231,6 +234,7 @@ export const menuItems = [
     { label: "Subject", icon: <BookCheckIcon className="h-5 w-5" />, path: "/student/subject" },
     { label: "Attendance", icon: <UserRoundCheck className="h-5 w-5" />, path: "/student/attendance" },
     { label: "Class Schedule", icon: <BookCopyIcon className="h-5 w-5" />, path: "/student/class-schedule" },
+    { label: "Leave Management", icon: <Paperclip className="h-5 w-5" />, path: "/student/leave-management" },
     { label: "Exam Schedule", icon: <PenBox className="h-5 w-5" />, path: "/student/exam-schedule" },
      { label: "Taxila Curreny", icon: <IndianRupee className="h-5 w-5" />, path: "/taxila-currency/wallet" },
     {label : "Simulations", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [

@@ -2,6 +2,7 @@
 import "./globals.css";
 import { Roboto, Roboto_Mono, Poppins, Montserrat } from "next/font/google";
 import ClientLayout from "./ClientLayout"; // this will have all your useState logic
+import { Toaster } from "react-hot-toast";
 
 const roboto = Roboto({
   variable: "--font-roboto",
@@ -31,7 +32,10 @@ export default function RootLayout({ children }) {
     <html lang="en ">
       <body
         className={` ${robotoMono.variable} antialiased `}
-      >
+      > <Toaster
+          position="top-right"
+          reverseOrder={false}
+        />
         <ClientLayout>{children}</ClientLayout>
       </body>
     </html>

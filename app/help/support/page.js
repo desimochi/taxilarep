@@ -100,13 +100,13 @@ const method = type === "Add" ? "POST" : "PUT";
 
 const body = type === "Add"
   ? {
-      [userType]: state.user_id, // 👈 dynamic field name
+      [userType]: state.id, // 👈 dynamic field name
       category,
       short_description: desc,
       email_list: selectedUsers,
     }
   : {
-      [userType]: state.user_id, // 👈 dynamic field name
+      [userType]: state.id, // 👈 dynamic field name
       category,
       short_description: desc,
       status,
