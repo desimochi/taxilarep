@@ -109,7 +109,15 @@ export default function Page() {
                 filteredNotices.map((item, index) => (
                   <tr key={item.id} className="border-b text-sm">
                     <td className="px-6 py-4">{index + 1}</td>
-                    <td className="px-6 py-4">{item.title}</td>
+                    <td className="px-6 py-4 flex items-center gap-2">
+  {item.title}
+
+  {index === 0 && (
+    <span className="blink-badge text-xs bg-red-600 text-white px-2 py-0.5 rounded-sm">
+      Important
+    </span>
+  )}
+</td>
                     <td className="px-6 py-4">{item.date}</td>
                     <td className="px-6 py-4">{userMap[item.user] || "Unknown"}</td>
                     <td className="px-6 py-4">{item.valid_date}</td>
@@ -151,6 +159,18 @@ export default function Page() {
       )}
     </div>
     </div>
+    <style>
+{`
+  @keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0.2; }
+    100% { opacity: 1; }
+  }
+  .blink-badge {
+    animation: blink 1.2s infinite ease-in-out;
+  }
+`}
+</style>
     </section>
   );
 }
