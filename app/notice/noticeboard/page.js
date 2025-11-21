@@ -112,7 +112,7 @@ export default function Page() {
                     <td className="px-6 py-4 flex items-center gap-2">
   {item.title}
 
-  {index === 0 && (
+  {item.is_important && (
     <span className="blink-badge text-xs bg-red-600 text-white px-2 py-0.5 rounded-sm">
       Important
     </span>

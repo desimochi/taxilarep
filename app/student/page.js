@@ -183,7 +183,7 @@ const dashboardBgClass2 = () => {
 
         const latest =
           Array.isArray(noticeJson.data) && noticeJson.data.length > 0
-            ? noticeJson.data[0]
+            ? noticeJson.data[2]
             : null;
 
         setLatestNotice(latest);
