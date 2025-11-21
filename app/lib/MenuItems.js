@@ -159,6 +159,10 @@ export const menuItems = [
       icon: <NewspaperIcon className="h-5 w-5" />,
       path: "/notice/noticeboard" 
     },
+      {label : "Attendance Manager",icon: <UserGroupIcon className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
+            { label: "Student Attendence", path: "/attendance/student-attendance" },
+            { label: "Subjet-Wise Attendance", path: "/attendance/subject-wise" },
+          ]},
     { label: "Mentorship Student", icon: <NewspaperIcon className="h-5 w-5" />, path: "/faculty/mentorship-assign-student" },
      { label: "Taxila Curreny", icon: <IndianRupee className="h-5 w-5" />, path: "/taxila-currency/faculty" },
     { label: "Events", icon: <CalendarIcon className="h-5 w-5" />, path: "/events" },
