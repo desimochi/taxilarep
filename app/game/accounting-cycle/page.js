@@ -16,7 +16,10 @@ export default function HtmlPage() {
             <Link href="/game/accounting-cycle/how-to-play" class="bg-yellow-100 text-yellow-700 px-4 py-1 rounded-sm flex items-center gap-1"><HelpCircle /> Game Instructions</Link>
             <Link href="/game/accounting-cycle/leaderboard" class="bg-green-100 text-green-700 px-4 py-1 rounded-sm flex items-center gap-1"> <Award /> See LeaderBoard</Link>
         </div>
-     <h2 className="text-center mt-4">Game Timings are Over </h2>
+    <iframe
+            src={`/accouting.html?userId=${encodedState}&name=${encodedStateName}`}
+            className="w-full h-full border-none"
+          />
     </div>
   );
 }
