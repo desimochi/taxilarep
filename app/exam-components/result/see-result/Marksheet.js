@@ -162,7 +162,7 @@ const totalCredit = data.reduce((sum, item) => sum + Number(item.credit || 0), 0
                 <td className="border px-2 py-2">{item.subject_name}</td>
                 <td className="border px-2 py-2 text-center">{item.credit}</td>
                 <td className="border px-2 py-2 text-center">
-                  {item.scaled_total_marks}
+                  {item.scaled_total_marks || item.total_marks}
                 </td>
                 <td className="border px-2 py-2 text-center">{item.grade}</td>
               </tr>
