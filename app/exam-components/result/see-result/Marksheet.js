@@ -72,7 +72,10 @@ const [qrUrl, setQrUrl] = useState("");
 
   // Define the font family name for the CSS
   const fontName = "Century Gothic";
-
+function formatType(type) {
+  if (!type) return "";
+  return type.charAt(0).toUpperCase() + type.slice(1);
+}
   // IMPORTANT: This is a placeholder for a CDN. 
   // You must replace this with the actual URL where your licensed Century Gothic font is hosted.
   const centuryGothicCdn = "https://fonts.cdnfonts.com/css/century-gothic-paneuropean";
@@ -122,7 +125,7 @@ const totalCredit = data.reduce((sum, item) => sum + Number(item.credit || 0), 0
             <strong>EXAMINATION:</strong> {examPeriod}
           </p>
           <p>
-            <strong>TERM:</strong> {term} - {type}
+           <strong>TERM:</strong> {term} - {formatType(type)}
           </p>
           <p>
            {term_period}
