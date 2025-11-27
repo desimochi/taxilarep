@@ -205,6 +205,7 @@ export const menuItems = [
             {label:"Taxila Solve",  icon: <Puzzle className="h-5 w-5" />, path:"/game/taxila-solve"},
             {label:"Sariska Hills",  icon: <Dog className="h-5 w-5" />, path:"/game/sariska"},
             {label:"Samudra Rakshak",  icon: <FishIcon className="h-5 w-5" />, path:"/game/samudra-rakshak"},
+             {label:"DILIGENCE",  icon: <Gamepad className="h-5 w-5" />, path:"/game/diligence"},
              {label:"Market Research-New Product Launch",  icon: <FishIcon className="h-5 w-5" />, path:"/game/product-launch"},
           ]},
           {label : "Quality Management", icon: <Calculator className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
@@ -279,6 +280,7 @@ export const menuItems = [
             {label:"Taxila Solve",  icon: <Puzzle className="h-5 w-5" />, path:"/game/taxila-solve"},
             {label:"Sariska Hills",  icon: <Dog className="h-5 w-5" />, path:"/game/sariska"},
             {label:"Samudra Rakshak",  icon: <FishIcon className="h-5 w-5" />, path:"/game/samudra-rakshak"},
+            {label:"DILIGENCE",  icon: <Gamepad className="h-5 w-5" />, path:"/game/diligence"},
             {label:"Market Research-New Product Launch",  icon: <FishIcon className="h-5 w-5" />, path:"/game/product-launch"},
           ]},
           {label : "Quality Management", icon: <Calculator className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
@@ -409,6 +411,7 @@ export const menuItems = [
             {label:"Taxila Solve",  icon: <Puzzle className="h-5 w-5" />, path:"/game/taxila-solve"},
             {label:"Sariska Hills",  icon: <Dog className="h-5 w-5" />, path:"/game/sariska"},
             {label:"Samudra Rakshak",  icon: <FishIcon className="h-5 w-5" />, path:"/game/samudra-rakshak"},
+            {label:"DILIGENCE",  icon: <Gamepad className="h-5 w-5" />, path:"/game/diligence"},
              {label:"Market Research-New Product Launch",  icon: <FishIcon className="h-5 w-5" />, path:"/game/product-launch"},
           ]},
           {label : "Quality Management", icon: <Calculator className="h-5 w-5" />, hasSubMenu:true,  subMenu : [

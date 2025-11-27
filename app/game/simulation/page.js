@@ -15,11 +15,10 @@ export default function HtmlPage() {
       <p className="text-center pb-5 text-red-500 underline">
       <Link href={'/game/simulation/how-to-play'} >How to Play the game</Link>
       </p>
-      <h2 className="text-2xl font-semibold text-center mb-4">Your Game Time is Over</h2>
-     {/* <iframe
+     <iframe
         src={`/game.html?state=${encodedState}&name=${encodedStateName}`}
         className="w-full h-full border-none"
-      /> */}
+      />
       
     </div>
   );
