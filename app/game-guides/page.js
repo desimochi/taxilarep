@@ -71,6 +71,11 @@ const PDFViewer = () => {
       name: 'Product Launch Faculty guide',
       url: '/productlaunch.pdf', // File should be at public/manual.pdf
       description: 'Faculty Guide for Product Launch Faculty guide'
+    },
+    {
+      name: 'Diligence Faculty guide',
+      url: '/diligence.pdf', // File should be at public/manual.pdf
+      description: 'Faculty Guide for Diligencee'
     }
   ];
 
