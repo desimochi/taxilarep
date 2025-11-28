@@ -125,8 +125,8 @@ export default function Page() {
                 <select name="type" className=" border border-x-gray-300 p-2 w-full mt-2">
                 <option >Select A Type</option>
                 <option value='main'>Main</option>
-                <option value='resit-2'>Resit-1</option>
-                <option value='resit-1'>Resit-2</option>
+                <option value='resit-1'>Resit-1</option>
+                <option value='resit-2'>Resit-2</option>
                 </select>
                 <button type="submit" className="mt-4 mb-4 bg-red-800 flex items-center justify-center gap-1 text-white px-12 py-2 rounded-sm shadow-sm hover:shadow-xl transition-shadow"><SaveIcon className="h-4 w-4"/> Submit </button>
             </form>
