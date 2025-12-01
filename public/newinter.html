@@ -515,7 +515,7 @@
         // --- API CALL LOGIC ---
         const API_URL = (model) => `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
         
-        async function callGeminiAPI(prompt, model = 'gemini-2.0-flash') {
+        async function callGeminiAPI(prompt, model = 'gemini-2.5-flash') {
             const payload = {
                 contents: [{ parts: [{ text: prompt }] }],
                  generationConfig: { responseMimeType: "application/json" }
