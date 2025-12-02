@@ -15,6 +15,7 @@ export default function LeaderboardPage() {
         const res = await fetch("/api/game/fund/leaderboard");
         const json = await res.json();
         setData(json.leaderboard || []);
+        console.log(json)
       } catch (err) {
         console.error(err);
       }
@@ -111,7 +112,7 @@ export default function LeaderboardPage() {
                   <td className="px-4 py-3 text-right">
                     ₹{u.totalFunds.toLocaleString()}
                   </td>
-                  <td className="px-4 py-3 text-right">{u.totalScore}</td>
+                  <td className="px-4 py-3 text-right">{u.score}</td>
                   <td className="px-4 py-3 text-right">{u.fees}</td>
                   <td className="px-4 py-3 text-right">
                     {u.lastPlayed

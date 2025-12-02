@@ -1138,7 +1138,7 @@ function getUserId() {
 
         function triggerLiquidityPenalty(investorName) {
             state.score = Math.max(0, state.score - 5);
-            state.commission -= 50000;
+            state.commission -= 5000;
             state.auditLog.push({ day: state.day, type: 'PENALTY', category: 'Liquidity Crisis', msg: `Failed to pay ${investorName} (Overdue > 3 Days). Penalty: -5 Score, -₹50k Fees.` });
             pauseGame();
             showToast("LIQUIDITY PENALTY APPLIED. SELL ASSETS.", "error");
@@ -1727,7 +1727,7 @@ function getUserId() {
                     if (state.complianceViolationDays >= 15) {
                         // PENALTY TRIGGERED
                         state.score = Math.max(0, state.score - 5);
-                        state.commission -= 100000;
+                        state.commission -= 10000;
                         state.auditLog.push({day: state.day, type: 'PENALTY', category: 'Compliance', msg: `Mandate Violation (15 Days). Penalty: -5 Score, -₹1L Fees.`});
                         
                         playPenaltySound(); 
