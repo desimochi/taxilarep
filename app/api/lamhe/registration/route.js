@@ -10,7 +10,7 @@ export async function GET(request) {
 
     // Pagination values
     const page = parseInt(searchParams.get("page")) || 1;
-    const limit = parseInt(searchParams.get("limit")) || 20;
+    const limit = parseInt(searchParams.get("limit"))
     const skip = (page - 1) * limit;
 
     // Multi-select filters
