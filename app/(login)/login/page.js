@@ -26,55 +26,57 @@ export default function LoginPage() {
     }
   }, [router]);
   async function handleLogin(e) {
-    e.preventDefault();
-    setLoading(true);
-  
-    const formData = new FormData(e.target);
-    const username = formData.get("username");
-    const password = formData.get("password");
-  
-    try {
-      const response = await fetch(`${API_BASE_URL}login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      });
-  
-      const data = await response.json();
-      if(response.status===400){
-        setError(data.message)
-      }
-      if (response.ok) {
-        // Save tokens
-        saveTokens(data.data.access_token, data.data.refresh_token);
-        savePermission(data.data.permission_list)
-        const date = new Date();
+    e.preventDefault();
+    setLoading(true);
+  
+    const formData = new FormData(e.target);
+    const rawUsername = formData.get("username");
+    // 👇 Convert the username (email) to lowercase before using it
+    const username = rawUsername ? rawUsername.toLowerCase() : ""; 
+    const password = formData.get("password");
+  
+    try {
+      const response = await fetch(`${API_BASE_URL}login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }), // Use the lowercase 'username'
+      });
+  
+      const data = await response.json();
+      if(response.status===400){
+        setError(data.message)
+      }
+      if (response.ok) {
+        // Save tokens
+        saveTokens(data.data.access_token, data.data.refresh_token);
+        savePermission(data.data.permission_list)
+        const date = new Date();
 date.setFullYear(date.getFullYear() + 1)
-        Cookies.set("new_user", JSON.stringify(data.data.user), { expires: date, path: "/", secure: true,
-          sameSite: "Lax" });
-  
-        // ✅ Wait for state to update before reloading
-        await new Promise((resolve) => {
-          updateState(data.data.user);
-          resolve();
-        });
-        if(data.data.user.role_name?.includes("admin"))
-        {
-          router.replace("/admin/dashboard")
-        } else{
+        Cookies.set("new_user", JSON.stringify(data.data.user), { expires: date, path: "/", secure: true,
+          sameSite: "Lax" });
+  
+        // ✅ Wait for state to update before reloading
+        await new Promise((resolve) => {
+          updateState(data.data.user);
+          resolve();
+        });
+        if(data.data.user.role_name?.includes("admin"))
+        {
+          router.replace("/admin/dashboard")
+        } else{
 router.replace("/");
-        }
-         // Redirect to home page
-      } else {
-        
-        setLoading(false)
-      }
-    } catch (error) {
-      setError(true);
-      setLoading(false);
-    } finally {
-    }
-  }
+        }
+         // Redirect to home page
+      } else {
+        
+        setLoading(false)
+      }
+    } catch (error) {
+      setError("An unexpected error occurred.");
+      setLoading(false);
+    } finally {
+    }
+  }
   
   
 
