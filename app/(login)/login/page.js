@@ -87,10 +87,10 @@ router.replace("/");
         <div className="max-w-md w-full space-y-8">
           <div className="border border-gray-200  px-12 py-12 rounded-xl bg-white mt-8">
             <div className="text-center">
-              <div className="flex justify-center ">
+              <div className="flex justify-center mb-2">
                 <Image src={logo} height={60} width={120} alt="taxila logo" />
               </div>
-              <h2 className="text-sm text-gray-600 mb-4">
+              <h2 className="text-xs font-bold text-gray-600 mb-4">
                 Sign in to ERP of Taxila Business School
               </h2>
             </div>
