@@ -10,7 +10,7 @@ export default function HtmlPage() {
      const {state} =  useContext(GlobalContext)
      const encodedState = encodeURIComponent(JSON.stringify(state.id));
       const encodedStateName = encodeURIComponent(JSON.stringify(state.name));
-      const apiKey = "AIzaSyAUUaeq5tRk3RrAYgHQDSuiHZDfu6Zzd_0";
+      const apiKey = "AIzaSyBA5_uTUmr_iudU4F-jsidL7TAGXW4fCAQ";
      console.log(encodedState)
   return (
     <div className="w-full h-screen py-8 bg-white px-8">
