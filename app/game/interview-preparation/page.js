@@ -22,6 +22,6 @@ export default function HtmlPage() {
         src={`/newinter.html?userId=${encodedState}&name=${encodedStateName}&apiKey=${apiKey}`}
         className="w-full h-full border-none"
       />
-    </div>
+    </div> 
   ); 
 }
