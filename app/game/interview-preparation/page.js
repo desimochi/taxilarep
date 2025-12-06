@@ -12,7 +12,7 @@ export default function HtmlPage() {
       const encodedStateName = encodeURIComponent(JSON.stringify(state.name));
       const apiKey = "AIzaSyBA5_uTUmr_iudU4F-jsidL7TAGXW4fCAQ";
      console.log(encodedState)
-  return (
+  return ( 
     <div className="w-full h-screen py-8 bg-white px-8">
      <div class="max-w-7xl mx-auto flex justify-between mb-3">
               <Link href="/game/interview-preparation/past-attempts" className="group bg-gray-300 text-gray-900 mt-4 flex items-center gap-2 justify-center px-8 py-3 mb-3 cursor-pointer rounded-md text-sm transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"> <History className="h-0 w-0 opacity-0 transform translate-x-[-5px] transition-all duration-300 group-hover:opacity-100 group-hover:w-4 group-hover:h-4 group-hover:translate-x-0" />View Past Attempts</Link>
