@@ -50,6 +50,7 @@ function formatTime(seconds) {
               <th className="p-3 ">Rank</th>
               <th className="p-3 ">Name</th>
               <th className="p-3 ">Sales</th>
+               <th className="p-3 ">Score</th>
               <th className="p-3 ">Quality</th>
               <th className="p-3 ">Awareness</th>
               <th className="p-3 ">Quarter</th>
@@ -65,6 +66,7 @@ function formatTime(seconds) {
                 <td className="p-3  font-bold">#{i + 1}</td>
                 <td className="p-3 ">{row?.name || "Unknown"}</td>
                 <td className="p-3 ">{row.sales || "-"}</td>
+                <td className="p-3 ">{row.score || "-"}</td>
                 <td className="p-3 ">{row.quality.toFixed(2)}</td>
                 <td className="p-3 ">{row.awareness.toFixed(2) || "-"}</td>
                 <td className="p-3 ">{row.quarter}</td>
