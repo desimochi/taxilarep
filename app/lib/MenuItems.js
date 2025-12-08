@@ -199,7 +199,7 @@ export const menuItems = [
             {label:"Airthniti",  icon: <CalendarCheck2Icon className="h-5 w-5" />, path:"/game/airthniti"},
           ]},
             {label : "Consumer Behaviour", icon: <Calculator className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
-            {label:"Consumer Simulation",  icon: <CalendarCheck2Icon className="h-5 w-5" />, path:"/game/consumer-behaviour"},
+            {label:"Hyper-Competitive Consumer Simulation",  icon: <CalendarCheck2Icon className="h-5 w-5" />, path:"/game/consumer-behaviour"},
             {label:"ICBS",  icon: <UserCheck className="h-5 w-5" />, path:"/game/indian-consumer"},
           ]},
          {label : "Consulting/Business Analytics", icon: <Sheet className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
@@ -261,7 +261,7 @@ export const menuItems = [
             {label:"Netritva",  icon: <Gamepad className="h-5 w-5" />, path:"/game/netrvita"},
           ]},
           {label : "Consumer Behaviour", icon: <Calculator className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
-            {label:"Consumer Simulation",  icon: <CalendarCheck2Icon className="h-5 w-5" />, path:"/game/consumer-behaviour"},
+            {label:"Hyper-Competitive Consumer Simulation",  icon: <CalendarCheck2Icon className="h-5 w-5" />, path:"/game/consumer-behaviour"},
             {label:"ICBS",  icon: <UserCheck className="h-5 w-5" />, path:"/game/indian-consumer"},
           ]},
            {label : "Project Management", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
@@ -398,7 +398,7 @@ export const menuItems = [
             {label:"Netritva",  icon: <Gamepad className="h-5 w-5" />, path:"/game/netrvita"},
           ]},
           {label : "Consumer Behaviour", icon: <Calculator className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
-            {label:"Consumer Simulation",  icon: <CalendarCheck2Icon className="h-5 w-5" />, path:"/game/consumer-behaviour"},
+            {label:"Hyper-Competitive Consumer Simulation",  icon: <CalendarCheck2Icon className="h-5 w-5" />, path:"/game/consumer-behaviour"},
           ]},
            {label : "Project Management", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Project Taxila",  icon: <ProjectorIcon className="h-5 w-5" />, path:"/game/project-management"},
@@ -480,7 +480,7 @@ export const EPGDMAdmin = [
             {label:"Airthniti",  icon: <CalendarCheck2Icon className="h-5 w-5" />, path:"/game/airthniti"},
           ]},
             {label : "Consumer Behaviour", icon: <Calculator className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
-            {label:"Consumer Simulation",  icon: <CalendarCheck2Icon className="h-5 w-5" />, path:"/game/consumer-behaviour"},
+            {label:"Hyper-Competitive Consumer Simulation",  icon: <CalendarCheck2Icon className="h-5 w-5" />, path:"/game/consumer-behaviour"},
             {label:"ICBS",  icon: <UserCheck className="h-5 w-5" />, path:"/game/indian-consumer"},
           ]},
          {label : "Consulting/Business Analytics", icon: <Sheet className="h-5 w-5" />, hasSubMenu:true,  subMenu : [

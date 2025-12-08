@@ -80,7 +80,6 @@
 </head>
 <body class="bg-slate-900 text-gray-300">
 
-    <!-- Custom Alert Modal (Replaces alert() and confirm()) -->
     <div id="custom-alert-modal" class="hidden">
         <div class="card max-w-sm w-full p-6 text-center bg-slate-800 border-slate-700">
             <h3 id="alert-title" class="text-xl font-bold text-white mb-3"></h3>
@@ -91,6 +90,7 @@
             </div>
         </div>
     </div>
+
 
     <div id="welcome-modal" class="modal-overlay">
         <div class="card max-w-lg w-full text-center p-6 md:p-8 shadow-2xl">
@@ -113,7 +113,6 @@
         </div>
     </div>
 
-    <!-- Help Modal -->
     <div id="help-modal" class="modal-overlay hidden z-[60]">
         <div class="card max-w-2xl w-full p-6 md:p-8 shadow-2xl bg-slate-800 text-slate-300 relative flex flex-col max-h-[90vh]">
             <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-2">
@@ -190,12 +189,10 @@
             </div>
             <div class="flex flex-col md:flex-row items-center md:items-start justify-end w-full md:w-auto gap-2">
                 <div class="flex space-x-2 w-full md:w-auto justify-end">
-                    <!-- Save Game Button -->
                     <button id="save-game-btn" class="bg-yellow-600 text-white font-semibold text-sm py-1.5 px-3 rounded-lg hover:bg-yellow-700 transition duration-300 flex items-center shadow-md">
                         <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
                         Save
                     </button>
-                    <!-- Load Game Button -->
                     <button id="load-game-btn-header" class="bg-green-600 text-white font-semibold text-sm py-1.5 px-3 rounded-lg hover:bg-green-700 transition duration-300 flex items-center shadow-md">
                         <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 0020.322 18H21v-3.5M4 12v3.5h-.582m15.356-2A8.001 8.001 0 013.678 6H3v3.5"></path></svg>
                         Load
@@ -207,7 +204,6 @@
                          HELP
                     </button>
                 </div>
-                 <!-- Clock Display -->
                  <p id="current-time" class="text-xl md:text-2xl font-bold text-white w-full md:w-auto text-right md:mt-1"></p>
             </div>
         </header>
@@ -215,7 +211,6 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
             <div class="lg:col-span-1 space-y-5">
                 <div class="card">
-                      <!-- New Header Layout for Timer -->
                       <div class="flex justify-between items-center border-b border-slate-700 pb-2 mb-3">
                           <h2 id="quarter-title" class="text-lg md:text-xl font-bold text-white"></h2>
                           <div id="timer-container" class="flex items-center bg-slate-800 px-2 py-1 rounded border border-slate-600">
@@ -304,9 +299,8 @@
                 <div class="flex justify-between text-gray-400 text-sm"><span>InnovateNext Sales:</span><span id="final-sales-in" class="font-semibold"></span></div>
                 <div class="flex justify-between text-gray-400 text-sm"><span>ValueFirst Sales:</span><span id="final-sales-vf" class="font-semibold"></span></div>
             </div>
-            <div class="mt-8 space-y-3">
-                <button id="view-cert-btn" class="w-full bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 transition duration-300 shadow-lg">View Certificate</button>
-                <button id="restart-btn" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition duration-300 shadow-lg">Run Simulation Again</button>
+             <div class="mt-8 space-y-3">
+                <button id="restart-btn" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition duration-300">Run Simulation Again</button>
             </div>
         </div>
     </div>
@@ -354,7 +348,7 @@
             let currentAdCost = 0; 
             let audioCtx = null; 
 
-            // --- Custom API Configuration (DO NOT CHANGE) ---
+            // --- Custom API Configuration ---
             const SAVE_API_ENDPOINT = 'https://erp.taxila.in/api/game/consumer';
             const LOAD_API_ENDPOINT = 'https://erp.taxila.in/api/game/consumer';
             // --- End Custom API Configuration ---
@@ -400,7 +394,7 @@
                     effect: (state) => {
                         const aspirational = state.consumerSegments.find(s => s.name === 'Aspirational Achievers');
                         if (aspirational) aspirational.size *= 0.80;
-                        const mainstream = state.consumerSegments.find(s => s.name === 'Mainstream');
+                        const mainstream = state.consumerSegments.find(s => s.name === 'Mainstream Followers'); 
                         if (mainstream) mainstream.size *= 0.90;
                         return "Demand from Aspirational and Mainstream consumers has fallen.";
                     }
@@ -411,7 +405,7 @@
                     effect: (state) => {
                         const aspirational = state.consumerSegments.find(s => s.name === 'Aspirational Achievers');
                         if (aspirational) aspirational.size *= 1.30;
-                        const mainstream = state.consumerSegments.find(s => s.name === 'Mainstream');
+                        const mainstream = state.consumerSegments.find(s => s.name === 'Mainstream Followers');
                         if (mainstream) mainstream.size *= 1.15;
                         return "Aspirational and Mainstream segments are larger this quarter due to festive spending.";
                     }
@@ -455,17 +449,18 @@
                 certActions: document.getElementById('cert-actions'),
                 certRestartContainer: document.getElementById('cert-restart-container'),
                 timerDisplay: document.getElementById('timer-display'),
-                viewCertBtn: document.getElementById('view-cert-btn'), // New button for end game modal
-                loadGameBtnWelcome: document.getElementById('load-game-btn-welcome'), // New load button
-                saveGameBtn: document.getElementById('save-game-btn'), // New save button
-                loadGameBtnHeader: document.getElementById('load-game-btn-header'), // New load button in header
-                customAlertModal: document.getElementById('custom-alert-modal'), // New custom alert modal
+                
+                // Save/Load Elements
+                loadGameBtnWelcome: document.getElementById('load-game-btn-welcome'), 
+                saveGameBtn: document.getElementById('save-game-btn'), 
+                loadGameBtnHeader: document.getElementById('load-game-btn-header'), 
+                customAlertModal: document.getElementById('custom-alert-modal'), 
                 alertTitle: document.getElementById('alert-title'),
                 alertMessage: document.getElementById('alert-message'),
                 alertOkBtn: document.getElementById('alert-ok-btn'),
                 alertCancelBtn: document.getElementById('alert-cancel-btn'),
                 
-                // Help Modal Elements (Existing)
+                // Help Modal Elements
                 helpModal: document.getElementById('help-modal'),
                 headerHelpBtn: document.getElementById('header-help-btn'),
                 closeHelpBtn: document.getElementById('close-help-btn'),
@@ -512,6 +507,7 @@
                 });
             }
 
+
             const formatCurrency = (val) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0, notation: 'compact' }).format(val);
             
             function getInitialGameState(playerName, companyName) {
@@ -552,6 +548,8 @@
                     fullState[key].cumulativeSales = fullState[key].sales;
                     fullState[key].budget = fullState[key].cumulativeSales * 0.12;
                     fullState[key].zeroSalesQuarters = 0;
+                    // Add an empty decisions object for saving mid-quarter progress
+                    fullState[key].decisions = {};
                 });
                 
                 fullState.player.maxMarketingSpend = fullState.player.budget * 0.5;
@@ -848,6 +846,9 @@
                 
                 // IMPORTANT FIX: Explicitly update the tempState player price with the decision value.
                 tempState.player.price = playerDecisions.price;
+                // Store decisions temporarily
+                tempState.player.decisions = playerDecisions;
+
 
                 let eventReportMessage = null;
                 if (gameState.quarter > 1 && Math.random() < 0.5) {
@@ -991,6 +992,8 @@
                         } else {
                              mainCompany.zeroSalesQuarters = 0;
                         }
+                         // Clear temporary decisions after using them
+                        mainCompany.decisions = {};
                     }
 
                     mainCompany.cumulativeSales += mainCompany.sales;
@@ -1020,8 +1023,11 @@
                 }
             }
             
+            // Function to show certificate 
             function showCertificate() {
                  staticElements.endGameModal.classList.add('hidden');
+                 staticElements.certPlayerName.textContent = gameState.playerName;
+                 staticElements.certDate.textContent = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
                  staticElements.certActions.classList.remove('hidden');
                  staticElements.certRestartContainer.classList.remove('hidden');
                  staticElements.certificateModal.classList.remove('hidden');
@@ -1032,12 +1038,15 @@
 
                 let title = 'Simulation Over';
                 let summary = 'Here is your final performance report.';
-                let showCertButton = false;
 
                 if (reason === 'complete') {
-                    showCertButton = true;
                     title = 'Simulation Complete!';
                     summary = `Congratulations, ${gameState.playerName}! You navigated ${MAX_QUARTERS} quarters of intense market competition.`;
+                    
+                    // Immediately show the certificate for completion (Reverting to original B.html behavior)
+                    showCertificate();
+                    return; 
+
                 } else if (reason === 'bankruptcy') {
                     title = 'Market Failure!';
                     summary = 'Your company failed to generate sales for two consecutive quarters and has gone bankrupt.';
@@ -1052,21 +1061,13 @@
                 staticElements.decisionPanel.innerHTML = `<div class="text-center p-8"><h3 class="font-bold text-2xl text-white">${title}</h3><p class="text-gray-400">${summary}</p></div>`;
                 staticElements.nextQuarterBtn.style.display = 'none';
                 staticElements.finalSalesPlayerLabel.textContent = `${gameState.player.name}'s Final Sales:`;
-                // FIX: Use cumulativeSales for final report
+                // Use cumulativeSales for final report
                 staticElements.finalSalesPlayer.textContent = formatCurrency(gameState.player.cumulativeSales); 
                 staticElements.finalSalesIn.textContent = formatCurrency(gameState.innovateNext.cumulativeSales);
                 staticElements.finalSalesVf.textContent = formatCurrency(gameState.valueFirst.cumulativeSales);
                 
-                staticElements.viewCertBtn.classList.toggle('hidden', !showCertButton);
-
-                // Show the end game modal
+                // Show the end game modal (only for non-completion ends)
                 staticElements.endGameModal.classList.remove('hidden');
-
-                // If complete, set up certificate data
-                if (reason === 'complete') {
-                    staticElements.certPlayerName.textContent = gameState.playerName;
-                    staticElements.certDate.textContent = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-                }
             }
 
             function startQuarterTimer() {
@@ -1087,11 +1088,11 @@
                     const seconds = remaining % 60;
                     staticElements.timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
                     
-                    // Audio feedback for countdown (removed for brevity, but retained the timer logic)
+                    // Audio feedback for countdown - RE-ENABLED
                     if (remaining <= 30 && remaining > 0) {
-                        // playAlarmSound(); // Retaining hook for sound if needed
+                        playAlarmSound(); 
                     } else if (remaining > 30) {
-                        // playTickSound(); // Retaining hook for sound if needed
+                        playTickSound();
                     }
 
                     // Visual warning for last minute
@@ -1125,7 +1126,7 @@
                 decisionElements.rndSlider.addEventListener('input', updateSpendDisplay);
             }
             
-            // Function to apply loaded state and re-render the UI
+             // Function to apply loaded state and re-render the UI
             function applyGameState(state) {
                 gameState = state;
                 staticElements.headerCompanyName.textContent = state.player.name;
@@ -1145,7 +1146,6 @@
                 staticElements.nextQuarterBtn.disabled = true;
                 staticElements.nextQuarterBtn.textContent = 'Finalize Decisions & End Quarter';
                 staticElements.progressBarContainer.classList.add('hidden');
-                staticElements.adCampaignMessage.value = '';
                 
                 // Set up the decision panel with current max spending limits
                 setupDecisionPanel(state.player.maxMarketingSpend, state.player.maxRndSpend);
@@ -1155,12 +1155,17 @@
                 staticElements.adCampaignTarget.addEventListener('input', updateAdCampaignCost);
                 
                 // If the state was loaded mid-quarter, restore inputs and display
-                if (state.player.decisions) {
+                if (state.player.decisions && Object.keys(state.player.decisions).length > 0) {
                     decisionElements.priceSlider.value = state.player.decisions.price || state.player.price;
                     decisionElements.marketingSlider.value = state.player.decisions.marketingSpend || state.player.maxMarketingSpend * 0.5;
                     decisionElements.rndSlider.value = state.player.decisions.rndSpend || state.player.maxRndSpend * 0.5;
                     staticElements.adCampaignTarget.value = state.player.decisions.adTarget || state.consumerSegments[0].name;
                     staticElements.adCampaignMessage.value = state.player.decisions.adMessage || '';
+                    
+                    // Clear decisions after load so they don't persist into the next save
+                    state.player.decisions = {};
+                } else {
+                     staticElements.adCampaignMessage.value = '';
                 }
 
                 updateAdCampaignCost(); // Update the display based on restored values
@@ -1172,9 +1177,12 @@
                 }
             }
 
+
             function initializeGame(playerName, companyName) {
                 const newState = getInitialGameState(playerName, companyName);
                 applyGameState(newState);
+                // Set initial market event message
+                staticElements.marketEventContainer.innerHTML = `<p class="text-yellow-400 text-sm">A new market scenario has loaded. Adapt your strategy!</p>`;
             }
 
             function updateClock() {
@@ -1192,8 +1200,67 @@
                 }
             }
 
-            // Audio functions (playTickSound, playAlarmSound, playQuarterTransitionSound) retained for completeness, though commented out in main logic hooks for simplicity.
+            function playTickSound() {
+                if (!audioCtx) return;
+                try {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    
+                    osc.frequency.setValueAtTime(1000, audioCtx.currentTime); // High pitch tick
+                    gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05); // Very short
+                    
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.05);
+                } catch(e) { console.log(e); }
+            }
 
+            function playAlarmSound() {
+                if (!audioCtx) return;
+                try {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'square'; // More urgent tone
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    
+                    // Pitch drop effect
+                    osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.2);
+                    
+                    gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
+                    
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.2);
+                } catch(e) { console.log(e); }
+            }
+
+            function playQuarterTransitionSound() {
+                if (!audioCtx) return;
+                try {
+                    const oscillator = audioCtx.createOscillator();
+                    const gainNode = audioCtx.createGain();
+
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(550, audioCtx.currentTime); // 550Hz tone
+                    
+                    // Volume envelope
+                    gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.5); 
+
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioCtx.destination);
+
+                    oscillator.start();
+                    oscillator.stop(audioCtx.currentTime + 1.5);
+                } catch (e) {
+                    console.error("Audio play failed", e);
+                }
+            }
+            
             // --- Save/Load Logic ---
             function getUserId() {
                 // Get userId from URL parameters or fallback to a default
@@ -1203,8 +1270,8 @@
             
             async function saveGame() {
                 const userId = getUserId();
-                if (!gameState || !gameState.player) {
-                    customAlert('Save Error', 'No active game state to save.');
+                if (!gameState || !gameState.player || gameState.quarter > MAX_QUARTERS) {
+                    customAlert('Save Error', 'No active game state to save, or the simulation is complete.');
                     return;
                 }
 
@@ -1256,7 +1323,7 @@
                 }
                 
                 // Only confirm if a game is currently running
-                if (gameState.quarter > 0) {
+                if (gameState.quarter > 0 && gameState.quarter <= MAX_QUARTERS) {
                     const confirmed = await customAlert('Confirm Load', 'Loading a saved game will discard your current progress. Are you sure?', true);
                     if (!confirmed) return;
                 }
@@ -1290,7 +1357,8 @@
                     customAlert('Load Failed', `Could not connect to the load API or process data. Please check the console for details.`);
                 }
             }
-            
+            // --- End Save/Load Logic ---
+
             // --- Event Listeners ---
 
             staticElements.startBtn.addEventListener('click', () => {
@@ -1298,10 +1366,14 @@
                 const playerName = staticElements.playerNameInput.value.trim();
                 const companyName = staticElements.companyNameInput.value.trim();
                 startTime = Date.now();
-                
+
                 staticElements.welcomeModal.style.opacity = 0;
                 setTimeout(() => staticElements.welcomeModal.classList.add('hidden'), 300);
                 
+                // Original B.html logic for certificate pre-filling, although it's redundant now since showCertificate does it on completion.
+                staticElements.certPlayerName.textContent = playerName;
+                staticElements.certDate.textContent = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+
                 staticElements.simulationContainer.classList.remove('hidden');
                 initializeGame(playerName, companyName);
             });
@@ -1324,7 +1396,7 @@
 
             staticElements.nextQuarterBtn.addEventListener('click', () => {
                 initAudio(); // Ensure audio context is running
-                // playQuarterTransitionSound(); // Sound hook retained
+                playQuarterTransitionSound(); // RE-ENABLED SOUND
                 if (quarterTimer) clearInterval(quarterTimer);
                 const btn = staticElements.nextQuarterBtn;
                 const { progressBarContainer, progressBarFill } = staticElements;
@@ -1364,8 +1436,7 @@
 
             staticElements.restartBtn.addEventListener('click', restartFunc);
             staticElements.restartFromCertBtn.addEventListener('click', restartFunc);
-            staticElements.viewCertBtn.addEventListener('click', showCertificate);
-
+            
             // Save/Load buttons binding
             staticElements.saveGameBtn.addEventListener('click', saveGame);
             staticElements.loadGameBtnWelcome.addEventListener('click', loadGame);
