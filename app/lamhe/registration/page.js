@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, use } from "react";
+import React, { useState, useEffect } from "react";
 import { Filter, Download, ChevronLeft, ChevronRight, Users, Calendar, Trophy, Search, X } from "lucide-react";
 
 export default function RegistrationFilterPage() {
   const [loading, setLoading] = useState(false);
-  const [results, setResults] = useState([]);
-  const [filteredResults, setFilteredResults] = useState([]);
+  const [results, setResults] = useState([]); // Raw results from API (after server-side filters)
+  const [filteredResults, setFilteredResults] = useState([]); // Results after client-side search (searchTerm)
   
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -17,6 +17,7 @@ export default function RegistrationFilterPage() {
   const [selectedDays, setSelectedDays] = useState([]);
   const [selectedEvents, setSelectedEvents] = useState([]);
   const [teamFilter, setTeamFilter] = useState("");
+  const [collegeFilter, setCollegeFilter] = useState(""); // <-- NEW: College Filter State
   const [showFilters, setShowFilters] = useState(true);
 
   // Modal state
@@ -26,22 +27,19 @@ export default function RegistrationFilterPage() {
   const eventList = [
     "E-Sports", "Poster Making", "Carrom", "Table Tennis", "Business Quiz",
     "Futsal", "Extempore", "Badminton (Doubles)", "Ad Mania", "Treasure Hunt",
-    "Youth Parliament", "Chess", "Stand-up Comedy", "Cooking Without Flame",
+    "Youth Parliament", "Chess", "Stand-up Comedy", "Cooking Without Flame", "Simulation",
     "Dodge Ball", "Singing", "Arm Wrestling", "Dancing", "Kabaddi",
     "Fashion Show"
   ];
-useEffect(() => {
-    // Initial fetch of all registrations
-    const fetchRegistrations = async () => {
-        setLoading(true);
-        const res = await fetch('/api/lamhe/registration');
-        const json = await res.json();
-        setResults(json.data || []);
-        setLoading(false);
-    }
-    fetchRegistrations();
-}, []);
-  // Apply search filter
+
+  // Initial fetch on component mount
+  useEffect(() => {
+    // We run the initial fetch here, which is effectively an "applyFilters" with no filters.
+    // Calling applyFilters directly is cleaner for initial load consistency.
+    applyFilters(); 
+  }, []); // Run only once on mount
+
+  // Apply search filter (client-side filter on current API results)
   useEffect(() => {
     if (searchTerm) {
       const filtered = results.filter(reg => 
@@ -51,10 +49,11 @@ useEffect(() => {
       );
       setFilteredResults(filtered);
     } else {
-      setFilteredResults(results);
+      // If no search term, use the results from the latest API call
+      setFilteredResults(results); 
     }
     setCurrentPage(1);
-  }, [searchTerm, results]);
+  }, [searchTerm, results]); // Re-run when search term or server results change
 
   const toggleSelection = (value, list, setter) => {
     if (list.includes(value)) {
@@ -68,6 +67,7 @@ useEffect(() => {
     setSelectedDays([]);
     setSelectedEvents([]);
     setTeamFilter("");
+    setCollegeFilter(""); // <-- UPDATED
     setSearchTerm("");
   };
 
@@ -80,14 +80,20 @@ useEffect(() => {
     if (teamFilter !== "") {
       query.push(`team=${teamFilter}`);
     }
+    // <-- NEW: Add College Filter to API Query
+    if (collegeFilter.trim() !== "") { 
+      query.push(`college=${encodeURIComponent(collegeFilter.trim())}`);
+    }
+    // End NEW
 
-    const url = `/api/lamhe/registration?${query.join("&")}`;
+    const url = `/api/lamhe/registration${query.length > 0 ? '?' + query.join("&") : ''}`;
     const res = await fetch(url);
     const json = await res.json();
 
     setResults(json.data || []);
     setLoading(false);
     setCurrentPage(1);
+    setSearchTerm(""); // Clear search term after applying new server filters
   };
 
   const openTeamPopup = (eventName, teamMembers) => {
@@ -97,12 +103,13 @@ useEffect(() => {
 
   // Export to Excel
   const exportToExcel = () => {
-    const headers = ["Participant Name", "Email", "Mobile", "Events", "Day", "Type"];
+    const headers = ["Participant Name", "Email", "Mobile", "College", "Events", "Day", "Type"];
     const rows = filteredResults.flatMap(reg => 
       reg.events.map(ev => [
         reg.participant?.name || "",
         reg.participant?.email || "",
         reg.participant?.mobile || "",
+        reg.participant?.college || "", // Include College in export
         ev.name || "",
         `Day ${ev.day}`,
         ev.isTeamEvent ? "Team" : "Solo"
@@ -111,7 +118,8 @@ useEffect(() => {
 
     let csvContent = headers.join(",") + "\n";
     rows.forEach(row => {
-      csvContent += row.map(cell => `"${cell}"`).join(",") + "\n";
+      // Simple CSV escaping for cells
+      csvContent += row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(",") + "\n";
     });
 
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -133,11 +141,12 @@ useEffect(() => {
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-  const activeFiltersCount = selectedDays.length + selectedEvents.length + (teamFilter ? 1 : 0);
+  const activeFiltersCount = selectedDays.length + selectedEvents.length + (teamFilter ? 1 : 0) + (collegeFilter ? 1 : 0); // <-- UPDATED count
 
   return (
     <div className="min-h-screen ">
       <div className=" p-6">
+        
         {/* Header */}
         <div className="bg-white rounded-2xl border shadow-lg p-6 mb-6">
           <div className="flex items-center justify-between flex-wrap gap-4">
@@ -186,9 +195,9 @@ useEffect(() => {
               )}
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4"> {/* Changed to grid-cols-4 */}
               {/* DAY FILTER */}
-              <div className="bg-gradient-to-br from-fray-50 to-gray-100 p-4 rounded-xl border border-gray-200">
+              <div className=" p-4 rounded-xl border border-gray-200">
                 <div className="flex items-center gap-2 mb-3">
                   <Calendar className="text-gray-900" size={20} />
                   <h3 className="font-semibold text-gray-900">Day</h3>
@@ -208,8 +217,23 @@ useEffect(() => {
                 </div>
               </div>
 
-              {/* EVENT FILTERS */}
-              <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-4 rounded-xl border border-gray-200">
+              {/* COLLEGE FILTER (NEW) */}
+              <div className=" p-4 rounded-xl border border-gray-200 col-span-1 md:col-span-2"> 
+                <div className="flex items-center gap-2 mb-3">
+                  <span role="img" aria-label="college" className="text-gray-900 text-xl">🏢</span>
+                  <h3 className="font-semibold text-gray-900">College Name</h3>
+                </div>
+                <input
+                  type="text"
+                  placeholder="Enter college name..."
+                  value={collegeFilter}
+                  onChange={(e) => setCollegeFilter(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-shadow"
+                />
+              </div>
+
+              {/* EVENT FILTERS - Made this take up a full row on smaller screens for better space */}
+              <div className=" p-4 rounded-xl border border-gray-200 col-span-full"> {/* Made it full width */}
                 <div className="flex items-center gap-2 mb-3">
                   <Trophy className="text-gray-900" size={20} />
                   <h3 className="font-semibold text-gray-900">Events</h3>
@@ -219,7 +243,7 @@ useEffect(() => {
                     </span>
                   )}
                 </div>
-                <div className="max-h-64 overflow-y-auto space-y-1 pr-2 custom-scrollbar">
+                <div className="max-h-64 overflow-y-auto space-y-1 pr-2 custom-scrollbar grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-y-1 gap-x-4">
                   {eventList.map((ev) => (
                     <label key={ev} className="flex items-center gap-2 cursor-pointer group">
                       <input
@@ -234,31 +258,6 @@ useEffect(() => {
                 </div>
               </div>
 
-              {/* TEAM FILTER */}
-              <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-4 rounded-xl border border-gray-200">
-                <div className="flex items-center gap-2 mb-3">
-                  <Users className="text-gray-900" size={20} />
-                  <h3 className="font-semibold text-gray-900">Team / Solo</h3>
-                </div>
-                <div className="space-y-2">
-                  {[
-                    { value: "", label: "All" },
-                    { value: "true", label: "Team Events" },
-                    { value: "false", label: "Solo Events" }
-                  ].map(option => (
-                    <label key={option.value} className="flex items-center gap-2 cursor-pointer group">
-                      <input
-                        type="radio"
-                        name="teamFilter"
-                        checked={teamFilter === option.value}
-                        onChange={() => setTeamFilter(option.value)}
-                        className="w-4 h-4 text-green-600 focus:ring-2 focus:ring-green-500"
-                      />
-                      <span className="text-gray-700 group-hover:text-green-600 transition-colors">{option.label}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
             </div>
 
             <button
@@ -321,6 +320,7 @@ useEffect(() => {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Participant</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">College</th>
                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Contact</th>
                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Events</th>
                   </tr>
@@ -330,6 +330,9 @@ useEffect(() => {
                     <tr key={reg._id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4">
                         <div className="font-medium text-gray-900">{reg.participant?.name}</div>
+                      </td>
+                        <td className="px-6 py-4">
+                        <div className="font-medium text-gray-900">{reg.participant?.college}</div>
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-sm text-gray-600">{reg.participant?.email}</div>

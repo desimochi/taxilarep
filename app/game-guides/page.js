@@ -77,6 +77,11 @@ const PDFViewer = () => {
       url: '/diligence.pdf', // File should be at public/manual.pdf
       description: 'Faculty Guide for Diligencee'
     },
+    {
+      name: 'Hyper-Competitive Consumer Simulation Faculty guide',
+      url: '/ghs.docx', // File should be at public/manual.pdf
+      description: 'Faculty Guide for Hyper-Competitive Consumer Simulation'
+    },
      {
       name: 'ICBS Faculty guide',
       url: '/ibcs.docx', // File should be at public/manual.pdf
