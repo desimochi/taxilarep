@@ -26,7 +26,7 @@ export default function RegistrationFilterPage() {
 
   const eventList = [
     "E-Sports", "Poster Making", "Carrom", "Table Tennis", "Business Quiz",
-    "Futsal", "Extempore", "Badminton (Doubles)", "Ad Mania", "Treasure Hunt",
+    "Futsal", "Extempore", "Badminton", "Ad Mania", "Treasure Hunt",
     "Youth Parliament", "Chess", "Stand-up Comedy", "Cooking Without Flame", "Simulation",
     "Dodge Ball", "Singing", "Arm Wrestling", "Dancing", "Kabaddi",
     "Fashion Show"
