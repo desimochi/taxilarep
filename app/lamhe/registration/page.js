@@ -103,35 +103,69 @@ export default function RegistrationFilterPage() {
 
   // Export to Excel
   const exportToExcel = () => {
-    const headers = ["Participant Name", "Email", "Mobile", "College", "Events", "Day", "Type"];
-    const rows = filteredResults.flatMap(reg => 
-      reg.events.map(ev => [
+  const headers = [
+    "Participant Name",
+    "Email",
+    "Mobile",
+    "College",
+    "Event",
+    "Day",
+    "Type",
+    "Team Member Names",
+    "Team Member Emails",
+    "Team Member Mobiles"
+  ];
+
+  const rows = filteredResults.flatMap(reg =>
+    reg.events.map(ev => {
+      const teamMemberNames = ev.isTeamEvent
+        ? ev.teamMembers?.map(m => m.name?.trim() || "").join(", ")
+        : "";
+
+      const teamMemberEmails = ev.isTeamEvent
+        ? ev.teamMembers?.map(m => m.email?.trim() || "").join(", ")
+        : "";
+
+      const teamMemberMobiles = ev.isTeamEvent
+        ? ev.teamMembers?.map(m => m.mobile?.trim() || "").join(", ")
+        : "";
+
+      return [
         reg.participant?.name || "",
         reg.participant?.email || "",
         reg.participant?.mobile || "",
-        reg.participant?.college || "", // Include College in export
+        reg.participant?.college || "",
         ev.name || "",
         `Day ${ev.day}`,
-        ev.isTeamEvent ? "Team" : "Solo"
-      ])
-    );
+        ev.isTeamEvent ? "Team" : "Solo",
+        teamMemberNames,
+        teamMemberEmails,
+        teamMemberMobiles
+      ];
+    })
+  );
 
-    let csvContent = headers.join(",") + "\n";
-    rows.forEach(row => {
-      // Simple CSV escaping for cells
-      csvContent += row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(",") + "\n";
-    });
+  let csvContent = headers.join(",") + "\n";
+  rows.forEach(row => {
+    csvContent += row
+      .map(cell => `"${String(cell).replace(/"/g, '""')}"`)
+      .join(",") + "\n";
+  });
 
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute("download", `registrations_${new Date().toISOString().split('T')[0]}.csv`);
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const link = document.createElement("a");
+  const url = URL.createObjectURL(blob);
+  link.setAttribute("href", url);
+  link.setAttribute(
+    "download",
+    `registrations_${new Date().toISOString().split("T")[0]}.csv`
+  );
+  link.style.visibility = "hidden";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
 
   // Pagination logic
   const indexOfLastItem = currentPage * itemsPerPage;
