@@ -76,6 +76,7 @@ export async function GET() {
 
       return {
         userId: user.userId,
+        name2: gs.playerName,
         name: player.name || "Unknown",
         quarter: gs.quarter || 0,
         sales: player.sales || 0,

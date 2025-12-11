@@ -49,6 +49,7 @@ function formatTime(seconds) {
             <tr className="bg-white/30 backdrop-blur-sm text-gray-700 border-b-1 border-gray-100 ">
               <th className="p-3 ">Rank</th>
               <th className="p-3 ">Name</th>
+              <th className="p-3 ">Company Name</th>
               <th className="p-3 ">Sales</th>
                <th className="p-3 ">Score</th>
               <th className="p-3 ">Quarter</th>
@@ -62,6 +63,7 @@ function formatTime(seconds) {
                 className={`bg-white/10 backdrop-blur-sm text-gray-800 text-sm text-center`}
               >
                 <td className="p-3  font-bold">#{i + 1}</td>
+                <td className="p-3 ">{row?.name2 || "Unknown"}</td>
                 <td className="p-3 ">{row?.name || "Unknown"}</td>
                 <td className="p-3 ">{row.sales || "-"}</td>
                 <td className="p-3 ">{row.score || "-"}</td>
