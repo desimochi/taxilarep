@@ -3,6 +3,7 @@ import "./globals.css";
 import { Roboto, Roboto_Mono, Poppins, Montserrat } from "next/font/google";
 import ClientLayout from "./ClientLayout"; // this will have all your useState logic
 import { Toaster } from "react-hot-toast";
+import RazorpayLoader from "@/components/RazorPayLoader";
 
 const roboto = Roboto({
   variable: "--font-roboto",
@@ -37,6 +38,7 @@ export default function RootLayout({ children }) {
           reverseOrder={false}
         />
         <ClientLayout>{children}</ClientLayout>
+        <RazorpayLoader />
       </body>
     </html>
   );
