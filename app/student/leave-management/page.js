@@ -19,6 +19,7 @@ export default function LeavePage() {
     start_date: "",
     end_date: "",
     student_reason: "",
+    reason_type: "",
   });
 
   const formatForInput = (dt) => (dt ? dt.slice(0, 16) : "");
@@ -57,6 +58,7 @@ export default function LeavePage() {
         start_date: form.start_date,
         end_date: form.end_date,
         student_reason: form.student_reason,
+        reason_type: form.reason_type,
       };
 
       const res = await authFetch(url, {
@@ -70,7 +72,7 @@ export default function LeavePage() {
         setOpen(false);
         setIsEditing(false);
         setEditId(null);
-        setForm({ start_date: "", end_date: "", student_reason: "" });
+        setForm({ start_date: "", end_date: "", student_reason: "", reason_type: "" });
         fetchLeaves();
       } else {
         toast.error("Something went wrong!");
@@ -91,6 +93,7 @@ export default function LeavePage() {
       start_date: formatForInput(item.start_date),
       end_date: formatForInput(item.end_date),
       student_reason: item.student_reason,
+      reason_type: item.reason_type,
     });
 
     setEditId(item.id);
@@ -238,7 +241,6 @@ export default function LeavePage() {
                   type="datetime-local"
                   className="w-full p-2 border rounded"
                   value={form.start_date}
-                  min={minNow}
                   onChange={(e) =>
                     setForm({ ...form, start_date: e.target.value })
                   }
@@ -255,14 +257,31 @@ export default function LeavePage() {
                   type="datetime-local"
                   className="w-full p-2 border rounded"
                   value={form.end_date}
-                  min={form.start_date || minNow}
+                  min={form.start_date}
                   onChange={(e) =>
                     setForm({ ...form, end_date: e.target.value })
                   }
                   required
                 />
               </div>
-
+ <div>
+                <label className="block text-sm font-medium">
+                  Apply Reason
+                </label>
+               <select
+                  className="w-full p-2 border rounded"
+                  value={form.reason_type} 
+                  onChange={(e) =>
+                    setForm({ ...form, reason_type: e.target.value })
+                  }
+                  required
+                >
+                  <option value="" disabled>Select Reason</option>
+                  <option value="Placement">Placement</option>
+                  <option value="Examination">Examination</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
               {/* Reason */}
               <div>
                 <label className="block text-sm font-medium">Reason</label>

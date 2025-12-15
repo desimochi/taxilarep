@@ -12,6 +12,7 @@ import ParentMeetingSnap from './ParentMeeting';
 import AttendanceSnap from './AttendanceSnap';
 import Link from 'next/link';
 import Leaderboard from './LeaderBoard';
+import LeaveStatusPage from '@/components/Leave';
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(false)
@@ -115,6 +116,7 @@ fetchdata()
               </div>
             </div>
             </div>
+            <LeaveStatusPage />
            <Leaderboard />
             <div className="bg-white p-6 rounded-xl border border-gray-200">
               <div className="flex justify-between items-center mb-6">
