@@ -1,0 +1,1703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FINANCIAL MODELING LEVEL-1</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&family=Inter:wght@300;400;600;800&family=Playfair+Display:ital,wght@0,700;1,700&display=swap');
+
+        body {
+            background-color: #0f1115;
+            color: #cfd8dc;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .serif {
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #181b21; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #374151; 
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4b5563; 
+        }
+
+        /* Utility for finance numbers */
+        .pos { color: #4ade80; } /* Green */
+        .neg { color: #f87171; } /* Red */
+        .neu { color: #9ca3af; } /* Gray */
+
+        .panel {
+            background-color: #181b21;
+            border: 1px solid #2d3748;
+            border-radius: 6px;
+        }
+
+        input[type=range] {
+            -webkit-appearance: none; 
+            background: transparent; 
+        }
+        
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #dc2626; /* Red 600 for Extreme Theme */
+            margin-top: -6px;
+            cursor: pointer;
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #374151;
+            border-radius: 2px;
+        }
+
+        .btn-primary {
+            background: #dc2626;
+            transition: all 0.2s;
+        }
+        .btn-primary:hover {
+            background: #991b1b;
+            transform: translateY(-1px);
+        }
+        .btn-danger {
+            background: #7f1d1d;
+        }
+        .btn-danger:hover {
+            background: #450a0a;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        th {
+            text-align: right;
+            padding: 8px;
+            border-bottom: 1px solid #374151;
+            color: #9ca3af;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        td {
+            text-align: right;
+            padding: 6px 8px;
+            border-bottom: 1px solid #2d3748;
+            white-space: nowrap;
+        }
+        td:first-child, th:first-child {
+            text-align: left;
+            position: sticky;
+            left: 0;
+            background-color: #181b21; /* Match panel bg */
+            z-index: 10;
+            border-right: 1px solid #2d3748;
+        }
+        tr:hover {
+            background-color: #1f2937;
+        }
+        tr:hover td:first-child {
+            background-color: #1f2937;
+        }
+        
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+            border-bottom: 1px dotted #9ca3af;
+        }
+        
+        /* Progress Bar for Score */
+        .progress-bar {
+            height: 8px;
+            border-radius: 4px;
+            background-color: #374151;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: #dc2626;
+            transition: width 1s ease-out;
+        }
+
+        /* Modal Backdrop */
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(4px);
+        }
+
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Processing Bar Animation */
+        @keyframes loadProgress {
+            from { width: 0%; }
+            to { width: 100%; }
+        }
+        .animate-progress {
+            animation: loadProgress 3s linear forwards;
+        }
+        
+        /* Shake Animation for Error */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        .animate-shake {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        }
+    </style>
+</head>
+<body class="h-screen overflow-hidden flex flex-col bg-[#0f1115]">
+
+    <div id="help-modal" class="fixed inset-0 modal-backdrop z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-[#181b21] border border-gray-700 rounded-lg w-full max-w-4xl max-h-[85vh] flex flex-col shadow-2xl relative">
+            
+            <div class="p-5 border-b border-gray-700 flex justify-between items-center bg-gray-900 rounded-t-lg shrink-0">
+                <h2 class="text-lg font-bold text-red-500 font-mono tracking-tight">
+                    <i class="fa-solid fa-book-open mr-2"></i> EXTREME DIFFICULTY MANUAL
+                </h2>
+                <button onclick="sim.toggleHelp()" class="text-gray-500 hover:text-white transition-colors">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <div class="p-8 overflow-y-auto space-y-8 text-gray-300 font-sans leading-relaxed">
+                
+                <div class="p-4 bg-red-900/20 border-l-4 border-red-500 rounded">
+                    <h3 class="text-red-400 font-bold text-sm mb-2 uppercase tracking-wider">Survival Guide</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                        <div>
+                            <strong class="text-white block mb-1">Financial Proficiency</strong>
+                            <ul class="list-disc pl-4 space-y-1 text-gray-400">
+                                <li>Master <strong>Capital Structuring</strong> in a high-interest rate environment.</li>
+                                <li>Navigate strict <strong>Debt Covenants</strong> (4.5x Max Leverage).</li>
+                                <li>Manage cash flow with high <strong>Working Capital (NWC)</strong> requirements.</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <strong class="text-white block mb-1">Strategic Management</strong>
+                            <ul class="list-disc pl-4 space-y-1 text-gray-400">
+                                <li>Survive severe <strong>Macro-Economic Shocks</strong> (Repo Rate > 8%).</li>
+                                <li>Mitigate the "Death Spiral" of <strong>Interest Penalties (+4%)</strong>.</li>
+                                <li>Balance growth against extreme <strong>Brain Drain (-8% Growth)</strong> risks.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-3 bg-yellow-900/20 border border-yellow-800 rounded mb-4">
+                    <h4 class="text-yellow-400 font-bold text-sm mb-1"><i class="fa-solid fa-skull mr-2"></i>EXTREME DIFFICULTY CHANGES</h4>
+                    <ul class="text-xs text-yellow-200 list-disc pl-4 space-y-1">
+                        <li><strong>Horizon:</strong> 8 Years of volatility.</li>
+                        <li><strong>Interest Rates:</strong> Base Repo Rate starts at <strong>8.0%</strong>.</li>
+                        <li><strong>Covenants:</strong> Max Leverage <strong>4.5x</strong> | Min Interest Coverage <strong>2.5x</strong>.</li>
+                        <li><strong>Death Spiral:</strong> Breach covenant -> <strong>+4% Interest Rate Penalty</strong>.</li>
+                        <li><strong>Working Capital:</strong> <strong>15%</strong> of revenue growth is trapped in NWC.</li>
+                    </ul>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-white font-bold border-b border-gray-600 pb-2 mb-3 uppercase text-xs tracking-wider">How to Win</h3>
+                        <ul class="text-sm space-y-2 list-disc pl-4 text-gray-400">
+                            <li><strong class="text-blue-400">IRR:</strong> Target > 20%.</li>
+                            <li><strong class="text-green-400">MOIC:</strong> Target > 2.5x.</li>
+                            <li><strong class="text-red-400">Survival:</strong> Keep Cash > 0.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-white font-bold border-b border-gray-600 pb-2 mb-3 uppercase text-xs tracking-wider">Strategy Slider Risks</h3>
+                        <div class="text-sm space-y-3">
+                            <p><span class="text-yellow-500 font-bold">Cost Cutting:</span> Boosts EBITDA, destroys Morale (-15%/yr).</p>
+                            <p><span class="text-blue-500 font-bold">Balanced:</span> Stable (-5% Morale/yr).</p>
+                            <p><span class="text-green-500 font-bold">High Growth:</span> Boosts Revenue, burns extreme Cash (15% NWC).</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="p-4 border-t border-gray-700 bg-gray-900 rounded-b-lg flex justify-end shrink-0">
+                <button onclick="sim.toggleHelp()" class="px-6 py-2 bg-red-600 hover:bg-red-500 text-white rounded text-sm font-bold transition-colors">
+                    Close Manual
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-welcome" class="h-full flex flex-col items-center justify-center p-6 relative overflow-y-auto">
+        <div class="absolute inset-0 z-0 opacity-20 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-red-900 via-gray-900 to-black"></div>
+        
+        <div class="z-10 w-full max-w-lg text-center fade-in my-auto">
+            <div class="mb-6 flex justify-center">
+                <div class="h-20 w-20 bg-red-600 rounded-2xl flex items-center justify-center shadow-lg shadow-red-500/30">
+                    <i class="fa-solid fa-chart-line text-4xl text-white"></i>
+                </div>
+            </div>
+            
+            <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight text-white mb-2">FINANCIAL MODELING <br><span class="text-red-500">LEVEL-1</span></h1>
+            <p class="text-gray-400 mb-8 font-mono text-sm">Created at Taxila Business School</p>
+            
+            <div class="bg-[#181b21] p-8 rounded-xl border border-gray-700 shadow-2xl">
+                <label class="block text-left text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Enter Fund Manager Name</label>
+                <input type="text" id="player-name-input" placeholder="e.g. Rahul Sharma" class="w-full bg-gray-900 border border-gray-700 rounded p-3 text-white focus:border-red-500 focus:outline-none mb-6 font-mono transition-colors">
+                <p id="name-error-msg" class="text-red-500 text-xs mt-2 hidden"><i class="fa-solid fa-circle-exclamation mr-1"></i> Name is required to proceed.</p>
+                
+                <button onclick="screens.goToObjectives()" class="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded transition-all transform hover:scale-[1.02] shadow-lg">
+                    INITIALIZE SIMULATION <i class="fa-solid fa-arrow-right ml-2"></i>
+                </button>
+                <button id="load-game-button" onclick="screens.goToLoadScreen()" class="w-full mt-3 bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 rounded transition-all transform hover:scale-[1.02] shadow-lg hidden">
+                    LOAD SAVED GAME <i class="fa-solid fa-arrow-rotate-left ml-2"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-objectives" class="h-full flex flex-col items-center justify-center p-6 hidden relative overflow-y-auto">
+        <div class="absolute inset-0 z-0 opacity-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-red-900 via-gray-900 to-black"></div>
+
+        <div class="z-10 w-full max-w-2xl fade-in my-auto">
+            <h2 class="text-2xl font-bold text-white mb-6 border-b border-gray-700 pb-4">MISSION: <span id="mission-target-name" class="text-red-500">TARGET</span></h2>
+            
+            <div class="bg-[#181b21] rounded-xl border border-gray-700 overflow-hidden mb-8 shadow-xl">
+                <div class="p-6 space-y-6">
+                    <div class="flex gap-4">
+                        <div class="h-10 w-10 shrink-0 bg-red-900/50 text-red-400 rounded flex items-center justify-center border border-red-800"><i class="fa-solid fa-building"></i></div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-200">The Target</h3>
+                            <p class="text-gray-400 text-sm mt-1">You are acquiring <strong id="obj-target-name" class="text-white">Target</strong> (<span id="obj-target-industry">Industry</span>). LTM EBITDA is <strong id="obj-target-ebitda" class="text-green-400">₹100 Cr</strong>.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <div class="h-10 w-10 shrink-0 bg-yellow-900/50 text-yellow-400 rounded flex items-center justify-center border border-yellow-800"><i class="fa-solid fa-clock"></i></div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-200">Extended Horizon: 8 Years</h3>
+                            <p class="text-gray-400 text-sm mt-1">You must manage the company for <strong>8 years</strong>. Long-term survival strategies are critical in the Indian market.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <div class="h-10 w-10 shrink-0 bg-blue-900/50 text-blue-400 rounded flex items-center justify-center border border-blue-800"><i class="fa-solid fa-money-bill-trend-up"></i></div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-200">EXTREME Challenge: Tight Liquidity</h3>
+                            <p class="text-gray-400 text-sm mt-1">Growth requires cash. <strong>15% of revenue growth</strong> is now trapped in NWC. Growing too fast can bankrupt you immediately.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-900 p-4 border-t border-gray-700 flex flex-col md:flex-row justify-center gap-4">
+                    <button onclick="sim.toggleHelp()" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 md:py-2 px-6 rounded transition-all shadow-lg border border-gray-600">
+                        <i class="fa-solid fa-book mr-2"></i>PLAYER'S MANUAL
+                    </button>
+                    <button onclick="screens.startSimulation()" class="bg-red-600 hover:bg-red-500 text-white font-bold py-3 md:py-2 px-8 rounded transition-all shadow-lg">
+                        ACCEPT CHALLENGE
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="screen-load-game" class="h-full flex flex-col items-center justify-center p-6 hidden relative overflow-y-auto">
+        <div class="absolute inset-0 z-0 opacity-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-gray-900 via-gray-800 to-black"></div>
+
+        <div class="z-10 w-full max-w-lg fade-in my-auto">
+            <h2 class="text-2xl font-bold text-white mb-6 border-b border-gray-700 pb-4"><i class="fa-solid fa-floppy-disk mr-2 text-blue-400"></i> LOAD GAME</h2>
+            
+            <div id="load-game-content" class="bg-[#181b21] p-8 rounded-xl border border-gray-700 shadow-2xl text-center">
+                <p class="text-gray-400 mb-6">No saved game found.</p>
+            </div>
+            
+            <div class="mt-6 text-center">
+                 <button onclick="screens.goToWelcome()" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded transition-all shadow-lg">
+                    <i class="fa-solid fa-arrow-left mr-2"></i> BACK
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="screen-main" class="h-full flex flex-col overflow-hidden hidden">
+
+        <nav class="h-14 bg-gray-900 border-b border-gray-800 flex items-center justify-between px-4 md:px-6 shrink-0 relative z-20">
+            <div class="flex items-center gap-2 md:gap-3">
+                <i class="fa-solid fa-chart-line text-red-500"></i>
+                <div class="flex flex-col">
+                    <span class="font-bold text-sm md:text-lg tracking-tight leading-none"><span id="nav-target-name" class="text-red-500">TARGET</span></span>
+                    <span class="text-[10px] text-gray-500 hidden md:inline">Taxila Business School | LBO Simulation</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-3 md:gap-6 text-xs md:text-sm mono">
+                <div id="header-year">YEAR: 0</div>
+                <div id="header-cash" class="text-blue-400">CASH: ₹0.0 Cr</div>
+                <div class="flex items-center gap-1 md:gap-2">
+                    <i class="fa-solid fa-user-group text-gray-500"></i>
+                    <span class="text-gray-500">Morale:</span>
+                    <span id="header-morale" class="text-green-400">100%</span>
+                </div>
+                <button onclick="sim.toggleHelp()" class="ml-2 text-gray-400 hover:text-white transition-colors" title="Open Field Manual">
+                    <i class="fa-solid fa-circle-question text-lg md:text-xl"></i>
+                </button>
+            </div>
+        </nav>
+        
+        <div id="processing-modal" class="fixed inset-0 modal-backdrop z-50 hidden flex items-center justify-center p-4">
+             <div class="bg-[#181b21] border border-gray-700 rounded-lg w-full max-w-md p-6 shadow-2xl text-center">
+                 <div class="mb-4">
+                     <i class="fa-solid fa-gear fa-spin text-4xl text-red-500"></i>
+                 </div>
+                 <h3 class="text-xl font-bold text-white mb-2 font-mono">CALCULATING FINANCIALS</h3>
+                 <p class="text-gray-400 text-sm mb-6">Processing Rate Shocks & Operations...</p>
+                 
+                 <div class="w-full h-3 bg-gray-700 rounded-full overflow-hidden">
+                     <div id="processing-bar" class="h-full bg-red-500 w-0"></div>
+                 </div>
+                 <div class="flex justify-between text-xs text-gray-500 mt-2 font-mono">
+                    <span>INITIATING</span>
+                    <span>COMPLETING</span>
+                 </div>
+             </div>
+        </div>
+
+        <div class="flex-1 flex flex-col lg:grid lg:grid-cols-12 gap-0 overflow-y-auto lg:overflow-hidden">
+            
+            <div class="w-full lg:col-span-3 bg-[#13151a] lg:border-r border-t lg:border-t-0 border-gray-800 p-5 flex flex-col gap-6 order-2 lg:order-1 shrink-0">
+                
+                <div id="phase-structuring" class="flex flex-col gap-5">
+                    <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider border-b border-gray-800 pb-2">Deal Structure</h3>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between text-xs mb-1">
+                                <span>Entry Multiple (EV/EBITDA)</span>
+                                <span id="val-entry-mult" class="mono text-blue-400">6.0x</span>
+                            </div>
+                            <input type="range" id="input-entry-mult" min="6" max="14" step="0.5" value="6" class="w-full">
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-xs mb-1">
+                                <span>Senior Debt Leverage</span>
+                                <span id="val-senior-lev" class="mono text-blue-400">0.0x</span>
+                            </div>
+                            <input type="range" id="input-senior-lev" min="0" max="5.0" step="0.5" value="0" class="w-full">
+                            <p class="text-[10px] text-gray-500 mt-1">Variable Rate (Repo + Spread)</p>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-xs mb-1">
+                                <span>Mezzanine Debt Leverage</span>
+                                <span id="val-mezz-lev" class="mono text-blue-400">0.0x</span>
+                            </div>
+                            <input type="range" id="input-mezz-lev" min="0" max="3.0" step="0.5" value="0" class="w-full">
+                            <p class="text-[10px] text-gray-500 mt-1">Cost: 18% (PIK)</p>
+                        </div>
+
+                        <div class="p-3 bg-gray-800 rounded text-xs space-y-2 border border-gray-700">
+                            <div class="flex justify-between font-bold border-t border-gray-600 pt-2">
+                                <span>Equity Check:</span>
+                                <span id="calc-equity-check" class="mono text-green-400">₹400.0 Cr</span>
+                            </div>
+                            <div class="flex justify-between text-gray-400 italic">
+                                <span>LTV Ratio:</span>
+                                <span id="calc-ltv" class="mono">50%</span>
+                            </div>
+                        </div>
+
+                        <button onclick="sim.closeDeal()" class="btn-primary w-full py-3 rounded font-bold text-white text-sm shadow-lg shadow-red-900/20">
+                            CLOSE DEAL & BEGIN <i class="fa-solid fa-arrow-right ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="phase-operations" class="flex flex-col gap-5 hidden">
+                    <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider border-b border-gray-800 pb-2">Annual Strategy</h3>
+                    
+                    <div id="macro-event-box" class="p-3 bg-gray-800 border-l-2 border-red-500 rounded text-xs hidden">
+                        <span class="font-bold text-red-400">MARKET UPDATE:</span>
+                        <p id="macro-text" class="mt-1 text-gray-300">Rates stable.</p>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div>
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="tooltip">Efficiency vs. Growth</span>
+                            </div>
+                            <div class="relative pt-6 pb-2">
+                                <input type="range" id="input-strategy" min="1" max="5" step="1" value="1" class="w-full">
+                                <div class="flex justify-between text-[10px] text-gray-500 absolute w-full -top-1">
+                                    <span>Cut Costs</span>
+                                    <span>Balanced</span>
+                                    <span>Growth</span>
+                                </div>
+                            </div>
+                            <div id="strategy-desc" class="text-xs text-blue-300 mt-1 italic text-center">Aggressive Cost Cutting</div>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-xs mb-1">
+                                <span>Capex Spend (% of Rev)</span>
+                                <span id="val-capex" class="mono text-blue-400">1.0%</span>
+                            </div>
+                            <input type="range" id="input-capex" min="1" max="10" step="0.5" value="1" class="w-full">
+                        </div>
+
+                        <div class="p-3 bg-gray-800 rounded text-xs space-y-2 border border-gray-700">
+                            <div class="flex justify-between font-bold text-gray-300">
+                                <span>Covenant Status</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Net Leverage (Max 4.5x):</span>
+                                <span id="cov-lev" class="mono">3.0x</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Interest Cov. (Min 2.5x):</span>
+                                <span id="cov-int" class="mono">4.2x</span>
+                            </div>
+                            <div class="flex justify-between mt-2 pt-1 border-t border-gray-700 text-gray-400">
+                                <span>Current Repo Rate:</span>
+                                <span id="val-sofr" class="mono text-yellow-500">8.0%</span>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="sim.saveGame()" class="bg-blue-600 hover:bg-blue-500 w-full py-2 rounded text-xs font-bold text-white shadow-lg">
+                                <i class="fa-solid fa-floppy-disk mr-1"></i> Save Game
+                            </button>
+                            <button onclick="sim.loadGame(true)" class="bg-gray-600 hover:bg-gray-500 w-full py-2 rounded text-xs font-bold text-white shadow-lg">
+                                <i class="fa-solid fa-arrow-rotate-left mr-1"></i> Load Game
+                            </button>
+                        </div>
+                        <button onclick="sim.runYear()" id="btn-run-year" class="btn-primary w-full py-3 rounded font-bold text-white text-sm">
+                            EXECUTE YEAR <i class="fa-solid fa-play ml-2"></i>
+                        </button>
+                        
+                        <button onclick="sim.exitSim()" id="btn-exit" class="btn-danger w-full py-3 rounded font-bold text-white text-sm hidden">
+                            INITIATE EXIT PROCESS <i class="fa-solid fa-money-bill-transfer ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="phase-results" class="flex flex-col gap-5 hidden">
+                     <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider border-b border-gray-800 pb-2">Fund Performance</h3>
+                     
+                     <div class="p-4 bg-gray-800 rounded border border-gray-700">
+                         <div class="flex justify-between items-center mb-2">
+                             <span class="text-sm font-bold text-gray-300">FINAL SCORE</span>
+                             <span id="final-score" class="text-2xl font-bold text-blue-400 mono">0/100</span>
+                         </div>
+                         <div class="progress-bar w-full bg-gray-700 mb-4">
+                             <div id="score-bar" class="progress-fill bg-blue-500" style="width: 0%"></div>
+                         </div>
+                         <div id="rank-badge" class="mt-4 text-center py-2 bg-gray-900 rounded border border-gray-600 font-bold text-yellow-500 uppercase tracking-widest text-xs">
+                             ANALYST
+                         </div>
+                     </div>
+
+                     <div class="text-center p-3 bg-gray-900 rounded border border-gray-800">
+                         <div class="text-xs text-gray-500 uppercase">Gross MOIC</div>
+                         <div id="final-moic" class="text-xl font-bold text-green-400 mono">0.0x</div>
+                         <div class="text-xs text-gray-500 uppercase mt-2">IRR</div>
+                         <div id="final-irr" class="text-xl font-bold text-blue-400 mono">0.0%</div>
+                     </div>
+                     
+                     <div class="grid grid-cols-3 gap-2">
+                         <button onclick="sim.downloadCertificate()" class="bg-blue-600 hover:bg-blue-500 w-full py-2 rounded text-xs font-bold text-white border border-blue-500">
+                             <i class="fa-solid fa-certificate mr-1"></i> Cert
+                         </button>
+                         <button onclick="sim.shareLinkedIn()" class="bg-[#0077b5] hover:bg-[#006097] w-full py-2 rounded text-xs font-bold text-white border border-[#0077b5]">
+                             <i class="fa-brands fa-linkedin mr-1"></i> Share
+                         </button>
+                         <button onclick="sim.downloadReport()" class="bg-gray-600 hover:bg-gray-500 w-full py-2 rounded text-xs font-bold text-white border border-gray-500">
+                             <i class="fa-solid fa-file-pdf mr-1"></i> Report
+                         </button>
+                     </div>
+
+                     <button onclick="location.reload()" class="bg-gray-700 hover:bg-gray-600 w-full py-2 rounded text-sm text-white">Reset Simulation</button>
+                </div>
+
+            </div>
+
+            <div class="w-full lg:col-span-6 p-4 lg:p-6 overflow-y-auto flex flex-col gap-6 order-1 lg:order-2">
+                
+                <div class="panel p-4">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-sm font-bold text-gray-300">3-Statement Financial Model</h2>
+                        <span class="text-[10px] bg-gray-800 px-2 py-1 rounded text-gray-500 border border-gray-700">INR CRORES (₹ Cr)</span>
+                    </div>
+                    
+                    <div class="overflow-x-auto pb-2">
+                        <table id="financial-table">
+                            <thead>
+                                <tr>
+                                    <th class="w-32">Metric</th>
+                                    <th id="th-y0">Entry</th>
+                                    <th id="th-y1">Y1</th>
+                                    <th id="th-y2">Y2</th>
+                                    <th id="th-y3">Y3</th>
+                                    <th id="th-y4">Y4</th>
+                                    <th id="th-y5">Y5</th>
+                                    <th id="th-y6">Y6</th>
+                                    <th id="th-y7">Y7</th>
+                                    <th id="th-y8">Exit</th>
+                                </tr>
+                            </thead>
+                            <tbody class="mono text-xs">
+                                <tr><td colspan="9" class="text-center text-gray-600 py-4">Initialize Deal Structure to View Model</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 h-96 md:h-64">
+                    <div class="panel p-3">
+                        <h4 class="text-xs font-bold text-gray-400 mb-2">Capital Structure</h4>
+                        <div class="h-[90%] w-full relative">
+                            <canvas id="structureChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="panel p-3">
+                        <h4 class="text-xs font-bold text-gray-400 mb-2">EBITDA vs Interest</h4>
+                        <div class="h-[90%] w-full relative">
+                            <canvas id="performanceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="detailed-report" class="panel p-5 hidden">
+                    <h3 class="text-lg font-bold text-white mb-4 border-b border-gray-700 pb-2">Investment Committee Review</h3>
+                    <div id="report-content" class="space-y-4 text-sm text-gray-300">
+                        </div>
+                </div>
+
+            </div>
+
+            <div class="w-full lg:col-span-3 bg-[#13151a] lg:border-l border-t lg:border-t-0 border-gray-800 p-5 overflow-y-auto order-3 shrink-0">
+                
+                <div class="flex-1 flex flex-col">
+                    <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider border-b border-gray-800 pb-2 mb-3">Transaction Log</h3>
+                    <div id="game-log" class="flex-1 min-h-[200px] text-xs font-mono space-y-2 overflow-y-auto pr-2 max-h-[400px]">
+                        <div class="text-gray-500">> System Initialized.</div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+    
+    <canvas id="certCanvas" width="800" height="600" class="hidden"></canvas>
+
+    <script>
+        // --- DATA SETS (INDIAN CONTEXT - EXTREME DIFF) ---
+         function getUserId() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get("userId") || "guest";
+        }
+        const SCENARIOS = [
+            { name: "Bengaluru Tech Solutions", ebitda: 100, tax: 0.25, sofr: 0.08, spread: 0.040, industry: "IT Services" },
+            { name: "Rajasthan Solar Power", ebitda: 150, tax: 0.30, sofr: 0.08, spread: 0.050, industry: "Energy" },
+            { name: "Jeevan Hospitals Ltd", ebitda: 80, tax: 0.25, sofr: 0.08, spread: 0.045, industry: "Healthcare" },
+            { name: "Bharat Infra Projects", ebitda: 120, tax: 0.28, sofr: 0.08, spread: 0.060, industry: "Industrial" },
+            { name: "Deccan Organic Foods", ebitda: 60, tax: 0.25, sofr: 0.08, spread: 0.055, industry: "FMCG" },
+            { name: "AutoParts India Ltd", ebitda: 200, tax: 0.26, sofr: 0.08, spread: 0.050, industry: "Manufacturing" },
+            { name: "CloudScale Mumbai", ebitda: 90, tax: 0.25, sofr: 0.08, spread: 0.040, industry: "Tech" },
+            { name: "Ganga Logistics", ebitda: 110, tax: 0.25, sofr: 0.08, spread: 0.050, industry: "Logistics" },
+            { name: "EduSmart India", ebitda: 75, tax: 0.18, sofr: 0.08, spread: 0.045, industry: "Education" },
+            { name: "Royal Retail Group", ebitda: 140, tax: 0.25, sofr: 0.08, spread: 0.060, industry: "Retail" },
+            { name: "SkyHigh Aviation", ebitda: 180, tax: 0.25, sofr: 0.08, spread: 0.055, industry: "Aerospace" },
+            { name: "Kaveri Utilities", ebitda: 130, tax: 0.28, sofr: 0.08, spread: 0.035, industry: "Utilities" },
+            { name: "FinTech India", ebitda: 95, tax: 0.25, sofr: 0.08, spread: 0.045, industry: "FinTech" },
+            { name: "Surya Pharma", ebitda: 250, tax: 0.25, sofr: 0.08, spread: 0.040, industry: "Pharma" },
+            { name: "Metro Real Estate", ebitda: 300, tax: 0.30, sofr: 0.08, spread: 0.060, industry: "Real Estate" }
+        ];
+
+       
+        // --- CONSTANTS (EXTREME) ---
+        const MEZZ_RATE_CASH = 0.16; // Extreme Cost
+        const MEZZ_RATE_PIK = 0.18;
+        
+        let structureChart = null;
+        let performanceChart = null;
+        let audioContext = null;
+
+        // --- SIMULATION STATE ---
+        const initialState = {
+            playerName: "Partner",
+            year: 0,
+            cash: 0,
+            status: 'STRUCTURING', // STRUCTURING, ACTIVE, EXIT, COMPLETE
+            breaches: 0,
+            bankrupt: false,
+            isProcessing: false,
+            
+            // Current Scenario
+            target: null, // Will be set in init()
+            initialEquity: 0,
+            
+            // Simulation Variables
+            morale: 100,
+            currentSofr: 0.08, // Extreme Base Repo Rate
+            currentSpread: 0.045,
+            
+            inputs: {
+                entryMult: 6.0,
+                seniorLev: 0.0,
+                mezzLev: 0.0,
+                strategy: 1, 
+                capexPercent: 1.0
+            },
+            history: [],
+            finalStats: {}
+        };
+        let state = JSON.parse(JSON.stringify(initialState)); // Deep copy for initial state
+
+        // --- SCREEN MANAGERS ---
+        const screens = {
+            goToWelcome: () => {
+                document.getElementById('screen-load-game').classList.add('hidden');
+                document.getElementById('screen-objectives').classList.add('hidden');
+                document.getElementById('screen-main').classList.add('hidden');
+                document.getElementById('screen-welcome').classList.remove('hidden');
+            },
+            goToLoadScreen: () => {
+                const savedGame = localStorage.getItem('fm_level1_save');
+                const loadContentEl = document.getElementById('load-game-content');
+                
+                document.getElementById('screen-welcome').classList.add('hidden');
+                document.getElementById('screen-load-game').classList.remove('hidden');
+                
+                if (savedGame) {
+                    const savedState = JSON.parse(savedGame);
+                    loadContentEl.innerHTML = `
+                        <div class="text-left space-y-3 mb-6">
+                            <p class="text-sm"><strong>Manager:</strong> <span class="text-white">${savedState.playerName}</span></p>
+                            <p class="text-sm"><strong>Target:</strong> <span class="text-red-500">${savedState.target.name}</span></p>
+                            <p class="text-sm"><strong>Year:</strong> <span class="text-yellow-400">${savedState.year} / 8</span></p>
+                            <p class="text-sm"><strong>Cash:</strong> <span class="text-green-400">₹${savedState.cash.toFixed(1)} Cr</span></p>
+                            <p class="text-xs text-gray-500 italic">Data saved to mock API (localStorage).</p>
+                        </div>
+                        <button onclick="sim.loadGame(false)" class="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded transition-all shadow-lg">
+                            CONTINUE GAME <i class="fa-solid fa-play ml-2"></i>
+                        </button>
+                    `;
+                } else {
+                    loadContentEl.innerHTML = `<p class="text-gray-400 mb-6">No saved game found.</p>`;
+                }
+            },
+            goToObjectives: () => {
+                const input = document.getElementById('player-name-input');
+                const errorMsg = document.getElementById('name-error-msg');
+                const name = input.value.trim();
+                
+                if (name === "") {
+                    // Validation Error (existing logic)
+                    input.classList.remove('border-gray-700');
+                    input.classList.add('border-red-500', 'ring-2', 'ring-red-500', 'animate-shake');
+                    errorMsg.classList.remove('hidden');
+                    input.focus();
+                    
+                    setTimeout(() => {
+                        input.classList.remove('border-red-500', 'ring-2', 'ring-red-500', 'animate-shake');
+                        input.classList.add('border-gray-700');
+                        errorMsg.classList.add('hidden');
+                    }, 2000);
+                    return;
+                }
+                
+                state.playerName = name;
+                
+                // Randomly select scenario (original logic)
+                const randomIndex = Math.floor(Math.random() * SCENARIOS.length);
+                state.target = SCENARIOS[randomIndex];
+                
+                // Initialize sim variables based on target
+                state.currentSofr = state.target.sofr;
+                state.currentSpread = state.target.spread;
+                
+                // Update Objective Screen Text (original logic)
+                document.getElementById('mission-target-name').innerText = state.target.name;
+                document.getElementById('obj-target-name').innerText = state.target.name;
+                document.getElementById('obj-target-industry').innerText = state.target.industry;
+                document.getElementById('obj-target-ebitda').innerText = `₹${state.target.ebitda} Cr`;
+                
+                document.getElementById('screen-welcome').classList.add('hidden');
+                document.getElementById('screen-objectives').classList.remove('hidden');
+            },
+            startSimulation: () => {
+                document.getElementById('screen-objectives').classList.add('hidden');
+                document.getElementById('screen-main').classList.remove('hidden');
+                
+                // Update Main Screen Text
+                document.getElementById('nav-target-name').innerText = state.target.name;
+                
+                if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Initialise only if not loaded from a save
+                if (state.status === 'STRUCTURING') {
+                    init();
+                } else {
+                    sim._reinitialiseFromLoad();
+                }
+            }
+        };
+
+        // --- UI HANDLERS (Same as original) ---
+        document.getElementById('input-entry-mult').addEventListener('input', (e) => {
+            state.inputs.entryMult = parseFloat(e.target.value);
+            document.getElementById('val-entry-mult').innerText = state.inputs.entryMult.toFixed(1) + 'x';
+            updateStructuringMath();
+        });
+        document.getElementById('input-senior-lev').addEventListener('input', (e) => {
+            state.inputs.seniorLev = parseFloat(e.target.value);
+            document.getElementById('val-senior-lev').innerText = state.inputs.seniorLev.toFixed(1) + 'x';
+            updateStructuringMath();
+        });
+        document.getElementById('input-mezz-lev').addEventListener('input', (e) => {
+            state.inputs.mezzLev = parseFloat(e.target.value);
+            document.getElementById('val-mezz-lev').innerText = state.inputs.mezzLev.toFixed(1) + 'x';
+            updateStructuringMath();
+        });
+        document.getElementById('input-strategy').addEventListener('input', (e) => {
+            state.inputs.strategy = parseInt(e.target.value);
+            const strategies = ["Aggressive Cost Cutting", "Cost Focus", "Balanced Approach", "Growth Focus", "Aggressive Growth"];
+            document.getElementById('strategy-desc').innerText = strategies[state.inputs.strategy - 1];
+        });
+        document.getElementById('input-capex').addEventListener('input', (e) => {
+            state.inputs.capexPercent = parseFloat(e.target.value);
+            document.getElementById('val-capex').innerText = state.inputs.capexPercent.toFixed(1) + '%';
+        });
+
+        function init() {
+            // Check for saved game on initial load
+            const savedGame = localStorage.getItem('fm_level1_save');
+            if (savedGame) {
+                document.getElementById('load-game-button').classList.remove('hidden');
+                log("Saved game found. Click 'LOAD SAVED GAME' to continue.");
+            }
+
+            // Set initial UI based on STRUCTURING phase
+            document.getElementById('phase-structuring').classList.remove('hidden');
+            document.getElementById('phase-operations').classList.add('hidden');
+            document.getElementById('phase-results').classList.add('hidden');
+            document.getElementById('header-year').innerText = `YEAR: 0`;
+            document.getElementById('header-cash').innerText = `CASH: ₹${state.cash.toFixed(1)} Cr`;
+
+            updateStructuringMath();
+            log(`EXTREME DIFFICULTY ACTIVE.`);
+            if (state.target) {
+                log(`LTM EBITDA: ₹${state.target.ebitda} Cr. Max Lev: 4.5x.`);
+            }
+        }
+
+        function updateStructuringMath() {
+            if (!state.target) return;
+            const ev = state.inputs.entryMult * state.target.ebitda;
+            const senior = state.inputs.seniorLev * state.target.ebitda;
+            const mezz = state.inputs.mezzLev * state.target.ebitda;
+            const equity = ev - senior - mezz;
+            const ltv = ev > 0 ? ((senior + mezz) / ev) * 100 : 0;
+
+            document.getElementById('calc-equity-check').innerText = `₹${equity.toFixed(1)} Cr`;
+            document.getElementById('calc-ltv').innerText = `${ltv.toFixed(0)}%`;
+        }
+
+        function playProcessingSound() {
+            if (!audioContext) return;
+            if (audioContext.state === 'suspended') audioContext.resume();
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(150, audioContext.currentTime);
+            for(let i=0; i<30; i++) {
+                osc.frequency.setValueAtTime(100 + (Math.random()*200), audioContext.currentTime + (i*0.1));
+            }
+            gain.gain.setValueAtTime(0.05, audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 3.0);
+            osc.start();
+            osc.stop(audioContext.currentTime + 3.0);
+        }
+        
+        // Function to update all UI elements to match the current state
+        function updateUIFromState() {
+            const lastYearData = state.history[state.history.length - 1];
+            
+            // Header
+            updateHeader(lastYearData);
+            
+            // Morale
+            const moraleEl = document.getElementById('header-morale');
+            moraleEl.innerText = state.morale + "%";
+            moraleEl.className = state.morale < 50 ? "text-red-500 font-bold" : "text-green-400";
+
+            // Controls
+            document.getElementById('input-strategy').value = state.inputs.strategy;
+            document.getElementById('input-capex').value = state.inputs.capexPercent;
+            document.getElementById('val-capex').innerText = state.inputs.capexPercent.toFixed(1) + '%';
+            const strategies = ["Aggressive Cost Cutting", "Cost Focus", "Balanced Approach", "Growth Focus", "Aggressive Growth"];
+            document.getElementById('strategy-desc').innerText = strategies[state.inputs.strategy - 1];
+            
+            // Covenants
+            document.getElementById('val-sofr').innerText = (state.currentSofr * 100).toFixed(1) + "%";
+            const netDebt = lastYearData.seniorDebt + lastYearData.mezzDebt - lastYearData.cash;
+            const netLev = netDebt / lastYearData.ebitda;
+            const totalCashInterest = lastYearData.interest;
+            const intCov = lastYearData.ebitda / totalCashInterest;
+            document.getElementById('cov-lev').innerText = netLev.toFixed(1) + 'x';
+            document.getElementById('cov-int').innerText = intCov.toFixed(1) + 'x';
+
+            // Model & Charts
+            updateTable();
+            if (!structureChart) initCharts(); // Re-init charts if they were cleared
+            updateCharts();
+            
+            // Deal Phase visibility
+            document.getElementById('phase-structuring').classList.add('hidden');
+            document.getElementById('phase-operations').classList.remove('hidden');
+            
+            if (state.year === 8 || state.bankrupt) {
+                document.getElementById('btn-run-year').classList.add('hidden');
+                document.getElementById('btn-exit').classList.remove('hidden');
+            } else {
+                document.getElementById('btn-run-year').classList.remove('hidden');
+                document.getElementById('btn-exit').classList.add('hidden');
+            }
+        }
+
+
+        const sim = {
+            toggleHelp: () => {
+                document.getElementById('help-modal').classList.toggle('hidden');
+            },
+            
+            // --- NEW: Save Game Logic (Mock API to localStorage) ---
+           // ... (rest of the code)
+
+            // --- SAVE GAME LOGIC: Using fetch to simulate a POST to /api/save ---
+            saveGame: async () => {
+                const userId = getUserId();
+                if (state.status !== 'ACTIVE') {
+                    log("Cannot save. Game must be active.");
+                    return;
+                }
+                
+                // 1. Prepare data for serialization
+                const stateToSave = {
+                    ...state,
+                    isProcessing: false
+                };
+
+                try {
+                    // 2. Mock API Call (Replace localStorage with fetch/POST in a real app)
+                    const response = await fetch('https://erp.taxila.in/api/game/financial-modeling', { // Mock API endpoint
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            // 'Authorization': 'Bearer <user-token>' // For security
+                        },
+                        body: JSON.stringify({userId:userId, gameState:stateToSave})
+                    });
+
+                    // 3. Process the (Mock) API response
+                    if (response.ok) {
+                        // In a real implementation, you'd check the server's response code (e.g., 200/201)
+                        // Mocking the localStorage behavior for a successful save on the client
+                        localStorage.setItem('fm_level1_save', JSON.stringify(stateToSave));
+                        log("SUCCESS: Game state saved. (POST to /api/save simulated)");
+                    } else {
+                        // Handle server errors (400s, 500s)
+                        log(`ERROR: Server failed to save game. Status: ${response.status}.`);
+                    }
+                } catch(e) {
+                    log("ERROR: Network or API connection failed during save.");
+                    console.error("Save Error:", e);
+                }
+            },
+            
+            // ... (rest of the code)
+           loadGame: async (goBackToWelcome = false) => {
+                let loadedState = null;
+                const userId = getUserId(); // Assuming getUserId() is defined elsewhere
+
+                try {
+                    // 1. API Call (GET request to fetch game state)
+                    const response = await fetch(`https://erp.taxila.in/api/game/financial-modeling?userId=${userId}`, {
+                        method: 'GET',
+                        // headers: { 'Authorization': 'Bearer <user-token>' } // Add Authorization in a real app
+                    });
+
+                    if (response.ok) {
+                        // 2. Consume the JSON body directly from the API response
+                        const apiResponseData1 = await response.json(); 
+                        const apiResponseData = apiResponseData1.gameState;
+                        // Check if the API returned a valid game state object
+                        if (apiResponseData && apiResponseData.year !== undefined) {
+                            loadedState = apiResponseData;
+                        } else {
+                            log("ERROR: API returned successfully but no valid game state object found in the response.");
+                            return;
+                        }
+                    } else {
+                        // Handle server errors (e.g., 404 Not Found, 401 Unauthorized)
+                        log(`ERROR: Server failed to load game. Status: ${response.status}.`);
+                        return;
+                    }
+
+                } catch(e) {
+                    log("ERROR: Network or API connection failed during load. Check server connectivity.");
+                    console.error("Load Error:", e);
+                    return;
+                }
+                
+                // If we reach this point, loadedState should contain the data from the API
+                
+                try {
+                    // 3. Update global state with the data from the API
+                    state = loadedState; 
+                    
+                    // 4. Update UI to match loaded state
+                    if (goBackToWelcome) {
+                         screens.goToWelcome();
+                    } else {
+                         document.getElementById('screen-load-game').classList.add('hidden');
+                         screens.startSimulation();
+                    }
+                    // We can now remove the 'Mock API / localStorage' text since we are using the body.
+                    log("SUCCESS: Game state loaded successfully via API."); 
+                } catch(e) {
+                    log("ERROR: Invalid game state data structure received from API. Resetting state.");
+                    state = JSON.parse(JSON.stringify(initialState));
+                    console.error(e);
+                }
+            },
+            
+            // ... (rest of the code)
+            
+            // --- NEW: Reinitialise for loaded game ---
+            _reinitialiseFromLoad: () => {
+                // Set the initial structure controls to the saved values for visual consistency
+                document.getElementById('input-entry-mult').value = state.inputs.entryMult;
+                document.getElementById('val-entry-mult').innerText = state.inputs.entryMult.toFixed(1) + 'x';
+                document.getElementById('input-senior-lev').value = state.inputs.seniorLev;
+                document.getElementById('val-senior-lev').innerText = state.inputs.seniorLev.toFixed(1) + 'x';
+                document.getElementById('input-mezz-lev').value = state.inputs.mezzLev;
+                document.getElementById('val-mezz-lev').innerText = state.inputs.mezzLev.toFixed(1) + 'x';
+
+                // Initial deal structure values (equity/ltv) are calculated at the point of load
+                updateStructuringMath();
+                
+                // Ensure correct panel is visible and UI is updated
+                updateUIFromState();
+            },
+
+
+            closeDeal: () => {
+                state.initialEquity = (state.inputs.entryMult * state.target.ebitda) - (state.inputs.seniorLev * state.target.ebitda) - (state.inputs.mezzLev * state.target.ebitda);
+                
+                const y0 = {
+                    year: 0,
+                    revenue: state.target.ebitda / 0.25, // Implied margin
+                    ebitda: state.target.ebitda,
+                    seniorDebt: state.inputs.seniorLev * state.target.ebitda,
+                    mezzDebt: state.inputs.mezzLev * state.target.ebitda,
+                    cash: 10,
+                    interest: 0,
+                    fcf: 0,
+                    capex: 0
+                };
+                
+                state.history = [y0]; // Clear history and start with Y0
+                state.status = 'ACTIVE';
+                state.year = 0;
+
+                document.getElementById('phase-structuring').classList.add('hidden');
+                document.getElementById('phase-operations').classList.remove('hidden');
+                
+                // Set initial covenant values for UI
+                document.getElementById('cov-lev').innerText = (state.inputs.seniorLev + state.inputs.mezzLev).toFixed(1) + 'x';
+                document.getElementById('cov-int').innerText = 'N/A';
+                
+                updateTable();
+                if (structureChart) {
+                    structureChart.destroy();
+                    performanceChart.destroy();
+                }
+                initCharts();
+                log(`Deal Closed. Equity Check: ₹${state.initialEquity.toFixed(1)} Cr.`);
+            },
+
+            runYear: () => {
+                if (state.isProcessing) return;
+                state.isProcessing = true;
+                const modal = document.getElementById('processing-modal');
+                const bar = document.getElementById('processing-bar');
+                modal.classList.remove('hidden');
+                bar.classList.add('animate-progress');
+                playProcessingSound();
+
+                setTimeout(() => {
+                    sim._runYearInternal();
+                    modal.classList.add('hidden');
+                    bar.classList.remove('animate-progress');
+                    state.isProcessing = false;
+                }, 3000);
+            },
+
+            _runYearInternal: () => {
+                const currentYear = state.history[state.history.length - 1];
+                const prevRev = currentYear.revenue;
+                
+                if (state.bankrupt) {
+                    log("Cannot proceed. Company is Bankrupt.");
+                    return;
+                }
+
+                // --- HARD MODE: Update Morale ---
+                let moraleChange = 0;
+                switch(state.inputs.strategy) {
+                    case 1: moraleChange = -15; break;
+                    case 2: moraleChange = -5; break;
+                    case 3: moraleChange = -2; break; 
+                    case 4: moraleChange = 2; break;
+                    case 5: moraleChange = 5; break;
+                }
+                state.morale = Math.max(0, Math.min(100, state.morale + moraleChange));
+                
+                // Color code morale and log (moved to updateUIFromState to keep this cleaner)
+                
+                if (state.morale < 50) log("⚠️ Low Morale causing brain drain (-8% Revenue).");
+
+                // --- HARD MODE: Determine Growth & Rates ---
+                let revGrowth = 0;
+                let marginImpact = 0;
+
+                switch(state.inputs.strategy) {
+                    case 1: revGrowth = -0.05; marginImpact = 0.05; break;
+                    case 2: revGrowth = 0.00; marginImpact = 0.02; break;
+                    case 3: revGrowth = 0.05; marginImpact = 0.00; break;
+                    case 4: revGrowth = 0.10; marginImpact = -0.02; break;
+                    case 5: revGrowth = 0.18; marginImpact = -0.05; break;
+                }
+                
+                // Brain Drain Penalty (Extreme)
+                if (state.morale < 50) revGrowth -= 0.08;
+
+                // Random Event
+                const roll = Math.random();
+                let macroMsg = "Stable Environment.";
+                
+                // Dynamic SOFR (Repo) changes - Extreme Volatility
+                if (roll < 0.30) {
+                    macroMsg = "⚠️ INFLATION SPIKE! RBI hikes repo rate.";
+                    state.currentSofr += 0.02; // 200 bps hike
+                    revGrowth -= 0.06;
+                } else if (roll > 0.90) {
+                    macroMsg = "🚀 Digital India Boom!";
+                    revGrowth += 0.06;
+                } else if (roll > 0.40 && roll < 0.55) {
+                    macroMsg = "📉 Recession Fears. Demand Slows.";
+                    revGrowth -= 0.05;
+                }
+
+                document.getElementById('macro-event-box').classList.remove('hidden');
+                document.getElementById('macro-text').innerText = macroMsg;
+
+                // Operations
+                const newRev = prevRev * (1 + revGrowth);
+                const currentMargin = (currentYear.ebitda / currentYear.revenue);
+                const newMargin = Math.max(0.05, Math.min(0.60, currentMargin + marginImpact)); 
+                const newEbitda = newRev * newMargin;
+
+                // Debt
+                const totalSeniorRate = state.currentSofr + state.currentSpread;
+                const seniorInt = currentYear.seniorDebt * totalSeniorRate;
+                const mezzIntCash = currentYear.mezzDebt * MEZZ_RATE_CASH;
+                const mezzIntPik = currentYear.mezzDebt * MEZZ_RATE_PIK;
+                const totalCashInterest = seniorInt + mezzIntCash;
+                
+                // Tax & Capex
+                const da = newRev * 0.03; 
+                const ebit = newEbitda - da;
+                const tax = Math.max(0, (ebit - totalCashInterest) * state.target.tax);
+                const capex = newRev * (state.inputs.capexPercent / 100);
+                
+                // --- HARD MODE: Working Capital Drag (15% of growth) ---
+                const nwcChange = (newRev - prevRev) * 0.15; 
+
+                const fcf = newEbitda - totalCashInterest - tax - capex - nwcChange;
+
+                // Sweep
+                let endSenior = currentYear.seniorDebt;
+                let endCash = currentYear.cash;
+                let sweep = 0;
+                
+                if (fcf > 0) {
+                    sweep = Math.min(fcf, endSenior);
+                    endSenior -= sweep;
+                    endCash += (fcf - sweep); 
+                } else {
+                    endCash += fcf; 
+                }
+
+                const endMezz = currentYear.mezzDebt + mezzIntPik;
+
+                // Covenants
+                const netDebt = endSenior + endMezz - endCash;
+                const netLev = newEbitda > 0 ? netDebt / newEbitda : 999;
+                const intCov = totalCashInterest > 0 ? newEbitda / totalCashInterest : 999;
+
+                const newYearData = {
+                    year: state.year + 1,
+                    revenue: newRev,
+                    ebitda: newEbitda,
+                    seniorDebt: endSenior,
+                    mezzDebt: endMezz,
+                    cash: endCash,
+                    interest: totalCashInterest,
+                    fcf: fcf,
+                    capex: capex
+                };
+
+                state.history.push(newYearData);
+                state.year++;
+
+                if (endCash < -5) {
+                    log("⚠️ CRITICAL: INSOLVENT. BANKRUPTCY FILED.");
+                    state.bankrupt = true;
+                    document.getElementById('header-cash').classList.add('text-red-500');
+                    sim.exitSim();
+                    return;
+                }
+                
+                if (netLev > 4.5 || intCov < 2.5) {
+                    log("⚠️ COVENANT BREACH! Penalty applied (+4%).");
+                    state.currentSpread += 0.04; // EXTREME DEATH SPIRAL
+                    state.breaches++;
+                }
+
+                log(`Y${state.year}: EBITDA ₹${newEbitda.toFixed(0)}Cr | FCF ₹${fcf.toFixed(0)}Cr | Rate ${(totalSeniorRate*100).toFixed(1)}%`);
+                updateUIFromState(); // Call the unified update function
+
+                if (state.year === 8) {
+                    document.getElementById('btn-run-year').classList.add('hidden');
+                    document.getElementById('btn-exit').classList.remove('hidden');
+                    log("Year 8 Reached. Prepare for Exit.");
+                }
+            },
+
+            exitSim: () => {
+                let exitMultiple = state.inputs.entryMult; 
+                const lastYear = state.history[state.history.length -1];
+                const firstYear = state.history[0];
+                
+                // --- HARD MODE: Multiple Compression ---
+                const totalGrowth = (lastYear.revenue - firstYear.revenue) / firstYear.revenue;
+                if (totalGrowth < 0.40) {
+                    exitMultiple -= 2.0; 
+                    log("⚠️ LOW GROWTH: Exit Multiple compressed by 2.0x.");
+                }
+
+                const enterpriseValue = lastYear.ebitda * exitMultiple;
+                const netDebt = lastYear.seniorDebt + lastYear.mezzDebt - lastYear.cash;
+                let equityValue = enterpriseValue - netDebt;
+                
+                if (state.bankrupt) equityValue = 0;
+
+                const moic = Math.max(0, equityValue / state.initialEquity);
+                const irr = (Math.pow(moic, 1/8) - 1) * 100;
+                
+                let scoreIRR = 0;
+                if (!state.bankrupt) {
+                    if (irr > 25) scoreIRR = 40;
+                    else if (irr > 20) scoreIRR = 20 + ((irr-20)/(5) * 20);
+                    else if (irr > 15) scoreIRR = ((irr-15)/(5) * 20);
+                }
+
+                let scoreMOIC = 0;
+                if (!state.bankrupt) {
+                    if (moic > 3.0) scoreMOIC = 30;
+                    else if (moic > 2.5) scoreMOIC = 20 + ((moic-2.5)/0.5 * 10);
+                    else if (moic > 2.0) scoreMOIC = ((moic-2.0)/0.5 * 20);
+                }
+
+                let scoreHealth = Math.max(0, 20 - (state.breaches * 10));
+                if (state.bankrupt) scoreHealth = 0;
+
+                let scoreOps = 0;
+                if (!state.bankrupt && totalGrowth > 0.40) scoreOps = 10;
+
+                let totalScore = Math.round(scoreIRR + scoreMOIC + scoreHealth + scoreOps);
+                if (state.bankrupt) totalScore = 0;
+
+                let badge = "Analyst (Fired)";
+                let badgeColor = "text-red-500";
+                if (totalScore >= 90) { badge = "Managing Partner"; badgeColor = "text-yellow-400"; }
+                else if (totalScore >= 75) { badge = "Principal"; badgeColor = "text-green-400"; }
+                else if (totalScore >= 60) { badge = "Vice President"; badgeColor = "text-blue-400"; }
+                else if (totalScore >= 40) { badge = "Associate"; badgeColor = "text-gray-300"; }
+
+                state.finalStats = { totalScore, badge, irr, moic };
+                state.status = 'COMPLETE';
+
+                document.getElementById('phase-operations').classList.add('hidden');
+                document.getElementById('phase-results').classList.remove('hidden');
+                document.getElementById('final-moic').innerText = moic.toFixed(2) + 'x';
+                document.getElementById('final-irr').innerText = (state.bankrupt ? 'N/A' : irr.toFixed(1) + '%');
+                
+                document.getElementById('final-score').innerText = totalScore + "/100";
+                document.getElementById('score-bar').style.width = totalScore + "%";
+                
+                const badgeEl = document.getElementById('rank-badge');
+                badgeEl.innerText = badge;
+                badgeEl.className = `mt-4 text-center py-2 bg-gray-900 rounded border border-gray-600 font-bold uppercase tracking-widest text-xs ${badgeColor}`;
+                
+                log(`EXIT COMPLETE. Score: ${totalScore}. Rank: ${badge}`);
+                
+                sim.generateReport(totalGrowth, state.breaches, state.morale);
+                localStorage.removeItem('fm_level1_save'); // Clear save on completion
+            },
+
+            generateReport: (growth, breaches, morale) => {
+                const reportEl = document.getElementById('detailed-report');
+                const contentEl = document.getElementById('report-content');
+                reportEl.classList.remove('hidden');
+                
+                // Create Detailed Analysis Logic
+                let analysis = {
+                    structure: {
+                        score: 0,
+                        text: ""
+                    },
+                    ops: {
+                        score: 0,
+                        text: ""
+                    },
+                    risk: {
+                        score: 0,
+                        text: ""
+                    },
+                    advice: []
+                };
+
+                // Analyze Structuring
+                const initEquityPct = (state.initialEquity / (state.inputs.entryMult * state.target.ebitda)) * 100;
+                if (initEquityPct < 30) {
+                    analysis.structure.text = `Aggressive Structure (${initEquityPct.toFixed(1)}% Equity). You leaned heavily on debt to juice returns. High risk, high reward.`;
+                } else if (initEquityPct > 50) {
+                    analysis.structure.text = `Conservative Structure (${initEquityPct.toFixed(1)}% Equity). You played it safe, which likely hurt your IRR.`;
+                } else {
+                    analysis.structure.text = `Balanced Structure (${initEquityPct.toFixed(1)}% Equity). Good mix of debt and equity.`;
+                }
+
+                // Analyze Operations
+                if (morale < 50) {
+                    analysis.ops.text = "Workforce Burnout. Persistent cost-cutting destroyed morale (" + morale + "%), causing a 'Brain Drain' revenue penalty.";
+                    analysis.advice.push("Avoid consecutive years of 'Aggressive Cost Cutting'. It kills long-term value.");
+                } else if (growth < 0.40) {
+                    analysis.ops.text = "Stagnation. Revenue growth (" + (growth*100).toFixed(1) + "%) was insufficient to justify multiple expansion.";
+                    analysis.advice.push("Shift strategy to 'Growth' in later years (Y5-8) to boost exit valuation.");
+                } else {
+                    analysis.ops.text = "Strong Execution. You balanced growth and efficiency well.";
+                }
+
+                // Analyze Risk
+                if (breaches > 0) {
+                    analysis.risk.text = `Distressed Asset. You breached covenants ${breaches} times, triggering the Interest Rate Death Spiral.`;
+                    analysis.advice.push("Maintain a higher Interest Coverage Ratio (> 2.5x) by using less Senior Debt or growing EBITDA faster.");
+                } else {
+                    analysis.risk.text = "Clean Sheet. No covenant breaches despite the volatile macro environment.";
+                }
+
+                // Build HTML
+                let html = `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div class="bg-gray-800 p-3 rounded border border-gray-700">
+                            <h4 class="text-xs text-gray-400 uppercase font-bold mb-1">Deal Structuring</h4>
+                            <p class="text-xs text-gray-300">${analysis.structure.text}</p>
+                        </div>
+                        <div class="bg-gray-800 p-3 rounded border border-gray-700">
+                            <h4 class="text-xs text-gray-400 uppercase font-bold mb-1">Operational Strategy</h4>
+                            <p class="text-xs text-gray-300">${analysis.ops.text}</p>
+                        </div>
+                        <div class="bg-gray-800 p-3 rounded border border-gray-700">
+                            <h4 class="text-xs text-gray-400 uppercase font-bold mb-1">Risk Management</h4>
+                            <p class="text-xs text-gray-300">${analysis.risk.text}</p>
+                        </div>
+                        <div class="bg-blue-900/20 p-3 rounded border border-blue-800">
+                            <h4 class="text-xs text-blue-400 uppercase font-bold mb-1"><i class="fa-solid fa-lightbulb mr-1"></i> Key Takeaway</h4>
+                            <ul class="text-xs text-blue-200 list-disc pl-4">
+                                ${analysis.advice.length > 0 ? analysis.advice.map(a => `<li>${a}</li>`).join('') : "<li>Excellent run. You mastered the simulation. Try a harder target next time.</li>"}
+                            </ul>
+                        </div>
+                    </div>
+                `;
+                
+                contentEl.innerHTML = html;
+            },
+
+            downloadReport: () => {
+                const date = new Date().toLocaleDateString();
+                const reportHTML = `
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>Investment Committee Report - ${state.playerName}</title>
+                        <style>
+                            body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #333; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 40px; }
+                            h1 { color: #b91c1c; border-bottom: 2px solid #b91c1c; padding-bottom: 10px; }
+                            h2 { color: #333; margin-top: 30px; font-size: 18px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+                            .header { display: flex; justify-content: space-between; margin-bottom: 40px; }
+                            .metric-box { background: #f8f9fa; padding: 15px; border-radius: 5px; border: 1px solid #ddd; text-align: center; width: 22%; display: inline-block; margin-right: 2%; }
+                            .metric-val { font-size: 24px; font-weight: bold; color: #b91c1c; display: block; }
+                            .metric-label { font-size: 12px; color: #666; text-transform: uppercase; }
+                            table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 12px; }
+                            th, td { border: 1px solid #ddd; padding: 8px; text-align: right; }
+                            th { background-color: #f2f2f2; text-align: center; }
+                            td:first-child { text-align: left; font-weight: bold; }
+                            .footer { margin-top: 50px; font-size: 10px; color: #999; text-align: center; border-top: 1px solid #eee; padding-top: 20px; }
+                            .watermark { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 100px; color: rgba(0,0,0,0.03); z-index: -1; pointer-events: none; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="watermark">CONFIDENTIAL</div>
+                        <div class="header">
+                            <div>
+                                <strong>Taxila Business School</strong><br>
+                                FINANCIAL MODELING LEVEL-1
+                            </div>
+                            <div style="text-align: right;">
+                                <strong>Date:</strong> ${date}<br>
+                                <strong>Manager:</strong> ${state.playerName}
+                            </div>
+                        </div>
+
+                        <h1>Investment Exit Memorandum</h1>
+                        <p><strong>Target:</strong> ${state.target.name} (${state.target.industry})</p>
+
+                        <div style="margin: 30px 0;">
+                            <div class="metric-box">
+                                <span class="metric-val">${state.finalStats.badge}</span>
+                                <span class="metric-label">Final Rank</span>
+                            </div>
+                            <div class="metric-box">
+                                <span class="metric-val">${state.finalStats.totalScore}/100</span>
+                                <span class="metric-label">Score</span>
+                            </div>
+                            <div class="metric-box">
+                                <span class="metric-val">${state.finalStats.irr.toFixed(1)}%</span>
+                                <span class="metric-label">IRR</span>
+                            </div>
+                            <div class="metric-box">
+                                <span class="metric-val">${state.finalStats.moic.toFixed(2)}x</span>
+                                <span class="metric-label">MOIC</span>
+                            </div>
+                        </div>
+
+                        <h2>Deal Summary</h2>
+                        <p>The fund acquired ${state.target.name} using a leverage multiple of ${(state.inputs.seniorLev + state.inputs.mezzLev).toFixed(1)}x EBITDA. The exit occurred in Year 8.</p>
+                        
+                        <h2>Financial Performance (INR Cr)</h2>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Metric</th>
+                                    <th>Entry</th>
+                                    <th>Y1</th>
+                                    <th>Y2</th>
+                                    <th>Y3</th>
+                                    <th>Y4</th>
+                                    <th>Y5</th>
+                                    <th>Y6</th>
+                                    <th>Y7</th>
+                                    <th>Exit</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Revenue</td>
+                                    ${state.history.map(h => `<td>${h.revenue.toFixed(0)}</td>`).join('')}
+                                </tr>
+                                <tr>
+                                    <td>EBITDA</td>
+                                    ${state.history.map(h => `<td>${h.ebitda.toFixed(0)}</td>`).join('')}
+                                </tr>
+                                <tr>
+                                    <td>Senior Debt</td>
+                                    ${state.history.map(h => `<td>${h.seniorDebt.toFixed(0)}</td>`).join('')}
+                                </tr>
+                                <tr>
+                                    <td>Cash</td>
+                                    ${state.history.map(h => `<td>${h.cash.toFixed(0)}</td>`).join('')}
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <h2>Risk Analysis</h2>
+                        <ul>
+                            <li><strong>Covenant Breaches:</strong> ${state.breaches}</li>
+                            <li><strong>Final Morale:</strong> ${state.morale}%</li>
+                            <li><strong>Bankruptcy Event:</strong> ${state.bankrupt ? "YES" : "NO"}</li>
+                        </ul>
+
+                        <h2>Strategic Recommendation</h2>
+                        <p>${document.getElementById('report-content').innerText}</p>
+
+                        <div class="footer">
+                            Generated by Project Alpha Financial Modeling Simulator.<br>
+                            Verified by Prof. Rajat Bohra, Dean.
+                        </div>
+                    </body>
+                    </html>
+                `;
+
+                const blob = new Blob([reportHTML], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Performance_Report_${state.playerName.replace(/\s+/g, '_')}.html`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            },
+
+            downloadCertificate: () => {
+                const canvas = document.getElementById('certCanvas');
+                const ctx = canvas.getContext('2d');
+                
+                // Clear
+                ctx.fillStyle = "#fffaf0"; // Parchment
+                ctx.fillRect(0, 0, 800, 600);
+                
+                // Border
+                ctx.strokeStyle = "#ea580c"; // Orange
+                ctx.lineWidth = 20;
+                ctx.strokeRect(20, 20, 760, 560);
+                ctx.strokeStyle = "#16a34a"; // Green inner
+                ctx.lineWidth = 5;
+                ctx.strokeRect(35, 35, 730, 530);
+                
+                // Text
+                ctx.fillStyle = "#ea580c";
+                ctx.font = "bold 40px 'Playfair Display', serif";
+                ctx.textAlign = "center";
+                ctx.fillText("Certificate of Achievement", 400, 100);
+                
+                ctx.font = "20px 'Inter', sans-serif";
+                ctx.fillStyle = "#374151";
+                ctx.fillText("This certifies that", 400, 160);
+                
+                ctx.font = "bold 50px 'Playfair Display', serif";
+                ctx.fillStyle = "#000000";
+                ctx.fillText(state.playerName, 400, 230);
+                
+                ctx.font = "20px 'Inter', sans-serif";
+                ctx.fillStyle = "#374151";
+                ctx.fillText("Has successfully completed the simulation", 400, 290);
+                
+                ctx.font = "bold 30px 'Inter', sans-serif";
+                ctx.fillStyle = "#dc2626";
+                ctx.fillText("FINANCIAL MODELING LEVEL-1", 400, 340);
+                
+                // Stats
+                ctx.font = "24px 'Inter', sans-serif";
+                ctx.fillStyle = "#1e3a8a";
+                ctx.fillText(`Rank: ${state.finalStats.badge}`, 400, 400);
+                ctx.font = "18px 'Inter', sans-serif";
+                ctx.fillStyle = "#4b5563";
+                ctx.fillText(`Score: ${state.finalStats.totalScore}/100  |  IRR: ${state.finalStats.irr.toFixed(1)}%`, 400, 430);
+                
+                // Signatures
+                ctx.font = "italic 24px 'Playfair Display', serif";
+                ctx.fillStyle = "#000000";
+                ctx.textAlign = "left";
+                ctx.fillText("Prof. Rajat Bohra", 100, 520);
+                ctx.font = "14px 'Inter', sans-serif";
+                ctx.fillStyle = "#6b7280";
+                ctx.fillText("Dean, Taxila Business School", 100, 540);
+                
+                ctx.beginPath();
+                ctx.moveTo(100, 490);
+                ctx.lineTo(300, 490);
+                ctx.strokeStyle = "#000";
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                
+                // Date
+                const date = new Date().toLocaleDateString();
+                ctx.textAlign = "right";
+                ctx.font = "16px 'Inter', sans-serif";
+                ctx.fillText(`Date: ${date}`, 700, 540);
+
+                // Download
+                const link = document.createElement('a');
+                link.download = `Certificate-${state.playerName}.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+            },
+            
+            shareLinkedIn: () => {
+                const text = `I just completed the Financial Modeling Level-1 Simulation by Taxila Business School! Rank: ${state.finalStats.badge} with a score of ${state.finalStats.totalScore}/100. #Finance #PE #TaxilaBusinessSchool #LBO #India`;
+                const url = `https://www.linkedin.com/feed/?shareActive=true&text=${encodeURIComponent(text)}`;
+                window.open(url, '_blank');
+            }
+        };
+
+        function log(msg) {
+            const el = document.getElementById('game-log');
+            const entry = document.createElement('div');
+            entry.innerText = `> ${msg}`;
+            if(msg.includes('⚠️')) entry.classList.add('text-red-400', 'font-bold');
+            if(msg.includes('CRITICAL')) entry.classList.add('text-red-500', 'font-bold');
+            if(msg.includes('🚀')) entry.classList.add('text-green-400');
+            el.appendChild(entry);
+            el.scrollTop = el.scrollHeight;
+        }
+
+        function updateHeader(data) {
+            document.getElementById('header-year').innerText = `YEAR: ${data.year}`;
+            document.getElementById('header-cash').innerText = `CASH: ₹${data.cash.toFixed(1)} Cr`;
+        }
+
+        function updateTable() {
+            const tableBody = document.querySelector('#financial-table tbody');
+            tableBody.innerHTML = ''; 
+
+            const rows = [
+                { id: 'revenue', label: 'Revenue' },
+                { id: 'ebitda', label: 'EBITDA', bold: true },
+                { id: 'margin', label: '% Margin', isPct: true },
+                { id: 'capex', label: '(Capex)' },
+                { id: 'interest', label: '(Interest)' },
+                { id: 'fcf', label: 'Free Cash Flow', bold: true },
+                { id: 'seniorDebt', label: 'Senior Debt' },
+                { id: 'mezzDebt', label: 'Mezz Debt' },
+                { id: 'cash', label: 'Cash Balance' }
+            ];
+
+            rows.forEach(row => {
+                const tr = document.createElement('tr');
+                let html = `<td class="${row.bold ? 'font-bold text-gray-200' : ''}">${row.label}</td>`;
+                for(let i=0; i<=8; i++) {
+                    if (state.history[i]) {
+                        let val = state.history[i][row.id];
+                        if (row.id === 'margin') val = (state.history[i].ebitda / state.history[i].revenue) * 100;
+                        let displayVal = val.toFixed(1);
+                        let colorClass = '';
+                        if (row.isPct) displayVal += '%';
+                        if (row.id === 'fcf' || row.id === 'cash') {
+                            if (val < 0) colorClass = 'neg'; else colorClass = 'pos';
+                        }
+                        html += `<td class="${colorClass}">${displayVal}</td>`;
+                    } else {
+                        html += `<td class="text-gray-700">-</td>`;
+                    }
+                }
+                tr.innerHTML = html;
+                tableBody.appendChild(tr);
+            });
+        }
+
+        function initCharts() {
+            const ctx1 = document.getElementById('structureChart').getContext('2d');
+            const ctx2 = document.getElementById('performanceChart').getContext('2d');
+            Chart.defaults.color = '#6b7280';
+            Chart.defaults.font.family = 'JetBrains Mono';
+
+            // Destroy existing charts if they exist
+            if (structureChart) structureChart.destroy();
+            if (performanceChart) performanceChart.destroy();
+
+            // Initial Data points
+            const initialData = state.history.length > 0 ? state.history[0] : { seniorDebt: 0, mezzDebt: 0, cash: 10, ebitda: 0, interest: 0 };
+            
+            structureChart = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: ['Y0'],
+                    datasets: [
+                        { label: 'Senior', data: [initialData.seniorDebt], backgroundColor: '#ea580c', stack: 'Stack 0' },
+                        { label: 'Mezz', data: [initialData.mezzDebt], backgroundColor: '#a855f7', stack: 'Stack 0' },
+                        { label: 'Cash', data: [initialData.cash - 10], backgroundColor: '#22c55e', stack: 'Stack 0' }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { x: { grid: { display: false } }, y: { stacked: true, grid: { color: '#374151' } } }, plugins: { legend: { position: 'bottom' } } }
+            });
+
+            performanceChart = new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: ['Y0'],
+                    datasets: [
+                        { label: 'EBITDA', data: [initialData.ebitda], borderColor: '#4ade80', tension: 0.1 },
+                        { label: 'Interest', data: [initialData.interest], borderColor: '#f87171', borderDash: [5, 5] }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { x: { grid: { display: false } }, y: { grid: { color: '#374151' } } }, plugins: { legend: { position: 'bottom' } } }
+            });
+        }
+
+        function updateCharts() {
+            if (!structureChart || !performanceChart) return;
+            
+            const labels = state.history.map(h => `Y${h.year}`);
+            
+            // Structure Chart
+            structureChart.data.labels = labels;
+            structureChart.data.datasets[0].data = state.history.map(h => h.seniorDebt);
+            structureChart.data.datasets[1].data = state.history.map(h => h.mezzDebt);
+            // Cash stacking adjustment needs to be done carefully to represent total capital structure at that point.
+            // For now, let's keep it simple or remove the cash from the stack to focus on debt. 
+            // The original logic was: state.history.map(h => h.year === 0 ? 0 : (h.cash - 10));
+            // Let's ensure 'Cash' only shows the *excess/deficit* and is plotted separately or stick to the debt. Sticking to the original simplified logic for now.
+            structureChart.data.datasets[2].data = state.history.map(h => h.cash); 
+            
+            // Performance Chart
+            performanceChart.data.labels = labels;
+            performanceChart.data.datasets[0].data = state.history.map(h => h.ebitda);
+            performanceChart.data.datasets[1].data = state.history.map(h => h.interest);
+            
+            structureChart.update();
+            performanceChart.update();
+        }
+        
+        // Initial setup call
+        document.addEventListener('DOMContentLoaded', init);
+
+    </script>
+</body>
+</html>
