@@ -49,14 +49,28 @@ export async function POST(req) {
 
     const event = record.events.find(e => e.name === eventName);
 
+    let certificateName = record.participant.name;
+
+    // ✅ IF EMAIL MATCHES A TEAM MEMBER
+    if (event?.isTeamEvent && event.teamMembers?.length) {
+      const teamMember = event.teamMembers.find(
+        member => member.email === email
+      );
+
+      if (teamMember) {
+        certificateName = teamMember.name;
+      }
+    }
+
     return NextResponse.json(
       {
         success: true,
         data: {
-          name: record.participant.name,
+          name: certificateName,
           college: record.participant.college,
           eventName: event.name,
           position: "Participant",
+          isTeamEvent: event.isTeamEvent || false,
         },
       },
       { headers: corsHeaders }
