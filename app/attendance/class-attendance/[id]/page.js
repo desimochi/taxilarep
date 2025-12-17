@@ -169,7 +169,9 @@ export default function Page() {
                                 <th scope="col" className="px-6 py-3">Enrollment No.</th>
                                 <th scope="col" className="px-6 py-3">Present</th>
                                 <th scope="col" className="px-6 py-3">Absent</th>
+                                
                                 {isCEPresent && <th scope="col" className="px-6 py-3">CE Marks</th>}
+                                <th scope="col" className="px-6 py-3">Leave Reason</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -237,6 +239,9 @@ export default function Page() {
       }
     />
                                     </td>}
+                                      <td className="px-6 py-4">
+                                        {`${student.leave_reason}`}
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>

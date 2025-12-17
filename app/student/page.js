@@ -200,61 +200,7 @@ const dashboardBgClass2 = () => {
       isMounted = false;
     };
   }, [studentId, termId]);
-async function handlePayment() {
-  const res = await authFetch("create-order", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({enrollment:"PGDM2024002", amount: 500, fee_type:1 }) // INR
-  });
 
-  const data = await res.json();
-console.log(data)
-  const options = {
-  key: "rzp_test_RqHzPxuaD8vitF",
-  name: "Taxila Business School",
-  description: "Payment",
-  order_id: data.razorpay_order_id,
-
-  handler: async function (response) {
-    // Razorpay sends these 3 values
-    const payload = {
-      razorpay_order_id: response.razorpay_order_id,
-      razorpay_payment_id: response.razorpay_payment_id,
-      razorpay_signature: response.razorpay_signature,
-    };
-
-    try {
-      const res = await authFetch("payment-success", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const result = await res.json();
-
-      if (!res.ok) {
-        throw new Error(result.error || "Payment verification failed");
-      }
-
-      console.log("Payment verified successfully", result);
-      // ✅ redirect / show success message here
-
-    } catch (err) {
-      console.error("Payment verification error:", err);
-      // ❌ show failure message here
-    }
-  },
-
-  theme: {
-    color: "#3399cc",
-  },
-};
-
-  const rzp = new window.Razorpay(options);
-  rzp.open();
-}
 
   /* ====================================================
       LOADING
@@ -341,9 +287,7 @@ console.log(data)
             </Link>
           </div>
         </div>
-{/* <button onClick={handlePayment}>
-  Pay Now
-</button> */}
+
         {/* RIGHT SIDE */}
         <div className="lg:w-3/4 space-y-6">
           {/* Class Details */}

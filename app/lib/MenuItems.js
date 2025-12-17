@@ -119,7 +119,8 @@ export const menuItems = [
       label: "Accounts",
       icon: <IndianRupee className="h-5 w-5" />,
       subMenu: [
-        { label: "Fee Management", path: "/fees-management" },
+        { label: "Fee Details Student", path: "/fees-management" },
+        { label: "Fee Management", path: "/accounts/fee-type" },
           {
       label: "Fail Students",
       icon: <NewspaperIcon className="h-5 w-5" />,
@@ -244,6 +245,7 @@ export const menuItems = [
     { label: "Class Schedule", icon: <BookCopyIcon className="h-5 w-5" />, path: "/student/class-schedule" },
     { label: "Leave Management", icon: <Paperclip className="h-5 w-5" />, path: "/student/leave-management" },
     { label: "Exam Schedule", icon: <PenBox className="h-5 w-5" />, path: "/student/exam-schedule" },
+    { label: "Fee Management", icon: <IndianRupee className="h-5 w-5" />, path: "/student/fees" },
      { label: "Taxila Curreny", icon: <IndianRupee className="h-5 w-5" />, path: "/taxila-currency/wallet" },
     {label : "Simulations", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Startup Simluation",  icon: <Gamepad className="h-5 w-5" />, path:"/game/simulation"},
@@ -321,6 +323,7 @@ export const menuItems = [
       subMenu: [
         { label: "Department", path: "/admin/department" },
         { label: "Salutation", path: "/admin/salutation" },
+        { label: "Fee Management", path: "/accounts/fee-type" },
         { label: "Role Management", path: "/admin/role-manager" },
         { label: "Designation", path: "/admin/designation" },
         { label: "All Employee", path: "/all-employee" },
@@ -375,7 +378,8 @@ export const menuItems = [
       label: "Accounts",
       icon: <IndianRupee className="h-5 w-5" />,
       subMenu: [
-        { label: "Fee Management", path: "/fees-management" },
+        { label: "Fee Details Student", path: "/fees-management" },
+        { label: "Fee Management", path: "/accounts/fee-type" },
       ],
     },
   ]
