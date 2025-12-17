@@ -144,7 +144,7 @@ export default function StudentCustomFeeList() {
                   </td>
 <td className="border p-2">
                     {!fee.is_paid ? (
-                      <button onClick={() => handlePay(fee.amount,fee.id, fee.fee_type?.id)} className="bg-red-700 text-red-50 px-2 py-1 rounded text-xs">
+                      <button onClick={() => handlePay(fee.amount, fee.fee_type?.id, fee.id)} className="bg-red-700 text-red-50 px-2 py-1 rounded text-xs">
                         Pay Now
                       </button>
                     ) : (
