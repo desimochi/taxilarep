@@ -1,6 +1,22 @@
 import clientPromise from "@/lib/mongodb";
 import { NextResponse } from "next/server";
 
+/* ---------- CORS HEADERS ---------- */
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
+/* ---------- PREFLIGHT ---------- */
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: corsHeaders,
+  });
+}
+
+/* ---------- POST ---------- */
 export async function POST(req) {
   try {
     const { email, eventName } = await req.json();
@@ -8,15 +24,14 @@ export async function POST(req) {
     if (!email || !eventName) {
       return NextResponse.json(
         { success: false, message: "Email and event are required" },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
     const client = await clientPromise;
     const db = client.db();
-    const collection = db.collection("registrations"); // change if needed
+    const collection = db.collection("registrations");
 
-    // Find by participant email OR team member email + event match
     const record = await collection.findOne({
       "events.name": eventName,
       $or: [
@@ -28,26 +43,30 @@ export async function POST(req) {
     if (!record) {
       return NextResponse.json(
         { success: false, message: "No record found" },
-        { status: 404 }
+        { status: 404, headers: corsHeaders }
       );
     }
 
     const event = record.events.find(e => e.name === eventName);
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        name: record.participant.name,
-        college: record.participant.college,
-        eventName: event.name,
+    return NextResponse.json(
+      {
+        success: true,
+        data: {
+          name: record.participant.name,
+          college: record.participant.college,
+          eventName: event.name,
+          position: "Participant",
+        },
       },
-    });
+      { headers: corsHeaders }
+    );
 
   } catch (error) {
     console.error(error);
     return NextResponse.json(
       { success: false, message: "Server error" },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 }
