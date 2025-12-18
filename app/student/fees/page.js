@@ -5,6 +5,9 @@ import { authFetch } from "@/app/lib/fetchWithAuth";
 import { GlobalContext } from "@/components/GlobalContext";
 import toast from "react-hot-toast";
 import { handlePayment } from "@/lib/payments";
+import Link from "next/link";
+import { History } from "lucide-react";
+import BackButton from "@/components/ui/Backbutton";
 export default function StudentCustomFeeList() {
   const [fees, setFees] = useState([]);
   const [student, setStudent] = useState(null);
@@ -70,7 +73,10 @@ export default function StudentCustomFeeList() {
     <div className="space-y-6">
       {/* STUDENT INFO */}
       {student && (
-        <div className="bg-white rounded-xl shadow p-6">
+        <>
+        <div className="flex justify-between items-center px-12">
+      
+        <div className="bg-white p-6">
           <h2 className="text-xl font-bold mb-2">
             {student.first_name} {student.last_name}
           </h2>
@@ -84,10 +90,15 @@ export default function StudentCustomFeeList() {
             Batch: {student.batch?.name} | Course: {student.course?.name}
           </p>
         </div>
+        <Link href="/student/fees/transactions" className="flex gap-2 items-center bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition">
+        <History /> View Payment Transactions
+      </Link>
+        </div>
+        </>
       )}
 
       {/* FEES TABLE */}
-      <div className="bg-white rounded-xl shadow p-6">
+      <div className="bg-white pb-6 px-16">
         <h3 className="text-lg font-bold mb-4">Fee Details</h3>
 
         <div className="overflow-x-auto">

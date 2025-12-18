@@ -523,4 +523,9 @@ export const EPGDMAdmin = [
     },
 
   ];
+
+  export const PlacementHead = [
+     { label: "Leave Management", icon: <Paperclip className="h-5 w-5" />, path: "/leaves" },
+
+  ];
   
