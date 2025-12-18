@@ -255,7 +255,7 @@ const handleSubmitEdit = async (e) => {
               <>
 
                     <iframe
-                      src={`https://api.taxila.in/exam-paper-file/${editData.id}`}
+                      src={`https://taxila.in/exam-paper-file/${editData.id}`}
                       className="w-full h-full border-none"
                         title="Document Preview"
                         />
