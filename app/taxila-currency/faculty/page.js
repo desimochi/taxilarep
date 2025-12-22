@@ -1,115 +1,163 @@
-"use client"
-import { authFetch } from "@/app/lib/fetchWithAuth"
+"use client";
+
+import { useContext, useEffect, useState } from "react";
+import BulkProjectModal from "./BulkProjectModal";
 import { GlobalContext } from "@/components/GlobalContext";
-import FullWidthLoader from "@/components/Loaader";
-import { EyeIcon } from "lucide-react";
-import Link from "next/link";
-import { useContext, useEffect, useState } from "react"
+import { authFetch } from "@/app/lib/fetchWithAuth";
+import EditTaxilaCurrencyModal from "./EditTaxilaCurrencyModal";
+import AddObtainedCurrencyModal from "./AddObtainedCurrencyModal";
 
-export default function Page(){
-    const [mentee, setMentee] = useState([]);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [loading, setLoading] = useState(false)
-    const { state } = useContext(GlobalContext);
+export default function CreateBulkProject() {
+  const [open, setOpen] = useState(false);
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [currencyProject, setCurrencyProject] = useState(null);
 
-    useEffect(() => {
-        const fetchedMentorshipData = async () => {
-            try {
-                setLoading(true)
-                const response = await authFetch(`membership-viewset/students-by-faculty/${state.user_id}`);
-                const result = await response.json();
-                if(response.ok){
-                  setMentee(result.data);
-                  setLoading(false)
-                } 
-            } catch (error) {
-                alert("Not Able to Fetch");
-            }
-        }
-        fetchedMentorshipData();
-    }, [state.user_id]);
+const [editProject, setEditProject] = useState(null);
+  const { state } = useContext(GlobalContext);
+  const facId = state.user_id;
 
-    // Filter mentees based on full name or email
-    const filteredMentees = Array.isArray(mentee) ? mentee.filter(stu => {
-        const fullName = `${stu?.first_name || ""} ${stu?.middle_name || ""} ${stu?.last_name || ""}`.toLowerCase();
-        return (
-            fullName.includes(searchTerm.toLowerCase()) || 
-            (stu?.user?.email || "").toLowerCase().includes(searchTerm.toLowerCase())
-        );
-    }) : [];
+  const fetchProjects = async () => {
+    setLoading(true);
+    try {
+      const res = await authFetch(
+        `taxila-currnency-project-faculty-wise/${facId}`
+      );
+      const data = await res.json();
+      setProjects(data.data || []);
+    } catch (err) {
+      console.error(err);
+    }
+    setLoading(false);
+  };
 
-    return (
-        <section className="relative">
-    <div className="bg-violet-200 w-full sm:w-80 h-40 rounded-full absolute top-1 opacity-20 max-sm:left-0 sm:right-56 z-0"></div>
-    <div className="bg-violet-300 w-full sm:w-40 h-24 absolute top-0 -right-0 opacity-20 z-0"></div>
-    <div className="bg-violet-500 w-full sm:w-40 h-24 absolute top-40 -right-0 opacity-20 z-0"></div>
-    <div className="w-full pt-12 px-2 sm:px-16 relative z-10 backdrop-blur-3xl min-h-screen">
-    <h1 className="text-3xl font-bold mb-2 font-sans">Taxila Curreny Projects </h1>
-            <p className="text-sm text-gray-500 mb-8">Everyhting you need to know about Your Mentorship Responsbilities</p>
-            <hr className=" border  border-spacing-y-0.5 mb-6"/>
-            <div className="flex gap-2 justify-between">
-                            <input 
-                                type="text" 
-                                placeholder="Search by name or email..." 
-                                className="p-2 rounded-sm text-gray-700 w-fit border border-gray-300" 
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                        </div>
-        <div className="">
-        
+  useEffect(() => {
+    if (facId) fetchProjects();
+  }, [facId]);
 
-            {loading?<FullWidthLoader/> :
-            <div className="overflow-x-auto shadow-md sm:rounded-lg">
-            <table className="overflow-x-auto w-full text-center mt-4">
-                <thead className="min-w-full border border-red-200 rounded-lg">
-                    <tr  className="text-red-700 bg-red-50 font-normal text-sm border-b">
-                        <th className="px-6 py-3">S.No.</th>
-                        <th className="px-6 py-3">Student Name</th>
-                        <th className="px-6 py-3">Enrollment No.</th>
-                        <th className="px-6 py-3">Email</th>
-                        <th className="px-6 py-3">Batch</th>
-                        <th className="px-6 py-3">Course</th>
-                        <th className="px-6 py-3">See Projects</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {filteredMentees.length > 0 ? (
-                        filteredMentees.map((stu, index) => (
-                            <tr key={stu.id} className="border-b text-sm">
-                                <td className="px-6 py-4 border-r-2 border-l-2">{index + 1}</td>
-                                <td className="px-6 py-4 border-r-2">
-                                    {`${stu?.first_name || ""} ${stu?.middle_name || ""} ${stu?.last_name || ""}`.trim() || "N/A"}
-                                </td>
-                                <td className="px-6 py-4 border-r-2">
-                                    {stu?.enrollment_number || "N/A"}
-                                </td>
-                                <td className="px-6 py-4 border-r-2">
-                                    {stu?.user?.email || "N/A"}
-                                </td>
-                                <td className="px-6 py-4 border-r-2">
-                                    {stu?.batch?.name || "N/A"}
-                                </td>
-                                <td className="px-6 py-4 border-r-2">
-                                    {stu?.course?.name || "N/A"}
-                                </td>
-                                <td className="px-6 py-4 flex items-center justify-center">
-                                   <Link href={`/taxila-currency/${stu.id}`} className="font-medium text-green-800 bg-green-100 px-2 py-0.5 rounded-sm text-xs border border-green-200 hover:underline flex items-center w-fit">
-                                     <EyeIcon className="h-4 w-4"  /> Details </Link>
-                                </td>
-                            </tr>
-                        ))
-                    ) : (
-                        <tr>
-                            <td colSpan="7" className="px-6 py-4 text-center">No students Assigned Yet</td>
-                        </tr>
-                    )}
-                </tbody>
+  return (
+    <>
+      {/* Header */}
+      <div className="flex justify-between items-center mb-4 px-12 py-8">
+        <h1 className="text-2xl font-bold">Taxila Currency Project</h1>
+
+        <button
+          onClick={() => setOpen(true)}
+          className="px-4 py-2 bg-red-600 text-white rounded"
+        >
+          Create Bulk Project
+        </button>
+      </div>
+
+      {/* Table */}
+      <div className="px-12">
+        {loading ? (
+          <p>Loading...</p>
+        ) : (
+          <div className="overflow-x-auto border rounded">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="p-2 text-left">Student</th>
+                  <th className="p-2 text-left">Email</th>
+                  <th className="p-2 text-left">Batch</th>
+                  <th className="p-2 text-left">Project</th>
+                  <th className="p-2 text-left">Date</th>
+                  <th className="p-2 text-left">Days</th>
+                  <th className="p-2 text-left">Currency</th>
+                  <th className="p-2 text-left">Obtained</th>
+                  <th className="p-2 text-left">Status</th>
+                  <th className="p-2 text-left">Action</th>
+                  <th className="p-2 text-left">Currency</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {projects.length === 0 && (
+                  <tr>
+                    <td colSpan={9} className="p-4 text-center text-gray-500">
+                      No projects found
+                    </td>
+                  </tr>
+                )}
+
+                {projects.map((p) => (
+                  <tr key={p.id} className="border-t">
+                    <td className="p-2 font-medium">
+                      {p.student.first_name} {p.student.last_name}
+                    </td>
+                    <td className="p-2">{p.student.user.email}</td>
+                    <td className="p-2">{p.student.batch?.name}</td>
+                    <td className="p-2">{p.project_name}</td>
+                    <td className="p-2">{p.project_date}</td>
+                    <td className="p-2">{p.project_days}</td>
+                    <td className="p-2 font-semibold">
+                      {p.taxila_currency}
+                    </td>
+                    <td className="p-2">{p.obtained_currency}</td>
+                    <td className="p-2">
+                      <span
+                        className={`px-2 py-1 rounded text-xs ${
+                          p.project_status === "Approved"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-yellow-100 text-yellow-700"
+                        }`}
+                      >
+                        {p.project_status}
+                      </span>
+                    </td>
+
+                    <td className="p-2">
+  <button
+    onClick={() => setEditProject(p)}
+    className="text-blue-600 hover:underline text-sm"
+  >
+    Edit
+  </button>
+</td>
+<td className="p-2">
+  {p.is_disable_after_add_one_time_obtained_currency ? (
+    <span className="text-gray-500 text-xs">Already Added</span>
+  ) : (
+    <button
+      onClick={() => setCurrencyProject(p)}
+      className="text-green-600 hover:underline text-sm"
+    >
+      Award Currency
+    </button>
+  )}
+</td>
+                  </tr>
+                ))}
+              </tbody>
             </table>
-            </div>
-}
-        </div>
-        </div>
-        </section>
-    )
+          </div>
+        )}
+      </div>
+{editProject && (
+  <EditTaxilaCurrencyModal
+    project={editProject}
+    onClose={() => setEditProject(null)}
+    onSuccess={fetchProjects}
+  />
+)}
+{currencyProject && (
+  <AddObtainedCurrencyModal
+    project={currencyProject}
+    onClose={() => setCurrencyProject(null)}
+    onSuccess={fetchProjects}
+  />
+)}
+      {/* Modal */}
+      {open && (
+        <BulkProjectModal
+          onClose={() => {
+            setOpen(false);
+            fetchProjects(); // refresh after create
+          }}
+          facultyId={facId}
+        />
+      )}
+    </>
+  );
 }

@@ -5,6 +5,7 @@ import { authFetch } from "@/app/lib/fetchWithAuth";
 import Link from "next/link";
 import { ArrowLeft, CrossIcon, DownloadCloudIcon, DownloadIcon } from "lucide-react";
 import { GlobalContext } from "@/components/GlobalContext";
+import toast from "react-hot-toast";
 
 export default function ListSubject({enrollment_number}) {
     const [term, setTerm] = useState([]);
@@ -121,10 +122,10 @@ console.log({type: "main", term:formData.term, enrollment_number})
             });
             const data = await response.json();
             if (!response.ok) {
-                setError(data.message)
+                throw new Error(data.message);
             }
         } catch (err){
-            setError(err.m)
+            return toast.error(err.message || "Error enhancing marks");
         }
   }
     

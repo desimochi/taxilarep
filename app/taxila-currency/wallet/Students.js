@@ -6,6 +6,7 @@ import { authFetch } from "@/app/lib/fetchWithAuth";
 import { Edit, EyeIcon, SendIcon } from "lucide-react";
 import Toast from "@/components/Toast";
 import { GlobalContext } from "@/components/GlobalContext";
+import toast from "react-hot-toast";
 
 export default function StudentsList() {
 
@@ -96,17 +97,16 @@ const handleSubmit = async () => {
                 body: JSON.stringify({ sender_id:state.user_id, receiver_id : selectedFaculty.id, amount:parseInt(newStatus) }),
             });
             if(!response.ok){
-                throw new Error("Someting Went Wrong")
+              const data = await response.json()
+                toast.error(data.message)
+                return
             }
-            setMessage("Student Staus Updated Succcessfully")
-            setShowToast(true)
+            toast.success("Currency Transferred Successfully")
             setTimeout(()=>{
                 setShowToast(false)
                 window.location.reload()
             },2000)
         } catch (error) {
-            setMessage("Something Went Wrong")
-            setShowToast(true)
             setTimeout(()=>{
                 setShowToast(false)
             },2000)
