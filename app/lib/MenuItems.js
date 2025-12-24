@@ -70,6 +70,13 @@ export const menuItems = [
       path: "/admin/parents-meeting" 
     },
     {
+      label: "Internship & Placement",
+      icon: <Building2Icon className="h-5 w-5" />,
+      subMenu: [
+        { label: "Internship Management", path: "/internship/admin" },
+      ],
+    },
+    {
       label: "Imp. News & Notice",
       icon: <NewspaperIcon className="h-5 w-5" />,
       path: "/notice/noticeboard" 
@@ -536,7 +543,7 @@ export const EPGDMAdmin = [
       label: "Internship & Placement",
       icon: <Building2Icon className="h-5 w-5" />,
       subMenu: [
-        { label: "Company Management", path: "/internship/company" },
+        { label: "Internship Management", path: "/internship/admin" },
       ],
     },
 

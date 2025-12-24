@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import FullWidthLoader from "@/components/Loaader";
-import { Save } from "lucide-react";
+import { Eye, Save } from "lucide-react";
 import BackButton from "@/components/ui/Backbutton";
 
 /* ---------- HELPERS ---------- */
@@ -25,7 +25,7 @@ const compId = searchParams.get("compId");
   const [reports, setReports] = useState([]);
   const [marks, setMarks] = useState({});
   const [loading, setLoading] = useState(false);
-
+const [activePopup, setActivePopup] = useState(null);
   /* ---------- FETCH DATA ---------- */
   const fetchInternships = async () => {
     const res = await authFetch(`internship-company-student-wise/${studentId}`);
@@ -120,7 +120,7 @@ const compId = searchParams.get("compId");
         <Detail label="Batch" value={student.batch?.name} />
         <Detail label="Course" value={student.course?.name} />
         <Detail label="Subject" value={subject?.name} />
-        <Detail label="Company" value={internship.company_name?.name} />
+        <Detail label="Company" value={internship.company_name} />
         <Detail
           label="Internship Duration"
           value={`${internship.start_date} → ${internship.end_date}`}
@@ -150,115 +150,134 @@ const compId = searchParams.get("compId");
 
       {/* ================= EVALUATION TABLE ================= */}
       <div className="border rounded-lg overflow-x-auto bg-white mx-12">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="px-4 py-3 text-left">Report</th>
-              <th className="px-4 py-3 text-center">File Status</th>
-              <th className="px-4 py-3 text-center">Marks</th>
-              <th className="px-4 py-3 text-center">Action</th>
-            </tr>
-          </thead>
+  <table className="w-full text-sm">
+    <thead className="bg-gray-100">
+      <tr>
+        <th className="px-4 py-3 text-left">Report</th>
+        <th className="px-4 py-3 text-center">AI Analysis / Content</th>
+        <th className="px-4 py-3 text-center">Marks</th>
+        <th className="px-4 py-3 text-center">Action</th>
+      </tr>
+    </thead>
 
-          <tbody>
-            {/* WEEKLY REPORTS */}
-            {Array.from({ length: totalWeeks }).map((_, idx) => {
-              const week = idx + 1;
-              const filePath = weeklyReport[week];
+    <tbody>
+      {/* WEEKLY REPORTS */}
+      {Array.from({ length: totalWeeks }).map((_, idx) => {
+        const week = idx + 1;
+        
+        // Accessing the nested data from your API structure: 
+        // weeklyReport = { "1": { "marks": "5", "weekly_report": "..." } }
+        const reportEntry = weeklyReport[week.toString()]; 
+        const hasData = !!reportEntry;
 
-              return (
-                <tr key={week} className="border-t">
-                  <td className="px-4 py-3 font-medium">Week {week}</td>
+        return (
+          <tr key={week} className="border-t">
+            <td className="px-4 py-3 font-medium">Week {week}</td>
 
-                  <td className="px-4 py-3 text-center">
-                    {filePath ? (
-                      <a
-                        href={`https://taxila.in/media/${filePath}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-green-700 underline"
-                      >
-                        View File
-                      </a>
-                    ) : (
-                      <span className="text-red-600 text-xs">
-                        Not Uploaded
-                      </span>
-                    )}
-                  </td>
+            <td className="px-4 py-3 text-center">
+          {hasData ? (
+            <button
+              onClick={() => setActivePopup({
+                week,
+                text: reportEntry.weekly_report,
+                aiMarks: reportEntry.marks
+              })}
+              className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold hover:bg-blue-100 transition-colors"
+            >
+              View Analysis
+            </button>
+          ) : (
+            <span className="text-gray-400 text-xs italic">No Report</span>
+          )}
+        </td>
 
-                  <td className="px-4 py-3 text-center">
-                    <input
-  type="number"
-  className="w-24 border rounded px-2 py-1 text-center"
-  value={marks[`week_${week}`] || ""}
-  onChange={(e) =>
-    setMarks({
-      ...marks,
-      [`week_${week}`]: e.target.value,
-    })
-  }
-/>
-                  </td>
+            <td className="px-4 py-3 text-center">
+              {marks[`week_${week}`] ?? reportEntry?.marks ?? ""}
+              {/* <input
+                type="number"
+                className="w-24 border rounded px-2 py-1 text-center bg-slate-50"
+                // Priority: Local state (marks) > Database value (reportEntry.marks)
+                value={marks[`week_${week}`] ?? reportEntry?.marks ?? ""}
+                onChange={(e) =>
+                  setMarks({
+                    ...marks,
+                    [`week_${week}`]: e.target.value,
+                  })
+                }
+              /> */}
+            </td>
 
-                  <td className="px-4 py-3 text-center">
-                    <button
-                      disabled={!filePath}
-                      onClick={() => saveMarks(week)}
-                      className="bg-black text-white px-3 py-1 rounded text-xs disabled:opacity-40"
-                    >
-                      <Save size={14} />
-                    </button>
-                  </td>
-                </tr>
-              );
-            })}
+            <td className="px-4 py-3 text-center">
+            -
+            </td>
+          </tr>
+        );
+      })}
 
-            {/* FINAL REPORT */}
-            <tr className="border-t bg-gray-50">
-              <td className="px-4 py-3 font-semibold">Final Report</td>
-
-              <td className="px-4 py-3 text-center">
-                {finalReport ? (
-                  <a
-                    href={`https://taxila.in/media/${finalReport}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-green-700 underline"
-                  >
-                    View File
-                  </a>
-                ) : (
-                  <span className="text-red-600 text-xs">
-                    Not Uploaded
-                  </span>
-                )}
-              </td>
-
-              <td className="px-4 py-3 text-center">
-                <input
-                  type="number"
-                  className="w-24 border rounded px-2 py-1 text-center"
-                  value={marks.final || ""}
-                  onChange={(e) =>
-                    setMarks({ ...marks, final: e.target.value })
-                  }
-                />
-              </td>
-
-              <td className="px-4 py-3 text-center">
-                <button
-                  disabled={!finalReport}
-                  onClick={() => saveMarks(0)}   // 👈 FINAL = week 0
-                  className="bg-black text-white px-3 py-1 rounded text-xs disabled:opacity-40"
-                >
-                  <Save size={14} />
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      {/* FINAL REPORT ROW (Remaining mostly the same) */}
+      <tr className="border-t bg-gray-50">
+        <td className="px-4 py-3 font-semibold">Final Report</td>
+        <td className="px-4 py-3 text-center">
+          {finalReport ? (
+             <a href={`https://taxila.in/media/${finalReport}`} target="_blank" className="text-green-700 underline">View File</a>
+          ) : (
+            <span className="text-red-600 text-xs">Not Uploaded</span>
+          )}
+        </td>
+        <td className="px-4 py-3 text-center">
+          <input
+            type="number"
+            className="w-24 border rounded px-2 py-1 text-center"
+            value={marks.final || ""}
+            onChange={(e) => setMarks({ ...marks, final: e.target.value })}
+          />
+        </td>
+        <td className="px-4 py-3 text-center">
+          <button disabled={!finalReport} onClick={() => saveMarks(0)} className="bg-black text-white px-3 py-1 rounded text-xs disabled:opacity-40">
+            <Save size={14} />
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+{activePopup && (
+  <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
+    <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden border border-gray-200">
+      <div className="bg-gray-50 px-6 py-4 border-b flex justify-between items-center">
+        <h3 className="font-bold text-gray-800">Week {activePopup.week} AI Analysis</h3>
+        <button 
+          onClick={() => setActivePopup(null)}
+          className="text-gray-400 hover:text-gray-600 text-2xl"
+        >
+          &times;
+        </button>
       </div>
+      
+      <div className="p-6 space-y-4">
+        <div className="flex items-center justify-between bg-blue-50 p-3 rounded-lg">
+          <span className="text-sm font-medium text-blue-800">AI Recommendation:</span>
+          <span className="font-bold text-blue-900">{activePopup.aiMarks} / 50</span>
+        </div>
+        
+        <div className="max-h-60 overflow-y-auto">
+          <p className="text-sm text-gray-600 leading-relaxed italic">
+            "{activePopup.text}"
+          </p>
+        </div>
+      </div>
+
+      <div className="p-4 bg-gray-50 border-t text-right">
+        <button 
+          onClick={() => setActivePopup(null)}
+          className="bg-gray-800 text-white px-6 py-2 rounded-lg text-sm font-semibold hover:bg-black transition-colors"
+        >
+          Got it
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 }
