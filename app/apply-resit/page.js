@@ -3,16 +3,20 @@
 import { useContext, useEffect, useState } from "react";
 import { authFetch } from "../lib/fetchWithAuth";
 import { GlobalContext } from "@/components/GlobalContext";
-import Toast from "@/components/Toast";
 import { handlePayment } from "@/lib/payments";
 import toast from "react-hot-toast";
+import { Check, AlertCircle, Tag, CreditCard, Cross } from "lucide-react";
 
 export default function Page() {
   const { state } = useContext(GlobalContext);
   const studentId = state.user_id;
- const enrollment =  state.enrollment_number
+  const enrollment = state.enrollment_number;
+
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [coupon, setCoupon] = useState("");
+  const [couponId, setCouponId] = useState(null);
+  const [couponApplied, setCouponApplied] = useState(false);
+const [resitFeeTypes, setResitFeeTypes] = useState([]);
 
   const [course, setCourse] = useState([]);
   const [batch, setBatch] = useState([]);
@@ -30,31 +34,19 @@ export default function Page() {
   const [baseAmount, setBaseAmount] = useState(0);
   const [totalAmount, setTotalAmount] = useState(0);
 
-  const [message, setMessage] = useState("");
-  const [showToast, setShowToast] = useState(false);
-
   // ---------------- INITIAL DATA ----------------
   useEffect(() => {
-    async function fetchInitialData() {
-      try {
-        const [c, b, t] = await Promise.all([
-          authFetch("courses-list"),
-          authFetch("batches-list"),
-          authFetch("terms-list"),
-        ]);
-
-        const courseData = await c.json();
-        const batchData = await b.json();
-        const termData = await t.json();
-
-        setCourse(courseData.data);
-        setBatch(batchData.data);
-        setTerm(termData.data);
-      } catch (err) {
-        setError("Failed to load initial data");
-      }
-    }
-    fetchInitialData();
+    Promise.all([
+      authFetch("courses-list"),
+      authFetch("batches-list"),
+      authFetch("terms-list"),
+    ])
+      .then(async ([c, b, t]) => {
+        setCourse((await c.json()).data);
+        setBatch((await b.json()).data);
+        setTerm((await t.json()).data);
+      })
+      .catch(() => toast.error("Failed to load initial data"));
   }, []);
 
   // ---------------- FETCH SUBJECTS ----------------
@@ -64,216 +56,410 @@ export default function Page() {
     }
   }, [selectedCourse, selectedBatch, selectedTerm, selectedType]);
 
-  const fetchSubjects = async () => {
+async function fetchResitFeeTypes(batchId) {
+  try {
+    const res = await authFetch(
+      `fee-type-batch-wise-for-resit/${batchId}`
+    );
+    const json = await res.json();
+    setResitFeeTypes(json.data || []);
+  } catch {
+    toast.error("Failed to fetch resit fee types");
+  }
+}
+  async function fetchSubjects() {
     try {
-      setLoading(true);
       const res = await authFetch(
         `resit-subject-mapping-filter?course_id=${selectedCourse}&batch_id=${selectedBatch}&term_id=${selectedTerm}&type=${selectedType}`
       );
       const data = await res.json();
       setSubjects(data.data || []);
     } catch {
-      setError("Failed to fetch subjects");
-    } finally {
-      setLoading(false);
+      toast.error("Failed to fetch subjects");
     }
-  };
+  }
 
-  // ---------------- FETCH FEE TYPE AMOUNT ----------------
+  // ---------------- FETCH FEE ----------------
   useEffect(() => {
     if (!feeTypeId) return;
 
-    const fetchFeeAmount = async () => {
-      try {
-        const res = await authFetch(`fee-type-viewset/${feeTypeId}`);
-        const data = await res.json();
-        setBaseAmount(data.data.default_amount || 0);
-      } catch {
-        setBaseAmount(0);
-      }
-    };
-
-    fetchFeeAmount();
+    authFetch(`fee-type-viewset/${feeTypeId}`)
+      .then((res) => res.json())
+      .then((data) => setBaseAmount(data.data.default_amount || 0))
+      .catch(() => setBaseAmount(0));
   }, [feeTypeId]);
 
-  // ---------------- CALCULATE TOTAL ----------------
-  useEffect(() => {
-    setTotalAmount(baseAmount * selectedSubjects.length);
-  }, [baseAmount, selectedSubjects]);
+  // ---------------- TOTAL + RESET COUPON ----------------
+ useEffect(() => {
+  if (!selectedType || resitFeeTypes.length === 0) return;
 
-  // ---------------- SUBMIT ----------------
- async function handleSubmit() {
+  const targetNumber = selectedType === "resit-1" ? "1" : "2";
+
+  const matchedFee = resitFeeTypes.find((f) => {
+    // Normalize name: remove extra spaces, lowercase
+    const normalizedName = f.name.replace(/\s+/g, " ").toLowerCase();
+    return normalizedName.includes(`resit ${targetNumber}`);
+  });
+
+  if (!matchedFee) {
+    console.error("No matching resit fee found", resitFeeTypes);
+    return;
+  }
+
+  setBaseAmount(Number(matchedFee.default_amount));
+  setFeeTypeId(matchedFee.id);
+}, [selectedType, resitFeeTypes]);
+useEffect(() => {
+  if (!selectedType || resitFeeTypes.length === 0) return;
+
+  const feeName =
+    selectedType === "resit-1" ? "Resit 1" : "Resit 2";
+
+  const matchedFee = resitFeeTypes.find(
+    (f) => f.name.toLowerCase() === feeName.toLowerCase()
+  );
+
+  if (matchedFee) {
+    setBaseAmount(Number(matchedFee.default_amount));
+    setFeeTypeId(matchedFee.id);
+  }
+}, [selectedType, resitFeeTypes]);
+
+useEffect(() => {
+  if (!baseAmount || selectedSubjects.length === 0) {
+    setTotalAmount(0);
+    return;
+  }
+
+  const total = Number(baseAmount) * selectedSubjects.length;
+  setTotalAmount(Number(total.toFixed(2)));
+}, [baseAmount, selectedSubjects]);
+
+  // ---------------- APPLY COUPON ----------------
+  async function applyCoupon() {
+  if (couponApplied) {
+    toast.error("Coupon already applied");
+    return;
+  }
+
   try {
-    const custom_fee = null
-    const res = await handlePayment(enrollment, totalAmount, feeTypeId, custom_fee );
+    const res = await authFetch("coupon-verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        student_id: studentId,
+        code: coupon,
+      }),
+    });
 
-    if (res.payment === "successful") {
-      await handleResitSubmit();
-      return;
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.message);
+
+    const couponData = result.data;
+
+    // ✅ TOTAL BEFORE DISCOUNT
+    const currentTotal = baseAmount * selectedSubjects.length;
+
+    let discount = 0;
+
+    if (couponData.discount_type === "percent") {
+      discount = (currentTotal * couponData.discount_value) / 100;
+    } else {
+      discount = Number(couponData.discount_value);
     }
 
-    toast.error("Payment Failed. Please try again.");
+    // 🔐 Prevent negative payable
+    let finalAmount = currentTotal - discount;
+    if (finalAmount < 1) finalAmount = 1;
+
+    setTotalAmount(Number(finalAmount.toFixed(2)));
+    setCouponApplied(true);
+    setCouponId(couponData.id);
+
+    toast.success(`Coupon applied: ₹${discount.toFixed(2)} off`);
   } catch (err) {
-    toast.error(err.reason || "Payment Failed");
+    toast.error(err.message || "Invalid coupon");
   }
 }
 
-  async function handleResitSubmit() {
-    if (!selectedSubjects.length) {
-      setMessage("Please select at least one subject");
-      setShowToast(true);
-      return;
-    }
 
-    const payload = {
-      type: selectedType,
-      student: studentId,
-      subjects: selectedSubjects,
-      term: selectedTerm,
-      fee_type: feeTypeId,
-      amount: totalAmount,
-    };
+  // ---------------- SUBMIT ----------------
+  async function handleSubmit() {
+    if (loading) return;
+    if (!selectedSubjects.length) return toast.error("Select at least one subject");
 
     try {
       setLoading(true);
-      const res = await authFetch("resit-request-bulk", {
+      const payment = await handlePayment(
+        enrollment,
+        totalAmount,
+        feeTypeId,
+        null,
+        null,
+        couponId
+      );
+
+      if (payment.payment !== "successful") {
+        throw new Error("Payment failed");
+      }
+
+      await authFetch("resit-request-bulk", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          type: selectedType,
+          student: studentId,
+          subjects: selectedSubjects,
+          term: selectedTerm,
+          fee_type: feeTypeId,
+          amount: totalAmount,
+          coupon: couponId,
+        }),
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
-
-      setMessage("Resit Applied Successfully");
-      setShowToast(true);
-
-      setTimeout(() => {
-        window.location.replace("/student");
-      }, 2000);
+      toast.success("Resit Applied Successfully");
+      setTimeout(() => window.location.replace("/student/fees/transactions"), 2000);
     } catch (err) {
-      setError(err.message);
+      toast.error(err.message || "Submission failed");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="px-16 py-16">
-      {showToast && <Toast message={message} />}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-8xl mx-auto">
+        {/* Header */}
 
-      <h4 className="text-2xl font-bold text-center">Apply for Resit</h4>
-      <p className="text-sm text-center mt-2">
-        Select Course, Batch, Term, Type and Subjects
-      </p>
+        {/* Main Card */}
+        <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-slate-200">
+          {/* Step Indicator */}
+          <div className="bg-gradient-to-r from-red-600 to-red-700 px-6 py-4">
+            <div className="flex items-center justify-between text-white">
+              <div className="flex items-center space-x-2">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${selectedCourse && selectedBatch && selectedTerm && selectedType ? 'bg-white text-red-600' : 'bg-red-500'}`}>
+                  {selectedCourse && selectedBatch && selectedTerm && selectedType ? <Check size={16} /> : '1'}
+                </div>
+                <span className="text-sm font-medium">Course Details</span>
+              </div>
+              <div className="flex-1 h-0.5 bg-red-500 mx-4"></div>
+              <div className="flex items-center space-x-2">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${selectedSubjects.length > 0 ? 'bg-white text-red-600' : 'bg-red-500'}`}>
+                  {selectedSubjects.length > 0 ? <Check size={16} /> : '2'}
+                </div>
+                <span className="text-sm font-medium">Select Subjects</span>
+              </div>
+              <div className="flex-1 h-0.5 bg-red-500 mx-4"></div>
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center">
+                  3
+                </div>
+                <span className="text-sm font-medium">Payment</span>
+              </div>
+            </div>
+          </div>
 
-      <div className="max-w-2xl mx-auto border border-red-300 mt-8 rounded-sm">
-        <h2 className="bg-red-50 text-red-800 text-center py-2 font-bold">
-          Resit Application
-        </h2>
+          <div className="p-6 sm:p-8 space-y-6">
+            {/* Course Selection Section */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-slate-900 flex items-center">
+                <div className="w-8 h-8 bg-red-100 text-red-600 rounded-lg flex items-center justify-center mr-3 font-bold">1</div>
+                Course Information
+              </h3>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Course</label>
+                  <select 
+                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors bg-white"
+                    onChange={(e) => setSelectedCourse(e.target.value)}
+                    value={selectedCourse}
+                  >
+                    <option value="">Select Course</option>
+                    {course.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                </div>
 
-        {/* COURSE + BATCH */}
-        <div className="flex px-4 gap-2 mt-4">
-          <select
-            className="border p-2 w-full"
-            value={selectedCourse}
-            onChange={(e) => setSelectedCourse(e.target.value)}
-          >
-            <option value="">Select Course</option>
-            {course.map((c) => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
-          </select>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Batch</label>
+                  <select 
+                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors bg-white"
+                    onChange={(e) => setSelectedBatch(e.target.value)}
+                    value={selectedBatch}
+                  >
+                    <option value="">Select Batch</option>
+                    {batch.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+                  </select>
+                </div>
 
-          <select
-            className="border p-2 w-full"
-            value={selectedBatch}
-            onChange={(e) => setSelectedBatch(e.target.value)}
-          >
-            <option value="">Select Batch</option>
-            {batch.map((b) => (
-              <option key={b.id} value={b.id}>{b.name}</option>
-            ))}
-          </select>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Term</label>
+                  <select 
+                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors bg-white"
+                    onChange={(e) => setSelectedTerm(e.target.value)}
+                    value={selectedTerm}
+                  >
+                    <option value="">Select Term</option>
+                    {term.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Resit Type</label>
+                 <select
+  value={selectedType}
+  onChange={(e) => {
+    const type = e.target.value;
+
+    setSelectedType(type);
+    setSelectedSubjects([]);
+    setCoupon("");
+    setCouponApplied(false);
+    setCouponId(null);
+
+    if (selectedBatch) {
+      fetchResitFeeTypes(selectedBatch);
+    }
+  }}
+>
+  <option value="">Select Type</option>
+  <option value="resit-1">Resit-1</option>
+  <option value="resit-2">Resit-2</option>
+</select>
+                </div>
+              </div>
+            </div>
+
+            {/* Subjects Section */}
+            {subjects.length > 0 && (
+              <div className="space-y-4 pt-6 border-t border-slate-200 text-xs">
+                <h3 className="text-lg font-semibold text-slate-900 flex items-center">
+                  <div className="w-8 h-8 bg-red-100 text-red-600 rounded-lg flex items-center justify-center mr-3 font-bold">2</div>
+                  Select Subjects
+                </h3>
+                
+                <div className="bg-slate-50 rounded-xl p-4 space-y-2 max-h-64 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
+                  {subjects.map((s) => (
+                    <label 
+                      key={s.id} 
+                      className="flex items-center p-3 bg-white rounded-lg border border-slate-200 hover:border-red-500 hover:bg-red-50 transition-all cursor-pointer group"
+                    >
+                      <input
+                        type="checkbox"
+                        className="w-5 h-5 text-red-600 border-slate-300 rounded focus:ring-red-500 cursor-pointer"
+                        checked={selectedSubjects.includes(s.id)}
+                        onChange={(e) => {
+                          const id = s.id;
+                          setSelectedSubjects((prev) =>
+                            e.target.checked
+                              ? [...prev, id]
+                              : prev.filter((x) => x !== id)
+                          );
+                        }}
+                      />
+                      <span className="ml-3 text-slate-900 font-medium group-hover:text-red-700">{s.subject?.name}</span>
+                    </label>
+                  ))}
+                </div>
+
+                {subjects.length === 0 && (
+                  <div className="text-center py-8 text-slate-500">
+                    <AlertCircle className="mx-auto mb-2" size={32} />
+                    <p>No subjects available for selected criteria</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Payment Section */}
+            {selectedSubjects.length > 0 && (
+              <div className="space-y-4 pt-6 border-t border-slate-200 flex gap-2">
+                <div className="w-1/2">
+                <h3 className="text-lg font-semibold text-slate-900 flex items-center">
+                  <div className="w-8 h-8 bg-red-100 text-red-600 rounded-lg flex items-center justify-center mr-3 font-bold">3</div>
+                  Payment Details
+                </h3>
+
+                {/* Fee Breakdown */}
+                <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl p-6 space-y-3">
+                  <div className="flex justify-between items-center text-slate-700">
+                    <span>Fee per subject</span>
+                    <span className="font-semibold">₹{baseAmount}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-slate-700">
+                    <span>Number of subjects</span>
+                    <span className="font-semibold">{selectedSubjects.length}</span>
+                  </div>
+                  <div className="border-t border-slate-300 pt-3 flex justify-between items-center">
+                    <span className="text-lg font-bold text-slate-900">Total Amount</span>
+                    <span className="text-2xl font-bold text-red-600">₹{totalAmount}</span>
+                  </div>
+                </div>
+</div>
+                {/* Coupon Section */}
+                <div className="w-1/2">
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                  <div className="flex items-center mb-3">
+                    <Tag className="text-amber-600 mr-2" size={20} />
+                    <span className="font-semibold text-slate-900">Have a coupon code?</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      className="flex-1 px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors disabled:bg-slate-100 disabled:cursor-not-allowed"
+                      placeholder="Enter coupon code"
+                      value={coupon}
+                      disabled={couponApplied}
+                      onChange={(e) => setCoupon(e.target.value)}
+                    />
+                    <button
+                      onClick={applyCoupon}
+                      disabled={!coupon || couponApplied}
+                      className="px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center"
+                    >
+                      {couponApplied ? (
+                        <>
+                          <Check size={18} className="mr-1" />
+                          Applied
+                        </>
+                      ) : (
+                        'Apply'
+                      )}
+                    </button>
+                  </div>
+                  <p className="text-red-600 mt-2 cursor-pointer flex items-center text-xs gap-2" onClick={() => {
+                    setCoupon("");
+                    setCouponApplied(false);
+                    setCouponId(null);
+                  }}><Cross className="h-3 w-3 rotate-45"/> Remove Code</p>
+                </div>
+
+                {/* Submit Button */}
+                <button
+                  onClick={handleSubmit}
+                  disabled={loading}
+                  className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center"
+                >
+                  {loading ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <CreditCard size={20} className="mr-2" />
+                      Proceed to Payment
+                    </>
+                  )}
+                </button>
+                    </div>
+              
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* TERM + TYPE */}
-        <div className="flex px-4 gap-2 mt-3">
-          <select
-            className="border p-2 w-full"
-            value={selectedTerm}
-            onChange={(e) => setSelectedTerm(e.target.value)}
-          >
-            <option value="">Select Term</option>
-            {term.map((t) => (
-              <option key={t.id} value={t.id}>{t.name}</option>
-            ))}
-          </select>
-
-          <select
-            className="border p-2 w-full"
-            value={selectedType}
-            onChange={(e) => {
-              const value = e.target.value;
-              setSelectedType(value);
-
-              // reset on change
-              setSelectedSubjects([]);
-              setTotalAmount(0);
-
-              if (value === "resit-1") setFeeTypeId(1);
-              if (value === "resit-2") setFeeTypeId(2);
-            }}
-          >
-            <option value="">Select Type</option>
-            <option value="resit-1">Resit-1</option>
-            <option value="resit-2">Resit-2</option>
-          </select>
-        </div>
-
-        {/* SUBJECTS */}
-        <div className="p-4">
-          <p className="font-bold mb-2">Select Subjects</p>
-          {subjects.map((subj) => (
-            <label key={subj.id} className="flex gap-2 items-center">
-              <input
-                type="checkbox"
-                value={subj.id}
-                onChange={(e) => {
-                  const id = Number(e.target.value);
-                  setSelectedSubjects((prev) =>
-                    e.target.checked
-                      ? [...prev, id]
-                      : prev.filter((x) => x !== id)
-                  );
-                }}
-              />
-              {subj.subject?.name}
-            </label>
-          ))}
-        </div>
-
-        {/* AMOUNT */}
-        <div className="px-4 py-2 bg-gray-50 border-t">
-          <p>Fee per subject: ₹{baseAmount}</p>
-          <p className="font-bold text-red-800">
-            Total Amount: ₹{totalAmount}
-          </p>
-          <p className="text-xs text-gray-600">
-            Selected Subjects: {selectedSubjects.length}
-          </p>
-        </div>
-
-        {/* SUBMIT */}
-        <div className="p-4">
-          <button
-            disabled={loading}
-            onClick={handleSubmit}
-            className="bg-red-800 text-white w-full py-2 rounded"
-          >
-            {loading ? "Submitting..." : "Apply for Resit"}
-          </button>
-        </div>
+        {/* Help Section */}
+      
       </div>
     </div>
   );

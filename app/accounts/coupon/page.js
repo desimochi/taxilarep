@@ -17,10 +17,11 @@ export default function AssignFeePage() {
   const [selectedStudents, setSelectedStudents] = useState([]);
 
   const [feeForm, setFeeForm] = useState({
-    fee_type: "",
-    description: "",
-    amount: "",
-    due_date: "",
+    code: "",
+    discount_type: "",
+    discount_value: "",
+    valid_from: "",
+    valid_to: "",
   });
 
   const [showPreview, setShowPreview] = useState(false);
@@ -92,27 +93,28 @@ export default function AssignFeePage() {
     setLoading(true);
 
     try {
-      const res = await authFetch("custom-fee/bulk-create", {
+      const res = await authFetch("bulk-coupon-create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           student_ids: selectedStudents,
-          fee_type: feeForm.fee_type,
-          description: feeForm.description,
-          amount: Number(feeForm.amount),
-          payment_due_date: feeForm.payment_due_date,
+            code: feeForm.coupon_code,
+            discount_type: feeForm.discount_type,
+            discount_value: feeForm.discount_value,
+            valid_from: feeForm.valid_from,
+            valid_to: feeForm.valid_to,
         }),
       });
 
       if (!res.ok) throw new Error();
 
-      toast.success("Fee assigned successfully 🎉");
+      toast.success("Coupon Code Create successfully 🎉");
       setShowPreview(false);
       setSelectedStudents([]);
-      setFeeForm({ fee_type: "", description: "", amount: "" });
+      setFeeForm({ code: "", discount_type: "", discount_value: "", valid_from: "", valid_to: "" });
 
     } catch {
-      toast.error("Failed to assign fee");
+      toast.error("Failed to create coupon");
     } finally {
       setLoading(false);
     }
@@ -122,10 +124,9 @@ export default function AssignFeePage() {
     <div className="p-8 bg-white rounded-xl shadow">
       <Toaster position="top-right" />
 <div className="flex justify-between items-center">
-<h2 className="text-2xl font-bold mb-6">Assign Fee to Students</h2>
+<h2 className="text-2xl font-bold mb-6">Assign Coupon to Students</h2>
 <div className="flex gap-2">
-    <CustomFeeUploadModal />
-    <Link href={'/accounts/custom-fee/list'} className="py-2 flex gap-2 items-center px-8 rounded-sm bg-zinc-900 text-white"> <EyeIcon className="h-4 w-4" />See Custom Fees List</Link>
+    <Link href={'/accounts/coupon/list'} className="py-2 flex gap-2 items-center px-8 rounded-sm bg-zinc-900 text-white"> <EyeIcon className="h-4 w-4" />See Coupon List</Link>
 </div>
 
 </div>
@@ -165,62 +166,84 @@ export default function AssignFeePage() {
  {selectedStudents.length > 0 && (
         <div className="mt-8 p-6 border rounded bg-gray-50">
           <h3 className="font-bold mb-4">
-            Assign Fee ({selectedStudents.length} students)
+            Assign Coupon ({selectedStudents.length} students)
           </h3>
 
           <div className="grid grid-cols-2 gap-4">
+            <label className="font-medium">Coupon Code</label>
+            <input
+              type="text"
+              placeholder="Coupon Code"
+                className="border p-2 rounded"
+                value={feeForm.coupon_code}
+                onChange={(e) =>
+                    setFeeForm({ ...feeForm, coupon_code: e.target.value })
+                }
+            />
             <label className="font-medium">Fee Type</label>
-            <select
+           <select
   className="border p-2 rounded"
-  value={feeForm.fee_type}
+  value={feeForm.discount_type}
   onChange={(e) => {
-    const selectedId = e.target.value;
-
-    const selectedFee = feeTypes.find(
-      (f) => String(f.id) === String(selectedId)
-    );
-
     setFeeForm({
       ...feeForm,
-      fee_type: selectedId,
-      amount: selectedFee ? selectedFee.default_amount : "",
+      discount_type: e.target.value,
+      discount_value: "", // 🔄 reset amount
     });
   }}
 >
-  <option value="">Select Fee Type</option>
-  {feeTypes.map((f) => (
-    <option key={f.id} value={f.id}>
-      {f.name}
-    </option>
-  ))}
+  <option value="">Select Discount Type</option>
+  <option value="flat">Amount</option>
+  <option value="percent">Percentage</option>
 </select>
+
 <label className="font-medium">Amount</label>
             <input
-              type="number"
-              placeholder="Amount"
-              className="border p-2 rounded"
-              value={feeForm.amount}
-              onChange={(e) =>
-                setFeeForm({ ...feeForm, amount: e.target.value })
-              }
-            />
-          <label className="col-span-2 font-medium">Description</label>
-            <textarea
-              placeholder="Description"
-              className="border p-2 rounded col-span-2"
-              value={feeForm.description}
-              onChange={(e) =>
-                setFeeForm({ ...feeForm, description: e.target.value })
-              }
-            />
-            <label className="col-span-2 font-medium">Due Date</label>
+  type="number"
+  placeholder="Amount"
+  className="border p-2 rounded"
+  value={feeForm.discount_value}
+  min={0}
+  max={feeForm.discount_type === "percent" ? 100 : undefined}
+  onChange={(e) => {
+    let value = e.target.value;
+
+    // Convert to number
+    let numericValue = Number(value);
+
+    // 🔐 If percent → cap at 100
+    if (feeForm.discount_type === "percent") {
+      if (numericValue > 100) {
+        numericValue = 100;
+        toast.error("Percentage cannot be greater than 100");
+      }
+    }
+
+    setFeeForm({
+      ...feeForm,
+      discount_value: numericValue,
+    });
+  }}
+/>
+
+         <label className="col-span-2 font-medium">Valid From</label>
             <input
               type="datetime-local"
               placeholder="Description"
               className="border p-2 rounded col-span-2"
-              value={feeForm.payment_due_date}
+              value={feeForm.valid_from}
               onChange={(e) =>
-                setFeeForm({ ...feeForm, payment_due_date: e.target.value })
+                setFeeForm({ ...feeForm, valid_from: e.target.value })
+              }
+            />
+            <label className="col-span-2 font-medium">Valid To</label>
+            <input
+              type="datetime-local"
+              placeholder="Description"
+              className="border p-2 rounded col-span-2"
+              value={feeForm.valid_to}
+              onChange={(e) =>
+                setFeeForm({ ...feeForm, valid_to: e.target.value })
               }
             />
           </div>
@@ -285,10 +308,17 @@ export default function AssignFeePage() {
             <p><b>Students:</b> {selectedStudents.length}</p>
             <p>
               <b>Fee Type:</b>{" "}
-              {feeTypes.find((f) => f.id == feeForm.fee_type)?.name}
+              {feeForm.discount_type === "flat"
+                ? "Amount"
+                : feeForm.discount_type === "percent"
+                ? "Percentage"
+                : ""}
             </p>
-            <p><b>Amount:</b> ₹{feeForm.amount}</p>
-            <p className="mb-4"><b>Description:</b> {feeForm.description}</p>
+            <p><b>Amount:</b> ₹{feeForm.discount_value}</p>
+            <p className="mb-4"><b>Coupon Code:</b> {feeForm.coupon_code}</p>
+
+            <p><b>Valid From:</b> {feeForm.valid_from}</p>
+            <p className="mb-4"><b>Valid To:</b> {feeForm.valid_to}</p>
 
             <div className="flex justify-end gap-3">
               <button

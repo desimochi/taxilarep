@@ -33,7 +33,9 @@ const facultyPaths = [
   "/subjects/details/component",
   "/subjects/details/component/sub-component",
   "/subjects/details/component/add-marks",
-  "/question-paper"
+  "/question-paper",
+  "/accounts/fee-type",
+  "/accounts/custom-fee",
 ];
 
 export function middleware(req) {
@@ -116,5 +118,6 @@ export const config = {
     "/fail-student",
     "/question-paper/:path*",
     "/attendance/class-attendance",
+    "/accounts/:path*",
   ],
 };

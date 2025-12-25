@@ -2,60 +2,113 @@
 
 import { authFetch } from "@/app/lib/fetchWithAuth";
 import BackButton from "@/components/ui/Backbutton";
-import { DeleteIcon, EditIcon, SettingsIcon, UserRoundSearch } from "lucide-react";
+import { DeleteIcon, EditIcon, UserRoundSearch } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+
+/* ---------------- NAME NORMALIZER ---------------- */
+function normalizeFeeName(value) {
+  if (!value) return "";
+
+  const cleaned = value.trim().toLowerCase();
+
+  // Handle RESIT cases
+  if (cleaned.startsWith("resit")) {
+    const numberMatch = cleaned.match(/\d+/);
+    const number = numberMatch ? numberMatch[0] : "";
+    return `Resit${number ? " " + number : ""}`;
+  }
+
+  // Default: Title Case
+  return cleaned
+    .split(" ")
+    .filter(Boolean)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
 
 export default function FeeTypeManager() {
   const [fees, setFees] = useState([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [editId, setEditId] = useState(null);
+  const [batches, setBatches] = useState([]);
 
   const [form, setForm] = useState({
     name: "",
     description: "",
     default_amount: "",
+    is_interest_applied: false,
+    interest_rate_percent: "",
+    batch: "",
   });
 
-  // ---------------- FETCH LIST ----------------
+  /* ---------------- FETCH DATA ---------------- */
   const fetchFees = async () => {
     try {
       const res = await authFetch("fee-type-viewset");
       const data = await res.json();
-      setFees(data.data);
-    } catch (err) {
-      console.error("Failed to fetch fee types", err);
+      setFees(data.data || []);
+    } catch {
+      toast.error("Failed to fetch fee types");
+    }
+  };
+
+  const fetchBatch = async () => {
+    try {
+      const res = await authFetch("batch-viewset");
+      const data = await res.json();
+      setBatches(data.data || []);
+    } catch {
+      toast.error("Failed to fetch batches");
     }
   };
 
   useEffect(() => {
     fetchFees();
+    fetchBatch();
   }, []);
 
-  // ---------------- FORM HANDLERS ----------------
+  /* ---------------- HANDLE CHANGE ---------------- */
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    if (name === "name") {
+      setForm({ ...form, name: normalizeFeeName(value) });
+    } else {
+      setForm({ ...form, [name]: value });
+    }
   };
 
+  /* ---------------- OPEN MODALS ---------------- */
   const openCreate = () => {
     setEditId(null);
-    setForm({ name: "", description: "", default_amount: "" });
+    setForm({
+      name: "",
+      description: "",
+      default_amount: "",
+      is_interest_applied: false,
+      interest_rate_percent: "",
+      batch: "",
+    });
     setOpen(true);
   };
 
   const openEdit = (fee) => {
     setEditId(fee.id);
     setForm({
-      name: fee.name,
+      name: normalizeFeeName(fee.name),
       description: fee.description,
       default_amount: fee.default_amount,
+      is_interest_applied: fee.is_interest_applied,
+      interest_rate_percent: fee.interest_rate_percent,
+      batch: fee.batch,
     });
     setOpen(true);
   };
 
-  // ---------------- SUBMIT (POST / PUT) ----------------
+  /* ---------------- SUBMIT ---------------- */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -69,100 +122,117 @@ export default function FeeTypeManager() {
     try {
       const res = await authFetch(url, {
         method,
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: form.name,
+          name: normalizeFeeName(form.name),
           description: form.description,
           default_amount: Number(form.default_amount),
+          is_interest_applied:
+            form.is_interest_applied === true ||
+            form.is_interest_applied === "true",
+          interest_rate_percent:
+            form.is_interest_applied === true ||
+            form.is_interest_applied === "true"
+              ? Number(form.interest_rate_percent)
+              : 0,
+          batch: form.batch,
         }),
       });
 
-      if (!res.ok) throw new Error("Submit failed");
+      if (!res.ok) throw new Error();
 
+      toast.success(
+        `Fee type ${editId ? "updated" : "created"} successfully`
+      );
       setOpen(false);
-      toast.success(`Fee type ${editId ? "updated" : "created"} successfully`);
       fetchFees();
-    } catch (err) {
-      console.error(err);
+    } catch {
       toast.error("Error submitting fee type");
     } finally {
       setLoading(false);
     }
   };
 
-  // ---------------- DELETE ----------------
+  /* ---------------- DELETE ---------------- */
   const handleDelete = async (id) => {
     if (!confirm("Are you sure you want to delete this fee type?")) return;
 
     try {
-      const res = await fetch(
-        `http://127.0.0.1:8000/fee-type-viewset/${id}/`,
-        { method: "DELETE" }
-      );
-
-      if (!res.ok) throw new Error("Delete failed");
+      const res = await authFetch(`fee-type-viewset/${id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error();
 
       setFees((prev) => prev.filter((f) => f.id !== id));
       toast.success("Fee type deleted successfully");
-    } catch (err) {
-      console.error(err);
+    } catch {
       toast.error("Error deleting fee type");
     }
   };
 
   return (
     <div className="p-6">
-      {/* HEADER */}
       <BackButton />
+
       <div className="flex justify-between items-center mb-4 px-12">
-        <h1 className="text-2xl font-bold font-sans">Fee Types</h1>
+        <h1 className="text-2xl font-bold">Fee Types</h1>
         <div className="flex gap-4">
-        <button
-          onClick={openCreate}
-          className="px-8 py-2 bg-red-600 text-white rounded"
-        >
-          + Add Fee
-        </button>
+          <button
+            onClick={openCreate}
+            className="px-8 py-2 bg-red-600 text-white rounded"
+          >
+            + Add Fee
+          </button>
           <Link
-          href={'/accounts/custom-fee'}
-          className="px-8 py-2 flex gap-2 bg-zinc-950 text-white rounded"
-        >
-          <UserRoundSearch/> Custom Fees
-        </Link>
+            href="/accounts/custom-fee"
+            className="px-8 py-2 flex gap-2 bg-zinc-950 text-white rounded"
+          >
+            <UserRoundSearch /> Custom Fees
+          </Link>
         </div>
       </div>
-<hr className="border border-b-1 mb-8" />
+
+      <hr className="mb-8" />
+
       {/* TABLE */}
       <div className="overflow-x-auto px-12">
         <table className="w-full border">
           <thead className="bg-gray-100">
             <tr>
-                <th className="border p-2">S.no.</th>
+              <th className="border p-2">#</th>
               <th className="border p-2">Name</th>
               <th className="border p-2">Description</th>
               <th className="border p-2">Amount</th>
+              <th className="border p-2">Batch</th>
+              <th className="border p-2">Interest</th>
+              <th className="border p-2">Rate (%)</th>
               <th className="border p-2">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {fees.map((fee, index) => (
+            {fees.map((fee, i) => (
               <tr key={fee.id}>
-                <td className="border p-2">{index+1}</td>
-                <td className="border p-2">{fee.name}</td>
+                <td className="border p-2">{i + 1}</td>
+                <td className="border p-2 font-semibold">{fee.name}</td>
                 <td className="border p-2">{fee.description}</td>
                 <td className="border p-2">₹{fee.default_amount}</td>
+                <td className="border p-2">{fee.batch?.name}</td>
+                <td className="border p-2">
+                  {fee.is_interest_applied ? "Yes" : "No"}
+                </td>
+                <td className="border p-2">
+                  {fee.interest_rate_percent}
+                </td>
                 <td className="border p-2 flex gap-3">
                   <button
                     onClick={() => openEdit(fee)}
-                    className="text-blue-600 hover:underline"
+                    className="text-blue-600"
                   >
                     <EditIcon />
                   </button>
                   <button
                     onClick={() => handleDelete(fee.id)}
-                    className="text-red-600 hover:underline"
+                    className="text-red-600"
                   >
                     <DeleteIcon />
                   </button>
@@ -171,7 +241,7 @@ export default function FeeTypeManager() {
             ))}
             {fees.length === 0 && (
               <tr>
-                <td colSpan="4" className="p-4 text-center text-gray-500">
+                <td colSpan="8" className="p-4 text-center text-gray-500">
                   No fee types found
                 </td>
               </tr>
@@ -198,7 +268,7 @@ export default function FeeTypeManager() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <input
                 name="name"
-                placeholder="Fee Name"
+                placeholder="Fee Name (e.g. resit 1)"
                 value={form.name}
                 onChange={handleChange}
                 required
@@ -223,6 +293,43 @@ export default function FeeTypeManager() {
                 required
                 className="w-full border px-3 py-2 rounded"
               />
+
+              <select
+                name="batch"
+                value={form.batch}
+                onChange={handleChange}
+                required
+                className="w-full border px-3 py-2 rounded"
+              >
+                <option value="">Select Batch</option>
+                {batches.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                name="is_interest_applied"
+                value={form.is_interest_applied}
+                onChange={handleChange}
+                className="w-full border px-3 py-2 rounded"
+              >
+                <option value={false}>Interest Not Applied</option>
+                <option value={true}>Interest Applied</option>
+              </select>
+
+              {String(form.is_interest_applied) === "true" && (
+                <input
+                  type="number"
+                  name="interest_rate_percent"
+                  placeholder="Interest Rate %"
+                  value={form.interest_rate_percent}
+                  onChange={handleChange}
+                  required
+                  className="w-full border px-3 py-2 rounded"
+                />
+              )}
 
               <button
                 disabled={loading}

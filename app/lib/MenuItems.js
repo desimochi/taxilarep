@@ -65,6 +65,16 @@ export const menuItems = [
       ],
     },
     {
+      label: "Accounts",
+      icon: <IndianRupee className="h-5 w-5" />,
+      subMenu: [
+        { label: "Fee Details Student", path: "/fees-management" },
+        { label: "Fee Management", path: "/accounts/fee-type" },
+        { label: "Coupon Management", path: "/accounts/coupon" },
+        { label: "Transactions", path: "/accounts/transactions" },
+      ],
+    },
+    {
       label: "Parent Meetings",
       icon: <HandshakeIcon className="h-5 w-5" />,
       path: "/admin/parents-meeting" 
@@ -393,6 +403,8 @@ export const menuItems = [
       subMenu: [
         { label: "Fee Details Student", path: "/fees-management" },
         { label: "Fee Management", path: "/accounts/fee-type" },
+        { label: "Coupon Management", path: "/accounts/coupon" },
+        { label: "Transactions", path: "/accounts/transactions" },
       ],
     },
   ]
