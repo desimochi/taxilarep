@@ -1,3 +1,4 @@
+'use client'
 import React, { useState } from 'react';
 import { Book, Target, Brain, TrendingUp, Clock, Award, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
 
