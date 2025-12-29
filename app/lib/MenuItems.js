@@ -204,6 +204,9 @@ export const menuItems = [
             {label:"Sector Shaker",  icon: <Gamepad className="h-5 w-5" />, path:"/game/sector-shaker"},
             {label:"Marketing Strategy",  icon: <Gamepad className="h-5 w-5" />, path:"/game/marketing-strategy"},
           ]},
+          {label : "Negotiation ", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
+            {label:"Negotiation Protocol",  icon: <Gamepad className="h-5 w-5" />, path:"/game/negotiation-protocol"},
+          ]},
           {label : "Human Resource Development", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Netritva",  icon: <Gamepad className="h-5 w-5" />, path:"/game/netrvita"},
           ]},
@@ -279,6 +282,9 @@ export const menuItems = [
                           {label:"Financial Modeling - 1",  icon: <IndianRupeeIcon className="h-5 w-5" />, path:"/game/financial-modeling"},
             {label:"Rat Race 3d",  icon: <Gamepad className="h-5 w-5" />, path:"/game/rat-race"},
             {label:"Project Titan",  icon: <Gamepad className="h-5 w-5" />, path:"/game/titan"},
+          ]},
+          {label : "Negotiation ", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
+            {label:"Negotiation Protocol",  icon: <Gamepad className="h-5 w-5" />, path:"/game/negotiation-protocol"},
           ]},
           {label : "Sales and Marketing", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Sector Shaker",  icon: <Gamepad className="h-5 w-5" />, path:"/game/sector-shaker"},
@@ -360,6 +366,9 @@ export const menuItems = [
             {label:"Rat Race 3d",  icon: <Gamepad className="h-5 w-5" />, path:"/game/rat-race"},
             {label:"Project Titan",  icon: <Gamepad className="h-5 w-5" />, path:"/game/titan"},
           ]},
+          {label : "Negotiation ", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
+            {label:"Negotiation Protocol",  icon: <Gamepad className="h-5 w-5" />, path:"/game/negotiation-protocol"},
+          ]},
           {label : "Sales and Marketing", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Sector Shaker",  icon: <Gamepad className="h-5 w-5" />, path:"/game/sector-shaker"},
             {label:"Marketing Strategy",  icon: <Gamepad className="h-5 w-5" />, path:"/game/marketing-strategy"},
@@ -422,6 +431,9 @@ export const menuItems = [
                           {label:"Financial Modeling - 1",  icon: <IndianRupeeIcon className="h-5 w-5" />, path:"/game/financial-modeling"},
             {label:"Rat Race 3d",  icon: <Gamepad className="h-5 w-5" />, path:"/game/rat-race"},
             {label:"Project Titan",  icon: <Gamepad className="h-5 w-5" />, path:"/game/titan"},
+          ]},
+          {label : "Negotiation ", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
+            {label:"Negotiation Protocol",  icon: <Gamepad className="h-5 w-5" />, path:"/game/negotiation-protocol"},
           ]},
           {label : "Sales and Marketing", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Sector Shaker",  icon: <Gamepad className="h-5 w-5" />, path:"/game/sector-shaker"},
@@ -490,6 +502,9 @@ export const EPGDMAdmin = [
                {label:"Financial Modeling - 1",  icon: <IndianRupeeIcon className="h-5 w-5" />, path:"/game/financial-modeling"},
             {label:"Rat Race 3d",  icon: <Gamepad className="h-5 w-5" />, path:"/game/rat-race"},
             {label:"Project Titan",  icon: <Gamepad className="h-5 w-5" />, path:"/game/titan"},
+          ]},
+          {label : "Negotiation ", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
+            {label:"Negotiation Protocol",  icon: <Gamepad className="h-5 w-5" />, path:"/game/negotiation-protocol"},
           ]},
           {label : "Sales and Marketing", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Sector Shaker",  icon: <Gamepad className="h-5 w-5" />, path:"/game/sector-shaker"},

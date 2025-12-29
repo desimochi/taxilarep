@@ -91,6 +91,11 @@ const PDFViewer = () => {
       name: 'Financial Modeling -1  Faculty guide',
       url: '/financial-modeling1.docx', // File should be at public/manual.pdf
       description: 'Faculty Guide for Financial Modeling -1 '
+    },
+    {
+      name: 'Negotiation Protocol  Faculty guide',
+      url: '/nego.docx', // File should be at public/manual.pdf
+      description: 'Faculty Guide for Negotiation Protocol '
     }
   ];
 
