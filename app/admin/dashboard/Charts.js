@@ -66,56 +66,35 @@ fetchdata()
        <StatsCard students={data.total_students}  faculty ={data.faculty_count} subject={data.subject_count} batch={data.batch_wise_student_count} /> 
 
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Left Column */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-3 space-y-6">
             {/* Project Analytics */}
-            <div className='flex flex-col sm:flex-row gap-2'>
-            <div className="bg-white p-6 w-full rounded-xl border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-6">T29 Batch Profile</h3>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData}>
-                    <XAxis 
-                      dataKey="name" 
-                      axisLine={false} 
-                      tickLine={false}
-                      tick={{ fill: '#6b7280', fontSize: 12 }}
-                    />
-                    <YAxis hide />
-                    <Bar 
-                      dataKey="value" 
-                      fill="#991b1b"
-                      radius={[6, 6, 6, 6]}
-                      background={{ fill: '#f3f4f6', radius: [6, 6, 6, 6] }}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-<div className="bg-white p-6 w-full rounded-xl border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-6">T30 Batch Profile</h3>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData}>
-                    <XAxis 
-                      dataKey="name" 
-                      axisLine={false} 
-                      tickLine={false}
-                      tick={{ fill: '#6b7280', fontSize: 12 }}
-                    />
-                    <YAxis hide />
-                    <Bar 
-                      dataKey="value" 
-                      fill="#991b1b"
-                      radius={[6, 6, 6, 6]}
-                      background={{ fill: '#f3f4f6', radius: [6, 6, 6, 6] }}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-            </div>
+            <div className="flex flex-col sm:flex-row gap-4 w-full">
+  <Link
+    href="/admin/reports/attendance"
+    className="flex-1 text-center px-6 py-4 rounded-xl border bg-white shadow-sm
+               hover:bg-red-50 hover:border-red-500 transition-all font-medium"
+  >
+    Attendance Reports
+  </Link>
+
+  <Link
+    href="/admin/reports/marks"
+    className="flex-1 text-center px-6 py-4 rounded-xl border bg-white shadow-sm
+               hover:bg-red-50 hover:border-red-500 transition-all font-medium"
+  >
+    Marks Reports
+  </Link>
+
+  <Link
+    href="/admin/reports/results"
+    className="flex-1 text-center px-6 py-4 rounded-xl border bg-white shadow-sm
+               hover:bg-red-50 hover:border-red-500 transition-all font-medium"
+  >
+    Results
+  </Link>
+</div>
             <LeaveStatusPage />
            <Leaderboard />
             <div className="bg-white p-6 rounded-xl border border-gray-200">

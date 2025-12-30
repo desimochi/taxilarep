@@ -419,7 +419,6 @@ export const menuItems = [
   ]
 
   export const Staff = [
-    { label: "Dashboard", icon: <HomeIcon className="h-5 w-5" />, path: "/staf" },
     { label: "Attendance", icon: <BookCheckIcon className="h-5 w-5" />, path: "/staff/attendance" },
     { label: "Payroll", icon: <IndianRupee className="h-5 w-5" />, path: "/staff/payroll" },
     {label : "Simulations", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
