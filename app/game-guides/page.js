@@ -96,6 +96,11 @@ const PDFViewer = () => {
       name: 'Negotiation Protocol  Faculty guide',
       url: '/nego.docx', // File should be at public/manual.pdf
       description: 'Faculty Guide for Negotiation Protocol '
+    },
+     {
+      name: 'Negotiation Protocol 2 Faculty guide',
+      url: '/nego2.docx', // File should be at public/manual.pdf
+      description: 'Faculty Guide for Negotiation Protocol 2 '
     }
   ];
 
