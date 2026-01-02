@@ -820,64 +820,38 @@ const [finalReportModal, setFinalReportModal] = useState(false);
   }, []);
 
   /* ---------------- AI ANALYSIS LOGIC ---------------- */
-  const analyzeWithAI = async () => {
-    if (!journalData.bigWin || !journalData.skillFocus) {
-      return toast.error("Please fill Part 1 (Objective & Skill) first.");
-    }
+ const analyzeWithAI = async () => {
+  if (!journalData.bigWin || !journalData.skillFocus) {
+    return toast.error("Fill objective & skill first");
+  }
 
-    const logsText = Object.entries(journalData.dailyLogs)
-      .filter(([_, log]) => log.trim() !== "")
-      .map(([day, log]) => `${day}: ${log}`)
-      .join(". ");
+  setIsAiAnalyzing(true);
+  setEvaluationResult(null);
 
-    if (!logsText) return toast.error("Please enter at least one daily log entry.");
+  try {
+    const res = await fetch("/api/analyse-week", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        bigWin: journalData.bigWin,
+        skillFocus: journalData.skillFocus,
+        dailyLogs: journalData.dailyLogs,
+      }),
+    });
 
-    setIsAiAnalyzing(true);
-    setEvaluationResult(null); // Reset previous result
+    if (!res.ok) throw new Error("AI failed");
 
-    const prompt = `
-          Act as a strict academic evaluator. 
-          Objective: "${journalData.bigWin}"
-          Skill Focus: "${journalData.skillFocus}"
-          Total Work Days Available: 5
-          Daily Logs: "${logsText}"
-          
-          Task: Evaluate if the Daily Logs demonstrate progress.
-          Note: The student only had 5 days this week. Adjust expectations.
-          Output ONLY JSON: { "alignmentScore": number_0_to_50, "reason": "short explanation of 200 words" }
-          Rules: 
-          - Score < 20: Empty/Irrelevant.
-          - Score 20-30: Busy work, no objective progress.
-          - Score 40-50: Clear progress matching objective.
-          - Score 31-39: Some progress, but lacks clarity.
-          - Score 30 : If resone found AI generated
+    const result = await res.json();
+    setEvaluationResult(result);
 
+    toast.success("AI Coach Analysis Complete!");
+  } catch (e) {
+    toast.error("AI analysis failed");
+  } finally {
+    setIsAiAnalyzing(false);
+  }
+};
 
-    `;
-
-    try {
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=AIzaSyCyuQCz3w54HhEoGCtlhBU0fTC_kNWd7TA`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { responseMimeType: "application/json" }
-        })
-      });
-
-      const data = await response.json();
-      const rawJson = data.candidates[0].content.parts[0].text.replace(/```json|```/g, "").trim();
-      const result = JSON.parse(rawJson);
-      
-      setEvaluationResult(result); // This triggers the display in UI
-      toast.success("AI Coach Analysis Complete!");
-    } catch (error) {
-      console.error("AI Error:", error);
-      toast.error("Could not connect to AI Coach.");
-    } finally {
-      setIsAiAnalyzing(false);
-    }
-  };
 const handleSubmit = async (e) => {
      e.preventDefault();
 
