@@ -5,6 +5,7 @@ import { authFetch } from "@/app/lib/fetchWithAuth";
 import FullWidthLoader from "./Loaader";
 import { Calendar, CrossIcon, EditIcon } from "lucide-react";
 import Toast from "./Toast";
+import AutoResitApply from "./AutoResitApply";
 
 export default function MainExamCom() {
   const [loading, setLoading] = useState(false);
@@ -17,6 +18,7 @@ export default function MainExamCom() {
   const[message, setMessage] = useState("")
   const [actionType, setActionType] = useState("");
   const [showPopup, setShowPopup] = useState(false);
+  const [resitApply, setResitApply] = useState(false)
   const [selectedClass, setSelectedClass] = useState(null);
   const today = new Date().toISOString().split("T")[0];
   const [status, setStatus] = useState("");
@@ -191,6 +193,11 @@ const filteredSchedule = classSchedule.filter((item) =>
   return (
     <>
      <div className="bg-white min-h-screen">
+      {resitApply && (
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
+                  <AutoResitApply />
+                </div>
+      ) }
      {showPopup && (
                 <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
                     {showToast && <Toast message={message}/>}
@@ -248,9 +255,12 @@ const filteredSchedule = classSchedule.filter((item) =>
            <div className="bg-violet-300 w-full sm:w-40 h-24 absolute top-0 -right-0 opacity-20 z-0"></div>
            <div className="w-full pt-4 relative z-10 backdrop-blur-3xl">
            <div className="px-6">
+            <div className="flex justify-between items-center">
           <div className="">
             <h2 className="text-2xl font-bold">Main Exam Schedule</h2>
             <p className="text-gray-500 text-sm">Check the examination schedule</p>
+          </div>
+          <button onClick={()=>setResitApply(true)} className="px-8 py-2 bg-violet-800 text-white">Auto Schedule Resit</button>
           </div>
           <hr className="border border-b-2 mt-4 mb-4"/>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

@@ -19,6 +19,7 @@ import {
   IdCard,
   Building
 } from "lucide-react";
+import Link from "next/link";
 
 export default function EmployeeProfile() {
   const [data, setData] = useState(null);
@@ -260,6 +261,15 @@ export default function EmployeeProfile() {
                           {data.employee_type}
                         </span>
                       )}
+                     <a
+  href="/insurance.pdf"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium"
+>
+  Employee Insurance
+</a>
+
                     </div>
                   </div>
                 </div>

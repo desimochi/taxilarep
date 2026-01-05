@@ -10,7 +10,8 @@ export default  function Page({params}) {
    
     const [message, setMessage] = useState(false)
     const [show, setShow] = useState(false)
-  
+  const [windowData, setWindowData] = useState(null);
+const [examNotScheduled, setExamNotScheduled] = useState(false);
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState(false)
     const {id} =  use(params)
@@ -33,6 +34,30 @@ export default  function Page({params}) {
         }
         fetchData()
     },[id])
+    useEffect(() => {
+  async function fetchWindow() {
+    try {
+      const res = await authFetch(
+        `get-data-prerequisit-last-update-window/${id}`
+      );
+
+      if (res.status === 400) {
+        setExamNotScheduled(true);
+        return;
+      }
+
+      if (!res.ok) throw new Error("Failed to fetch window");
+
+      const result = await res.json();
+      setWindowData(result.data);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  if (id) fetchWindow();
+}, [id]);
+
     const handleChange = (index, field) => {
         setsclass((prev) => {
           const updated = [...prev];
@@ -70,7 +95,12 @@ export default  function Page({params}) {
           setLoading(false);
         }
       }
-      
+     const today = new Date();
+
+const isDisabled =
+  windowData?.two_days_before &&
+  today > new Date(windowData.two_days_before);
+ 
     return(
         <section className="relative">
             {show && <Toast message={message} />}
@@ -83,6 +113,18 @@ export default  function Page({params}) {
             <div>
             <h1 className="text-3xl font-bold mb-2 font-sans">Resit Submission Information </h1>
             <p className="text-sm text-gray-500 mb-8">Resit Subjects Students Information Panel</p>
+            {examNotScheduled && (
+  <div className="bg-red-100 text-red-700 px-4 py-2 rounded mb-4">
+    Exam is not scheduled
+  </div>
+)}
+{windowData && !examNotScheduled && (
+  <div className="bg-green-50 text-green-700 px-4 py-2 rounded mb-4 text-sm">
+    <p>Exam Date: {windowData.exam_date}</p>
+    <p>Viva/Presentation Date: {windowData.previous_wednesday}</p>
+    <p>Last Update Allowed Till: {windowData.two_days_before}</p>
+  </div>
+)}
             </div>
             <button onClick={handleSubmit} disabled={loading} className="bg-red-800 text-white px-12 py-2 rounded-md">{loading? "Submitting..." :  "Submit"}</button>
             </div>
@@ -112,6 +154,7 @@ export default  function Page({params}) {
       <input
         type="checkbox"
         checked={product.criteria_first}
+         disabled={isDisabled}
         onChange={() => handleChange(index, "criteria_first")}
       />
     </td>
@@ -119,6 +162,7 @@ export default  function Page({params}) {
       <input
         type="checkbox"
         checked={product.criteria_second}
+         disabled={isDisabled}
         onChange={() => handleChange(index, "criteria_second")}
       />
     </td>

@@ -114,6 +114,45 @@ const handleSubmit = async () => {
             },2000)
         }
     };
+    const exportFilteredStudents = () => {
+  if (!filteredStudents.length) {
+    alert("No students to export");
+    return;
+  }
+
+  const headers = [
+    "Enrollment No",
+    "Name",
+    "Email",
+    "Batch",
+    "Course",
+    "Status",
+  ];
+
+  const rows = filteredStudents.map((student) => [
+    student.enrollment_number || "",
+    `${student.first_name} ${
+      student.middle_name !== "nan" ? student.middle_name : ""
+    } ${student.last_name}`.trim(),
+    student.user?.email || "",
+    student.batch?.name || "",
+    student.course?.name || "",
+    student.user?.is_active ? "Active" : "Inactive",
+  ]);
+
+  const csvContent =
+    "data:text/csv;charset=utf-8," +
+    [headers, ...rows].map((e) => e.join(",")).join("\n");
+
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  link.setAttribute("download", "filtered_students.csv");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
   return (
     <div className="relative overflow-x-auto shadow-md sm:rounded-xl sm:p-8 m-4 bg-white">
       {/* Modal */}
@@ -164,6 +203,7 @@ const handleSubmit = async () => {
       {/* Add New Student Button */}
       <div className="flex items-center justify-between px-8 pt-6 rounded-xl">
         <h4 className="text-2xl font-sans font-bold ">All Student List</h4>
+        <div className="flex gap-4">
         <select
           value={pageSize}
           onChange={(e) => setPageSize(Number(e.target.value))}
@@ -174,8 +214,15 @@ const handleSubmit = async () => {
           <option value="50">50</option>
           <option value="100">100</option>
         </select>
-
+<button
+  onClick={exportFilteredStudents}
+  className="bg-green-600 text-white px-4 py-2 rounded-md text-sm hover:bg-green-700"
+>
+  Export Filtered Students
+</button>
+</div>
       </div>
+      
           <hr className="border border-b-2 mt-4 mb-6"/>
       {/* Table */}
       {loading ? (
