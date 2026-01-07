@@ -93,7 +93,7 @@ export default function Page() {
             setTermPeriod(data.extra.term_period)
             setSr(data.extra?.sr_number)
             setExamPeriod(data.extra.exam_period)
-            setSpecialisation(data.extra.specializations_string || 'Core')
+            setSpecialisation(data.extra.specializations_string)
             if(data.data.length>0){
                 setdisplay(false)
                 setshowResult(true)
