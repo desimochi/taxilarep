@@ -21,6 +21,7 @@ export default function Page() {
     const {state} =  useContext(GlobalContext)
     const [display, setdisplay] = useState(true)
     const [showresult, setshowResult] = useState(false)
+    const [specialisation, setSpecialisation] = useState("")
     const [error, setError] = useState("");
     const [result, setResult] = useState([])
     const [formData, setFormData] = useState({
@@ -92,6 +93,7 @@ export default function Page() {
             setTermPeriod(data.extra.term_period)
             setSr(data.extra?.sr_number)
             setExamPeriod(data.extra.exam_period)
+            setSpecialisation(data.extra.specializations_string || 'Core')
             if(data.data.length>0){
                 setdisplay(false)
                 setshowResult(true)
@@ -115,7 +117,7 @@ export default function Page() {
        {modal && (
   <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center mt-24">
     <div className="bg-white rounded-xl shadow-lg p-6 max-w-7xl w-full relative">
-      <Marksheet data={result}  type={formData.type} cgpa={cgpa} gpa={gpa} term_period={termperiod} examPeriod={examPeriod} sr={sr} term={formData.term} father_name={fname} name={sname} enroll = {formData.enrollment_number}/>
+      <Marksheet data={result} specialisation={specialisation}  type={formData.type} cgpa={cgpa} gpa={gpa} term_period={termperiod} examPeriod={examPeriod} sr={sr} term={formData.term} father_name={fname} name={sname} enroll = {formData.enrollment_number} />
 
       {/* Close button */}
       <button

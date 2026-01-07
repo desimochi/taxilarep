@@ -8,6 +8,7 @@ import QRCode from "qrcode";
 
 export default function Marksheet({
   data,
+  specialisation,
   cgpa,
   gpa,
   father_name,
@@ -142,6 +143,9 @@ const totalCredit = data.reduce((sum, item) => sum + Number(item.credit || 0), 0
           <p>
             <strong>Father's Name:</strong> Mr. {father_name}
           </p>
+          {specialisation && <p>
+            <strong>Specialization:</strong> {specialisation}
+          </p>}
         </div>
 
         <table className="w-full mt-6 border border-collapse text-xl">

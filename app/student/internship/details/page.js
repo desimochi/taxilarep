@@ -1033,7 +1033,7 @@ const getReportByWeek = (week) => {
                      <div className="flex items-start gap-3 bg-white p-4 rounded-lg border border-slate-200 md:col-span-2">                      <FileText className="w-5 h-5 text-slate-600 mt-0.5" />
                       <div className="flex-1">
                         <div className="text-xs text-slate-500 font-medium mb-2">Offer Letter</div>                        <a
-                         href={`https://taxila.in/media/${i.offer_letter}`}
+                         href={`https://taxila.in/${i.offer_letter}`}
                          target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline"
