@@ -22,7 +22,7 @@ if(!batch){
         const fetchedMentorshipData = async () => {
             try {
                 setLoading(true)
-                const response = await authFetch(`membership-viewset/students-by-faculty/${state.user_id}?batch_id=${batch||""}`);
+                const response = await authFetch(`batch-wise-student/${batch||""}`);
                 const result = await response.json();
                 if(response.ok){
                   setMentee(result.data);
