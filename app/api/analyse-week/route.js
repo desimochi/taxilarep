@@ -4,12 +4,9 @@ export async function POST(req) {
   try {
     const body = await req.json();
 
-    const {
-      bigWin,
-      skillFocus,
-      dailyLogs,
-    } = body;
+    const { bigWin, skillFocus, dailyLogs } = body;
 
+    // Validate Input
     if (!bigWin || !skillFocus || !dailyLogs) {
       return NextResponse.json(
         { error: "Missing required fields" },
@@ -23,33 +20,19 @@ export async function POST(req) {
       .join(". ");
 
     const prompt = `
-Act as a strict academic evaluator.
+    Act as a strict academic evaluator.
+    Objective: "${bigWin}"
+    Skill Focus: "${skillFocus}"
+    Total Work Days Available: 5
+    Daily Logs: "${logsText}"
+    Evaluate if logs show real progress.
+    Output ONLY JSON: { "alignmentScore": number, "reason": "string" }
+    Rules: <20: Empty, 20-30: Busy work, 31-39: Partial, 40-50: Clear alignment.
+    `;
 
-Objective: "${bigWin}"
-Skill Focus: "${skillFocus}"
-Total Work Days Available: 5
-
-Daily Logs:
-"${logsText}"
-
-Evaluate if logs show real progress.
-
-Output ONLY JSON:
-{
-  "alignmentScore": number_0_to_50,
-  "reason": "200 word explanation"
-}
-
-Rules:
-- <20: Empty / irrelevant
-- 20–30: Busy work
-- 31–39: Partial progress
-- 40–50: Clear objective alignment
-- 30 if AI-generated style detected
-`;
-
+    // 1. USE CORRECT MODEL NAME (1.5-flash)
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GOOGLE_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GOOGLE_API_KEY}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -63,6 +46,22 @@ Rules:
     );
 
     const data = await response.json();
+
+    // 2. CHECK IF API REQUEST FAILED
+    if (!response.ok) {
+      console.error("Gemini API Error:", data);
+      return NextResponse.json(
+        { error: data.error?.message || "Gemini API Error" },
+        { status: response.status }
+      );
+    }
+
+    // 3. SAFE PARSING
+    // If response is blocked due to safety, candidates might be null or empty
+    if (!data.candidates || !data.candidates[0]) {
+       return NextResponse.json({ error: "No response generated" }, { status: 500 });
+    }
+
     const raw = data.candidates[0].content.parts[0].text
       .replace(/```json|```/g, "")
       .trim();
@@ -71,9 +70,9 @@ Rules:
 
     return NextResponse.json(result);
   } catch (err) {
-    console.error("AI Analysis Error:", err);
+    console.error("Server Error:", err);
     return NextResponse.json(
-      { error: "AI analysis failed" },
+      { error: "Internal Server Error" },
       { status: 500 }
     );
   }
