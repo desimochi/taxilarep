@@ -77,6 +77,9 @@ const Sidebar = ({ collapsed, toggleSidebar, role, type, batch }) => {
           case "9":
           result = [...result, ...PlacementHead];
           break;
+          case "10":
+          result = [...result, ...ITManager];
+          break;
         default:
           break;
       }

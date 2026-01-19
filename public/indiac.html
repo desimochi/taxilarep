@@ -1847,9 +1847,9 @@
         }
         
         // --- REPORT GENERATION (Uses gameHistory which is now persisted) ---
-        function downloadReport() {
+       async function downloadReport() {
             if(gameHistory.length === 0) { showToast("No data to report yet!", 'danger'); return; }
-            
+            await saveGame()
             let reportHtml = `
             <html>
             <head>
@@ -1908,14 +1908,16 @@
             a.click();
         }
         
-        function shareLinkedIn() {
+      async  function shareLinkedIn() {
+            await saveGame()
             const text = `I just completed the Indian Consumer Behavior Simulation at Taxila Business School! Scored ${cumulativeScore}/100 as a virtual CMO. Challenge your marketing skills here! #ICBS #TaxilaBusinessSchool #MarketingSimulation`;
             const url = "https://www.linkedin.com/feed/?shareActive=true&text=" + encodeURIComponent(text);
             window.open(url, '_blank');
         }
 
         // --- CERTIFICATE GENERATION ---
-        function downloadCertificate() {
+    async    function downloadCertificate() {
+        await saveGame()
             const canvas = document.getElementById('certificate-canvas');
             const ctx = canvas.getContext('2d');
 

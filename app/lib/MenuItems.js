@@ -6,7 +6,7 @@ import {
     DocumentChartBarIcon,
     DocumentIcon,
   } from "@heroicons/react/24/outline";
-  import { AlignLeftIcon, AlignRightIcon, Award, BookCheckIcon, BookCopyIcon, Brain, Briefcase, BriefcaseBusiness, Building2, Building2Icon, Calculator, CalendarCheck2Icon, DockIcon, Dog, DollarSign, FileAxis3D, FishIcon, Gamepad, Globe, HandshakeIcon, HelpCircleIcon, IndianRupee, IndianRupeeIcon, NewspaperIcon, Paperclip, PaperclipIcon, PenBox, PenSquareIcon, ProjectorIcon, Puzzle, Settings2Icon, Sheet, SpeakerIcon, UserCheck, UserCircle, UserRoundCheck, WholeWord } from "lucide-react";
+  import { AlignLeftIcon, AlignRightIcon, Award, BookCheckIcon, BookCopyIcon, Brain, Briefcase, BriefcaseBusiness, Building2, Building2Icon, Calculator, CalendarCheck2Icon, DockIcon, Dog, DollarSign, FileAxis3D, FishIcon, Gamepad, Globe, HandshakeIcon, HelpCircleIcon, IndianRupee, IndianRupeeIcon, NewspaperIcon, Paperclip, PaperclipIcon, PenBox, PenSquareIcon, ProjectorIcon, Puzzle, Settings2Icon, Sheet, SpeakerIcon, UserCheck, UserCircle, UserRoundCheck, UserSquare, WholeWord, WorkflowIcon } from "lucide-react";
 export const menuItems = [
     { label: "Dashboard", icon: <HomeIcon className="h-5 w-5" />, path: "/admin/dashboard" },
     {
@@ -126,6 +126,7 @@ export const menuItems = [
       icon: <UserCircle className="h-5 w-5" />,
       subMenu: [
         { label: "Department", path: "/admin/department" },
+         { label: "Task Management", icon: <UserSquare className="h-5 w-5" />, path: "/admin/task" },
         { label: "Salutation", path: "/admin/salutation" },
         { label: "Role Management", path: "/admin/role-manager" },
         { label: "Designation", path: "/admin/designation" },
@@ -253,15 +254,7 @@ export const menuItems = [
   ];
 
   export const ITManager = [
-    {
-        label: "User Manager",
-        icon: <UserGroupIcon className="h-5 w-5" />,
-        subMenu: [
-          { label: "Add New User", path: "/add-user" },
-          { label: "All Users", path: "/users" },
-          { label: "Change Password", path: "/reset-password" },
-        ],
-      },
+    { label: "IT Team Task", icon: <UserSquare className="h-5 w-5" />, path: "/admin/task-manager" },
   ]
 
   export const stumenuItems = [
@@ -422,8 +415,7 @@ export const menuItems = [
   ]
 
   export const Staff = [
-    { label: "Attendance", icon: <BookCheckIcon className="h-5 w-5" />, path: "/staff/attendance" },
-    { label: "Payroll", icon: <IndianRupee className="h-5 w-5" />, path: "/staff/payroll" },
+    { label: "Task Manager", icon: <WorkflowIcon className="h-5 w-5" />, path: "/staff/task-manager" },
     {label : "Simulations", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Startup Simluation",  icon: <Gamepad className="h-5 w-5" />, path:"/game/simulation"},
              {label:"Guesstimation",  icon: <Gamepad className="h-5 w-5" />, path:"/game/guesstimations"},
