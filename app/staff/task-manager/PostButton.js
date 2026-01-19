@@ -130,6 +130,7 @@ useEffect(() => {
       setIsModalOpen(false);
       resetForm();
     }, 1500);
+    window.location.reload();
   } catch (err) {
     console.error(err);
     setMessage({ type: 'error', text: 'Error creating task' });

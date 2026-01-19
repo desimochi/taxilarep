@@ -3,7 +3,6 @@
 import { use, useContext, useEffect, useState } from "react";
 import { X, Calendar, Clock, AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import BackButton from "@/components/ui/Backbutton";
-import TaskCreator from "./PostButton";
 import TaskDetailModal from "./TaskDetails"; 
 import { authFetch } from "@/app/lib/fetchWithAuth";
 
@@ -99,7 +98,6 @@ export default  function TaskManagerPage({ params }) {
             <h1 className="text-4xl font-bold text-gray-900 mb-2">Task Board</h1>
             <p className="text-gray-600">Organize and manage your daily tasks</p>
           </div>
-          <TaskCreator id={userId} />
         </div>
 
         {/* Trello Board */}
