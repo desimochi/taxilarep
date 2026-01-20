@@ -37,11 +37,6 @@ export async function POST(req) {
     if (!isValidText(country))
       return NextResponse.json({ message: "Country required" }, { status: 400 });
 
-    if (!isValidText(message, 10))
-      return NextResponse.json(
-        { message: "Message too short" },
-        { status: 400 }
-      );
 
     /* -------- DB INSERT -------- */
     const client = await clientPromise;
