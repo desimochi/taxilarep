@@ -1,16 +1,12 @@
 import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 
-const ALLOWED_ORIGIN = "https://studyroi.com";
-
-/* ---------------- VALIDATORS ---------------- */
-
 /* ---------------- CORS PREFLIGHT ---------------- */
 export async function OPTIONS() {
   return new NextResponse(null, {
     status: 200,
     headers: {
-      "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
+      "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "POST, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type",
     },
@@ -20,30 +16,22 @@ export async function OPTIONS() {
 /* ---------------- POST ---------------- */
 export async function POST(req) {
   try {
-    const origin = req.headers.get("origin");
-    if (origin !== ALLOWED_ORIGIN) {
-      return NextResponse.json(
-        { message: "Not allowed" },
-        { status: 403 }
-      );
-    }
-
     const { email } = await req.json();
 
-    
-
-    if (!email )
+    /* -------- BASIC VALIDATION -------- */
+    if (!email || typeof email !== "string") {
       return NextResponse.json(
         { message: "Invalid email" },
         { status: 400 }
       );
+    }
 
     /* -------- DB INSERT -------- */
     const client = await clientPromise;
-    const db = client.db();
+    const db = client.db(); // uses default DB from URI
 
     await db.collection("studyroi_email_requests").insertOne({
-      email: email.trim(),
+      email: email.trim().toLowerCase(),
       createdAt: new Date(),
       ip:
         req.headers.get("x-forwarded-for") ||
@@ -56,12 +44,12 @@ export async function POST(req) {
       {
         status: 201,
         headers: {
-          "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
+          "Access-Control-Allow-Origin": "*",
         },
       }
     );
   } catch (error) {
-    console.error("CONTACT_API_ERROR:", error);
+    console.error("EMAIL_API_ERROR:", error);
     return NextResponse.json(
       { message: "Server error" },
       { status: 500 }

@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 
-const ALLOWED_ORIGIN = "https://studyroi.com";
-
 /* ---------------- VALIDATORS ---------------- */
 const isValidName = (v) => typeof v === "string" && v.trim().length >= 2;
 const isValidPhone = (v) => /^[6-9]\d{9}$/.test(v);
@@ -14,7 +12,7 @@ export async function OPTIONS() {
   return new NextResponse(null, {
     status: 200,
     headers: {
-      "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
+      "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "POST, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type",
     },
@@ -24,14 +22,6 @@ export async function OPTIONS() {
 /* ---------------- POST ---------------- */
 export async function POST(req) {
   try {
-    const origin = req.headers.get("origin");
-    if (origin !== ALLOWED_ORIGIN) {
-      return NextResponse.json(
-        { message: "Not allowed" },
-        { status: 403 }
-      );
-    }
-
     const { name, phone, city, country, message } = await req.json();
 
     /* -------- VALIDATION -------- */
@@ -63,7 +53,7 @@ export async function POST(req) {
       city: city.trim(),
       country: country.trim(),
       message: message.trim(),
-      source: "studyroi.com",
+      source: "public",
       createdAt: new Date(),
       ip:
         req.headers.get("x-forwarded-for") ||
@@ -76,7 +66,7 @@ export async function POST(req) {
       {
         status: 201,
         headers: {
-          "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
+          "Access-Control-Allow-Origin": "*",
         },
       }
     );
