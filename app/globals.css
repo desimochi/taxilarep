@@ -136,3 +136,12 @@ body {
 .input {
   @apply w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-indigo-500;
 }
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(-0%);
+  }
+}

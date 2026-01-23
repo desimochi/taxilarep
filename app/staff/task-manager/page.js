@@ -91,14 +91,14 @@ export default function TaskManagerPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen">
       <div className="py-6 px-6">
         <BackButton />
 
         {/* Header */}
-        <div className="flex justify-between items-center mt-6 mb-8 px-8">
+        <div className="flex justify-between items-center mt-6 mb-8 px-12">
           <div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">Task Board</h1>
+            <h1 className="text-3xl font-extrabold text-gray-900 mb-2">Task Board</h1>
             <p className="text-gray-600">Organize and manage your daily tasks</p>
           </div>
           <TaskCreator id={userId} />
@@ -122,7 +122,7 @@ export default function TaskManagerPage() {
           )}
 
           {!loading && Object.keys(tasksByDate).length > 0 && (
-            <div className="flex gap-5 pb-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 pb-4 overflow-hidden">
               {Object.keys(tasksByDate).sort().map((date) => (
                 <DayColumn
                   key={date}
@@ -195,7 +195,7 @@ function DayColumn({
 
   return (
     <div 
-      className={`flex-shrink-0 w-96 rounded-2xl p-5 transition-all duration-300 shadow-lg ${
+      className={`flex-shrink-0 w-96 border border-gray-300 rounded-2xl p-5 transition-all duration-300 shadow-lg ${
         isDragOver 
           ? 'bg-gradient-to-br from-blue-50 to-indigo-100 ring-4 ring-blue-400 ring-opacity-50 scale-105 shadow-2xl' 
           : 'bg-white hover:shadow-xl'
@@ -207,7 +207,7 @@ function DayColumn({
       {/* Column Header */}
       <div className="mb-5 pb-4 border-b-2 border-gray-100">
         <div className="flex items-center justify-between mb-2">
-          <h2 className={`text-xl font-bold ${isToday ? 'text-blue-600' : 'text-gray-800'}`}>
+          <h2 className={`text-xl font-bold ${isToday ? 'text-red-600' : 'text-gray-700'}`}>
             {formatDate(date)}
           </h2>
           {isToday && (
@@ -215,14 +215,6 @@ function DayColumn({
               Today
             </span>
           )}
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 text-sm text-gray-500">
-            <Calendar className="h-4 w-4" />
-            <span>{tasks.length} {tasks.length === 1 ? 'task' : 'tasks'}</span>
-          </div>
-          <span className="text-gray-300">•</span>
-          <TaskStats tasks={tasks} />
         </div>
       </div>
 
@@ -310,7 +302,7 @@ function TaskCard({ task, onClick, onDragStart, onDragEnd }) {
       style={{ borderLeftColor: statusColor.border }}
     >
       <div className="flex items-start justify-between gap-3 mb-3">
-        <h3 className="font-bold text-gray-900 text-base leading-tight line-clamp-2 flex-1">
+        <h3 className="font-bold text-gray-700 text-base leading-tight line-clamp-2 flex-1">
           {task.title}
         </h3>
         <PriorityBadge priority={task.priority} />

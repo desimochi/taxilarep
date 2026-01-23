@@ -27,9 +27,9 @@ function Layout({ children }) {
 
   useEffect(() => {
     const isNoLayoutRoute = noLayoutRoutes.includes(pathname);
-    const userCookie = Cookies.get("new_user");
+    const userCookie = Cookies.get("user");
     const token = localStorage.getItem("accessToken");
-
+console.log("Checking authentication for route:", userCookie, token, pathname);
     // If it's a no-layout route, just render the children without a check
     if (isNoLayoutRoute) {
       setShowLayout(false); // Indicate that the main layout should not be shown

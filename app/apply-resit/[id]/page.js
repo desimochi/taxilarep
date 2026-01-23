@@ -206,7 +206,7 @@ useEffect(() => {
       });
 
       toast.success("Resit Applied Successfully");
-    //   setTimeout(() => window.location.reload(), 2000);
+      setTimeout(() => window.location.reload(), 2000);
     } catch (err) {
       toast.error(err.message || "Submission failed");
     } finally {

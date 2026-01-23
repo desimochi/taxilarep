@@ -1,27 +1,21 @@
 // app/layout.js (server component)
 import "./globals.css";
-import { Roboto, Roboto_Mono, Poppins, Montserrat } from "next/font/google";
+import { Geist, Mulish } from "next/font/google";
 import ClientLayout from "./ClientLayout"; // this will have all your useState logic
 import { Toaster } from "react-hot-toast";
 import RazorpayLoader from "@/components/RazorPayLoader";
 
-const roboto = Roboto({
-  variable: "--font-roboto",
+const geistSans = Geist({
+  variable: "--font-geist-sans",
   subsets: ["latin"],
-  weight: ["400", "700"],
 });
 
-const robotoMono = Roboto_Mono({
-  variable: "--font-roboto-mono",
+const mulish = Mulish({
+  variable: "--font-mulish",
   subsets: ["latin"],
-  weight: ["400", "700"],
+  display: 'swap',
 });
 
-const poppins = Montserrat({
-  variable: "--font-poppins",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"], // you can add more if needed
-});
 
 export const metadata = {
   title: "Taxila Business School ERP",
@@ -32,7 +26,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en ">
       <body
-        className={` ${robotoMono.variable} antialiased `}
+        className={` ${geistSans.variable} ${mulish.className} antialiased font-sans `}
       > <Toaster
           position="top-right"
           reverseOrder={false}
