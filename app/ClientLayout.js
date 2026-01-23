@@ -20,7 +20,7 @@ function Layout({ children }) {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [openMenus, setOpenMenus] = useState({});
 
-  const noLayoutRoutes = ["/login", "/unauthorized", "/forgot-password"];
+  const noLayoutRoutes = ["/login", "/unauthorized", "/forgot-password", "/reset-password", "/privacy-policy", "/contact-us", "/refund-and-cancellation-policy"];
 
   // Use a state variable to control the rendering of the authenticated layout
   const [showLayout, setShowLayout] = useState(false);

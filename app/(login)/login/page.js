@@ -85,7 +85,7 @@ router.replace("/");
       {/* Left Section */}
       <div className="md:w-1/2 sm:w-full flex flex-col justify-center items-center  p-10">
         <div className="max-w-md w-full space-y-8">
-          <div className="border border-gray-200  px-12 py-12 rounded-xl bg-white mt-8">
+          <div className="border border-gray-300  px-12 py-12 rounded-xl bg-white mt-8">
             <div className="text-center">
               <div className="flex justify-center mb-2">
                 <Image src={logo} height={60} width={120} alt="taxila logo" />
@@ -97,7 +97,7 @@ router.replace("/");
             {error && <p className="text-sm text-center text-red-600">{error}</p>}
             <form className="space-y-4" onSubmit={handleLogin}>
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="email" className="block text-sm font-bold text-gray-900">
                   Email address
                 </label>
                 <input
@@ -108,14 +108,14 @@ router.replace("/");
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="mt-1 block w-full px-4 py-2 border rounded-md shadow-sm text-gray-900 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  className="mt-1 block w-full px-4 py-2.5 border border-gray-200 rounded-md shadow-md text-gray-900 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
               </div>
 
                <div>
     <label
       htmlFor="password"
-      className="block text-sm font-medium text-gray-700"
+      className="block text-sm font-bold text-gray-900"
     >
       Password
     </label>
@@ -128,7 +128,7 @@ router.replace("/");
         onChange={(e) => setPassword(e.target.value)}
         autoComplete="current-password"
         required
-        className="mt-1 block w-full px-4 py-2 border rounded-md shadow-sm text-gray-900 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm pr-10"
+        className="mt-1 block w-full px-4 py-2.5 border border-gray-200 rounded-md shadow-md text-gray-900 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm pr-10"
       />
       <button
         type="button"
@@ -162,13 +162,37 @@ router.replace("/");
               <div>
                 <button
                   type="submit"
-                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-zinc-950 hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                 >
                   {loading? "Signing In...." : "Sign in"}
                 </button>
-                <p className="text-sm text-center text-gray-600 mt-3">Forgot Password <Link href={"/forgot-password"} className=" text-red-600 underline">Click here</Link></p>
+                <p className="text-sm text-center text-gray-600 mt-3">Forgot Password <Link href={"/forgot-password"} className=" text-amber-600 underline">Click here</Link></p>
               </div>
             </form>
+            <div className="mt-6 text-center text-xs text-gray-700 space-x-2">
+  <Link
+    href="/privacy-policy"
+    className="hover:underline"
+  >
+    Privacy Policy
+  </Link>
+  <span>|</span>
+  <Link
+    href="/refund-and-cancellation-policy"
+    target="_blank"
+    className="hover:underline"
+  >
+    Refund & Cancellation
+  </Link>
+  <span>|</span>
+  <Link
+    href="/contact-us"
+    className="hover:underline"
+  >
+    Contact Us
+  </Link>
+</div>
+
           </div>
         </div>
       </div>
