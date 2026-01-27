@@ -254,7 +254,7 @@ export default function Page() {
                                             <td className="p-2">{item.grade_point || "NA"}</td>
                                             <td className="p-2">{Math.floor(item.total_marks * 100) / 100}</td>
                                       {formData.type !=='resit-1' && <td className="p-2">{item.scaled_total_marks}</td>}
-                                            {item.is_pass ? <td className="bg-green-50 text-green-800 px-4 py-1 rounded-sm">Pass</td> : <td><Link href={`/apply-resit/${studentId}`} className="bg-red-800 text-red-50 px-4 py-1 rounded-sm text-center">Apply</Link></td>}
+                                            {item.is_pass ? <td className="bg-green-50 text-green-800 px-4 py-1 rounded-sm">Pass</td> : <td>Fail</td>}
                                             <td className="p-2">{item.get_credit_xgp || "NA"}</td>
                                             {state.role_name === 'Student' && (
   item.is_pass ? (
