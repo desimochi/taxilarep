@@ -61,6 +61,7 @@ if(!batch){
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
+                            <Link href={`/internship/mentor/component/${id}/combine?batch=${batch}`} className="py-2 px-4 rounded-sm bg-violet-800 text-gray-50 w-fit border border-gray-300">See All Student Reports</Link>
                         </div>
         <div className="">
         

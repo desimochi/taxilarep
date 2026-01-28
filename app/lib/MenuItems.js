@@ -204,6 +204,8 @@ export const menuItems = [
           {label : "Sales and Marketing", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Sector Shaker",  icon: <Gamepad className="h-5 w-5" />, path:"/game/sector-shaker"},
             {label:"Marketing Strategy",  icon: <Gamepad className="h-5 w-5" />, path:"/game/marketing-strategy"},
+            {label:"STRATSIM",  icon: <Gamepad className="h-5 w-5" />, path:"/game/stratsim"},
+            {label:"STRATSIM 2",  icon: <Gamepad className="h-5 w-5" />, path:"/game/stratsim2"},
           ]},
           {label : "Negotiation ", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Negotiation Protocol",  icon: <Gamepad className="h-5 w-5" />, path:"/game/negotiation-protocol"},
@@ -284,6 +286,8 @@ export const menuItems = [
           {label : "Sales and Marketing", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Sector Shaker",  icon: <Gamepad className="h-5 w-5" />, path:"/game/sector-shaker"},
             {label:"Marketing Strategy",  icon: <Gamepad className="h-5 w-5" />, path:"/game/marketing-strategy"},
+            {label:"STRATSIM",  icon: <Gamepad className="h-5 w-5" />, path:"/game/stratsim"},
+            {label:"STRATSIM 2",  icon: <Gamepad className="h-5 w-5" />, path:"/game/stratsim2"},
           ]},
           {label : "Human Resource Development", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Netritva",  icon: <Gamepad className="h-5 w-5" />, path:"/game/netrvita"},
@@ -368,6 +372,8 @@ export const menuItems = [
           {label : "Sales and Marketing", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Sector Shaker",  icon: <Gamepad className="h-5 w-5" />, path:"/game/sector-shaker"},
             {label:"Marketing Strategy",  icon: <Gamepad className="h-5 w-5" />, path:"/game/marketing-strategy"},
+            {label:"STRATSIM",  icon: <Gamepad className="h-5 w-5" />, path:"/game/stratsim"},
+            {label:"STRATSIM 2",  icon: <Gamepad className="h-5 w-5" />, path:"/game/stratsim2"},
           ]},
           {label : "Human Resource Development", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Netritva",  icon: <Gamepad className="h-5 w-5" />, path:"/game/netrvita"},
@@ -430,9 +436,11 @@ export const menuItems = [
             {label:"Negotiation Protocol",  icon: <Gamepad className="h-5 w-5" />, path:"/game/negotiation-protocol"},
             {label:"Negotiation2",  icon: <Gamepad className="h-5 w-5" />, path:"/game/negotiation2"},
           ]},
-          {label : "Sales and Marketing", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
+         {label : "Sales and Marketing", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Sector Shaker",  icon: <Gamepad className="h-5 w-5" />, path:"/game/sector-shaker"},
             {label:"Marketing Strategy",  icon: <Gamepad className="h-5 w-5" />, path:"/game/marketing-strategy"},
+            {label:"STRATSIM",  icon: <Gamepad className="h-5 w-5" />, path:"/game/stratsim"},
+            {label:"STRATSIM 2",  icon: <Gamepad className="h-5 w-5" />, path:"/game/stratsim2"},
           ]},
           {label : "Human Resource Development", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Netritva",  icon: <Gamepad className="h-5 w-5" />, path:"/game/netrvita"},
@@ -502,9 +510,11 @@ export const EPGDMAdmin = [
             {label:"Negotiation Protocol",  icon: <Gamepad className="h-5 w-5" />, path:"/game/negotiation-protocol"},
             {label:"Negotiation2",  icon: <Gamepad className="h-5 w-5" />, path:"/game/negotiation2"},
           ]},
-          {label : "Sales and Marketing", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
+         {label : "Sales and Marketing", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Sector Shaker",  icon: <Gamepad className="h-5 w-5" />, path:"/game/sector-shaker"},
             {label:"Marketing Strategy",  icon: <Gamepad className="h-5 w-5" />, path:"/game/marketing-strategy"},
+            {label:"STRATSIM",  icon: <Gamepad className="h-5 w-5" />, path:"/game/stratsim"},
+            {label:"STRATSIM 2",  icon: <Gamepad className="h-5 w-5" />, path:"/game/stratsim2"},
           ]},
           {label : "Human Resource Development", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Netritva",  icon: <Gamepad className="h-5 w-5" />, path:"/game/netrvita"},

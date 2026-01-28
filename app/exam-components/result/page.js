@@ -54,7 +54,10 @@ export default function Page() {
                             <p className="text-sm text-gray-500 sm:mb-4">Everything you need to know about Result</p>
                             
                         </div>
+                        <div className="flex gap-2 justify-center">
                         <Link href={`/exam-components/result/see-result`}className="px-6 py-2 mb-4 sm:mb-0 bg-gray-800 text-white rounded-sm mx-12">See Result</Link>
+                        <Link href={`/exam-components/result/see-result/combined`}className="px-6 py-2 mb-4 sm:mb-0 border border-gray-200 bg-gray-50 text-gray-950 rounded-sm mx-12">See Combined Result</Link>
+                        </div>
                         </div>
                         <hr className=" border border-spacing-y-8 mb-4 sm:mb-8" />
                     </div>
