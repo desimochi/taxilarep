@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 export default function LeaderboardPage() {
   const [data, setData] = useState([]);
   const [page, setPage] = useState(1);
+   const [count, setCount] = useState(0);
   const [sortBy, setSortBy] = useState("spi");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -18,10 +19,12 @@ export default function LeaderboardPage() {
       const res = await fetch(`/api/game/strastim2/leaderboard?page=${page}&limit=${limit}&sortBy=${sortBy}`,
         { cache: "no-store" }
       );
-
+console.log(res)
       if (!res.ok) throw new Error("Failed to fetch leaderboard");
 
       const json = await res.json();
+      console.log(json)
+      setCount(json.count)
       setData(json.data);
     } catch (err) {
       setError(err.message);
@@ -33,7 +36,6 @@ export default function LeaderboardPage() {
   useEffect(() => {
     fetchLeaderboard();
   }, [page, sortBy]);
-
   return (
     <div className="min-h-screen bg-gray-950 text-white px-6 py-10">
       <div className="">
@@ -130,6 +132,7 @@ export default function LeaderboardPage() {
 
             <button
               onClick={() => setPage((p) => p + 1)}
+              disabled ={page>count/limit}
               className="px-4 py-2 border rounded hover:bg-gray-800"
             >
               Next →
