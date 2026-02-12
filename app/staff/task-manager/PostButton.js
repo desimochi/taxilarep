@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useRef, use } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom'; // 1. Import createPortal
 import EditorJS from '@editorjs/editorjs';
 import Header from '@editorjs/header';
 import List from '@editorjs/list';
@@ -20,8 +21,9 @@ import Underline from '@editorjs/underline';
 import { authFetch } from '@/app/lib/fetchWithAuth';
 import toast from 'react-hot-toast';
 
-export default function TaskCreator({id}) {
+export default function TaskCreator({ id }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [mounted, setMounted] = useState(false); // New state to ensure client-side rendering
   const [message, setMessage] = useState({ type: '', text: '' });
 
   const [formData, setFormData] = useState({
@@ -36,8 +38,13 @@ export default function TaskCreator({id}) {
   const editorRef = useRef(null);
   const editorContainerRef = useRef(null);
 
+  useEffect(() => {
+    setMounted(true); // Confirm we are on the client
+  }, []);
+
   // Initialize EditorJS
   useEffect(() => {
+    // Only init if modal is open AND the container ref exists
     if (isModalOpen && editorContainerRef.current && !editorRef.current) {
       editorRef.current = new EditorJS({
         holder: editorContainerRef.current,
@@ -64,19 +71,19 @@ export default function TaskCreator({id}) {
     }
 
     return () => {
-      if (editorRef.current) {
-        editorRef.current.destroy();
-        editorRef.current = null;
-      }
+      // Cleanup is tricky with EditorJS + React Strict Mode
+      // We often leave it unless the component unmounts completely
     };
   }, [isModalOpen]);
-useEffect(() => {
+
+  useEffect(() => {
     setFormData((prevData) => ({
       ...prevData,
       assigned_to: id,
       assigned_by: id,
     }));
   }, [id]);
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -94,180 +101,170 @@ useEffect(() => {
 
     if (editorRef.current) {
       editorRef.current.clear();
+      // Optional: destroy to ensure clean state on next open
+      editorRef.current.destroy();
+      editorRef.current = null;
     }
   };
 
- const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  try {
-    if (!editorRef.current) return;
+    try {
+      if (!editorRef.current) return;
 
-    // 🔥 GET RAW EDITOR DATA
-    const editorData = await editorRef.current.save();
+      const editorData = await editorRef.current.save();
 
-    const payload = {
-      title: formData.title,
-      description: editorData, // ✅ SAVE RAW JSON
-      assigned_to: Number(formData.assigned_to),
-      assigned_by: Number(formData.assigned_by),
-      priority: formData.priority,
-      start_date_time: formData.start_date_time,
-      due_date_time: formData.due_date_time,
-    };
+      const payload = {
+        title: formData.title,
+        description: editorData,
+        assigned_to: Number(formData.assigned_to),
+        assigned_by: Number(formData.assigned_by),
+        priority: formData.priority,
+        start_date_time: formData.start_date_time,
+        due_date_time: formData.due_date_time,
+      };
 
-    const res = await authFetch('employee-task-viewset', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
+      const res = await authFetch('employee-task-viewset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
 
-    if (!res.ok) throw new Error('Failed');
+      if (!res.ok) throw new Error('Failed');
 
-    setMessage({ type: 'success', text: 'Task created successfully!' });
-    toast.success('Task created successfully!');
-    setTimeout(() => {
-      setIsModalOpen(false);
-      resetForm();
-    }, 1500);
-    window.location.reload();
-  } catch (err) {
-    console.error(err);
-    setMessage({ type: 'error', text: 'Error creating task' });
-  }
-};
+      toast.success('Task created successfully!');
+      
+      // Delay closing slightly to show success
+      setTimeout(() => {
+        setIsModalOpen(false);
+        resetForm();
+        window.location.reload();
+      }, 1000);
 
-  return (
-    <div className="">
-      <button
-        onClick={() => setIsModalOpen(true)}
-        className="bg-zinc-950 text-indigo-50 rounded-md px-10 py-4  font-semibold shadow-lg hover:scale-105 transition"
+    } catch (err) {
+      console.error(err);
+      toast.error('Error creating task');
+    }
+  };
+
+  // Define the Modal JSX
+  const modalContent = isModalOpen ? (
+    <div
+      onClick={() => setIsModalOpen(false)}
+      // Z-Index here now works perfectly because it's at the body level
+      className="fixed inset-0 bg-black/60 z-[9999] flex justify-center items-start overflow-y-auto p-4 sm:p-6 backdrop-blur-sm"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="bg-white w-full max-w-4xl rounded-xl shadow-2xl mt-10 relative animate-in fade-in zoom-in-95 duration-200"
       >
-     Create New Task
-      </button>
-
-      {isModalOpen && (
-        <div
-          onClick={() => setIsModalOpen(false)}
-          className="fixed inset-0 bg-black/50 z-50 flex justify-center items-start overflow-y-auto p-6"
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="bg-white w-full max-w-4xl rounded-xl shadow-2xl mt-10"
+        {/* Header */}
+        <div className="flex justify-between items-center p-6 text-white rounded-t-xl bg-zinc-900">
+          <h2 className="text-xl font-bold">Create New Task</h2>
+          <button
+            onClick={() => setIsModalOpen(false)}
+            className="text-3xl hover:text-gray-300 transition leading-none"
           >
-            {/* Header */}
-            <div className="flex justify-between items-center p-6 text-white rounded-t-xl bg-gradient-to-r from-zinc-950 to-gray-950">
-              <h2 className="text-xl font-bold">Create New Task</h2>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="text-3xl hover:rotate-90 transition"
-              >
-                &times;
-              </button>
+            &times;
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="p-6 space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+               <label className="block text-sm font-medium text-gray-700 mb-1">Task Title</label>
+               <input
+                name="title"
+                placeholder="e.g. Update Homepage Design"
+                value={formData.title}
+                onChange={handleChange}
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-black focus:border-transparent outline-none transition"
+                required
+              />
             </div>
 
-            {/* Body */}
-            <div className="p-6 space-y-6">
-              {message.text && (
-                <div
-                  className={`p-4 rounded-md text-sm ${
-                    message.type === 'success'
-                      ? 'bg-green-100 text-green-700'
-                      : 'bg-red-100 text-red-700'
-                  }`}
-                >
-                  {message.text}
-                </div>
-              )}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+              <div
+                ref={editorContainerRef}
+                className="border border-gray-300 rounded-lg p-4 bg-gray-50 min-h-[150px] prose max-w-none"
+              />
+            </div>
 
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <input
-                  name="title"
-                  placeholder="Task Title"
-                  value={formData.title}
-                  onChange={handleChange}
-                  className="w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-indigo-500"
-                  required
-                />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
+                  <select
+                    name="priority"
+                    value={formData.priority}
+                    onChange={handleChange}
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 bg-white focus:ring-2 focus:ring-black outline-none"
+                  >
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                  </select>
+                </div>
 
                 <div>
-                  <p className="text-sm mb-2 text-gray-600">
-                    Task Description
-                  </p>
-                  <div
-                    ref={editorContainerRef}
-                    className="border rounded-lg p-4 bg-gray-50 "
-                  />
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Start Time</label>
+                    <input
+                      type="datetime-local"
+                      name="start_date_time"
+                      value={formData.start_date_time}
+                      onChange={handleChange}
+                      className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-black outline-none"
+                      required
+                    />
                 </div>
 
-                  <div>
-                        <p className="text-sm mb-2 text-gray-600">
-                    Priority
-                  </p>
-                  <select
-                  name="priority"
-                  value={formData.priority}
-                  onChange={handleChange}
-                  className="input"
-                >
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                </select>
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Due Time</label>
+                    <input
+                      type="datetime-local"
+                      name="due_date_time"
+                      value={formData.due_date_time}
+                      onChange={handleChange}
+                      className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-black outline-none"
+                      required
+                    />
                 </div>
-
-                
-
-                <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                        <p className="text-sm mb-2 text-gray-600">
-                    Task Start Time
-                  </p>
-                    
-                  <input
-                    type="datetime-local"
-                    name="start_date_time"
-                    value={formData.start_date_time}
-                    onChange={handleChange}
-                    className="input"
-                    required
-                  />
-                  </div>
-                  <div>
-                        <p className="text-sm mb-2 text-gray-600">
-                    Task Due time
-                  </p>
-                  <input
-                    type="datetime-local"
-                    name="due_date_time"
-                    value={formData.due_date_time}
-                    onChange={handleChange}
-                    className="input"
-                    required
-                  />
-                  </div>
-                </div>
-
-                <div className="flex justify-end gap-4">
-                  <button
-                    type="button"
-                    onClick={() => setIsModalOpen(false)}
-                    className="px-6 py-2 bg-gray-200 rounded-lg"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-6 py-2 bg-zinc-950 text-white rounded-lg hover:bg-gray-700"
-                  >
-                    Create Task
-                  </button>
-                </div>
-              </form>
             </div>
-          </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                className="px-6 py-2.5 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-6 py-2.5 bg-zinc-900 text-white font-medium rounded-lg hover:bg-zinc-800 transition shadow-lg"
+              >
+                Create Task
+              </button>
+            </div>
+          </form>
         </div>
-      )}
+      </div>
     </div>
+  ) : null;
+
+  return (
+    <>
+      <button
+        onClick={() => setIsModalOpen(true)}
+        className="bg-zinc-900 text-white rounded-lg px-6 py-2.5 font-medium shadow-md hover:bg-zinc-800 transition active:scale-95 flex items-center gap-2"
+      >
+        <span>+</span> Create Task
+      </button>
+
+      {/* 2. Teleport the modal to document.body */}
+      {mounted && createPortal(modalContent, document.body)}
+    </>
   );
 }
