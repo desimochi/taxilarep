@@ -11,7 +11,7 @@ export default function Page() {
   const [batch, setBatch] = useState([])
   const [term, setTerm] = useState([])
   const [subjects, setSubjects] = useState([])
-
+ 
   const { state } = useContext(GlobalContext)
   const id = state?.user_id
 
