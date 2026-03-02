@@ -1,0 +1,1516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketing Strategy Simulation - Carbon Bike Inc.</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+        body {
+            background-color: #f0f2f5;
+            font-family: 'Poppins', sans-serif;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .kpi-card {
+            border-left: 4px solid #4f46e5;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .kpi-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .active-tab {
+            border-bottom-width: 2px;
+        }
+        /* Custom modal styles */
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 999;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+            max-width: 500px;
+            width: 90%;
+        }
+        /* Drag and Drop Styles */
+        .bike-part {
+            cursor: grab;
+        }
+        .assembly-area {
+            border: 2px dashed #cbd5e1;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+        #certificate {
+            border: 10px solid #4f46e5;
+            background-color: #f7fafc;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div id="landing-page" class="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+        <div class="bg-white p-10 rounded-lg shadow-xl max-w-lg w-full grid grid-cols-1 divide-y divide-gray-200">
+            <div class="pb-8">
+                <h2 class="text-2xl font-bold text-center text-indigo-600 mb-1">Start a New Game</h2>
+                <p class="text-gray-500 mb-6 text-center">Created at Taxila Business School</p>
+                <div class="space-y-6 text-left">
+                    <div>
+                        <label for="player-name" class="block text-sm font-medium text-gray-700">Your Name</label>
+                        <input type="text" id="player-name" placeholder="e.g., Alex Doe" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="company-name" class="block text-sm font-medium text-gray-700">Your Company's Name</label>
+                        <input type="text" id="company-name" placeholder="e.g., Apex Cycles" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    </div>
+                </div>
+                <button id="start-simulation-btn" class="mt-8 w-full inline-flex justify-center py-3 px-6 border border-transparent shadow-sm text-lg font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Start New Simulation
+                </button>
+                <p id="new-game-error" class="text-red-500 text-sm mt-4 text-center h-5"></p>
+            </div>
+
+            <div class="pt-8">
+                <h2 class="text-2xl font-bold text-center text-gray-700 mb-6">Or Load a Saved Game</h2>
+                <div class="space-y-6 text-left">
+                    <div>
+                        <label for="load-player-name" class="block text-sm font-medium text-gray-700">Your Name</label>
+                        <input type="text" id="load-player-name" placeholder="The name you saved with" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="load-company-name" class="block text-sm font-medium text-gray-700">Your Company's Name</label>
+                        <input type="text" id="load-company-name" placeholder="The company name you saved with" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    </div>
+                </div>
+                 <button id="load-game-btn" class="mt-8 w-full inline-flex justify-center py-3 px-6 border border-transparent shadow-sm text-lg font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                    Load Game
+                </button>
+                <p id="load-game-error" class="text-red-500 text-sm mt-4 text-center h-5"></p>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="simulation-container" style="display: none;">
+        <header class="bg-white shadow-md sticky top-0 z-50">
+            <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+                <div>
+                    <h1 class="text-2xl font-bold text-indigo-600">Marketing Strategy Simulation</h1>
+                    <p id="company-name-display" class="text-sm text-gray-500">Company: Carbon Bike Inc.</p>
+                </div>
+                <div class="flex items-center gap-6">
+                    <div class="flex items-center gap-2">
+                         <button id="save-game-btn" class="px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            <i class="fas fa-save mr-2"></i>Save Game
+                         </button>
+                         <span id="save-status" class="text-sm text-gray-500 h-5 w-24 text-center"></span>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-lg font-semibold">Quarter <span id="quarter-display">1</span> of 12</p>
+                        <p id="player-name-display" class="text-sm text-gray-500">Player: </p>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="container mx-auto px-6 py-8">
+
+            <section id="dashboard" class="mb-8">
+                <h2 class="text-2xl font-bold mb-4">Executive Dashboard</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6">
+                    <div class="bg-white p-6 rounded-lg shadow-md kpi-card">
+                        <h3 class="text-lg font-semibold text-gray-600">Market Share</h3>
+                        <p id="market-share" class="text-3xl font-bold text-indigo-600 mt-2">15.2%</p>
+                        <p id="market-share-change" class="text-sm text-green-500 flex items-center mt-1"><i class="fas fa-arrow-up mr-1"></i> 1.2% vs last Q</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md kpi-card">
+                        <h3 class="text-lg font-semibold text-gray-600">Stock Price</h3>
+                        <p id="stock-price" class="text-3xl font-bold text-indigo-600 mt-2">$45.80</p>
+                        <p id="stock-price-change" class="text-sm text-green-500 flex items-center mt-1"><i class="fas fa-arrow-up mr-1"></i> $2.50 vs last Q</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md kpi-card">
+                        <h3 class="text-lg font-semibold text-gray-600">Net Profit</h3>
+                        <p id="net-profit" class="text-3xl font-bold text-indigo-600 mt-2">$1.50M</p>
+                        <p id="net-profit-change" class="text-sm text-green-500 flex items-center mt-1"><i class="fas fa-arrow-up mr-1"></i> $0.2M vs last Q</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md kpi-card">
+                        <h3 class="text-lg font-semibold text-gray-600">Total Sales</h3>
+                        <p id="total-sales" class="text-3xl font-bold text-indigo-600 mt-2">$5.50M</p>
+                        <p id="total-sales-change" class="text-sm text-green-500 flex items-center mt-1"><i class="fas fa-arrow-up mr-1"></i> $0.5M vs last Q</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md kpi-card">
+                        <h3 class="text-lg font-semibold text-gray-600">Marketing Budget</h3>
+                        <p id="marketing-budget" class="text-3xl font-bold text-indigo-600 mt-2">$0.55M</p>
+                        <p id="marketing-budget-change" class="text-sm text-green-500 flex items-center mt-1"><i class="fas fa-arrow-up mr-1"></i> $0.05M vs last Q</p>
+                    </div>
+                     <div class="bg-white p-6 rounded-lg shadow-md kpi-card">
+                        <h3 class="text-lg font-semibold text-gray-600">Sales Force Cost</h3>
+                        <p id="sales-force-cost" class="text-3xl font-bold text-indigo-600 mt-2">$1.00M</p>
+                        <p id="sales-force-cost-change" class="text-sm text-red-500 flex items-center mt-1"><i class="fas fa-arrow-up mr-1"></i> $0.10M vs last Q</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md kpi-card">
+                        <h3 class="text-lg font-semibold text-gray-600">Total Inventory</h3>
+                        <p id="inventory-units" class="text-3xl font-bold text-indigo-600 mt-2">0 Units</p>
+                        <p id="inventory-value" class="text-sm text-gray-500 font-semibold mt-1">Value: $0</p>
+                        <p id="inventory-realisable-value" class="text-sm text-green-600 font-semibold mt-1">Realisable: $0</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md kpi-card">
+                        <h3 class="text-lg font-semibold text-gray-600">Balanced Scorecard</h3>
+                        <p id="balanced-scorecard" class="text-3xl font-bold text-indigo-600 mt-2">78/100</p>
+                        <p id="balanced-scorecard-change" class="text-sm text-green-500 flex items-center mt-1"><i class="fas fa-arrow-up mr-1"></i> 5 pts vs last Q</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="decisions" class="bg-white p-8 rounded-lg shadow-md">
+                <h2 class="text-2xl font-bold mb-4">Decision Center: Quarter <span id="decision-quarter-display">1</span></h2>
+                
+                <div class="border-b border-gray-200 mb-6">
+                    <nav class="-mb-px flex space-x-8 overflow-x-auto" aria-label="Tabs">
+                        <a href="#" class="tab-link active-tab border-indigo-500 text-indigo-600 whitespace-nowrap py-4 px-1 font-medium text-sm" data-tab="market_research">
+                            <i class="fas fa-chart-pie mr-2"></i>Market Research
+                        </a>
+                        <a href="#" class="tab-link border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 font-medium text-sm" data-tab="rd">
+                            <i class="fas fa-flask mr-2"></i>R&D / Brand Design
+                        </a>
+                        <a href="#" class="tab-link border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 font-medium text-sm" data-tab="marketing">
+                            <i class="fas fa-bullhorn mr-2"></i>Marketing
+                        </a>
+                        <a href="#" class="tab-link border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 font-medium text-sm" data-tab="production">
+                            <i class="fas fa-industry mr-2"></i>Production
+                        </a>
+                        <a href="#" class="tab-link border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 font-medium text-sm" data-tab="sales">
+                            <i class="fas fa-store mr-2"></i>Sales Channel
+                        </a>
+                    </nav>
+                </div>
+
+                <div id="tab-contents">
+                    <div id="marketing" class="tab-content">
+                        <h3 class="text-xl font-semibold mb-4 border-b pb-2">Brand Marketing & Pricing</h3>
+                        <div id="marketing-brands-container" class="space-y-8">
+                             <p class="text-gray-500">Design a new bike brand in the 'R&D / Brand Design' tab to set its marketing strategy here.</p>
+                        </div>
+                    </div>
+                    <div id="sales" class="tab-content">
+                         <h3 class="text-xl font-semibold mb-4 border-b pb-2">Sales Channel Management</h3>
+                        <div class="mb-6 bg-gray-50 p-4 rounded-lg border">
+                            <label for="total_sales_force" class="block text-sm font-medium text-gray-700">Total Sales Force Size (Hired Employees)</label>
+                            <input type="number" id="total_sales_force" value="50" class="sales-force-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            <p class="text-xs text-gray-500 mt-1">Each salesperson has a base cost of <span class="font-bold">$20,000</span> per quarter. Allocate them to different channels below.</p>
+                            <p class="mt-2 font-semibold text-gray-800">Total Sales Force Cost: <span id="sales-force-total-cost" class="text-indigo-600">$1,000,000</span></p>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="bg-white p-4 rounded-lg shadow-sm border">
+                                <h4 class="font-bold text-lg text-indigo-600 flex items-center"><i class="fas fa-globe mr-2"></i>Direct Online</h4>
+                                <p class="text-xs text-gray-500 mb-4">Sell directly from your website. Best for tech-savvy customers.</p>
+                                <p class="text-xs text-gray-600 mb-4 bg-indigo-50 p-2 rounded-md"><i class="fas fa-info-circle mr-1"></i>Est. 1 salesperson per 1,000 units sold through this channel.</p>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label for="sales-channel-online-staff" class="block text-sm font-medium text-gray-700">Salespeople Allocated</label>
+                                        <input type="number" id="sales-channel-online-staff" value="10" min="0" class="sales-force-input mt-1 block w-full rounded-md">
+                                    </div>
+                                    <div>
+                                        <label for="sales-channel-online-boost" class="block text-sm font-medium text-gray-700">Platform Fee (%)</label>
+                                        <input type="number" id="sales-channel-online-boost" value="5" min="0" max="25" class="mt-1 block w-full rounded-md">
+                                        <p class="text-xs text-gray-500 mt-1">Cost for platform maintenance, payment processing, etc.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-white p-4 rounded-lg shadow-sm border">
+                                <h4 class="font-bold text-lg text-green-600 flex items-center"><i class="fas fa-store-alt mr-2"></i>Specialty Shops</h4>
+                                <p class="text-xs text-gray-500 mb-4">High-end stores for enthusiasts. Best for Mountain and Speed bikes.</p>
+                                <p class="text-xs text-gray-600 mb-4 bg-green-50 p-2 rounded-md"><i class="fas fa-info-circle mr-1"></i>Est. 1 salesperson per 500 units sold through this channel.</p>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label for="sales-channel-specialty-staff" class="block text-sm font-medium text-gray-700">Salespeople Allocated</label>
+                                        <input type="number" id="sales-channel-specialty-staff" value="25" min="0" class="sales-force-input mt-1 block w-full rounded-md">
+                                    </div>
+                                    <div>
+                                        <label for="sales-channel-specialty-commission" class="block text-sm font-medium text-gray-700">Retailer Commission (%)</label>
+                                        <input type="number" id="sales-channel-specialty-commission" value="15" min="0" max="30" class="mt-1 block w-full rounded-md">
+                                         <p class="text-xs text-gray-500 mt-1">Higher commission motivates specialist staff to push your product.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-white p-4 rounded-lg shadow-sm border">
+                                <h4 class="font-bold text-lg text-blue-600 flex items-center"><i class="fas fa-shopping-cart mr-2"></i>Mass Market</h4>
+                                <p class="text-xs text-gray-500 mb-4">Large chain stores for high volume. Best for Recreation bikes.</p>
+                                <p class="text-xs text-gray-600 mb-4 bg-blue-50 p-2 rounded-md"><i class="fas fa-info-circle mr-1"></i>Est. 1 salesperson per 2,000 units sold through this channel.</p>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label for="sales-channel-mass-staff" class="block text-sm font-medium text-gray-700">Salespeople Allocated</label>
+                                        <input type="number" id="sales-channel-mass-staff" value="15" min="0" class="sales-force-input mt-1 block w-full rounded-md">
+                                    </div>
+                                    <div>
+                                        <label for="sales-channel-mass-commission" class="block text-sm font-medium text-gray-700">Retailer Margin (%)</label>
+                                        <input type="number" id="sales-channel-mass-commission" value="20" min="0" max="40" class="mt-1 block w-full rounded-md">
+                                        <p class="text-xs text-gray-500 mt-1">Big box stores demand a larger cut of the retail price.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="sales-force-warning" class="mt-4 text-red-600 font-semibold h-6"></div>
+                    </div>
+                    <div id="rd" class="tab-content">
+                        <div class="flex justify-between items-center mb-6 pb-2 border-b">
+                             <h3 class="text-xl font-semibold">Brand Design & Technology</h3>
+                             <button id="add-brand-btn" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                <i class="fas fa-plus mr-2"></i> Design New Bike Brand
+                             </button>
+                        </div>
+
+                        <div id="brand-design-container" class="space-y-10">
+                             <p class="text-gray-500">Click 'Design New Bike Brand' to get started.</p>
+                        </div>
+                    </div>
+                    <div id="production" class="tab-content">
+                        <h3 class="text-xl font-semibold mb-4 border-b pb-2">Production Schedule</h3>
+                        <div id="production-brands-container" class="space-y-6">
+                            <p class="text-gray-500">Design a bike brand in the 'R&D' tab to set its production quantity.</p>
+                        </div>
+                    </div>
+                    <div id="market_research" class="tab-content active">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <div>
+                                <h3 class="text-xl font-semibold mb-4 border-b pb-2">Market Segments & Demand</h3>
+                                <p id="total-market-units-display" class="text-sm text-gray-500 mb-4"></p>
+                                <div id="market-demand-container" class="space-y-4">
+                                    </div>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-semibold mb-4 border-b pb-2">Key Competitors</h3>
+                                 <div id="competitors-container" class="space-y-4">
+                                    </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-8 pt-6 border-t border-gray-200 flex justify-end items-center relative">
+                    <div id="progress-container" class="absolute bottom-full mb-2 w-1/2 right-0 h-4 bg-gray-300 rounded-full overflow-hidden" style="display: none;">
+                        <div id="progress-bar" class="h-full bg-red-500 rounded-full" style="width: 0%;"></div>
+                    </div>
+                    <div id="budget-warning" class="text-red-600 font-semibold mr-4 h-6"></div>
+                    <button id="submit-decisions-btn" type="submit" class="ml-4 inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        End Quarter & Submit Decisions
+                    </button>
+                </div>
+            </section>
+            
+            <section id="advisor" class="mt-8">
+                 <h2 class="text-2xl font-bold mb-4">Advisor's Comments</h2>
+                 <div id="advisor-comments" class="bg-white p-6 rounded-lg shadow-md space-y-3 text-gray-600">
+                    <p>Welcome to your first quarter. You can now design multiple bike brands to target different market segments. Check the new Market Research tab for demand insights. Good luck!</p>
+                 </div>
+            </section>
+
+            <section id="reports" class="mt-8">
+                <h2 class="text-2xl font-bold mb-4">Market & Performance Reports</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-lg font-semibold mb-4">Market Share by Company</h3>
+                        <canvas id="marketShareChart"></canvas>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-lg font-semibold mb-4">Financial Performance (Last 4 Quarters)</h3>
+                        <canvas id="financialsChart"></canvas>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="bg-white mt-12 py-6 border-t">
+            <div class="container mx-auto px-6 text-center text-gray-500">
+                <p>&copy; 2025 Marketing Simulation. All rights reserved.</p>
+            </div>
+        </footer>
+    </div>
+
+    <div id="confirmation-modal" class="modal-backdrop">
+        <div class="modal-content text-center">
+            <h3 class="text-xl font-bold mb-4">End Quarter?</h3>
+            <p class="text-gray-600 mb-6">Are you sure you want to submit your decisions for this quarter? This action cannot be undone.</p>
+            <div class="flex justify-center gap-4">
+                <button id="cancel-submit" class="bg-gray-200 text-gray-700 py-2 px-6 rounded-md hover:bg-gray-300">Cancel</button>
+                <button id="confirm-submit" class="py-2 px-6 rounded-md text-white bg-indigo-600 hover:bg-indigo-700">Confirm</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="game-over-screen" class="min-h-screen items-center justify-center bg-gray-100 p-4" style="display: none;">
+        <div class="bg-white p-10 rounded-lg shadow-xl text-center max-w-2xl w-full animate-fade-in">
+            <h1 class="text-4xl font-bold text-indigo-600 mb-2">Simulation Complete!</h1>
+            <p class="text-gray-500 mb-8">Three years have passed. Here is your final performance summary.</p>
+
+            <div class="grid grid-cols-2 gap-4 text-left my-8">
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <p class="text-sm text-gray-500">Final Market Share</p>
+                    <p id="final-market-share" class="text-2xl font-bold text-indigo-600"></p>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <p class="text-sm text-gray-500">Final Stock Price</p>
+                    <p id="final-stock-price" class="text-2xl font-bold text-indigo-600"></p>
+                </div>
+            </div>
+            
+             <div id="certificate-section" style="display: none;" class="my-8">
+                <div id="certificate" class="p-6 text-center">
+                    <i class="fas fa-award text-5xl text-yellow-500 mb-4"></i>
+                    <h2 class="text-3xl font-bold text-gray-800">Certificate of Appreciation</h2>
+                    <p class="text-gray-600 mt-4">This certificate is awarded to</p>
+                    <p id="cert-player-name" class="text-2xl font-semibold text-indigo-600 my-2"></p>
+                    <p class="text-gray-600">of</p>
+                    <p id="cert-company-name" class="text-xl font-semibold text-indigo-600 my-2"></p>
+                    <p class="text-gray-600">for outstanding strategic performance in the Marketing Strategy Simulation, achieving a final Balanced Scorecard of</p>
+                    <p id="cert-score" class="text-2xl font-bold text-indigo-600 mt-2"></p>
+                    <p id="cert-date" class="text-sm text-gray-500 mt-6"></p>
+                </div>
+
+                <div class="mt-6 flex flex-col sm:flex-row justify-center gap-4">
+                    <button id="download-cert-btn" class="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 flex items-center justify-center">
+                        <i class="fas fa-download mr-2"></i>Download Certificate
+                    </button>
+                    <a id="share-linkedin-btn" href="#" target="_blank" class="bg-blue-700 text-white py-2 px-4 rounded-md hover:bg-blue-800 flex items-center justify-center">
+                        <i class="fab fa-linkedin mr-2"></i>Share on LinkedIn
+                    </a>
+                </div>
+            </div>
+
+            <h3 class="text-xl font-semibold mb-4 border-t pt-8 mt-8">Download Yearly Reports</h3>
+            <div id="reports-container" class="flex flex-col sm:flex-row justify-center gap-4">
+                </div>
+
+            <button onclick="window.location.reload()" class="mt-10 w-full inline-flex justify-center py-3 px-6 border border-transparent shadow-sm text-lg font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Play Again
+            </button>
+        </div>
+    </div>
+
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        // --- API ENDPOINTS (REPLACE WITH YOUR ACTUAL URLS) ---
+        const SAVE_API_ENDPOINT = 'https://erp.taxila.in/api/game/marketing'; 
+        const LOAD_API_ENDPOINT = 'https://erp.taxila.in/api/game/marketing'; 
+
+        // --- LANDING PAGE ELEMENTS & LOGIC ---
+        const landingPage = document.getElementById('landing-page');
+        const simulationContainer = document.getElementById('simulation-container');
+        const startBtn = document.getElementById('start-simulation-btn');
+        const playerNameInput = document.getElementById('player-name');
+        const companyNameInput = document.getElementById('company-name');
+        const companyNameDisplay = document.getElementById('company-name-display');
+        const playerNameDisplay = document.getElementById('player-name-display');
+        const advisorCommentsEl = document.getElementById('advisor-comments');
+        const newGameError = document.getElementById('new-game-error');
+        
+        // Load Game Elements
+        const loadPlayerNameInput = document.getElementById('load-player-name');
+        const loadCompanyNameInput = document.getElementById('load-company-name');
+        const loadGameBtn = document.getElementById('load-game-btn');
+        const loadGameError = document.getElementById('load-game-error');
+
+        function initializeSimulation(playerName, companyName, loadedGameState = null) {
+            // If there's a loaded state, use it. Otherwise, select a random new one.
+            if (loadedGameState) {
+                // Important: Re-hydrate Sets from arrays that were parsed from JSON
+                loadedGameState.brands.forEach(brand => {
+                    brand.parts = new Set(brand.parts || []);
+                    brand.usedCategories = new Set(brand.usedCategories || []);
+                });
+                gameState = loadedGameState;
+            } else {
+                const allDataSets = [dataSet1, dataSet2, dataSet3];
+                const randomIndex = Math.floor(Math.random() * allDataSets.length);
+                gameState = JSON.parse(JSON.stringify(allDataSets[randomIndex])); // Deep copy
+            }
+
+            // Set player and company details in the UI
+            companyNameDisplay.textContent = `Company: ${companyName}`;
+            playerNameDisplay.textContent = `Player: ${playerName}`;
+            
+            // Populate the main name inputs so they can be used for saving later
+            playerNameInput.value = playerName;
+            companyNameInput.value = companyName;
+
+            // Give initial advisor comments for new games only
+            if (!loadedGameState) {
+                 const initialComments = {
+                    'Scenario 1': "Welcome! The market is currently balanced. All segments present an opportunity. Analyze the research carefully to find your niche.",
+                    'Scenario 2': "Welcome! There's a boom in the Mountain bike segment. This is a huge opportunity, but be aware that Pedal Power Inc. is a strong competitor here.",
+                    'Scenario 3': "Welcome! The market is a bit tight, with consumers favoring budget-friendly Recreation bikes. Momentum Bikes currently dominates this segment."
+                };
+                advisorCommentsEl.innerHTML = `<p>${initialComments[gameState.scenarioName] || 'Welcome to the simulation. Good luck!'}</p>`;
+            } else {
+                 advisorCommentsEl.innerHTML = `<p>Welcome back, <strong>${playerName}</strong>! Your game has been successfully loaded. You are in Quarter ${gameState.quarter}.</p>`;
+            }
+            
+            // Hide landing page, show simulation
+            landingPage.style.display = 'none';
+            simulationContainer.style.display = 'block';
+
+            // Initialize/update the simulation UI with the correct state
+            updateUI(); 
+            redisplayAllBrands();
+        }
+
+        startBtn.addEventListener('click', () => {
+            const playerName = playerNameInput.value.trim();
+            const companyName = companyNameInput.value.trim();
+            newGameError.textContent = '';
+
+            if (!playerName || !companyName) {
+                newGameError.textContent = 'Please fill out all fields to begin.';
+                companyNameInput.classList.toggle('border-red-500', !companyName);
+                playerNameInput.classList.toggle('border-red-500', !playerName);
+                return;
+            }
+            
+            initializeSimulation(playerName, companyName, null);
+        });
+function getUserId() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get("userId") || "guest";
+    }
+        async function loadGame() {
+            const userId = getUserId();
+            const playerName = loadPlayerNameInput.value.trim();
+            loadGameError.textContent = '';
+
+            if (!playerName) {
+                loadGameError.textContent = 'Please provide player name.';
+                return;
+            }
+
+            // UI feedback
+            loadGameBtn.disabled = true;
+            loadGameBtn.innerHTML = `
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Loading...`;
+
+            try {
+                // For a GET request, send data in query parameters
+                const response = await fetch(`${LOAD_API_ENDPOINT}?userId=${userId}`);
+
+                if (response.status === 404) {
+                     throw new Error('No saved game found for this player and company.');
+                }
+                if (!response.ok) {
+                    throw new Error('Failed to connect to the server.');
+                }
+
+                const savedData = await response.json();
+
+                // Expect server to return { playerName, companyName, gameState }
+                if (savedData.gameState) {
+                    initializeSimulation(savedData.playerName, savedData.companyName, savedData.gameState);
+                } else {
+                    throw new Error('Invalid save file format received from server.');
+                }
+
+            } catch (error) {
+                loadGameError.textContent = error.message;
+            } finally {
+                // Restore button
+                loadGameBtn.disabled = false;
+                loadGameBtn.textContent = 'Load Game';
+            }
+        }
+
+        async function saveGame() {
+            const userId = getUserId();
+            const playerName = playerNameInput.value.trim();
+            const companyName = companyNameInput.value.trim();
+
+            if (!playerName || !companyName) {
+                saveStatus.textContent = 'Name missing.';
+                saveStatus.className = 'text-sm text-red-500 h-5 font-semibold';
+                setTimeout(() => saveStatus.textContent = '', 3000);
+                return;
+            }
+
+            // UI Feedback
+            saveGameBtn.disabled = true;
+            saveStatus.textContent = 'Saving...';
+            saveStatus.className = 'text-sm text-gray-500 h-5';
+
+            // IMPORTANT: Convert Sets to Arrays for JSON serialization.
+            const stateToSave = JSON.parse(JSON.stringify(gameState)); // Deep copy
+            stateToSave.brands.forEach(brand => {
+                brand.parts = Array.from(brand.parts);
+                brand.usedCategories = Array.from(brand.usedCategories);
+            });
+
+            const payload = {
+                playerName,
+                companyName,
+                gameState: stateToSave,
+            };
+
+            try {
+                const response = await fetch(SAVE_API_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({userId:userId, playerName:payload.playerName, companyName:payload.companyName,  gameState: payload.gameState}),
+                });
+
+                if (!response.ok) {
+                    throw new Error('Server error, could not save.');
+                }
+
+                // Success feedback
+                saveStatus.textContent = '✓ Game Saved!';
+                saveStatus.className = 'text-sm text-green-600 h-5 font-semibold';
+
+            } catch (error) {
+                // Error feedback
+                saveStatus.textContent = '✗ Save Failed!';
+                saveStatus.className = 'text-sm text-red-500 h-5 font-semibold';
+                console.error('Save failed:', error);
+            } finally {
+                // Re-enable button and clear message after a delay
+                setTimeout(() => {
+                    saveGameBtn.disabled = false;
+                    saveStatus.textContent = '';
+                }, 3000);
+            }
+        }
+
+        const ALL_PARTS = [
+            // Frames
+            { id: 'part-frame-alu', name: 'Aluminum Frame', cost: 150, category: 'frame', icon: '<i class="fas fa-bicycle text-gray-500"></i>' },
+            { id: 'part-frame-carbon', name: 'Carbon Frame', cost: 200, category: 'frame', icon: '<i class="fas fa-bicycle text-indigo-500"></i>' },
+            // Wheels
+            { id: 'part-wheels-mtb', name: 'Mountain Wheels', cost: 120, category: 'wheels', icon: '<i class="fas fa-dot-circle text-gray-500"></i>' },
+            { id: 'part-wheels-racing', name: 'Racing Wheels', cost: 100, category: 'wheels', icon: '<i class="fas fa-circle-notch text-indigo-500 fa-spin"></i>' },
+            { id: 'part-tires-offroad', name: 'Off-road Tires', cost: 60, category: 'wheels', icon: '<i class="fab fa-gripfire text-gray-500"></i>' },
+            // Handlebars
+            { id: 'part-handlebars-std', name: 'Standard Handlebars', cost: 30, category: 'handlebars', icon: '<i class="fas fa-grip-horizontal text-gray-500"></i>' },
+            { id: 'part-handlebars-aero', name: 'Aero Handlebars', cost: 50, category: 'handlebars', icon: '<i class="fas fa-grip-horizontal text-indigo-500"></i>' },
+            // Saddles
+            { id: 'part-saddle-comfort', name: 'Comfort Saddle', cost: 40, category: 'saddle', icon: '<i class="fas fa-couch text-gray-500"></i>' },
+            { id: 'part-saddle-pro', name: 'Pro Racing Saddle', cost: 70, category: 'saddle', icon: '<i class="fas fa-couch text-indigo-500"></i>' },
+            // Brakes
+            { id: 'part-brakes-disc', name: 'Disc Brakes', cost: 90, category: 'brakes', icon: '<i class="fas fa-compact-disc text-gray-500"></i>' },
+            // Suspension
+            { id: 'part-suspension-front', name: 'Front Suspension', cost: 130, category: 'suspension', icon: '<i class="fas fa-cogs text-blue-500"></i>' },
+            // Gears
+            { id: 'part-gears-electric', name: 'Electric Shifting', cost: 180, category: 'gears', icon: '<i class="fas fa-bolt text-yellow-500"></i>' },
+            // Accessories
+            { id: 'part-gps-integrated', name: 'Integrated GPS', cost: 120, category: 'accessory', icon: '<i class="fas fa-map-marker-alt text-green-500"></i>' }
+        ];
+
+        let availablePartIds = new Set([
+            'part-frame-alu',
+            'part-wheels-mtb',
+            'part-handlebars-std',
+            'part-saddle-comfort'
+        ]);
+
+        // --- STATE & DATASET MANAGEMENT ---
+        const dataSet1 = {
+            scenarioName: 'Scenario 1',
+            quarter: 1, yearlyReports: [], brands: [],
+            history: { marketShare: [14.0, 15.2], stockPrice: [43.30, 45.80], netProfit: [1.3, 1.5], totalSales: [5.0, 5.5], marketingBudget: [0.50, 0.55], salesForceCost: [0.9, 1.0], balancedScorecard: [73, 78], inventoryUnits: [0, 0], inventoryValue: [0, 0], inventoryRealisableValue: [0, 0] },
+            marketDemand: { recreation: { share: 0.40, range: '$700 - $850', demography: 'Urban & Suburban Families', economicStatus: 'Mid-Range Income', genderRatio: '55% Female / 45% Male', ageGroup: '30-55' }, mountain: { share: 0.35, range: '$850 - $1000', demography: 'Outdoor Enthusiasts', economicStatus: 'Mid to High Income', genderRatio: '40% Female / 60% Male', ageGroup: '25-45' }, speed: { share: 0.25, range: '$1000 - $1200', demography: 'Competitive Athletes', economicStatus: 'High Income', genderRatio: '30% Female / 70% Male', ageGroup: '20-40' } },
+            competitors: [ { name: 'Momentum Bikes', focus: 'Recreation', totalShare: 20, brands: [ { name: 'City Cruiser', retailPrice: 750, marketShare: 10, adBudget: 400000 }, { name: 'Park Hopper', retailPrice: 800, marketShare: 6, adBudget: 350000 }, { name: 'Suburbanite', retailPrice: 720, marketShare: 4, adBudget: 300000 } ] }, { name: 'Pedal Power Inc.', focus: 'Mountain', totalShare: 25, brands: [ { name: 'Trail Blazer', retailPrice: 900, marketShare: 12, adBudget: 500000 }, { name: 'Rock Rider', retailPrice: 980, marketShare: 8, adBudget: 450000 }, { name: 'Dirt Devil', retailPrice: 870, marketShare: 5, adBudget: 400000 } ] }, { name: 'Aero Cycles', focus: 'Speed', totalShare: 18, brands: [ { name: 'Velocity Pro', retailPrice: 1150, marketShare: 9, adBudget: 600000 }, { name: 'Sprint X', retailPrice: 1200, marketShare: 5, adBudget: 550000 }, { name: 'Wind Shear', retailPrice: 1050, marketShare: 4, adBudget: 500000 } ] } ]
+        };
+        const dataSet2 = {
+            scenarioName: 'Scenario 2',
+            quarter: 1, yearlyReports: [], brands: [],
+            history: { marketShare: [12.0, 13.5], stockPrice: [40.00, 42.50], netProfit: [1.1, 1.3], totalSales: [4.5, 4.8], marketingBudget: [0.45, 0.48], salesForceCost: [0.8, 0.9], balancedScorecard: [70, 75], inventoryUnits: [0, 0], inventoryValue: [0, 0], inventoryRealisableValue: [0, 0] },
+            marketDemand: { recreation: { share: 0.25, range: '$750 - $900', demography: 'General Consumers', economicStatus: 'Mid-Range Income', genderRatio: '50% Female / 50% Male', ageGroup: '28-50' }, mountain: { share: 0.50, range: '$900 - $1100', demography: 'Trail & Adventure Seekers', economicStatus: 'High Income', genderRatio: '35% Female / 65% Male', ageGroup: '22-40' }, speed: { share: 0.25, range: '$1050 - $1250', demography: 'Prosumers & Racers', economicStatus: 'Very High Income', genderRatio: '25% Female / 75% Male', ageGroup: '18-35' } },
+            competitors: [ { name: 'Momentum Bikes', focus: 'Recreation', totalShare: 18, brands: [ { name: 'Urban Glide', retailPrice: 780, marketShare: 9, adBudget: 380000 }, { name: 'Weekender', retailPrice: 820, marketShare: 5, adBudget: 320000 }, { name: 'Pathfinder', retailPrice: 750, marketShare: 4, adBudget: 280000 } ] }, { name: 'Pedal Power Inc.', focus: 'Mountain', totalShare: 30, brands: [ { name: 'Summit Pro', retailPrice: 950, marketShare: 15, adBudget: 600000 }, { name: 'Ridge Runner', retailPrice: 1050, marketShare: 10, adBudget: 550000 }, { name: 'Gravel Grinder', retailPrice: 900, marketShare: 5, adBudget: 450000 } ] }, { name: 'Aero Cycles', focus: 'Speed', totalShare: 15, brands: [ { name: 'Mach 1', retailPrice: 1180, marketShare: 8, adBudget: 580000 }, { name: 'TT Racer', retailPrice: 1250, marketShare: 4, adBudget: 500000 }, { name: 'Aero Lite', retailPrice: 1100, marketShare: 3, adBudget: 480000 } ] } ]
+        };
+        const dataSet3 = {
+            scenarioName: 'Scenario 3',
+            quarter: 1, yearlyReports: [], brands: [],
+            history: { marketShare: [16.0, 17.0], stockPrice: [45.00, 46.50], netProfit: [1.4, 1.6], totalSales: [5.2, 5.8], marketingBudget: [0.52, 0.58], salesForceCost: [1.0, 1.1], balancedScorecard: [75, 79], inventoryUnits: [0, 0], inventoryValue: [0, 0], inventoryRealisableValue: [0, 0] },
+            marketDemand: { recreation: { share: 0.55, range: '$650 - $800', demography: 'Budget-Conscious Families', economicStatus: 'Low to Mid-Range Income', genderRatio: '60% Female / 40% Male', ageGroup: '35-60' }, mountain: { share: 0.25, range: '$800 - $950', demography: 'Weekend Warriors', economicStatus: 'Mid-Range Income', genderRatio: '45% Female / 55% Male', ageGroup: '30-50' }, speed: { share: 0.20, range: '$950 - $1150', demography: 'Fitness Enthusiasts', economicStatus: 'Mid to High Income', genderRatio: '40% Female / 60% Male', ageGroup: '25-45' } },
+            competitors: [ { name: 'Momentum Bikes', focus: 'Recreation', totalShare: 28, brands: [ { name: 'Commuter Plus', retailPrice: 700, marketShare: 14, adBudget: 450000 }, { name: 'Easy Rider', retailPrice: 750, marketShare: 9, adBudget: 400000 }, { name: 'Family Pack', retailPrice: 680, marketShare: 5, adBudget: 350000 } ] }, { name: 'Pedal Power Inc.', focus: 'Mountain', totalShare: 20, brands: [ { name: 'Base Camp', retailPrice: 850, marketShare: 10, adBudget: 480000 }, { name: 'Trail Lite', retailPrice: 920, marketShare: 6, adBudget: 420000 }, { name: 'Muddy Fox', retailPrice: 820, marketShare: 4, adBudget: 380000 } ] }, { name: 'Aero Cycles', focus: 'Speed', totalShare: 12, brands: [ { name: 'Roadster', retailPrice: 1000, marketShare: 6, adBudget: 550000 }, { name: 'Endurance', retailPrice: 1100, marketShare: 4, adBudget: 500000 }, { name: 'Blade', retailPrice: 980, marketShare: 2, adBudget: 450000 } ] } ]
+        };
+        
+        let gameState = {}; // Will be initialized when game starts or is loaded
+        
+        let totalMarketUnits = 50000;
+        
+        // --- DOM ELEMENTS ---
+        const quarterDisplay = document.getElementById('quarter-display');
+        const decisionQuarterDisplay = document.getElementById('decision-quarter-display');
+        const submitBtn = document.getElementById('submit-decisions-btn');
+        const modal = document.getElementById('confirmation-modal');
+        const cancelBtn = document.getElementById('cancel-submit');
+        const confirmBtn = document.getElementById('confirm-submit');
+        const addBrandBtn = document.getElementById('add-brand-btn');
+        const marketDemandContainer = document.getElementById('market-demand-container');
+        const competitorsContainer = document.getElementById('competitors-container');
+        const brandDesignContainer = document.getElementById('brand-design-container');
+        const marketingBrandsContainer = document.getElementById('marketing-brands-container');
+        const productionBrandsContainer = document.getElementById('production-brands-container');
+
+        // --- CHART SETUP ---
+        let marketShareChart, financialsChart;
+        
+        function createMarketShareChart() {
+            const ctx = document.getElementById('marketShareChart').getContext('2d');
+            const ownShare = gameState.history.marketShare.slice(-1)[0];
+            const competitorShares = gameState.competitors.map(c => c.totalShare);
+            const otherShare = Math.max(0, 100 - ownShare - competitorShares.reduce((a, b) => a + b, 0));
+            
+            const companyName = document.getElementById('company-name')?.value || 'Your Company';
+
+            const data = {
+                labels: [companyName, ...gameState.competitors.map(c => c.name), 'Others'],
+                datasets: [{
+                    label: 'Market Share (%)',
+                    data: [ownShare, ...competitorShares, otherShare],
+                    backgroundColor: [
+                        'rgba(79, 70, 229, 0.8)',   // Indigo
+                        'rgba(59, 130, 246, 0.8)',  // Blue
+                        'rgba(34, 197, 94, 0.8)',   // Green
+                        'rgba(249, 115, 22, 0.8)',  // Orange
+                        'rgba(107, 114, 128, 0.8)'  // Gray
+                    ],
+                    borderColor: [
+                        'rgba(79, 70, 229, 1)',
+                        'rgba(59, 130, 246, 1)',
+                        'rgba(34, 197, 94, 1)',
+                        'rgba(249, 115, 22, 1)',
+                        'rgba(107, 114, 128, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            };
+            if(marketShareChart) marketShareChart.destroy();
+            marketShareChart = new Chart(ctx, { 
+                type: 'bar', 
+                data, 
+                options: { 
+                    indexAxis: 'y', // Makes it a horizontal bar chart
+                    responsive: true, 
+                    plugins: { 
+                        legend: { 
+                            display: false // Labels on axis are enough
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Market Share (%)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createFinancialsChart() {
+            const ctx = document.getElementById('financialsChart').getContext('2d');
+            const labels = Array.from({length: gameState.history.totalSales.length}, (_, i) => `Q${gameState.quarter - gameState.history.totalSales.length + i + 1}`);
+            const data = {
+                labels,
+                datasets: [
+                    { label: 'Total Sales ($M)', data: gameState.history.totalSales, borderColor: 'rgba(79, 70, 229, 1)', backgroundColor: 'rgba(79, 70, 229, 0.1)', fill: true, tension: 0.3 },
+                    { label: 'Net Profit ($M)', data: gameState.history.netProfit, borderColor: 'rgba(59, 130, 246, 1)', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true, tension: 0.3 }
+                ]
+            };
+            if(financialsChart) financialsChart.destroy();
+            financialsChart = new Chart(ctx, { type: 'line', data, options: { responsive: true, scales: { y: { beginAtZero: true }}, plugins: { legend: { position: 'top' }}}});
+        }
+        
+        // --- UI UPDATE LOGIC ---
+        function updateMarketIntelUI() {
+             if (gameState.scenarioName === 'Scenario 3') {
+                totalMarketUnits = 40000; // Lower market size for recessionary scenario
+             }
+             document.getElementById('total-market-units-display').textContent = `Total addressable market this quarter is estimated at ${totalMarketUnits.toLocaleString()} units.`;
+            marketDemandContainer.innerHTML = Object.entries(gameState.marketDemand).map(([segment, data]) => `
+                <div class="bg-white p-4 rounded-lg shadow-sm border">
+                    <div class="flex justify-between items-baseline mb-2">
+                        <h4 class="font-bold text-lg capitalize text-indigo-600">${segment}</h4>
+                        <span class="text-sm font-semibold bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full">${(data.share * 100).toFixed(0)}% Demand</span>
+                    </div>
+                    <p class="text-xs text-gray-500 mb-3">${(totalMarketUnits * data.share).toLocaleString()} units</p>
+                    
+                    <div class="text-sm space-y-2 text-gray-700">
+                        <p><i class="fas fa-money-bill-wave w-5 text-center mr-1 text-green-500"></i><strong>Price Range:</strong> <span class="font-mono">${data.range}</span></p>
+                        <p><i class="fas fa-users w-5 text-center mr-1 text-blue-500"></i><strong>Demography:</strong> ${data.demography}</p>
+                        <p><i class="fas fa-chart-line w-5 text-center mr-1 text-purple-500"></i><strong>Economic Status:</strong> ${data.economicStatus}</p>
+                        <p><i class="fas fa-venus-mars w-5 text-center mr-1 text-pink-500"></i><strong>Gender Ratio:</strong> ${data.genderRatio}</p>
+                        <p><i class="fas fa-birthday-cake w-5 text-center mr-1 text-orange-500"></i><strong>Age Group:</strong> ${data.ageGroup}</p>
+                    </div>
+                </div>
+            `).join('');
+            
+            competitorsContainer.innerHTML = gameState.competitors.map(c => {
+                const brandsHtml = c.brands.map(b => `
+                    <div class="grid grid-cols-4 gap-2 text-sm py-1 items-center">
+                        <span class="text-gray-600 col-span-1 truncate">${b.name}</span>
+                        <span class="font-mono text-gray-800 text-center">$${b.retailPrice}</span>
+                        <span class="font-mono text-blue-800 text-center">$${(b.adBudget/1000).toFixed(0)}K</span>
+                        <span class="font-semibold text-indigo-700 text-right">${b.marketShare.toFixed(1)}%</span>
+                    </div>
+                `).join('');
+
+                return `
+                    <div class="bg-gray-50 p-4 rounded-lg border">
+                        <div class="flex justify-between items-center mb-3">
+                            <div>
+                                <p class="font-bold text-gray-800">${c.name}</p>
+                                <p class="text-sm text-gray-500">Focus: <span class="font-medium text-indigo-500">${c.focus}</span></p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-lg font-bold">${c.totalShare.toFixed(1)}%</p>
+                                <p class="text-xs text-gray-500">Total Share</p>
+                            </div>
+                        </div>
+                        <div class="border-t pt-2 space-y-1">
+                            <div class="grid grid-cols-4 gap-2 text-xs font-bold text-gray-400">
+                                <span class="col-span-1">BRAND</span>
+                                <span class="text-center">PRICE</span>
+                                <span class="text-center">AD BUDGET</span>
+                                <span class="text-right">SHARE</span>
+                            </div>
+                            ${brandsHtml}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateUI() {
+            quarterDisplay.textContent = `${gameState.quarter} of 12`;
+            decisionQuarterDisplay.textContent = gameState.quarter;
+            
+            const updateKpi = (elementId, changeElementId, history, prefix = '', suffix = '', decimals = 2) => {
+                const value = history.slice(-1)[0];
+                const prevValue = history.slice(-2)[0];
+                const change = value - prevValue;
+                document.getElementById(elementId).textContent = `${prefix}${value.toFixed(decimals)}${suffix}`;
+                const changeEl = document.getElementById(changeElementId);
+                changeEl.innerHTML = `<i class="fas fa-arrow-${change >= 0 ? 'up' : 'down'} mr-1"></i> ${prefix}${Math.abs(change).toFixed(decimals)}${suffix} vs last Q`;
+                changeEl.classList.toggle('text-green-500', change >= 0);
+                changeEl.classList.toggle('text-red-500', change < 0);
+            };
+
+            updateKpi('market-share', 'market-share-change', gameState.history.marketShare, '', '%', 1);
+            updateKpi('stock-price', 'stock-price-change', gameState.history.stockPrice, '$', '', 2);
+            updateKpi('net-profit', 'net-profit-change', gameState.history.netProfit, '$', 'M', 2);
+            updateKpi('total-sales', 'total-sales-change', gameState.history.totalSales, '$', 'M', 2);
+            updateKpi('marketing-budget', 'marketing-budget-change', gameState.history.marketingBudget, '$', 'M', 2);
+            updateKpi('sales-force-cost', 'sales-force-cost-change', gameState.history.salesForceCost, '$', 'M', 2);
+            updateKpi('balanced-scorecard', 'balanced-scorecard-change', gameState.history.balancedScorecard, '', '/100', 0);
+            
+            const currentInventoryUnits = gameState.history.inventoryUnits.slice(-1)[0] || 0;
+            const currentInventoryValue = gameState.history.inventoryValue.slice(-1)[0] || 0;
+            const realisableValue = gameState.history.inventoryRealisableValue.slice(-1)[0] || 0;
+            document.getElementById('inventory-units').textContent = `${currentInventoryUnits.toLocaleString()} Units`;
+            document.getElementById('inventory-value').textContent = `Value: $${currentInventoryValue.toLocaleString()}`;
+            document.getElementById('inventory-realisable-value').textContent = `Realisable: $${realisableValue.toLocaleString()}`;
+
+            updateMarketIntelUI();
+            createMarketShareChart();
+            createFinancialsChart();
+        }
+
+        // --- SIMULATION LOGIC ---
+        function getChannelFit(brandSegment, channelType) {
+            const fitMatrix = {
+                'Recreation': { 'online': 1.1, 'specialty': 0.8, 'mass': 1.2 },
+                'Mountain':   { 'online': 1.0, 'specialty': 1.2, 'mass': 0.9 },
+                'Speed':      { 'online': 0.9, 'specialty': 1.3, 'mass': 0.6 }
+            };
+            return fitMatrix[brandSegment][channelType] || 1.0;
+        }
+
+        function calculateBrandMarketFit(brand, segment) {
+            let fitScore = 0.2; // Base score
+            const retailPrice = brand.productionCost + brand.margin;
+            const [minPrice, maxPrice] = segment.range.replace(/\$/g, '').split(' - ').map(Number);
+            
+            if (retailPrice >= minPrice && retailPrice <= maxPrice) fitScore += 0.1;
+            else if (retailPrice > maxPrice) fitScore -= 0.05;
+
+            switch (segment.name) {
+                case 'recreation':
+                    if (brand.parts.has('part-saddle-comfort')) fitScore += 0.1;
+                    if (brand.adMessage === 'style') fitScore += 0.1;
+                    break;
+                case 'mountain':
+                    if (brand.parts.has('part-wheels-mtb') || brand.parts.has('part-tires-offroad')) fitScore += 0.1;
+                    if (brand.adMessage === 'durability') fitScore += 0.1;
+                    break;
+                case 'speed':
+                    if (brand.parts.has('part-frame-carbon') || brand.parts.has('part-wheels-racing')) fitScore += 0.1;
+                    if (brand.adMessage === 'performance') fitScore += 0.1;
+                    break;
+            }
+            return Math.max(0.1, Math.min(0.6, fitScore));
+        }
+
+        function captureYearlyReport() {
+            const year = Math.floor((gameState.quarter -1) / 4) + 1;
+            const reportData = {
+                year: year,
+                endQuarter: gameState.quarter,
+                netProfit: gameState.history.netProfit.slice(-4).reduce((a, b) => a + b, 0),
+                totalSales: gameState.history.totalSales.slice(-4).reduce((a, b) => a + b, 0),
+                marketShare: gameState.history.marketShare.slice(-1)[0],
+                stockPrice: gameState.history.stockPrice.slice(-1)[0]
+            };
+            gameState.yearlyReports.push(reportData);
+        }
+
+        function endGame() {
+            document.getElementById('simulation-container').style.display = 'none';
+            const gameOverScreen = document.getElementById('game-over-screen');
+            const reportsContainer = document.getElementById('reports-container');
+            const certificateSection = document.getElementById('certificate-section');
+
+            const finalScorecard = gameState.history.balancedScorecard.slice(-1)[0];
+            
+            document.getElementById('final-market-share').textContent = `${gameState.history.marketShare.slice(-1)[0].toFixed(1)}%`;
+            document.getElementById('final-stock-price').textContent = `$${gameState.history.stockPrice.slice(-1)[0].toFixed(2)}`;
+
+            // Certificate logic
+            if (finalScorecard >= 60) {
+                const playerName = playerNameInput.value;
+                const companyName = companyNameInput.value;
+
+                document.getElementById('cert-player-name').textContent = playerName;
+                document.getElementById('cert-company-name').textContent = companyName;
+                document.getElementById('cert-score').textContent = `${finalScorecard}/100`;
+                document.getElementById('cert-date').textContent = `Awarded on: ${new Date().toLocaleDateString()}`;
+
+                const linkedinShareBtn = document.getElementById('share-linkedin-btn');
+                const shareText = `I successfully completed the Marketing Strategy Simulation from Taxila Business School with a final score of ${finalScorecard}/100 playing as ${companyName}!`;
+                const linkedInUrl = `https://www.linkedin.com/shareArticle?mini=true&url=https://taxila.in/&title=Marketing%20Simulation%20Achievement&summary=${encodeURIComponent(shareText)}&source=Taxila%20Business%20School`;
+                linkedinShareBtn.href = linkedInUrl;
+
+                document.getElementById('download-cert-btn').onclick = downloadCertificate;
+
+                certificateSection.style.display = 'block';
+            }
+
+
+            reportsContainer.innerHTML = '';
+            gameState.yearlyReports.forEach(report => {
+                const reportLink = document.createElement('a');
+                reportLink.href = '#';
+                reportLink.className = 'bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700';
+                reportLink.textContent = `Download Year ${report.year} Report`;
+                reportLink.onclick = (e) => {
+                    e.preventDefault();
+                    downloadReport(report);
+                };
+                reportsContainer.appendChild(reportLink);
+            });
+
+            gameOverScreen.style.display = 'flex';
+        }
+
+        function downloadCertificate() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 800;
+            canvas.height = 600;
+            const ctx = canvas.getContext('2d');
+
+            // Background
+            ctx.fillStyle = '#f7fafc';
+            ctx.fillRect(0, 0, 800, 600);
+
+            // Border
+            ctx.strokeStyle = '#4f46e5';
+            ctx.lineWidth = 20;
+            ctx.strokeRect(0, 0, 800, 600);
+
+            // Title
+            ctx.font = 'bold 48px Poppins';
+            ctx.fillStyle = '#1f2937';
+            ctx.textAlign = 'center';
+            ctx.fillText('Certificate of Appreciation', 400, 100);
+
+            // Icon (FontAwesome award)
+            ctx.font = '900 60px "Font Awesome 6 Free"';
+            ctx.fillStyle = '#f59e0b'; // yellow-500
+            ctx.fillText('\uf559', 400, 180); // fa-award icon unicode
+
+            // Body text
+            ctx.font = '20px Poppins';
+            ctx.fillStyle = '#4b5563';
+            ctx.fillText('This certificate is awarded to', 400, 250);
+
+            ctx.font = 'bold 36px Poppins';
+            ctx.fillStyle = '#4f46e5';
+            ctx.fillText(document.getElementById('cert-player-name').textContent, 400, 300);
+            
+            ctx.font = '20px Poppins';
+            ctx.fillStyle = '#4b5563';
+            ctx.fillText('of', 400, 340);
+            
+            ctx.font = 'bold 30px Poppins';
+            ctx.fillStyle = '#4f46e5';
+            ctx.fillText(document.getElementById('cert-company-name').textContent, 400, 380);
+
+            ctx.font = '20px Poppins';
+            ctx.fillStyle = '#4b5563';
+            ctx.fillText('for outstanding strategic performance, achieving a final score of', 400, 430);
+            
+            ctx.font = 'bold 36px Poppins';
+            ctx.fillStyle = '#4f46e5';
+            ctx.fillText(document.getElementById('cert-score').textContent, 400, 480);
+            
+            ctx.font = '16px Poppins';
+            ctx.fillStyle = '#6b7280';
+            ctx.fillText(document.getElementById('cert-date').textContent, 400, 550);
+
+            // Download link
+            const link = document.createElement('a');
+            link.download = `Certificate_${playerNameInput.value.replace(/\s+/g, '_')}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+
+        function downloadReport(report) {
+            const companyName = document.getElementById('company-name').value || 'Apex Cycles';
+            const content = `
+Yearly Performance Report - Year ${report.year}
+=======================================
+Company: ${companyName}
+Ending Quarter: ${report.endQuarter}
+
+Financial Summary for Year ${report.year}:
+---------------------------------------
+Total Sales: $${report.totalSales.toFixed(2)} Million
+Net Profit: $${report.netProfit.toFixed(2)} Million
+
+End of Year Position:
+---------------------
+Market Share: ${report.marketShare.toFixed(1)}%
+Stock Price: $${report.stockPrice.toFixed(2)}
+
+Report Generated: ${new Date().toLocaleString()}
+    `;
+
+            const blob = new Blob([content.trim()], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Year_${report.year}_Report_${companyName.replace(/\s+/g, '_')}.txt`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function simulateNextQuarter() {
+            let advisorComments = [];
+            const lockedParts = ALL_PARTS.filter(p => !availablePartIds.has(p.id));
+            if (lockedParts.length > 0) {
+                const partsToUnlock = lockedParts.slice(0, 2);
+                let unlockedPartNames = [];
+                partsToUnlock.forEach(part => {
+                    availablePartIds.add(part.id);
+                    unlockedPartNames.push(part.name);
+                });
+                if (unlockedPartNames.length > 0) {
+                    advisorComments.push(`<strong>New R&D Unlocked!</strong> Parts now available: ${unlockedPartNames.join(', ')}.`);
+                }
+            }
+
+            totalMarketUnits = Math.round(50000 * (0.9 + Math.random() * 0.2));
+            const shares = [Math.random(), Math.random(), Math.random()];
+            const total = shares.reduce((a, b) => a + b, 0);
+            gameState.marketDemand.recreation.share = shares[0] / total;
+            gameState.marketDemand.mountain.share = shares[1] / total;
+            gameState.marketDemand.speed.share = shares[2] / total;
+
+            gameState.competitors.forEach(c => {
+                c.totalShare = 0;
+                c.brands.forEach(b => {
+                    b.marketShare = Math.max(1, Math.min(15, b.marketShare + (Math.random() * 2 - 1)));
+                    b.retailPrice = Math.round((b.retailPrice + Math.random() * 40 - 20) / 10) * 10;
+                    b.adBudget = Math.max(200000, b.adBudget + Math.random() * 50000 - 25000);
+                    c.totalShare += b.marketShare;
+                });
+            });
+
+            const totalSalesForce = parseFloat(document.getElementById('total_sales_force').value) || 0;
+            const salesChannels = {
+                online: { staff: parseFloat(document.getElementById('sales-channel-online-staff').value) || 0, commission: parseFloat(document.getElementById('sales-channel-online-boost').value) || 0 },
+                specialty: { staff: parseFloat(document.getElementById('sales-channel-specialty-staff').value) || 0, commission: parseFloat(document.getElementById('sales-channel-specialty-commission').value) || 0 },
+                mass: { staff: parseFloat(document.getElementById('sales-channel-mass-staff').value) || 0, commission: parseFloat(document.getElementById('sales-channel-mass-commission').value) || 0 }
+            };
+
+            let totalRevenue = 0, totalProductionCosts = 0, totalAdBudget = 0, totalCommissionCosts = 0;
+            const salesForceCosts = totalSalesForce * 20000;
+
+            gameState.brands.forEach(brand => {
+                const segmentId = brand.targetSegment;
+                const segmentInfo = { ...gameState.marketDemand[segmentId.toLowerCase()], name: segmentId };
+                if (!segmentInfo) return;
+
+                const playerMarketFit = calculateBrandMarketFit(brand, segmentInfo);
+                const playerAttractiveness = playerMarketFit * brand.adBudget;
+                advisorComments.push(`Brand "${brand.name}" fit score in ${segmentId}: <strong>${(playerMarketFit * 100).toFixed(0)}/60</strong>.`);
+                
+                let totalEffectiveness = 0;
+                let channelEffectiveness = {};
+                Object.keys(salesChannels).forEach(key => {
+                    const channel = salesChannels[key];
+                    const effectiveness = getChannelFit(segmentId, key) * (1 + (channel.staff / (totalSalesForce || 1))) * (1 + channel.commission / 100);
+                    channelEffectiveness[key] = effectiveness;
+                    totalEffectiveness += effectiveness;
+                });
+
+                let totalUnitsSold = 0;
+                if (totalEffectiveness > 0) {
+                    let totalSegmentAttractiveness = playerAttractiveness + (gameState.competitors.find(c => c.focus === segmentId)?.totalShare || 15) * 100000;
+                    const playerShareOfAttractiveness = playerAttractiveness / totalSegmentAttractiveness;
+                    const potentialDemandForBrand = Math.round((totalMarketUnits * segmentInfo.share) * playerShareOfAttractiveness);
+                    totalUnitsSold = Math.round(potentialDemandForBrand * totalEffectiveness);
+                }
+                
+                const unitsAvailable = brand.productionUnits + brand.inventory;
+                const salesCapped = Math.min(unitsAvailable, totalUnitsSold);
+                
+                const unitsSoldFromInventory = Math.min(brand.inventory, salesCapped);
+                totalRevenue += unitsSoldFromInventory * (brand.productionCost * brand.inventoryMultiplier);
+
+                const unitsSoldFromNew = salesCapped - unitsSoldFromInventory;
+                const newProductionRevenue = unitsSoldFromNew * (brand.productionCost + brand.margin);
+                totalRevenue += newProductionRevenue;
+                
+                Object.keys(salesChannels).forEach(key => {
+                    if(salesCapped > 0 && totalUnitsSold > 0) {
+                        const proportionOfSales = (totalUnitsSold > 0) ? (Math.round((totalMarketUnits * segmentInfo.share) * (playerAttractiveness / (playerAttractiveness + 1)) * (channelEffectiveness[key] / totalEffectiveness)) / totalUnitsSold) : 0;
+                        totalCommissionCosts += (unitsSoldFromNew * proportionOfSales) * (brand.productionCost + brand.margin) * (salesChannels[key].commission / 100);
+                    }
+                });
+
+                const leftoverUnits = unitsAvailable - salesCapped;
+                if (brand.inventory > unitsSoldFromInventory) brand.inventoryMultiplier = Math.max(0.5, brand.inventoryMultiplier * 0.8);
+                brand.inventory = leftoverUnits;
+                if (leftoverUnits > 0 && brand.inventory === leftoverUnits) brand.inventoryMultiplier = 0.8;
+
+                totalProductionCosts += brand.productionUnits * brand.productionCost;
+                totalAdBudget += brand.adBudget;
+            });
+
+            const totalCosts = totalProductionCosts + totalAdBudget + salesForceCosts + totalCommissionCosts;
+            const profit = totalRevenue - totalCosts;
+
+            gameState.history.totalSales.push(totalRevenue / 1000000);
+            gameState.history.marketingBudget.push((totalRevenue * 0.1) / 1000000);
+            gameState.history.netProfit.push(profit / 1000000);
+            gameState.history.salesForceCost.push(salesForceCosts / 1000000);
+
+            let marketShare = Math.max(5, Math.min(40, gameState.history.marketShare.slice(-1)[0] + (profit / 5000000) + (Math.random() * 0.5 - 0.25)));
+            gameState.history.marketShare.push(marketShare);
+            
+            gameState.history.stockPrice.push(Math.max(10, gameState.history.stockPrice.slice(-1)[0] + (profit / 1000000) * 2 + (Math.random() * 2 - 1)));
+            gameState.history.balancedScorecard.push(Math.round(Math.max(0, Math.min(100, gameState.history.balancedScorecard.slice(-1)[0] + (profit / 200000)))));
+            
+            let totalCurrentInventory = 0, totalCurrentInventoryValue = 0, totalRealisableValue = 0;
+            gameState.brands.forEach(brand => {
+                totalCurrentInventory += brand.inventory;
+                totalCurrentInventoryValue += brand.inventory * brand.productionCost;
+                totalRealisableValue += brand.inventory * brand.productionCost * brand.inventoryMultiplier;
+            });
+            gameState.history.inventoryUnits.push(totalCurrentInventory);
+            gameState.history.inventoryValue.push(totalCurrentInventoryValue);
+            gameState.history.inventoryRealisableValue.push(totalRealisableValue);
+
+            if (profit < 0) advisorComments.unshift(`Overall, we've recorded a net loss. A review of our brand strategies is critical.`);
+            else advisorComments.unshift(`A stable quarter. We maintained our position in the market.`);
+            
+            advisorCommentsEl.innerHTML = advisorComments.map(c => `<p>${c}</p>`).join('');
+
+            if (gameState.quarter % 4 === 0) {
+                captureYearlyReport();
+            }
+
+            gameState.quarter++;
+
+            if (gameState.quarter > 12) {
+                 if (gameState.yearlyReports.length < 3) {
+                     captureYearlyReport(); // Capture final year if not already done.
+                 }
+                endGame();
+            } else {
+                redisplayAllBrands();
+                updateUI();
+            }
+        }
+        
+        // --- MULTI-BRAND & VALIDATION ---
+        function validateInputs() {
+            validateMarketingBudget();
+            validateSalesForceAllocation();
+        }
+
+        function validateSalesForceAllocation() {
+            const warningEl = document.getElementById('sales-force-warning');
+            const totalHired = parseFloat(document.getElementById('total_sales_force').value) || 0;
+            let totalAllocated = 0;
+            document.querySelectorAll('#sales .sales-force-input').forEach(input => {
+                if (input.id !== 'total_sales_force') totalAllocated += parseFloat(input.value) || 0;
+            });
+            if (totalAllocated > totalHired) {
+                warningEl.textContent = `Allocated salespeople (${totalAllocated}) exceeds total hired (${totalHired})!`;
+                submitBtn.disabled = true;
+                submitBtn.classList.add('bg-indigo-300', 'cursor-not-allowed');
+            } else {
+                warningEl.textContent = ``;
+                if(!document.getElementById('budget-warning').textContent) {
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('bg-indigo-300', 'cursor-not-allowed');
+                }
+            }
+        }
+        
+        function validateMarketingBudget() {
+            const budgetWarningEl = document.getElementById('budget-warning');
+            const totalBudget = (gameState.history.marketingBudget.slice(-1)[0] || 0) * 1000000;
+            let totalAdSpend = 0;
+            document.querySelectorAll('.ad-budget-input').forEach(input => {
+                totalAdSpend += parseFloat(input.value) || 0;
+            });
+            if (totalAdSpend > totalBudget) {
+                budgetWarningEl.textContent = `Ad spend ($${totalAdSpend.toLocaleString()}) exceeds budget ($${totalBudget.toLocaleString()})!`;
+                submitBtn.disabled = true;
+                submitBtn.classList.add('bg-indigo-300', 'cursor-not-allowed');
+            } else {
+                budgetWarningEl.textContent = '';
+                 if(!document.getElementById('sales-force-warning').textContent) {
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('bg-indigo-300', 'cursor-not-allowed');
+                }
+            }
+        }
+
+        function createNewBrand() {
+            const brandId = `brand-${Date.now()}`;
+            const brandCount = gameState.brands.length + 1;
+            const newBrand = {
+                id: brandId, name: `New Bike ${brandCount}`, targetSegment: 'Mountain',
+                parts: new Set(), usedCategories: new Set(), productionCost: 650, margin: 200,
+                adBudget: 500000, adMessage: 'durability', productionUnits: 10000, inventory: 0, inventoryMultiplier: 0.8,
+            };
+            gameState.brands.push(newBrand);
+            redisplayAllBrands();
+        }
+        
+        function redisplayAllBrands() {
+            brandDesignContainer.innerHTML = '';
+            marketingBrandsContainer.innerHTML = '';
+            productionBrandsContainer.innerHTML = '';
+            
+            if (gameState.brands.length === 0) {
+                 brandDesignContainer.innerHTML = `<p class="text-gray-500">Click 'Design New Bike Brand' to get started.</p>`;
+                 marketingBrandsContainer.innerHTML = `<p class="text-gray-500">Design a new bike brand... to set its marketing strategy here.</p>`;
+                 productionBrandsContainer.innerHTML = `<p class="text-gray-500">Design a bike brand... to set its production quantity.</p>`;
+            } else {
+                gameState.brands.forEach(brand => {
+                    brandDesignContainer.appendChild(createRdCard(brand));
+                    marketingBrandsContainer.appendChild(createMarketingCard(brand));
+                    productionBrandsContainer.appendChild(createProductionCard(brand));
+                    addEventListenersForBrand(brand.id);
+                });
+            }
+            validateInputs();
+        }
+
+        function createRdCard(brand) {
+            const div = document.createElement('div');
+            div.className = 'bg-white p-6 rounded-lg shadow-md border animate-fade-in';
+            div.id = `rd-card-${brand.id}`;
+            const availablePartsForBin = ALL_PARTS.filter(p => availablePartIds.has(p.id));
+            const partsBinHtml = availablePartsForBin.map(part => `
+                <div draggable="true" class="bike-part bg-white p-3 rounded-md shadow flex items-center space-x-3" data-part-id="${part.id}" data-cost="${part.cost}" data-category="${part.category}">
+                    ${part.icon}
+                    <div><p class="font-bold">${part.name}</p><p class="text-sm text-gray-500">Cost: $${part.cost}</p></div>
+                </div>`).join('');
+            
+            const assembledPartsHtml = Array.from(brand.parts).map(partId => {
+                const partInfo = ALL_PARTS.find(p => p.id === partId);
+                return `<div class="bg-white p-2 rounded shadow text-sm flex items-center justify-between"><span>${partInfo.name}</span><span class="font-bold text-indigo-600">$${partInfo.cost}</span></div>`;
+            }).join('');
+
+            div.innerHTML = `
+                <div class="flex justify-between items-start mb-4 gap-4">
+                     <div class="flex-grow">
+                        <label for="rd-brand-name-input-${brand.id}" class="block text-sm font-medium text-gray-700">Designing Brand Name</label>
+                        <input type="text" id="rd-brand-name-input-${brand.id}" class="rd-brand-name-input mt-1 block w-full rounded-md border-gray-300 shadow-sm" value="${brand.name}" data-brand-id="${brand.id}">
+                    </div>
+                    <button class="delete-brand-btn text-sm text-red-500 hover:text-red-700 mt-7" data-brand-id="${brand.id}"><i class="fas fa-trash-alt mr-1"></i> Delete Brand</button>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-1 bg-gray-50 p-4 rounded-lg"><h4 class="font-semibold text-center mb-4">Parts Bin</h4><div class="space-y-3">${partsBinHtml}</div></div>
+                    <div data-brand-id="${brand.id}" class="assembly-area lg:col-span-2 p-4 rounded-lg min-h-[200px] flex flex-col">
+                        <h4 class="font-semibold text-center mb-4">Assembly Area</h4>
+                        <div id="assembled-parts-list-${brand.id}" class="space-y-2 flex-grow">
+                            <div class="bg-gray-100 p-2 rounded shadow text-sm flex items-center justify-between"><span>Basic Bike Cost</span><span class="font-bold text-gray-600">$650</span></div>
+                            ${assembledPartsHtml}
+                        </div>
+                        <div class="border-t pt-2 mt-4 flex justify-between items-center">
+                            <div id="assembly-cost-${brand.id}" class="font-bold text-lg text-gray-800">Total Cost: $${brand.productionCost.toLocaleString()}</div>
+                            <button class="reset-assembler-btn text-sm text-red-600 hover:text-red-800 font-semibold" data-brand-id="${brand.id}">Reset</button>
+                        </div>
+                    </div>
+                </div>`;
+            return div;
+        }
+
+        function createMarketingCard(brand) {
+            const div = document.createElement('div');
+            div.className = 'grid grid-cols-1 lg:grid-cols-2 gap-8 bg-gray-50 p-6 rounded-lg border animate-fade-in';
+            div.id = `marketing-card-${brand.id}`;
+            const segmentOptions = ['Recreation', 'Mountain', 'Speed'].map(opt => `<option ${brand.targetSegment === opt ? 'selected' : ''}>${opt}</option>`).join('');
+            const adMessageOptions = ['performance', 'durability', 'style'].map(opt => `<div class="flex items-center"><input name="ad_message_${brand.id}" type="radio" value="${opt}" ${brand.adMessage === opt ? 'checked' : ''}><label class="ml-3 capitalize">${opt}</label></div>`).join('');
+
+            div.innerHTML = `
+                <div>
+                    <h4 class="text-lg font-bold text-indigo-700 mb-4 pb-2 border-b">Brand: <span class="text-indigo-600" id="marketing-brand-name-${brand.id}">${brand.name}</span></h4>
+                    <div class="space-y-6">
+                        <div><label class="block text-sm font-medium text-gray-700">Brand Name</label><input type="text" data-brand-id="${brand.id}" class="brand-name-input mt-1 block w-full rounded-md" value="${brand.name}" disabled></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Target Segment</label><select data-brand-id="${brand.id}" class="target-segment-select mt-1 block w-full rounded-md">${segmentOptions}</select></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Production Cost ($)</label><p id="prototype-cost-display-${brand.id}" class="mt-1 text-lg font-semibold text-gray-900">$${brand.productionCost.toLocaleString()}</p></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Company Margin ($)</label><input type="number" value="${brand.margin}" data-brand-id="${brand.id}" class="company-margin-input mt-1 block w-full rounded-md"></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Retail Price ($)</label><p id="retail-price-display-${brand.id}" class="mt-1 text-xl font-bold text-indigo-600">$${(brand.productionCost + brand.margin).toLocaleString()}</p></div>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold text-indigo-700 mb-4 pb-2 border-b">Advertising</h4>
+                    <div class="space-y-6">
+                        <div><label class="block text-sm font-medium text-gray-700">Advertising Budget ($)</label><input type="number" value="${brand.adBudget}" data-brand-id="${brand.id}" step="10000" class="ad-budget-input mt-1 block w-full rounded-md"></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Primary Ad Message</label><div class="ad-message-group mt-2 space-y-2" data-brand-id="${brand.id}">${adMessageOptions}</div></div>
+                    </div>
+                </div>`;
+            return div;
+        }
+
+        function createProductionCard(brand) {
+            const div = document.createElement('div');
+            div.className = 'bg-white p-4 rounded-lg shadow-sm border animate-fade-in';
+            div.id = `production-card-${brand.id}`;
+            div.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <label for="production-units-${brand.id}" class="font-medium text-gray-700">Units for Brand: <span class="font-bold text-indigo-600" id="production-brand-name-${brand.id}">${brand.name}</span></label>
+                    <input type="number" id="production-units-${brand.id}" value="${brand.productionUnits}" data-brand-id="${brand.id}" step="100" class="production-units-input block w-1/3 rounded-md">
+                </div>
+                <div class="text-sm text-gray-600 mt-2">
+                    Carried Inventory from last Q: <span class="font-bold" id="inventory-display-${brand.id}">${brand.inventory.toLocaleString()}</span> units
+                </div>`;
+            return div;
+        }
+
+        function deleteBrand(brandId) {
+            gameState.brands = gameState.brands.filter(b => b.id !== brandId);
+            redisplayAllBrands();
+        }
+
+        // --- DYNAMIC EVENT LISTENERS ---
+        function addEventListenersForBrand(brandId) {
+            const brand = gameState.brands.find(b => b.id === brandId);
+            if (!brand) return;
+
+            const rdCard = document.getElementById(`rd-card-${brandId}`);
+            rdCard.querySelector('.delete-brand-btn').addEventListener('click', () => deleteBrand(brandId));
+            rdCard.querySelector('.reset-assembler-btn').addEventListener('click', () => resetAssembler(brandId));
+            
+            rdCard.querySelector('.rd-brand-name-input').addEventListener('input', e => {
+                brand.name = e.target.value;
+                document.querySelector(`#marketing-card-${brandId} .brand-name-input`).value = brand.name;
+                document.getElementById(`production-brand-name-${brandId}`).textContent = brand.name;
+                document.getElementById(`marketing-brand-name-${brandId}`).textContent = brand.name;
+            });
+
+            rdCard.querySelectorAll('.bike-part').forEach(part => {
+                part.addEventListener('dragstart', e => {
+                    e.dataTransfer.setData('text/plain', e.currentTarget.dataset.partId);
+                    e.dataTransfer.setData('brand-id', brandId);
+                });
+            });
+            rdCard.querySelector('.assembly-area').addEventListener('dragover', e => e.preventDefault());
+            rdCard.querySelector('.assembly-area').addEventListener('drop', dropHandler);
+            brand.usedCategories.forEach(category => {
+                rdCard.querySelectorAll(`.bike-part[data-category="${category}"]`).forEach(partEl => {
+                    partEl.draggable = false;
+                    partEl.classList.add('opacity-50', 'pointer-events-none');
+                });
+            });
+
+            const marketingCard = document.getElementById(`marketing-card-${brandId}`);
+            marketingCard.querySelector('.company-margin-input').addEventListener('input', e => {
+                brand.margin = parseFloat(e.target.value) || 0;
+                updateRetailPrice(brandId);
+            });
+            marketingCard.querySelector('.target-segment-select').addEventListener('change', e => brand.targetSegment = e.target.value);
+            marketingCard.querySelector('.ad-budget-input').addEventListener('input', e => {
+                brand.adBudget = parseFloat(e.target.value) || 0;
+                validateInputs();
+            });
+            marketingCard.querySelectorAll('.ad-message-group input').forEach(radio => radio.addEventListener('change', e => brand.adMessage = e.target.value));
+
+             document.getElementById(`production-units-${brandId}`).addEventListener('input', e => {
+                brand.productionUnits = parseInt(e.target.value) || 0;
+             });
+        }
+        
+        function updateRetailPrice(brandId) {
+            const brand = gameState.brands.find(b => b.id === brandId);
+            if (!brand) return;
+            const retailPrice = brand.productionCost + brand.margin;
+            document.getElementById(`retail-price-display-${brandId}`).textContent = `$${retailPrice.toLocaleString()}`;
+        }
+
+        // --- DRAG & DROP LOGIC ---
+        function dropHandler(e) {
+            e.preventDefault();
+            const partId = e.dataTransfer.getData('text/plain');
+            const brandId = e.dataTransfer.getData('brand-id');
+            const brand = gameState.brands.find(b => b.id === brandId);
+            const partInfo = ALL_PARTS.find(p => p.id === partId);
+            
+            if (!brand || !partInfo || e.currentTarget.dataset.brandId !== brandId || brand.usedCategories.has(partInfo.category)) return;
+
+            brand.productionCost += partInfo.cost;
+            brand.parts.add(partInfo.id);
+            brand.usedCategories.add(partInfo.category);
+            
+            document.getElementById(`assembly-cost-${brandId}`).textContent = `Total Cost: $${brand.productionCost.toLocaleString()}`;
+            document.getElementById(`prototype-cost-display-${brandId}`).textContent = `$${brand.productionCost.toLocaleString()}`;
+            updateRetailPrice(brandId);
+
+            const newPartElement = document.createElement('div');
+            newPartElement.className = 'bg-white p-2 rounded shadow text-sm flex items-center justify-between animate-fade-in';
+            newPartElement.innerHTML = `<span>${partInfo.name}</span><span class="font-bold text-indigo-600">$${partInfo.cost}</span>`;
+            document.getElementById(`assembled-parts-list-${brandId}`).appendChild(newPartElement);
+            
+            document.querySelectorAll(`#rd-card-${brandId} .bike-part[data-category="${partInfo.category}"]`).forEach(part => {
+                part.draggable = false;
+                part.classList.add('opacity-50', 'pointer-events-none');
+            });
+        }
+        
+        function resetAssembler(brandId) {
+            const brand = gameState.brands.find(b => b.id === brandId);
+            if (!brand) return;
+
+            brand.productionCost = 650;
+            brand.parts.clear();
+            brand.usedCategories.clear();
+
+            document.getElementById(`assembly-cost-${brandId}`).textContent = `Total Cost: $650`;
+            document.getElementById(`prototype-cost-display-${brandId}`).textContent = `$650`;
+            updateRetailPrice(brandId);
+            document.getElementById(`assembled-parts-list-${brandId}`).innerHTML = `<div class="bg-gray-100 p-2 rounded shadow text-sm flex items-center justify-between"><span>Basic Bike Cost</span><span class="font-bold text-gray-600">$650</span></div>`;
+            
+            document.querySelectorAll(`#rd-card-${brandId} .bike-part`).forEach(part => {
+                part.draggable = true;
+                part.classList.remove('opacity-50', 'pointer-events-none');
+            });
+        }
+        
+        // --- GLOBAL EVENT LISTENERS ---
+        const tabLinks = document.querySelectorAll('.tab-link');
+        const tabContents = document.querySelectorAll('.tab-content');
+        tabLinks.forEach(link => {
+            link.addEventListener('click', e => {
+                e.preventDefault();
+                tabLinks.forEach(l => l.classList.remove('active-tab', 'border-indigo-500', 'text-indigo-600'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                link.classList.add('active-tab', 'border-indigo-500', 'text-indigo-600');
+                document.getElementById(link.dataset.tab).classList.add('active');
+            });
+        });
+        
+        document.querySelectorAll('.sales-force-input').forEach(input => {
+            input.addEventListener('input', validateInputs);
+        });
+        
+        document.getElementById('total_sales_force').addEventListener('input', (e) => {
+            const totalCost = (e.target.value || 0) * 20000;
+            document.getElementById('sales-force-total-cost').textContent = `$${totalCost.toLocaleString()}`;
+        });
+
+        submitBtn.addEventListener('click', (e) => { e.preventDefault(); modal.style.display = 'flex'; });
+        cancelBtn.addEventListener('click', () => { modal.style.display = 'none'; });
+        confirmBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+            
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Simulating Quarter...
+            `;
+            
+            const progressContainer = document.getElementById('progress-container');
+            const progressBar = document.getElementById('progress-bar');
+            
+            progressBar.style.transition = 'none';
+            progressBar.style.width = '0%';
+            progressContainer.style.display = 'block';
+
+            setTimeout(() => {
+                progressBar.style.transition = 'width 5s linear';
+                progressBar.style.width = '100%';
+            }, 20);
+
+            setTimeout(() => {
+                simulateNextQuarter();
+                progressContainer.style.display = 'none';
+                if (gameState.quarter <= 12) {
+                     submitBtn.disabled = false;
+                     submitBtn.innerHTML = 'End Quarter & Submit Decisions';
+                     validateInputs(); 
+                }
+            }, 5000);
+        });
+        addBrandBtn.addEventListener('click', createNewBrand);
+        
+        // --- SAVE/LOAD EVENT LISTENERS ---
+        const saveGameBtn = document.getElementById('save-game-btn');
+        const saveStatus = document.getElementById('save-status');
+        saveGameBtn.addEventListener('click', saveGame);
+        loadGameBtn.addEventListener('click', loadGame);
+    });
+    </script>
+</body>
+</html>

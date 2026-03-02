@@ -1,12 +1,18 @@
 "use client";
 import { authFetch } from "@/app/lib/fetchWithAuth";
+import Toast from "@/components/Toast";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { hasPermission } from "@/app/lib/checkPermission";
+import introJs from 'intro.js';
+import 'intro.js/minified/introjs.min.css';
 
 export default function CreateComponents() {
     const [subjects, setSubjects] = useState([]);
     const router = useRouter();
     const searchParams = useSearchParams();
+    const [message, setMessage] = useState("")
+    const [showToast, setShowToast] =  useState(false)
     const subID = searchParams.get("subID");
     const [result, setResult] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -17,10 +23,31 @@ export default function CreateComponents() {
         name: "",
         max_marks: "",
         has_subcomponents: "true",
+        is_submission: "false",
         description: "",
     });
-
+  const hasadd = hasPermission(("b22e5de9bd04a4792a9c285e08ee07a9d66ac8129ab7fdc9d789e9174e647506"))
     const token = localStorage.getItem("accessToken");
+    useEffect(() => {
+        introJs()
+          .setOptions({
+            steps: [
+              {
+                element: '#step1',
+                intro: "If you want a Performance Score component, then name it exactly 'Performance Score'."
+              }
+            ],
+            showProgress: true,
+            hidePrev: true,
+            nextLabel: 'Next →',
+            prevLabel: '← Back',
+            doneLabel: 'Finish',
+          })
+          .start();
+      }, []);
+     
+    
+
 
     useEffect(() => {
         const fetchSubjects = async () => {
@@ -31,7 +58,7 @@ export default function CreateComponents() {
             }
 
             try {
-                const response = await authFetch(`subject-mapping-viewset`, {
+                const response = await authFetch(`subject-mapping-list`, {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
@@ -61,10 +88,16 @@ export default function CreateComponents() {
                 setLoading(false);
             }
         };
-
-        fetchSubjects();
+            if(!hasadd){
+                router.replace("/unauthorized")
+            }else{
+ fetchSubjects();
+            }
+       
     }, [token, subID]);
-
+if(!hasPermission){
+    return null;
+}
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
@@ -83,10 +116,17 @@ export default function CreateComponents() {
                 throw new Error("Failed to submit data");
             }
             const results = await response.json();
-            alert("Form submitted successfully!");
-            if (formData.has_subcomponents === "true") {
-                router.replace(`/exam-components/create-subcomponent?componentId=${results.data.id}`);
-            }
+            setMessage("Components Create Successfully")
+            setShowToast(true)
+            setTimeout(()=>{
+                setShowToast(false)
+                if (formData.has_subcomponents === "true") {
+                    router.replace(`/exam-components/create-subcomponent?componentId=${results.data.id}`);
+                } else{
+                    router.replace(`/subjects/deails/${subID}`);
+                }
+            },2000)
+            
         } catch (error) {
             console.error("Error submitting form:", error);
             alert("Submission failed. Please try again.");
@@ -94,9 +134,11 @@ export default function CreateComponents() {
     };
 
     return (
-        <div className="flex justify-center items-center w-full rounded-sm py-12">
+        <div className="flex justify-center items-center w-full rounded-sm py-12 px-3">
+         
+            {showToast && <Toast message={message}/>}
             <div className="border border-gray-300 shadow-sm hover:shadow-md rounded-sm">
-                <h4 className="px-60 py-4 bg-gradient-to-bl font-bold from-gray-700 to-stone-900 text-white">
+                <h4 className="sm:px-60 py-4 bg-gradient-to-bl font-bold from-gray-700 to-stone-900 text-white">
                     Create Component
                 </h4>
                 <form className="py-5 px-5" onSubmit={handleSubmit}>
@@ -123,6 +165,7 @@ export default function CreateComponents() {
                                 name="type"
                                 onChange={handleChange}
                                 value={formData.type}
+
                                 className="bg-white border border-gray-300 mb-3 text-gray-700 text-sm rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                             >
                                 <option value="EXTERNAL">External</option>
@@ -137,6 +180,7 @@ export default function CreateComponents() {
                                 onChange={handleChange}
                                 value={formData.name}
                                 placeholder="Enter Component Name..."
+                                id="step1"
                                 className="bg-white border border-gray-300 mb-3 text-gray-700 text-sm rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                             />
                         </div>
@@ -155,6 +199,16 @@ export default function CreateComponents() {
                         name="has_subcomponents"
                         onChange={handleChange}
                         value={formData.has_subcomponents}
+                        className="bg-white border border-gray-300 mb-3 text-gray-700 text-sm rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                    >
+                        <option value="true">Yes</option>
+                        <option value="false">No</option>
+                    </select>
+                    <label className="font-bold">Online Submission Required</label>
+                    <select
+                        name="is_submission"
+                        onChange={handleChange}
+                        value={formData.is_submission}
                         className="bg-white border border-gray-300 mb-3 text-gray-700 text-sm rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                     >
                         <option value="true">Yes</option>

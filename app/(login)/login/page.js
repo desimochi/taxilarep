@@ -5,12 +5,15 @@ import logo from "@/public/logo.png";
 import campus from "@/public/campus.jpeg";
 import { useRouter } from "next/navigation";
 import { useState, useEffect, useContext } from "react";
-import { saveTokens } from "@/app/lib/auth";
+import { saveTokens, savePermission } from "@/app/lib/auth";
 import { GlobalContext } from "@/components/GlobalContext";
+import Link from "next/link";
+import { Eye, EyeOff } from "lucide-react";   
 
 export default function LoginPage() {
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   const { state, updateState } = useContext(GlobalContext);
+   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false)
   const [password, setPassword] = useState("");
@@ -23,68 +26,78 @@ export default function LoginPage() {
     }
   }, [router]);
   async function handleLogin(e) {
-    e.preventDefault();
-    setLoading(true);
-  
-    const formData = new FormData(e.target);
-    const username = formData.get("username");
-    const password = formData.get("password");
-  
-    try {
-      const response = await fetch(`${API_BASE_URL}login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      });
-  
-      const data = await response.json();
-      if(response.status===400){
-        setError(data.message)
-      }
-      if (response.ok) {
-        // Save tokens
-        saveTokens(data.data.access_token, data.data.refresh_token);
-  
-        // Save user data in cookies and global state
-        Cookies.set("user", JSON.stringify(data.data.user), { expires: 1, path: "/" });
-  
-        // ✅ Wait for state to update before reloading
-        await new Promise((resolve) => {
-          updateState(data.data.user);
-          resolve();
-        });
-        router.replace("/"); // Redirect to home page
-      } else {
-        
-        setLoading(false)
-      }
-    } catch (error) {
-      setError(true);
-      setLoading(false);
-    } finally {
-    }
-  }
+    e.preventDefault();
+    setLoading(true);
+  
+    const formData = new FormData(e.target);
+    const rawUsername = formData.get("username");
+    // 👇 Convert the username (email) to lowercase before using it
+    const username = rawUsername ? rawUsername.toLowerCase() : ""; 
+    const password = formData.get("password");
+  
+    try {
+      const response = await fetch(`${API_BASE_URL}login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }), // Use the lowercase 'username'
+      });
+  
+      const data = await response.json();
+      if(response.status===400){
+        setError(data.message)
+      }
+      if (response.ok) {
+        // Save tokens
+        saveTokens(data.data.access_token, data.data.refresh_token);
+        savePermission(data.data.permission_list)
+        const date = new Date();
+date.setFullYear(date.getFullYear() + 1)
+        Cookies.set("new_user", JSON.stringify(data.data.user), { expires: date, path: "/", secure: true,
+          sameSite: "Lax" });
+  
+        // ✅ Wait for state to update before reloading
+        await new Promise((resolve) => {
+          updateState(data.data.user);
+          resolve();
+        });
+        if(data.data.user.role_name?.includes("admin"))
+        {
+          router.replace("/admin/dashboard")
+        } else{
+router.replace("/");
+        }
+         // Redirect to home page
+      } else {
+        
+        setLoading(false)
+      }
+    } catch (error) {
+      setError("An unexpected error occurred.");
+      setLoading(false);
+    } finally {
+    }
+  }
   
   
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen">
       {/* Left Section */}
-      <div className="md:w-1/2 sm:w-full flex flex-col justify-center items-center md:bg-gray-100 sm:bg-white p-10">
+      <div className="md:w-1/2 sm:w-full flex flex-col justify-center items-center  p-10">
         <div className="max-w-md w-full space-y-8">
-          <div className="border-2 p-6 md:p-12 rounded-lg bg-white mt-8">
+          <div className="border border-gray-300  px-12 py-12 rounded-xl bg-white mt-8">
             <div className="text-center">
-              <div className="flex justify-center mb-4">
+              <div className="flex justify-center mb-2">
                 <Image src={logo} height={60} width={120} alt="taxila logo" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-4">
-                Sign in to your account
+              <h2 className="text-xs font-bold text-gray-600 mb-4">
+                Sign in to ERP of Taxila Business School
               </h2>
             </div>
             {error && <p className="text-sm text-center text-red-600">{error}</p>}
-            <form className="space-y-6" onSubmit={handleLogin}>
+            <form className="space-y-4" onSubmit={handleLogin}>
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="email" className="block text-sm font-bold text-gray-900">
                   Email address
                 </label>
                 <input
@@ -95,25 +108,37 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="mt-1 block w-full px-4 py-2 border rounded-md shadow-sm text-gray-900 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  className="mt-1 block w-full px-4 py-2.5 border border-gray-200 rounded-md shadow-md text-gray-900 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
               </div>
 
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                  Password
-                </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="current-password"
-                  required
-                  className="mt-1 block w-full px-4 py-2 border rounded-md shadow-sm text-gray-900 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                />
-              </div>
+               <div>
+    <label
+      htmlFor="password"
+      className="block text-sm font-bold text-gray-900"
+    >
+      Password
+    </label>
+    <div className="relative">
+      <input
+        id="password"
+        name="password"
+        type={showPassword ? "text" : "password"} // 👈 toggle type
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        autoComplete="current-password"
+        required
+        className="mt-1 block w-full px-4 py-2.5 border border-gray-200 rounded-md shadow-md text-gray-900 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm pr-10"
+      />
+      <button
+        type="button"
+        onClick={() => setShowPassword((prev) => !prev)}
+        className="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700"
+      >
+        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+      </button>
+    </div>
+  </div>
 
               {/* <div className="flex items-center justify-between">
                 <div className="flex items-center">
@@ -137,12 +162,37 @@ export default function LoginPage() {
               <div>
                 <button
                   type="submit"
-                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-zinc-950 hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                 >
                   {loading? "Signing In...." : "Sign in"}
                 </button>
+                <p className="text-sm text-center text-gray-600 mt-3">Forgot Password <Link href={"/forgot-password"} className=" text-amber-600 underline">Click here</Link></p>
               </div>
             </form>
+            <div className="mt-6 text-center text-xs text-gray-700 space-x-2">
+  <Link
+    href="/privacy-policy"
+    className="hover:underline"
+  >
+    Privacy Policy
+  </Link>
+  <span>|</span>
+  <Link
+    href="/refund-and-cancellation-policy"
+    target="_blank"
+    className="hover:underline"
+  >
+    Refund & Cancellation
+  </Link>
+  <span>|</span>
+  <Link
+    href="/contact-us"
+    className="hover:underline"
+  >
+    Contact Us
+  </Link>
+</div>
+
           </div>
         </div>
       </div>

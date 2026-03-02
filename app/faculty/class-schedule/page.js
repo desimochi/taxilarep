@@ -7,6 +7,7 @@ import { useContext } from "react";
 import FullWidthLoader from "@/components/Loaader";
 import { BanIcon, Calendar1Icon, PlusCircleIcon, SearchIcon, Settings2Icon, SquareUserRoundIcon } from "lucide-react";
 import Toast from "@/components/Toast";
+import Link from "next/link";
 export default function Page(){
     const [loading, setLoading] = useState(false);
     const [timeerror, setTimeError] = useState("")
@@ -229,12 +230,12 @@ const confirmReschdule = async () => {
         <div className="py-4 px-5">
             
             <div>
-            <div className="w-full px-12 py-6">
+            <div className="w-full sm:px-12 py-6">
             <h1 className="text-3xl font-bold mb-2 font-sans">Class Schedule </h1>
             <p className="text-sm text-gray-500 mb-8">Everyhting you need to know about Your Class Schedule</p>
             <hr className=" border  border-spacing-y-0.5 mb-6"/>
-            <div className="mb-4 flex items-center justify-between ">
-                <div className="w-1/5">
+            <div className="mb-4 grid grid-cols-2 sm:grid-cols-5 gap-2 items-center justify-between ">
+                <div className="">
             <select value={selectedTerm} onChange={handleTermChange} className=" w-full border border-gray-300 rounded-sm p-2 text-gray-500 ">
                 <option value="">Select Term</option>
                 {terms.map(term => (
@@ -242,7 +243,7 @@ const confirmReschdule = async () => {
                 ))}
             </select>
             </div>
-            <div className="w-1/5">
+            <div className="">
             <select onChange={(e) => setSelectedSubject(e.target.value)} disabled={!selectedTerm} className=" border w-full border-gray-300 rounded-sm p-2 text-gray-500">
                 <option value="">Select Subject</option>
                 {filteredSubjects.map(sub => (
@@ -252,10 +253,10 @@ const confirmReschdule = async () => {
                 ))}
             </select>
         </div>
-        <div className="w-1/5">
+        <div className="">
             <input type="date" className="w-full border border-gray-300 rounded-sm p-1 text-gray-500" onChange={(e) => setStartDate(e.target.value)} />
         </div>
-        <div className="w-1/5">
+        <div className="">
             <input type="date" className="w-full border border-gray-300 rounded-sm p-1 text-gray-500" onChange={(e) => setEndDate(e.target.value)} />
         </div>
         <button className="flex gap-1 justify-center w-fit border bg-red-700 py-2 px-8 text-white rounded-sm hover:bg-red-100 hover:text-red-800 transition duration-300 ease-in-out items-center" onClick={handleSubmit}><SearchIcon className="h-4 w-4"/> Search</button>
@@ -263,13 +264,15 @@ const confirmReschdule = async () => {
                    </div>
         
             <div>
-            {loading? <FullWidthLoader/> :     <table className="overflow-x-auto w-full text-center" >
+            {loading? <FullWidthLoader/> :  <div className="overflow-x-auto shadow-md sm:rounded-lg">   
+                <table className="overflow-x-auto w-full text-center" >
                             <thead className="min-w-full border border-red-200 rounded-lg">
              
                          <tr className="text-red-700 bg-red-50 font-normal text-sm border-b" >
                                 <th scope="col" className="px-6 py-3">S.No.</th>
                                 <th scope="col" className="px-6 py-3">Batch</th>
                                 <th scope="col" className="px-6 py-3">Subject Name</th>
+                                <th scope="col" className="px-6 py-3">Type</th>
                 <th scope="col" className="px-6 py-3">Date.</th>
                
                 <th scope="col" className="px-6 py-3">From</th>
@@ -287,6 +290,7 @@ const confirmReschdule = async () => {
             <td className="px-6 py-3">{index + 1}</td>
             <td className="px-6 py-3">{cls.mapping.batch?.name}</td>
             <td className="px-6 py-3">{cls.mapping.subject?.name}</td>
+            <td className="px-6 py-3">{cls.mapping?.type  ==="main"? <span className="text-sm text-green-800 bg-green-50 rounded-sm px-2 py-.5 border">main</span>:<span className="text-sm text-red-800 bg-red-50 rounded-sm px-2 py-.5 border">{product.type}</span>}</td>
             <td className="px-6 py-3">{cls.date}</td>
             <td className="px-6 py-3">{cls.start_time}</td>
             <td className="px-6 py-3">{cls.end_time}</td>
@@ -296,21 +300,22 @@ const confirmReschdule = async () => {
   ) : cls.is_complete ? (
     <span className="bg-gray-100 text-sm text-gray-800 py-0.5 px-3 rounded-sm">Completed</span>
   ) : cls.is_ready_for_attendance ? (
-    <span className="bg-violet-100 text-sm text-violet-800 py-0.5 px-3 rounded-sm">Mark Attendance</span>
+    <Link href={`/attendance/class-attendance/${cls.id}`} className="bg-violet-100 text-sm text-violet-800 py-0.5 px-3 rounded-sm">Mark Attendance</Link>
   ) : (<span className="bg-green-100 text-sm text-green-800 py-0.5 px-3 rounded-sm">Scheduled</span>)}
 </td>
-            <td className="px-6 py-3 flex gap-3 items-center justify-center">{!cls.is_cancel && <button className="bg-green-100 text-green-800 rounded-sm py-1 px-2" onClick={() => handleCancelClick(cls.id, "cancel")}><BanIcon className="h-5 w-5 cursor-pointer"/></button>} <button className="bg-red-100 text-red-800 rounded-sm py-1 px-2">{!cls.is_complete? <Calendar1Icon className="h-5 w-5 cursor-pointer" onClick={() => handleCancelClick(cls.id, "reshed")}/> : <SquareUserRoundIcon  className="h-5 w-5"/>}</button></td>
+            <td className="px-6 py-3 flex gap-3 items-center justify-center">{!cls.is_cancel && <button className="bg-green-100 text-green-800 rounded-sm py-1 px-2" onClick={() => handleCancelClick(cls.id, "cancel")}><BanIcon className="h-5 w-5 cursor-pointer"/></button>} <button className="bg-red-100 text-red-800 rounded-sm py-1 px-2">{!cls.is_complete && !cls.is_cancel && !cls.is_ready_for_attendance? <Calendar1Icon className="h-5 w-5 cursor-pointer" onClick={() => handleCancelClick(cls.id, "reshed")}/> : <SquareUserRoundIcon  className="h-5 w-5"/>}</button></td>
         </tr>
     ))
 ) : (
     <tr>
-        <td colSpan={4} className="text-center py-4">No Class Schedule</td>
+        <td colSpan={9} className="text-center py-4">No Class Schedule</td>
     </tr>
 )}
             
     
             </tbody>
-                            </table>}
+                            </table>
+                            </div>}
             </div>
         </div>
             </div>

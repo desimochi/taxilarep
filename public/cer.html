@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Certificate Generator</title>
+
+<!-- jsPDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #ffffff 0%, #ffd3d6 100%);
+  min-height: 100vh;
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.header {
+  text-align: center;
+  color: rgb(7, 7, 7);
+  margin-bottom: 40px;
+  animation: fadeInDown 0.6s ease;
+}
+
+.header h1 {
+  font-size: 42px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+}
+
+.header p {
+  font-size: 18px;
+  opacity: 0.95;
+}
+
+.container {
+  max-width: 520px;
+  width: 100%;
+  background: white;
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  animation: fadeInUp 0.6s ease;
+}
+
+.form-group {
+  margin-bottom: 28px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #2d3748;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
+  opacity: 0.7;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 16px 18px;
+  font-size: 16px;
+  border-radius: 12px;
+  border: 2px solid #e2e8f0;
+  background: #f7fafc;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.form-group input::placeholder {
+  color: #a0aec0;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #667eea;
+  background: white;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+  transform: translateY(-2px);
+}
+
+.form-group select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23667eea' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 20px;
+  padding-right: 45px;
+}
+
+.button {
+  width: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 17px;
+  font-weight: 600;
+  padding: 18px 20px;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  margin-top: 10px;
+}
+
+.button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(102, 126, 234, 0.5);
+}
+
+.button:active {
+  transform: translateY(0);
+}
+
+.button.download {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  box-shadow: 0 4px 15px rgba(17, 153, 142, 0.4);
+  margin-top: 20px;
+}
+
+.button.download:hover {
+  box-shadow: 0 6px 25px rgba(17, 153, 142, 0.5);
+}
+
+.canvas-container {
+  margin-top: 50px;
+  max-width: 900px;
+  width: 100%;
+  animation: fadeIn 0.6s ease 0.3s backwards;
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  border: 3px solid white;
+}
+
+.info-box {
+  background: #edf2f7;
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 25px;
+  border-left: 4px solid #667eea;
+}
+
+.info-box p {
+  font-size: 14px;
+  color: #4a5568;
+  line-height: 1.6;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 600px) {
+  .header h1 {
+    font-size: 32px;
+  }
+  
+  .container {
+    padding: 30px 25px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <h1>🎓 Lamhe 2025 Certificate</h1>
+  <p>Generate your event participation certificate</p>
+</div>
+
+<div class="container">
+  <div class="info-box">
+    <p>📧 Enter your registered email and select your event to generate your certificate.</p>
+  </div>
+
+  <div class="form-group">
+    <label for="email">
+      <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+      </svg>
+      Registered Email
+    </label>
+    <input type="email" id="email" placeholder="your.email@example.com" />
+  </div>
+
+  <div class="form-group">
+    <label for="event">
+      <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+      </svg>
+      Select Event
+    </label>
+    <select id="event">
+      <option value="">Choose your event</option>
+    </select>
+  </div>
+
+  <button onclick="verify()" class="button">🔍 Verify & Generate</button>
+
+  <button id="downloadBtn" onclick="downloadPDF()" style="display:none;" class="button download">
+    ⬇️ Download PDF Certificate
+  </button>
+</div>
+
+<div class="canvas-container" id="canvasContainer" style="display:none;">
+  <canvas id="certificateCanvas" width="1200" height="850"></canvas>
+</div>
+
+<script>
+/* ===================== EVENT LIST ===================== */
+const events = [
+  "E-Sports","Futsal","Youth Parliament","Dodge Ball","Fashion Show",
+  "Poster Making","Extempore","Chess","Singing","Carrom","Badminton",
+  "Stand-up Comedy","Arm Wrestling","Table Tennis","Ad Mania",
+  "Cooking Without Flame","Dancing","Business Quiz","Treasure Hunt",
+  "Simulation","Kabaddi"
+];
+
+const eventSelect = document.getElementById("event");
+events.forEach(e => {
+  const opt = document.createElement("option");
+  opt.value = e;
+  opt.textContent = e;
+  eventSelect.appendChild(opt);
+});
+
+let certData = null;
+
+/* ===================== VERIFY API ===================== */
+async function verify() {
+  const email = document.getElementById("email").value.trim();
+  const eventName = document.getElementById("event").value;
+
+  if (!email || !eventName) {
+    alert("⚠️ Please fill in both email and event fields");
+    return;
+  }
+
+  try {
+    const res = await fetch("https://erp.taxila.in/api/lamhe/certificates", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, eventName })
+    });
+
+    const data = await res.json();
+    if (!data.success) {
+      alert("❌ " + data.message);
+      return;
+    }
+
+    certData = data.data;
+    drawCertificate();
+    document.getElementById("downloadBtn").style.display = "block";
+    document.getElementById("canvasContainer").style.display = "block";
+
+    setTimeout(() => {
+      document.getElementById("canvasContainer").scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+      });
+    }, 100);
+  } catch (error) {
+    alert("❌ Error connecting to server. Please try again.");
+    console.error(error);
+  }
+}
+
+/* ===================== DRAW CERTIFICATE ===================== */
+function drawCertificate() {
+  const canvas = document.getElementById("certificateCanvas");
+  const ctx = canvas.getContext("2d");
+  const img = new Image();
+
+  img.onload = () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+    ctx.textBaseline = "middle";
+
+    /* ================= NAME ================= */
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 44px serif";
+    ctx.fillText(certData.name, 600, 315);
+
+    /* ================= COLLEGE ================= */
+    ctx.font = "24px serif";
+    ctx.fillText(certData.college, 420, 400);
+
+    /* ================= LAMHE + EVENT ================= */
+    ctx.font = "bold 24px serif";
+    ctx.fillText(` ${certData.eventName}`, 430, 445);
+
+    /* ================= FEST TEXT ================= */
+    ctx.font = "22px serif";
+    ctx.fillText("2025", 730, 445);
+
+    /* ================= DATE ================= */
+    ctx.font = "22px serif";
+    ctx.fillText("12", 390, 490);
+    ctx.fillText("13", 490, 490);
+    ctx.font = "25px serif";
+    ctx.fillText("25", 555, 490);
+  };
+
+  img.onerror = () => {
+    alert("❌ Error loading certificate template. Please check if cert.jpg exists.");
+  };
+
+  img.src = "/cert.jpg";
+}
+
+/* ===================== DOWNLOAD PDF ===================== */
+function downloadPDF() {
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF("landscape", "px", [1200, 850]);
+  const canvas = document.getElementById("certificateCanvas");
+
+  pdf.addImage(
+    canvas.toDataURL("image/jpeg", 1.0),
+    "JPEG",
+    0,
+    0
+  );
+
+  pdf.save(`${certData.name}-Certificate.pdf`);
+}
+
+// Allow Enter key to submit
+document.getElementById("email").addEventListener("keypress", (e) => {
+  if (e.key === "Enter") verify();
+});
+</script>
+
+</body>
+</html>

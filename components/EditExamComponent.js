@@ -4,16 +4,19 @@ import { SaveIcon, Trash2Icon } from "lucide-react";
 import { PencilIcon } from "lucide-react";
 import Toast from "./Toast";
 import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { authFetch } from "@/app/lib/fetchWithAuth";
+import { hasPermission } from "@/app/lib/checkPermission";
 
 const EditComponent = () => {
     const searchParams = useSearchParams();
     const [showToast, setShowToast] = useState(false);
+    const router = useRouter()
     const componentID = searchParams.get("componentID"); // Get componentID from URL
     const[message, setmessage] = useState("")
     const [editingRow, setEditingRow] = useState(false);
     const [equalmarks, setEqualMarks] = useState(false)
+    const[submap, setSubMap] = useState("")
     const [marks, setMarks] = useState()
     const [subcomponent, setSubcomponent] = useState([])
     const [loading, setLoading] = useState(true);
@@ -23,9 +26,11 @@ const EditComponent = () => {
         type: "",
         max_markss: "",
         description: "",
-        has_subcomponents: false
+        has_subcomponents: false,
+        is_submission: false,
+        is_active: true,
     });
-
+  const hasadd = hasPermission(("2f72526b4e3a64b84edd665637d72cdf5b00b0711640ab62061b5756fd8f16fe"))
     // Fetch Data
     useEffect(() => {
         if (!componentID) return; // Prevent execution if ID is missing
@@ -52,15 +57,22 @@ const EditComponent = () => {
                     max_markss: data.data.max_marks || "",
                     description: data.data.description || "",
                     has_subcomponents: data.data.has_subcomponents || false,
+                    is_submission: data.data.is_submission || false,
+                    is_active: data.data.is_active || true,
                 });
+                setSubMap(data.data.subject_mapping)
             } catch (err) {
                 setError(err.message);
             } finally {
                 setLoading(false);
             }
         };
-
-        fetchComponentData();
+if(!hasadd){
+    router.replace("/unauthorized")
+}else{
+fetchComponentData();
+}
+        
     }, [componentID]); // Run only when componentID changes
 
     useEffect(()=>{
@@ -91,6 +103,9 @@ const EditComponent = () => {
             fetchSubComponentData()
         }
     },[formData.has_subcomponents, componentID])
+    if(!hasadd){
+    return null
+}
     const handleEditClick = (e) => {
         setEditingRow(true);// Store ID instead of index
         setMarks(e.target.value) 
@@ -147,11 +162,13 @@ const EditComponent = () => {
     
             // Prepare main component data
             const mainComponentData = {
-                subject_mapping: 1, // Adjust as needed
+                subject_mapping: submap, // Adjust as needed
                 type: formData.type,
                 name: formData.name,
                 max_marks: mainMaxMarks,
                 has_subcomponents: hasSubcomponents,
+                is_submission: formData.is_submission,
+                is_active: formData.is_active,
                 description: formData.description,
             };
     
@@ -181,6 +198,10 @@ const EditComponent = () => {
                             name: sub.name,
                             max_marks: parseInt(sub.max_marks),
                             description: sub.description,
+                            start_date:sub.start_date,
+                            end_date:sub.end_date,
+                            is_submission:sub.is_submission,
+                            is_active:sub.is_active,
                         })),
                     };
     
@@ -191,12 +212,17 @@ const EditComponent = () => {
                     });
     
                     if (!subResponse.ok) throw new Error("Failed to update subcomponents");
+                    setmessage("Component and Sub Component Updated");
+                    setShowToast(true);
+                    setTimeout(() => setShowToast(false), 2000);
+                    setError(false);
+            
                 }
             }
     
             setmessage("Component and Sub Component Updated");
             setShowToast(true);
-            setTimeout(() => setShowToast(false), 3000);
+            setTimeout(() => setShowToast(false), 2000);
             setError(false);
     
         } catch (err) {
@@ -282,6 +308,7 @@ const EditComponent = () => {
                 </div>
                 </div>
                 {/* Has Subcomponents */}
+                <div className="flex gap-2 justify-between items-center mb-4">
                 <div className="flex items-center">
                     <input
                         type="checkbox"
@@ -292,6 +319,28 @@ const EditComponent = () => {
                     />
                     <label className="font-medium">Has Subcomponents</label>
                 </div>
+                <div className="flex items-center">
+                    <input
+                        type="checkbox"
+                        name="is_submission"
+                        checked={formData.is_submission}
+                        onChange={handleChange}
+                        className="mr-2"
+                    />
+                    <label className="font-medium">Online Submission Required</label>
+                </div>
+                <div className="flex items-center">
+                    <input
+                        type="checkbox"
+                        name="is_active"
+                        checked={formData.is_active}
+                        onChange={handleChange}
+                        className="mr-2"
+                    />
+                    <label className="font-medium">Active/Inactive</label>
+                </div>
+                </div>
+                
 
                 {/* Submit Button */}
                 <button type="submit" className="bg-red-600 text-white px-4 py-2 rounded">

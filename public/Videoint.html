@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaxilaX</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Nunito:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #f0f4f8;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.08'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Poppins', sans-serif;
+        }
+        .pulse {
+            animation: pulse-animation 2s infinite;
+        }
+        @keyframes pulse-animation {
+            0% { box-shadow: 0 0 0 0 rgba(255, 82, 82, 0.7); }
+            70% { box-shadow: 0 0 0 12px rgba(255, 82, 82, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 82, 82, 0); }
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #e0e7ff; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #f97316; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #ea580c; }
+
+        .main-container {
+            transition: all 0.5s ease-in-out;
+        }
+        .screen {
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+        }
+        .hidden {
+            opacity: 0;
+            transform: scale(0.95);
+            pointer-events: none;
+            position: absolute;
+            width: 100%;
+        }
+        .visible {
+            opacity: 1;
+            transform: scale(1);
+            position: static;
+        }
+        .btn-primary {
+             background-image: linear-gradient(to right, #fb923c, #f97316);
+        }
+        .btn-primary:hover {
+             background-image: linear-gradient(to right, #f97316, #ea580c);
+        }
+        #videoFeed {
+            position: fixed;
+            bottom: 260px;
+            right: 20px;
+            width: 200px;
+            height: 150px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            border: 3px solid white;
+            object-fit: cover;
+            transform: scaleX(-1); /* Mirror effect */
+            z-index: 1000;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .btn-secondary {
+            background-color: #e5e7eb;
+            color: #374151;
+        }
+        .btn-secondary:hover {
+            background-color: #d1d5db;
+        }
+        .btn-secondary.active {
+            background-color: #2563eb;
+            color: white;
+        }
+        
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 flex items-center justify-center min-h-screen p-2 sm:p-4">
+    <div id="mainContainer" class="main-container container mx-auto max-w-3xl w-full relative">
+
+        <!-- Screen 1: Welcome -->
+        <div id="welcomeScreen" class="visible screen bg-white rounded-2xl shadow-2xl p-6 text-center border-t-8 border-amber-500">
+            <h1 class="text-3xl font-bold text-slate-800 mb-2">Welcome to TaxilaX</h1>
+            <p class="text-gray-600 mb-1">Your interview practice partner. An AI coach from Taxila Business School.</p>
+            <p class="text-sm text-gray-500 mb-6 font-semibold">Proudly created at Taxila Business School, Jaipur, Rajasthan</p>
+            <div class="max-w-md mx-auto">
+                <div class="space-y-3">
+                    <div>
+                        <label for="playerName" class="block text-left font-semibold text-gray-700 mb-1">Enter your name:</label>
+                        <input type="text" id="playerName" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 transition" placeholder="e.g., Priya Sharma">
+                    </div>
+                    <div>
+                        <label for="jobRole" class="block text-left font-semibold text-gray-700 mb-1">Enter the job title:</label>
+                        <input type="text" id="jobRole" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 transition" placeholder="e.g., Data Scientist">
+                    </div>
+                     <div>
+                        <label for="companyName" class="block text-left font-semibold text-gray-700 mb-1">Enter the company name (optional):</label>
+                        <input type="text" id="companyName" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 transition" placeholder="e.g., TCS, Infosys, Reliance">
+                    </div>
+                    <div>
+                        <label for="jobDescription" class="block text-left font-semibold text-gray-700 mb-1">Paste job description (optional):</label>
+                        <textarea id="jobDescription" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 transition" placeholder="e.g., Responsibilities include..."></textarea>
+                    </div>
+                     <div>
+                        <label for="cvUpload" class="block text-left font-semibold text-gray-700 mb-1">Upload your CV (PDF or TXT, optional):</label>
+                        <input type="file" id="cvUpload" accept=".pdf,.txt" class="w-full text-sm text-gray-500
+                          file:mr-4 file:py-2 file:px-4
+                          file:rounded-full file:border-0
+                          file:text-sm file:font-semibold
+                          file:bg-orange-50 file:text-orange-700
+                          hover:file:bg-orange-100 transition
+                        "/>
+                        <p id="cvStatus" class="text-xs text-gray-500 mt-1"></p>
+                    </div>
+                    <div class="text-left">
+                        <label class="block font-semibold text-gray-700 mb-1">When do you want feedback?</label>
+                        <div class="flex justify-around bg-gray-100 rounded-lg p-1">
+                            <label class="w-full text-center">
+                                <input type="radio" name="feedbackCadence" value="immediate" class="sr-only peer" checked>
+                                <span class="block cursor-pointer rounded-lg p-2 transition duration-300 peer-checked:bg-amber-600 peer-checked:text-white peer-checked:shadow-md">Immediate</span>
+                            </label>
+                            <label class="w-full text-center">
+                                <input type="radio" name="feedbackCadence" value="batch" class="sr-only peer">
+                                <span class="block cursor-pointer rounded-lg p-2 transition duration-300 peer-checked:bg-amber-600 peer-checked:text-white peer-checked:shadow-md">After 5 Qs</span>
+                            </label>
+                            <label class="w-full text-center">
+                                <input type="radio" name="feedbackCadence" value="end" class="sr-only peer">
+                                <span class="block cursor-pointer rounded-lg p-2 transition duration-300 peer-checked:bg-amber-600 peer-checked:text-white peer-checked:shadow-md">At the End</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div id="welcomeError" class="text-red-500 mt-4 h-5 font-semibold"></div>
+                <button id="startBtn" class="w-full mt-4 btn-primary text-white font-bold py-3 px-6 rounded-lg hover:shadow-xl transition-transform transform hover:scale-105 shadow-lg disabled:bg-gray-400 disabled:cursor-not-allowed">
+                    Start Interview
+                </button>
+                 <button id="viewHistoryBtn" class="w-full mt-2 bg-gray-200 text-gray-700 font-bold py-2 px-6 rounded-lg hover:bg-gray-300 transition disabled:bg-gray-300 disabled:cursor-not-allowed">
+                    Check Previous Attempts
+                </button>
+            </div>
+        </div>
+
+        <!-- Screen 2: History -->
+        <div id="historyScreen" class="hidden screen bg-white rounded-2xl shadow-2xl p-6 border-t-8 border-amber-500">
+            <h2 class="text-2xl font-bold text-center text-slate-800 mb-4">Past Interview Attempts</h2>
+            <div id="historyList" class="space-y-3 max-h-96 overflow-y-auto"></div>
+            <div class="text-center mt-6">
+                <button id="backToWelcomeBtn" class="w-full max-w-xs mx-auto btn-primary text-white font-bold py-3 px-6 rounded-lg hover:shadow-xl transition">
+                    Back to Main Menu
+                </button>
+            </div>
+        </div>
+
+        <!-- Screen 3: Interview -->
+        <div id="interviewScreen" class="hidden screen">
+             <div class="mb-4 flex justify-between items-center bg-white p-3 rounded-xl shadow-lg">
+                 <div>
+                     <h2 class="text-xl font-bold text-slate-800" id="interviewTitle"></h2>
+                     <p class="text-sm text-gray-600 font-semibold" id="questionCounter"></p>
+                 </div>
+                 <div class="flex items-center space-x-2">
+                     <div id="cumulativeScoreDisplay" class="text-md font-bold text-blue-700 bg-blue-100 px-3 py-2 rounded-lg shadow-inner hidden"></div>
+                     <div id="timerDisplay" class="text-md font-bold text-blue-700 bg-blue-100 px-3 py-2 rounded-lg shadow-inner"></div>
+                 </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-lg p-6 mb-4">
+                <h3 class="text-lg font-bold mb-2 text-gray-800">Question:</h3>
+                <div id="question" class="text-gray-700 text-lg min-h-[50px] font-medium"></div>
+                 <div id="questionLoader" class="flex items-center justify-center min-h-[50px] hidden">
+                     <svg class="animate-spin h-8 w-8 text-amber-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                     <span class="ml-3 text-gray-600">Generating the next question...</span>
+                 </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-lg p-6">
+                <h3 class="text-lg font-bold mb-2 text-gray-800">Your Answer:</h3>
+                <textarea id="answer" class="w-full h-32 p-3 border border-gray-200 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-500 transition" placeholder="Your transcribed answer will appear here..."></textarea>
+                <div id="status" class="text-center text-gray-600 my-3 h-6 font-semibold"></div>
+                <div class="flex items-center justify-center space-x-4 mt-2">
+                    <button id="cameraBtn" class="p-3 btn-secondary rounded-full hover:shadow-md transition-transform transform hover:scale-110 flex items-center justify-center hidden">
+                        <svg id="cameraIcon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.55a1 1 0 011.45.89V14.1a1 1 0 01-1.45.89L15 14M5 8h10a2 2 0 012 2v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4a2 2 0 012-2z"></path></svg>
+                    </button>
+                    <button id="recordBtn" class="px-6 py-3 bg-red-600 text-white font-bold rounded-full hover:bg-red-700 transition-transform transform hover:scale-110 shadow-md flex items-center">
+                        <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20"><path d="M7 4a3 3 0 016 0v6a3 3 0 11-6 0V4z"></path><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-1-8a1 1 0 00-1 1v1a3 3 0 106 0v-1a1 1 0 00-1-1h-4z" clip-rule="evenodd"></path></svg>
+                        <span id="recordBtnText">Record Answer</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div id="feedbackContainer" class="bg-white rounded-2xl shadow-lg p-6 mt-4 hidden">
+                <div id="feedbackLoader" class="flex items-center justify-center min-h-[200px] hidden"><svg class="animate-spin h-10 w-10 text-amber-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span class="ml-4 text-xl text-gray-600">Analyzing your answer(s)...</span></div>
+                <div id="feedbackContent" class="space-y-6"></div>
+                <div class="text-center mt-6 flex justify-center space-x-4">
+                     <button id="nextQuestionBtn" class="px-8 py-3 btn-primary text-white font-bold rounded-lg hover:shadow-xl transition-transform transform hover:scale-105 shadow-md hidden">
+                        Next Question
+                    </button>
+                    <button id="endInterviewBtn" class="px-8 py-3 bg-gray-800 text-white font-bold rounded-lg hover:bg-gray-900 transition-transform transform hover:scale-105 shadow-md hidden">
+                        End Interview & Get Report
+                    </button>
+                </div>
+            </div>
+            <video id="videoFeed" class="hidden" autoplay muted></video>
+        </div>
+
+        <!-- Screen 4: Final Report -->
+        <div id="finalReportScreen" class="hidden screen bg-white rounded-2xl shadow-2xl p-6 border-t-8 border-amber-500">
+            <h2 class="text-2xl font-bold text-center text-slate-800 mb-4">TaxilaX Interview Report</h2>
+            <div id="overallScoreSection" class="text-center mb-6 p-4 rounded-lg transition-all duration-500">
+                <p class="text-md font-semibold text-gray-700">Overall Performance</p>
+                <p id="overallScore" class="text-6xl font-bold"></p>
+                <p id="overallMessage" class="text-lg mt-2 font-bold"></p>
+            </div>
+            <div id="reportActionStatus" class="text-center text-gray-600 h-6 mb-4 font-semibold"></div>
+            <div class="text-center mb-6 flex justify-center flex-wrap gap-4">
+                <button id="downloadReportBtn" class="px-6 py-3 bg-gray-700 text-white font-bold rounded-lg hover:bg-gray-800 transition-transform transform hover:scale-105 shadow-md">Download Report</button>
+                 <a id="downloadVideoBtn" class="px-6 py-3 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition-transform transform hover:scale-105 shadow-md hidden" href="#" target="_blank" download>Download Video</a>
+                <button id="backToWelcomeFromReportBtn" class="px-6 py-3 btn-primary text-white font-bold rounded-lg hover:shadow-xl transition-transform transform hover:scale-105 shadow-md">Main Menu</button>
+            </div>
+            <div id="interviewFeedbackSection" class="mb-6"><h3 class="text-xl font-bold text-gray-800 mb-3">Interview Performance</h3><div id="finalFeedbackLoader" class="flex items-center justify-center min-h-[200px] hidden"><svg class="animate-spin h-10 w-10 text-amber-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span class="ml-4 text-xl text-gray-600">Generating final report...</span></div><div id="finalFeedbackContent" class="space-y-6"></div></div>
+            <div id="cvAnalysisSection"><h3 class="text-xl font-bold text-gray-800 mb-3">CV Analysis vs. Job Description</h3><div id="cvAnalysisMessage" class="text-center text-gray-600 bg-gray-50 p-4 rounded-lg"></div><div class="text-center mt-4"><button id="analyzeCvBtn" class="px-6 py-3 btn-primary text-white font-bold rounded-lg hover:shadow-xl transition-transform transform hover:scale-105 shadow-md">Analyze My CV</button></div><div id="cvAnalysisResult" class="mt-6"></div><div id="cvLoader" class="flex items-center justify-center min-h-[200px] hidden"><svg class="animate-spin h-10 w-10 text-amber-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span class="ml-4 text-xl text-gray-600">Performing detailed CV analysis...</span></div></div>
+        </div>
+
+    </div>
+
+    <script type="module">
+        // --- Firebase Integration ---
+    
+
+        // DOM Elements
+        const mainContainer = document.getElementById('mainContainer');
+        const welcomeScreen = document.getElementById('welcomeScreen');
+        const historyScreen = document.getElementById('historyScreen');
+        const interviewScreen = document.getElementById('interviewScreen');
+        const finalReportScreen = document.getElementById('finalReportScreen');
+
+        const startBtn = document.getElementById('startBtn');
+        const viewHistoryBtn = document.getElementById('viewHistoryBtn');
+        const backToWelcomeBtn = document.getElementById('backToWelcomeBtn');
+        const backToWelcomeFromReportBtn = document.getElementById('backToWelcomeFromReportBtn');
+        
+        const playerNameInput = document.getElementById('playerName');
+        const jobRoleInput = document.getElementById('jobRole');
+        const companyNameInput = document.getElementById('companyName');
+        const jobDescriptionInput = document.getElementById('jobDescription');
+        const cvUploadInput = document.getElementById('cvUpload');
+        const cvStatus = document.getElementById('cvStatus');
+        const welcomeError = document.getElementById('welcomeError');
+        
+        const historyList = document.getElementById('historyList');
+
+        const interviewTitle = document.getElementById('interviewTitle');
+        const questionCounter = document.getElementById('questionCounter');
+        const timerDisplay = document.getElementById('timerDisplay');
+        const cumulativeScoreDisplay = document.getElementById('cumulativeScoreDisplay');
+        const questionEl = document.getElementById('question');
+        const answerEl = document.getElementById('answer');
+        const statusEl = document.getElementById('status');
+        const videoFeed = document.getElementById('videoFeed');
+        
+        const recordBtn = document.getElementById('recordBtn');
+        const recordBtnText = document.getElementById('recordBtnText');
+        const cameraBtn = document.getElementById('cameraBtn');
+        
+        const feedbackContainer = document.getElementById('feedbackContainer');
+        const feedbackContent = document.getElementById('feedbackContent');
+        const nextQuestionBtn = document.getElementById('nextQuestionBtn');
+        const endInterviewBtn = document.getElementById('endInterviewBtn');
+        
+        const questionLoader = document.getElementById('questionLoader');
+        const feedbackLoader = document.getElementById('feedbackLoader');
+        const cvLoader = document.getElementById('cvLoader');
+
+        const overallScoreSection = document.getElementById('overallScoreSection');
+        const overallScoreEl = document.getElementById('overallScore');
+        const overallMessageEl = document.getElementById('overallMessage');
+        const downloadReportBtn = document.getElementById('downloadReportBtn');
+        const downloadVideoBtn = document.getElementById('downloadVideoBtn');
+        const reportActionStatus = document.getElementById('reportActionStatus');
+
+        const interviewFeedbackSection = document.getElementById('interviewFeedbackSection');
+        const finalFeedbackLoader = document.getElementById('finalFeedbackLoader');
+        const finalFeedbackContent = document.getElementById('finalFeedbackContent');
+        const cvAnalysisSection = document.getElementById('cvAnalysisSection');
+        const cvAnalysisMessage = document.getElementById('cvAnalysisMessage');
+        const analyzeCvBtn = document.getElementById('analyzeCvBtn');
+        const cvAnalysisResult = document.getElementById('cvAnalysisResult');
+
+
+        // App State
+        let db, auth, storage, userId;
+        let allSessions = [];
+        let playerName = '';
+        let jobRole = '';
+        let companyName = '';
+        let jobDescription = '';
+        let cvText = '';
+        let currentCvAnalysis = null;
+        let feedbackCadence = 'immediate';
+        let interviewLog = [];
+        let currentQuestion = '';
+        let questionNumber = 0;
+        let isRecording = false;
+        let isCameraOn = true;
+        let finalTranscript = '';
+        let pauseTimer = null; 
+        let interviewTimerId = null;
+        let mediaRecorder = null;
+        let recordedChunks = [];
+        let videoStream = null;
+        const questionEmojis = ['🤔', '💼', '📈', '💡', '🎯', '🗣️', '✍️'];
+
+
+        // --- UI TRANSITION LOGIC ---
+        function switchScreen(activeScreen) {
+             [welcomeScreen, historyScreen, interviewScreen, finalReportScreen].forEach(screen => {
+                 if (screen === activeScreen) {
+                     screen.classList.remove('hidden');
+                     screen.classList.add('visible');
+                 } else {
+                     screen.classList.remove('visible');
+                     screen.classList.add('hidden');
+                 }
+             });
+        }
+
+
+        // Speech Recognition Setup
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition;
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'en-IN'; // Set language to Indian English
+
+            recognition.onstart = () => {
+                isRecording = true;
+                statusEl.textContent = "Listening... Speak now.";
+                recordBtnText.textContent = 'Stop Recording';
+                recordBtn.classList.add('pulse');
+                recordBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
+                recordBtn.classList.add('bg-red-500', 'hover:bg-red-600');
+                recordBtn.disabled = false;
+                
+                clearTimeout(pauseTimer);
+                pauseTimer = setTimeout(() => {
+                    if (isRecording) {
+                        statusEl.textContent = 'Recording stopped due to inactivity.';
+                        recognition.stop();
+                    }
+                }, 5000);
+            };
+
+            recognition.onend = () => {
+                clearTimeout(pauseTimer);
+                isRecording = false;
+                recordBtnText.textContent = 'Record Answer';
+                recordBtn.classList.remove('pulse', 'bg-red-500', 'hover:bg-red-600');
+                recordBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+                recordBtn.disabled = false;
+
+                const hasAnswer = answerEl.value.trim().length > 0;
+                if (hasAnswer) {
+                    statusEl.textContent = 'Recording complete. Processing...';
+                    const finalAnswer = answerEl.value.trim();
+                    interviewLog.push({ question: currentQuestion, answer: finalAnswer, score: 0, feedback: null });
+                    processAnswer();
+                } else {
+                    statusEl.textContent = "Recording stopped. No answer detected.";
+                }
+            };
+
+            recognition.onresult = (event) => {
+                clearTimeout(pauseTimer);
+                pauseTimer = setTimeout(() => {
+                    if (isRecording) {
+                        statusEl.textContent = 'Recording stopped due to a long pause.';
+                        recognition.stop();
+                    }
+                }, 5000);
+
+                const transcript = Array.from(event.results)
+                    .map(result => result[0])
+                    .map(alternative => alternative.transcript)
+                    .join('');
+
+                answerEl.value = transcript;
+            };
+
+             recognition.onerror = (event) => {
+                 console.error("Speech recognition error:", event.error);
+                 statusEl.textContent = `Error: ${event.error}. Please check microphone permissions.`;
+                 isRecording = false;
+                 recordBtnText.textContent = 'Record Answer';
+                 recordBtn.classList.remove('pulse', 'bg-red-500', 'hover:bg-red-600');
+                 recordBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+                 recordBtn.disabled = false;
+             };
+
+        } else {
+            statusEl.textContent = "Sorry, your browser doesn't support Speech Recognition.";
+            recordBtn.disabled = true;
+        }
+
+        // --- CV Parsing Logic ---
+        const pdfjsLib = window['pdfjs-dist/build/pdf'];
+        pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js`;
+
+        async function handleCvUpload(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                cvText = '';
+                cvStatus.textContent = '';
+                return;
+            }
+            cvStatus.textContent = `Reading ${file.name}...`;
+            try {
+                if (file.type === 'application/pdf') {
+                    const reader = new FileReader();
+                    reader.onload = async (e) => {
+                        const pdf = await pdfjsLib.getDocument({ data: e.target.result }).promise;
+                        let text = '';
+                        for (let i = 1; i <= pdf.numPages; i++) {
+                            const page = await pdf.getPage(i);
+                            const content = await page.getTextContent();
+                            text += content.items.map(item => item.str).join(' ');
+                        }
+                        cvText = text;
+                        cvStatus.textContent = `✅ Successfully read ${file.name}`;
+                    };
+                    reader.readAsArrayBuffer(file);
+                } else if (file.type === 'text/plain') {
+                    cvText = await file.text();
+                    cvStatus.textContent = `✅ Successfully read ${file.name}`;
+                } else {
+                    cvText = '';
+                    cvStatus.textContent = '❌ Unsupported file type. Please use PDF or TXT.';
+                }
+            } catch (error) {
+                console.error("Error reading CV:", error);
+                cvText = '';
+                cvStatus.textContent = `❌ Error reading file.`;
+            }
+        }
+
+
+        // Text-to-Speech Setup
+        let indianEnglishVoice = null;
+        const loadVoices = () => {
+            const voices = window.speechSynthesis.getVoices();
+            indianEnglishVoice = voices.find(voice => voice.lang === 'en-IN') || voices.find(voice => voice.name.includes('Indian English'));
+        };
+
+        const speak = (text, onEndCallback) => {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            if (indianEnglishVoice) {
+                utterance.voice = indianEnglishVoice;
+            }
+            utterance.rate = 0.9;
+            utterance.pitch = 1.1;
+            
+            if (onEndCallback && typeof onEndCallback === 'function') {
+                utterance.onend = onEndCallback;
+            }
+
+            window.speechSynthesis.speak(utterance);
+        };
+        
+        if (typeof window.speechSynthesis.onvoiceschanged !== 'undefined') {
+            window.speechSynthesis.onvoiceschanged = loadVoices;
+        }
+        loadVoices();
+         function getapiKey() {
+                const params = new URLSearchParams(window.location.search);
+                return params.get("apiKey") || "guest";
+            }
+            const apiKey = getapiKey();
+        // --- API CALL LOGIC ---
+        const API_URL = (model) => `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+        
+        async function callGeminiAPI(prompt, model = 'gemini-2.0-flash') {
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                 generationConfig: { responseMimeType: "application/json" }
+            };
+
+            let attempts = 0;
+            const maxAttempts = 5;
+            while(attempts < maxAttempts) {
+                try {
+                    const finalApiKey = "";
+                    const response = await fetch(API_URL(model) + finalApiKey, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!response.ok) {
+                        const errorBody = await response.json();
+                        throw new Error(`API Error: ${response.status} ${response.statusText} - ${errorBody.error.message}`);
+                    }
+                    const result = await response.json();
+                    if (result.candidates?.[0]?.content.parts?.[0]) {
+                        return JSON.parse(result.candidates[0].content.parts[0].text);
+                    } else {
+                        throw new Error("Invalid response structure from API.");
+                    }
+                } catch (error) {
+                    attempts++;
+                    console.error(`Attempt ${attempts} failed:`, error.message);
+                    if (attempts >= maxAttempts) throw error;
+                    await new Promise(res => setTimeout(res, Math.pow(2, attempts) * 100));
+                }
+            }
+        }
+
+        // --- APPLICATION FLOW & STATE MANAGEMENT ---
+
+        function resetInterviewState() {
+            interviewLog = [];
+            currentQuestion = '';
+            questionNumber = 0;
+            currentCvAnalysis = null;
+            if (interviewTimerId) clearInterval(interviewTimerId);
+
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+                videoStream = null;
+            }
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+            }
+            mediaRecorder = null;
+            recordedChunks = [];
+            videoFeed.classList.add('hidden');
+            cameraBtn.classList.add('hidden');
+        }
+
+        async function startInterview() {
+            resetInterviewState();
+            welcomeError.textContent = '';
+            playerName = playerNameInput.value.trim();
+            jobRole = jobRoleInput.value.trim();
+            companyName = companyNameInput.value.trim();
+            jobDescription = jobDescriptionInput.value.trim();
+            feedbackCadence = document.querySelector('input[name="feedbackCadence"]:checked').value;
+
+            if (!jobRole) {
+                welcomeError.textContent = 'Please enter a job role to begin.';
+                return;
+            }
+
+            if (cvText && playerName) {
+                const cvExcerpt = cvText.substring(0, 250).toLowerCase();
+                const playerFirstName = playerName.split(' ')[0].toLowerCase();
+                if (playerFirstName && !cvExcerpt.includes(playerFirstName)) {
+                    welcomeError.innerHTML = `The name in the CV doesn't seem to match "${playerName}". Please upload your own CV.`;
+                    return;
+                }
+            }
+            
+            try {
+                // Requesting both video and audio streams
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                videoStream = stream;
+                videoFeed.srcObject = videoStream;
+                videoFeed.classList.remove('hidden');
+                cameraBtn.classList.remove('hidden');
+                cameraBtn.classList.add('active');
+                isCameraOn = true;
+                
+                recordedChunks = [];
+                mediaRecorder = new MediaRecorder(videoStream); 
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) recordedChunks.push(event.data);
+                };
+                mediaRecorder.onstop = handleRecordingStop;
+                mediaRecorder.start();
+
+            } catch (err) {
+                console.error("Could not access camera: ", err);
+                welcomeError.textContent = 'Camera or microphone access denied. Video will not be recorded.';
+                videoFeed.classList.add('hidden');
+                cameraBtn.classList.add('hidden');
+            }
+
+            cumulativeScoreDisplay.classList.add('hidden');
+            switchScreen(interviewScreen);
+            const welcomeName = playerName ? `${playerName}'s` : 'Your';
+            interviewTitle.textContent = `${welcomeName} Interview for: ${jobRole}` + (companyName ? ` at ${companyName}` : '');
+            
+            startInterviewTimer();
+            statusEl.textContent = 'The interview will begin shortly...';
+            setTimeout(async () => {
+                await generateNewQuestion();
+            }, 2000);
+        }
+
+        function toggleCamera() {
+            if (!videoStream) return;
+            const videoTrack = videoStream.getVideoTracks()[0];
+            if (videoTrack) {
+                videoTrack.enabled = !videoTrack.enabled;
+                isCameraOn = videoTrack.enabled;
+                cameraBtn.classList.toggle('active', isCameraOn);
+                videoFeed.style.opacity = isCameraOn ? '1' : '0';
+            }
+        }
+
+
+        function startInterviewTimer() {
+            const minSeconds = 420;
+            const maxSeconds = 600;
+            let remainingTime = Math.floor(Math.random() * (maxSeconds - minSeconds + 1)) + minSeconds;
+
+            const updateDisplay = () => {
+                const minutes = Math.floor(remainingTime / 60);
+                const seconds = remainingTime % 60;
+                timerDisplay.textContent = `Time Left: ${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                remainingTime--;
+                if (remainingTime < 0) {
+                    clearInterval(interviewTimerId);
+                    endInterview(true);
+                }
+            };
+            
+            updateDisplay();
+            interviewTimerId = setInterval(updateDisplay, 1000);
+        }
+
+        async function processAnswer() {
+            if (feedbackCadence === 'immediate') {
+                await getAndDisplayFeedback(interviewLog.slice(-1));
+            } else if (feedbackCadence === 'batch' && (interviewLog.length % 5 === 0 || interviewLog.length === 1)) {
+                await getAndDisplayFeedback(interviewLog.slice(-5));
+            } else {
+                await generateNewQuestion();
+            }
+        }
+
+        async function generateNewQuestion() {
+            questionNumber++;
+            questionCounter.textContent = `Question ${questionNumber}`;
+            questionEl.textContent = '';
+            questionLoader.classList.remove('hidden');
+            feedbackContainer.classList.add('hidden');
+            feedbackContent.innerHTML = '';
+            nextQuestionBtn.classList.add('hidden');
+            endInterviewBtn.classList.add('hidden');
+            answerEl.value = '';
+            statusEl.textContent = '';
+            recordBtn.disabled = true;
+
+            if (questionNumber === 1) {
+                currentQuestion = "Tell me about yourself.";
+            } else {
+                const history = `The user has already been asked: ${interviewLog.map(item => item.question).join(', ')}`;
+                const companyContext = companyName ? ` for the company "${companyName}"` : "";
+                const jobDescContext = jobDescription ? `The job description is: "${jobDescription}"` : "";
+                const cvContext = cvText ? `The candidate's CV is: "${cvText}"` : "";
+
+                let questionStyle = `Generate one common, relevant behavioral or technical interview question.`;
+                if (cvText && questionNumber > 2 && Math.random() < 0.33) {
+                    questionStyle = `Based on the provided CV, generate a specific question about a project, skill, or experience mentioned.`;
+                }
+
+                const prompt = `You are an expert Indian interviewer for "${jobRole}"${companyContext}. ${jobDescContext} ${cvContext} ${history} Instruction: ${questionStyle} Provide your response as a JSON object: {"question": "Your generated question here"}`;
+                try {
+                    const response = await callGeminiAPI(prompt);
+                    currentQuestion = response.question;
+                } catch (error) {
+                    currentQuestion = `Error generating question: ${error.message}. Please try again.`;
+                    console.error(error);
+                }
+            }
+
+            if (playerName && questionNumber > 1 && Math.random() < 0.33) {
+                const formattedQuestion = currentQuestion.charAt(0).toLowerCase() + currentQuestion.slice(1);
+                currentQuestion = `${playerName}, ${formattedQuestion}`;
+            }
+
+            questionLoader.classList.add('hidden');
+            
+            const randomEmoji = questionEmojis[Math.floor(Math.random() * questionEmojis.length)];
+            questionEl.textContent = `${randomEmoji} ${currentQuestion}`;
+
+            // Speak the question and then enable the record button for user to tap
+            speak(currentQuestion, () => {
+                recordBtn.disabled = false;
+                statusEl.textContent = 'Tap the record button when you are ready to answer.';
+            });
+            // Failsafe to ensure the button is enabled, even if the speak callback fails on mobile
+            setTimeout(() => {
+                recordBtn.disabled = false;
+                if(statusEl.textContent === ''){
+                     statusEl.textContent = 'Tap the record button when you are ready to answer.';
+                }
+            }, 3000);
+        }
+
+        function toggleRecording() {
+            if (!recognition) return;
+            recordBtn.disabled = true;
+            if (isRecording) {
+                clearTimeout(pauseTimer);
+                recognition.stop();
+            } else {
+                answerEl.value = '';
+                finalTranscript = '';
+                recognition.start();
+            }
+        }
+
+        function updateCumulativeScoreDisplay() {
+            const scoredEntries = interviewLog.filter(entry => entry.score > 0);
+            if (scoredEntries.length > 0) {
+                const totalScore = scoredEntries.reduce((sum, item) => sum + (item.score || 0), 0);
+                const averageScore = totalScore / scoredEntries.length;
+                const percentageScore = Math.round((averageScore / 10) * 100);
+                cumulativeScoreDisplay.textContent = `Score: ${percentageScore}%`;
+                cumulativeScoreDisplay.classList.remove('hidden');
+            }
+        }
+        
+        async function getAndDisplayFeedback(logEntries, targetElement = feedbackContent) {
+            feedbackContainer.classList.remove('hidden');
+            feedbackLoader.classList.remove('hidden');
+            recordBtn.disabled = true;
+            targetElement.innerHTML = '';
+
+            for (const entry of logEntries) {
+                const prompt = `As a senior Indian hiring manager for "${jobRole}", analyze this answer to the question "${entry.question}". Answer: "${entry.answer}". Provide a JSON response: {"score": [1-10], "what_went_well": ["..."], "areas_for_improvement": ["..."], "example_answer": ["..."]}`;
+                try {
+                    const feedback = await callGeminiAPI(prompt);
+                    const logIndex = interviewLog.findIndex(item => item.question === entry.question && item.answer === entry.answer);
+                    if (logIndex > -1) {
+                        interviewLog[logIndex].score = feedback.score;
+                        interviewLog[logIndex].feedback = feedback;
+                    }
+                    displayFeedback(feedback, entry.question, targetElement);
+                    updateCumulativeScoreDisplay();
+                } catch (error) {
+                    targetElement.innerHTML += `<div class="text-red-500">Error analyzing answer for "${entry.question}": ${error.message}.</div>`;
+                    console.error(error);
+                }
+            }
+
+            feedbackLoader.classList.add('hidden');
+            nextQuestionBtn.classList.remove('hidden');
+            endInterviewBtn.classList.remove('hidden');
+            recordBtn.disabled = false;
+        }
+
+        function displayFeedback(feedback, question, targetElement) {
+            const percentageScore = feedback.score * 10;
+            const scoreColor = percentageScore >= 60 ? 'text-blue-600' : 'text-red-500';
+
+            const feedbackHTML = `
+                <div class="border border-gray-200 p-4 rounded-lg bg-white shadow-sm">
+                    <h4 class="text-md font-bold mb-3 text-gray-800">Feedback for: "${question}"</h4>
+                    <div class="text-center mb-3"><p class="text-sm font-semibold text-gray-600">Score</p><p class="text-4xl font-bold ${scoreColor}">${percentageScore}%</p></div>
+                    <div class="space-y-3">
+                        <div>
+                            <h5 class="text-sm font-bold mb-1 text-green-700">What Went Well</h5>
+                            <p class="text-gray-700 text-sm bg-green-50 p-3 rounded-lg">${feedback.what_went_well}</p>
+                        </div>
+                        <div>
+                            <h5 class="text-sm font-bold mb-1 text-amber-700">Areas for Improvement</h5>
+                            <p class="text-gray-700 text-sm bg-amber-50 p-3 rounded-lg">${feedback.areas_for_improvement}</p>
+                        </div>
+                        <div>
+                            <h5 class="text-sm font-bold mb-1 text-sky-700">Example Answer</h5>
+                            <p class="text-gray-700 text-sm bg-sky-50 p-3 rounded-lg">${feedback.example_answer}</p>
+                        </div>
+                    </div>
+                </div>`;
+            targetElement.innerHTML += feedbackHTML;
+        }
+
+        function calculateAndDisplayOverallScore(log) {
+            let percentageScore = 0;
+            if (log.length > 0) {
+                const totalScore = log.reduce((sum, item) => sum + (item.score || 0), 0);
+                const averageScore = totalScore / log.length;
+                percentageScore = Math.round((averageScore / 10) * 100);
+                
+                overallScoreEl.textContent = `${percentageScore}%`;
+                if (percentageScore >= 60) {
+                    overallScoreEl.className = 'text-6xl font-bold text-green-600';
+                    overallMessageEl.className = 'text-lg mt-2 font-bold text-green-700';
+                    overallMessageEl.textContent = `Congratulations! A strong performance.`;
+                    overallScoreSection.className = 'text-center mb-6 p-4 rounded-lg transition-all duration-500 bg-green-50 border border-green-200';
+                } else {
+                    overallScoreEl.className = 'text-6xl font-bold text-red-600';
+                    overallMessageEl.className = 'text-lg mt-2 font-bold text-red-700';
+                    overallMessageEl.textContent = `Based on this interview, you may not be a strong fit yet. Keep practicing!`;
+                    overallScoreSection.className = 'text-center mb-6 p-4 rounded-lg transition-all duration-500 bg-red-50 border border-red-200';
+                }
+            } else {
+                overallScoreEl.textContent = '0%';
+                overallMessageEl.textContent = 'No answers were recorded to generate a score.';
+            }
+            return percentageScore;
+        }
+
+        function endInterview(isTimeUp = false) {
+            clearInterval(interviewTimerId);
+             
+            if (isTimeUp) {
+                statusEl.textContent = "Time's up! Finalizing your report...";
+            } else {
+                statusEl.textContent = "Interview ended. Finalizing your report...";
+            }
+            
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+            } else {
+                // If recorder wasn't running or already stopped, manually trigger finalization
+                handleRecordingStop();
+            }
+        }
+
+        function handleRecordingStop() {
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+                videoStream = null;
+            }
+            videoFeed.classList.add('hidden');
+            cameraBtn.classList.add('hidden');
+            
+            let videoBlob = null;
+            if (recordedChunks.length > 0) {
+                videoBlob = new Blob(recordedChunks, { type: 'video/webm' });
+            }
+
+            const unanalyzedEntries = interviewLog.filter(entry => !entry.feedback);
+            if (unanalyzedEntries.length > 0) {
+                interviewFeedbackSection.classList.remove('hidden');
+                finalFeedbackLoader.classList.remove('hidden');
+                getAndDisplayFeedback(unanalyzedEntries, finalFeedbackContent).then(() => {
+                    finalFeedbackLoader.classList.add('hidden');
+                    const finalScore = calculateAndDisplayOverallScore(interviewLog);
+                    saveSession(finalScore);
+                    showFinalReport(interviewLog, finalScore, videoBlob);
+                });
+            } else {
+                 interviewFeedbackSection.classList.add('hidden');
+                 const finalScore = calculateAndDisplayOverallScore(interviewLog);
+                 saveSession(finalScore);
+                 showFinalReport(interviewLog, finalScore, videoBlob);
+            }
+        }
+
+
+        function showFinalReport(log, score, videoBlob) {
+            switchScreen(finalReportScreen);
+            calculateAndDisplayOverallScore(log);
+            finalFeedbackContent.innerHTML = '';
+            log.forEach(entry => {
+                if(entry.feedback) displayFeedback(entry.feedback, entry.question, finalFeedbackContent);
+            });
+
+            if (videoBlob) {
+                const videoUrl = URL.createObjectURL(videoBlob);
+                downloadVideoBtn.href = videoUrl;
+                downloadVideoBtn.classList.remove('hidden');
+            } else {
+                downloadVideoBtn.classList.add('hidden');
+            }
+
+            if (cvText && jobDescription) {
+                cvAnalysisMessage.textContent = 'Ready to analyze your CV against the provided job description.';
+                analyzeCvBtn.disabled = false;
+                analyzeCvBtn.classList.remove('hidden');
+            } else if (cvText) {
+                cvAnalysisMessage.textContent = 'A job description is needed for a full analysis.';
+                analyzeCvBtn.disabled = true;
+                analyzeCvBtn.classList.add('hidden');
+            } else {
+                cvAnalysisMessage.textContent = 'No CV was uploaded, so analysis cannot be performed.';
+                analyzeCvBtn.disabled = true;
+                analyzeCvBtn.classList.add('hidden');
+            }
+            cvAnalysisResult.innerHTML = ''; // Clear previous CV analysis
+        }
+
+        async function analyzeCv() {
+            analyzeCvBtn.disabled = true;
+            cvLoader.classList.remove('hidden');
+            cvAnalysisResult.innerHTML = '';
+            const prompt = `As an expert Indian career coach, analyze this CV: "${cvText}" for the job role "${jobRole}" with this description: "${jobDescription}". Provide a JSON response: {"fit_score": [1-100], "summary": ["..."], "strengths": ["..."], "improvement_suggestions": ["..."]}`;
+            try {
+                const analysis = await callGeminiAPI(prompt);
+                currentCvAnalysis = analysis;
+                displayCvAnalysis(analysis);
+            } catch (error) {
+                cvAnalysisResult.innerHTML = `<div class="text-red-500">Error analyzing CV: ${error.message}.</div>`;
+                console.error(error);
+            } finally {
+                cvLoader.classList.add('hidden');
+            }
+        }
+
+        function displayCvAnalysis(analysis) {
+            const createList = (items) => `<ul class="list-disc list-inside space-y-2 text-sm">${items.map(item => `<li>${item}</li>`).join('')}</ul>`;
+            cvAnalysisResult.innerHTML = `
+                <div class="text-center mb-6"><p class="text-md font-semibold text-gray-700">CV to Job Fit Score</p><p class="text-6xl font-bold text-blue-600">${analysis.fit_score}/100</p></div>
+                <div class="space-y-4">
+                    <div><h4 class="text-lg font-bold mb-2 text-gray-800">Summary</h4><p class="text-gray-700 text-sm bg-gray-50 p-4 rounded-lg">${analysis.summary}</p></div>
+                    <div><h4 class="text-lg font-bold mb-2 text-green-700">Strong Matches</h4><div class="text-gray-700 bg-green-50 p-4 rounded-lg">${createList(analysis.strengths)}</div></div>
+                    <div><h5 class="text-lg font-bold mb-2 text-red-700">Improvement Suggestions</h5><div class="text-gray-700 bg-red-50 p-4 rounded-lg">${createList(analysis.improvement_suggestions)}</div></div>
+                </div>`;
+        }
+
+        function downloadReport() {
+            let reportContent = `TaxilaX - REPORT\n==================================\n\n`;
+            reportContent += `Name: ${playerName || 'N/A'}\n`;
+            reportContent += `Role: ${jobRole}\n`;
+            reportContent += `Company: ${companyName || 'N/A'}\n\n`;
+
+            const scoreText = overallScoreEl.textContent;
+            const messageText = overallMessageEl.textContent;
+            reportContent += `--- OVERALL RESULT ---\n`;
+            reportContent += `Score: ${scoreText}\n`;
+            reportContent += `Outcome: ${messageText}\n\n`;
+
+            reportContent += `--- INTERVIEW FEEDBACK ---\n\n`;
+            interviewLog.forEach((entry, index) => {
+                reportContent += `QUESTION ${index + 1}: ${entry.question}\n\n`;
+                reportContent += `YOUR ANSWER:\n${entry.answer}\n\n`;
+                if (entry.feedback) {
+                    reportContent += `FEEDBACK (Score: ${entry.feedback.score * 10}%):\n`;
+                    reportContent += `What Went Well: ${entry.feedback.what_went_well}\n`;
+                    reportContent += `Areas for Improvement: ${entry.feedback.areas_for_improvement}\n`;
+                    reportContent += `Example Answer: ${entry.feedback.example_answer}\n\n`;
+                }
+                reportContent += `--------------------------------\n\n`;
+            });
+            
+            if (cvAnalysisResult.innerText.length > 0) {
+                 reportContent += `--- CV ANALYSIS ---\n\n`;
+                 reportContent += cvAnalysisResult.innerText.replace(/(\n\s*\n)+/g, '\n\n');
+            }
+
+            const blob = new Blob([reportContent], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `TaxilaX_Report_${playerName.replace(' ', '_') || 'User'}.txt`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function getUserId() {
+                const params = new URLSearchParams(window.location.search);
+                return params.get("userId") || "guest";
+            }
+        // --- HISTORY & STORAGE (with Firestore) ---
+        async function saveSession(score) {
+           const userId = getUserId();
+            const session = {
+                date: new Date().toISOString(),
+                playerName,
+                jobRole,
+                companyName,
+                overallScore: score,
+                log: interviewLog,
+                cvAnalysis: currentCvAnalysis,
+                videoUrl: null
+            };
+             const YOUR_API_ENDPOINT = "https://erp.taxila.in/api/game/interview";
+            try {
+                const response = await fetch(YOUR_API_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({userId:userId, session })
+                });
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('Successfully saved to backend:', data);
+            } catch (error) {
+                console.error("Error saving session to Firestore:", error);
+            }
+        }
+
+   
+
+
+        function displayHistory() {
+            switchScreen(historyScreen);
+            historyList.innerHTML = '';
+            if (allSessions.length === 0) {
+                historyList.innerHTML = '<p class="text-center text-gray-500">No past attempts found.</p>';
+                return;
+            }
+
+            allSessions.forEach((session, index) => {
+                const date = new Date(session.date).toLocaleDateString('en-IN');
+                const score = session.overallScore;
+                const scoreColor = score >= 60 ? 'text-green-600' : 'text-red-600';
+
+                const element = document.createElement('div');
+                element.className = 'p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition';
+                element.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="font-bold text-slate-800">${session.jobRole}</p>
+                            <p class="text-sm text-gray-600">${session.companyName || 'N/A'} - ${date}</p>
+                        </div>
+                        <p class="text-2xl font-bold ${scoreColor}">${score}%</p>
+                    </div>
+                `;
+                element.onclick = () => viewPastReport(index);
+                historyList.appendChild(element);
+            });
+        }
+
+        function viewPastReport(index) {
+            const session = allSessions[index];
+            playerName = session.playerName;
+            jobRole = session.jobRole;
+            companyName = session.companyName;
+            interviewLog = session.log;
+            currentCvAnalysis = session.cvAnalysis;
+
+            showFinalReport(session.log, session.overallScore, session.videoUrl);
+            if(session.cvAnalysis) {
+                displayCvAnalysis(session.cvAnalysis);
+                analyzeCvBtn.classList.add('hidden');
+            }
+        }
+
+    
+        // Event Listeners
+        startBtn.addEventListener('click', startInterview);
+        cvUploadInput.addEventListener('change', handleCvUpload);
+        recordBtn.addEventListener('click', toggleRecording);
+        cameraBtn.addEventListener('click', toggleCamera);
+        nextQuestionBtn.addEventListener('click', generateNewQuestion);
+        endInterviewBtn.addEventListener('click', () => endInterview(false));
+        analyzeCvBtn.addEventListener('click', analyzeCv);
+        downloadReportBtn.addEventListener('click', downloadReport);
+        viewHistoryBtn.addEventListener('click', displayHistory);
+        backToWelcomeBtn.addEventListener('click', () => switchScreen(welcomeScreen));
+        backToWelcomeFromReportBtn.addEventListener('click', () => {
+            resetInterviewState();
+            switchScreen(welcomeScreen);
+        });
+        
+        // Initial setup
+        switchScreen(welcomeScreen);
+
+    </script>
+</body>
+</html>

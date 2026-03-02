@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PROJECT MANAGEMENT SIMULATION</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
+            background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .metric-card, .project-card, .panel {
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        .metric-card:hover, .project-card:hover, .panel:hover {
+            transform: perspective(1000px) rotateX(2deg) rotateY(-2deg) scale(1.05);
+            box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.2);
+        }
+        .project-card:hover {
+            border-color: #6366f1;
+            box-shadow: 0 20px 30px -10px rgba(99, 102, 241, 0.3);
+        }
+        .task-progress {
+            transition: width 0.5s ease-in-out;
+        }
+        .event-log-entry {
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #a8a8a8; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+
+        #overtime-btn.active {
+            background-color: #ef4444;
+            border-color: #ef4444;
+            color: white;
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
+        }
+        .decision-btn {
+            transition: background-color 0.2s;
+        }
+        .fire-btn:hover {
+            background-color: #f87171;
+            color: white;
+        }
+        #next-day-btn:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-6 lg:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 pb-2">Project Management Simulation</h1>
+            <p id="header-subtitle" class="text-xl text-gray-500 mt-2">Welcome, Project Manager.</p>
+        </header>
+
+        <!-- Name Entry Screen -->
+        <div id="name-entry-modal" class="hidden">
+            <div class="max-w-md mx-auto bg-white p-8 rounded-xl shadow-lg text-center panel">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Enter Your Name</h2>
+                <input type="text" id="player-name-input" placeholder="e.g., Anjali Singh" class="w-full p-3 border rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-4">
+                <button id="start-game-btn" class="w-full bg-indigo-600 text-white px-6 py-3 rounded-lg font-bold text-lg hover:bg-indigo-700 transition-transform transform hover:scale-105 shadow-md">Start Managing</button>
+            </div>
+        </div>
+
+        <!-- Continue Game Modal -->
+        <div id="continue-modal" class="hidden">
+            <div class="max-w-md mx-auto bg-white p-8 rounded-xl shadow-lg text-center panel">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">Welcome Back, <span id="continue-player-name"></span>!</h2>
+                <p class="text-gray-600 mb-4">You have a project in progress. Would you like to continue?</p>
+                <p class="text-lg font-semibold mb-1" id="saved-project-title"></p>
+                <p class="text-sm text-gray-500 mb-4" id="saved-project-day"></p>
+                <div class="flex space-x-4">
+                    <button id="continue-btn" class="w-full bg-green-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-green-700 transition-colors">Continue</button>
+                    <button id="new-game-btn" class="w-full bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-bold hover:bg-gray-300 transition-colors">Start New Game</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Project Selection Screen -->
+        <div id="project-selection-modal" class="hidden">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                <!-- Project Card 1 -->
+                <div id="project-utsav" class="project-card bg-white p-6 rounded-xl shadow-lg border-2 border-transparent cursor-pointer">
+                    <h3 class="text-2xl font-bold text-gray-800">"Utsav" - Festival App</h3>
+                    <span class="text-sm font-semibold px-2 py-1 rounded-full bg-orange-100 text-orange-800">Difficulty: Hard</span>
+                    <p class="text-gray-600 mt-2">A software project to develop a new social media app for festivals. Requires a balanced team.</p>
+                    <div class="mt-4 pt-4 border-t space-y-2">
+                        <p><strong>Budget:</strong> ₹38,00,000</p>
+                        <p><strong>Deadline:</strong> 95 Days</p>
+                    </div>
+                </div>
+                <!-- Project Card 2 -->
+                <div id="project-infraLeap" class="project-card bg-white p-6 rounded-xl shadow-lg border-2 border-transparent cursor-pointer">
+                    <h3 class="text-2xl font-bold text-gray-800">"InfraLeap" - IT Overhaul</h3>
+                    <span class="text-sm font-semibold px-2 py-1 rounded-full bg-red-200 text-red-800">Difficulty: Expert</span>
+                    <p class="text-gray-600 mt-2">A high-stakes, backend-heavy project to migrate legacy systems to the cloud. High risk, high reward.</p>
+                    <div class="mt-4 pt-4 border-t space-y-2">
+                        <p><strong>Budget:</strong> ₹70,00,000</p>
+                        <p><strong>Deadline:</strong> 85 Days</p>
+                    </div>
+                </div>
+                <!-- Project Card 3 -->
+                <div id="project-cementPlant" class="project-card bg-white p-6 rounded-xl shadow-lg border-2 border-transparent cursor-pointer md:col-span-2">
+                    <h3 class="text-2xl font-bold text-gray-800">"Samriddhi Cement" - Plant Erection</h3>
+                    <span class="text-sm font-semibold px-2 py-1 rounded-full bg-gray-700 text-white">Difficulty: Nightmare</span>
+                    <p class="text-gray-600 mt-2">A massive, capital-intensive project to build a cement plant from the ground up. For seasoned managers only.</p>
+                    <div class="mt-4 pt-4 border-t space-y-2">
+                        <p><strong>Budget:</strong> ₹25,00,00,000</p>
+                        <p><strong>Deadline:</strong> 250 Days</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <main class="grid grid-cols-1 lg:grid-cols-5 gap-8 hidden">
+            <!-- Left Column (Wider): Dashboard & Timeline -->
+            <div class="lg:col-span-3 space-y-8">
+                <!-- Project Dashboard -->
+                <section id="dashboard" class="panel bg-white p-6 rounded-xl shadow-lg">
+                    <h2 class="text-2xl font-bold mb-4 border-b pb-2 text-gray-700">Project Dashboard</h2>
+                    <div id="project-info" class="mb-6">
+                        <h3 id="project-title" class="text-lg font-semibold text-gray-800"></h3>
+                        <p class="text-sm text-gray-500">Day: <span id="current-day" class="font-bold text-gray-700">0</span> / <span id="total-days">100</span></p>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div id="budget-card" class="metric-card bg-green-50 border-green-200 border p-4 rounded-lg">
+                            <div class="flex items-center">
+                                <div class="p-2 bg-green-100 rounded-full"><svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 10v-1m0 0c-1.657 0-3-.895-3-2s1.343-2 3-2 3-.895 3-2-1.343-2-3-2m0 0c-1.11 0-2.08-.402-2.599-1M12 8V7m0 10v-1"></path></svg></div>
+                                <div class="ml-3">
+                                    <h4 class="text-sm font-medium text-green-800">Budget</h4>
+                                    <p id="budget" class="text-xl font-bold text-green-900">₹40,00,000</p>
+                                </div>
+                            </div>
+                            <p id="burn-rate" class="text-xs text-green-700 mt-2 text-right">Burn Rate: ₹0/day</p>
+                        </div>
+                        <div id="schedule-card" class="metric-card bg-blue-50 border-blue-200 border p-4 rounded-lg">
+                             <div class="flex items-center">
+                                <div class="p-2 bg-blue-100 rounded-full"><svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>
+                                <div class="ml-3">
+                                    <h4 class="text-sm font-medium text-blue-800">Schedule</h4>
+                                    <p id="schedule" class="text-xl font-bold text-blue-900">On Track</p>
+                                </div>
+                            </div>
+                            <p id="schedule-variance" class="text-xs text-blue-700 mt-2 text-right">Variance: 0 days</p>
+                        </div>
+                        <div id="scope-card" class="metric-card bg-purple-50 border-purple-200 border p-4 rounded-lg">
+                             <div class="flex items-center">
+                                <div class="p-2 bg-purple-100 rounded-full"><svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg></div>
+                                <div class="ml-3">
+                                    <h4 class="text-sm font-medium text-purple-800">Scope</h4>
+                                    <p id="scope" class="text-xl font-bold text-purple-900">0%</p>
+                                </div>
+                            </div>
+                            <p id="tasks-completed" class="text-xs text-purple-700 mt-2 text-right">0/9 Tasks</p>
+                        </div>
+                        <div id="quality-card" class="metric-card bg-yellow-50 border-yellow-200 border p-4 rounded-lg">
+                             <div class="flex items-center">
+                                <div class="p-2 bg-yellow-100 rounded-full"><svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.135 3.135 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.135 3.135 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.135-3.135 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.135-3.135z"></path></svg></div>
+                                <div class="ml-3">
+                                    <h4 class="text-sm font-medium text-yellow-800">Project Quality</h4>
+                                    <p id="quality" class="text-xl font-bold text-yellow-900">100%</p>
+                                </div>
+                            </div>
+                            <p id="bug-count" class="text-xs text-yellow-700 mt-2 text-right">Bugs: 0</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Project Timeline -->
+                <section class="panel bg-white p-6 rounded-xl shadow-lg">
+                    <h2 class="text-2xl font-bold mb-4 border-b pb-2 text-gray-700">Project Timeline</h2>
+                    <div id="timeline" class="space-y-4 max-h-[600px] overflow-y-auto pr-2">
+                        <!-- Tasks will be dynamically added here -->
+                    </div>
+                </section>
+            </div>
+
+            <!-- Right Column (Narrower): Management & Actions -->
+            <div class="lg:col-span-2 space-y-8">
+                <section id="resource-management" class="panel bg-white p-6 rounded-xl shadow-lg">
+                    <h2 class="text-2xl font-bold mb-4 border-b pb-2 text-gray-700">Team Management</h2>
+                    <div id="team-stats" class="mb-4 text-center bg-gray-50 p-2 rounded-lg">
+                        <p class="text-md">Avg. Team Morale: <span id="team-morale" class="font-bold text-lg">100%</span></p>
+                    </div>
+                    <div id="team-list" class="space-y-3 max-h-64 overflow-y-auto pr-2">
+                        <!-- Team members will be dynamically added here -->
+                    </div>
+                    <div class="mt-6 pt-4 border-t">
+                         <h3 class="text-lg font-semibold mb-2">Hire New Talent</h3>
+                         <div class="flex space-x-2">
+                            <select id="hire-options" class="w-full p-2 border rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <!-- Options will be dynamically added here -->
+                            </select>
+                            <button id="hire-btn" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors font-semibold flex items-center justify-center">
+                                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                                Hire
+                            </button>
+                         </div>
+                    </div>
+                </section>
+                
+                <section id="event-log" class="panel bg-white p-6 rounded-xl shadow-lg">
+                    <h2 class="text-2xl font-bold mb-4 border-b pb-2 text-gray-700">Event Log & Decisions</h2>
+                    <div id="log" class="h-96 overflow-y-auto space-y-3 pr-2">
+                        <!-- Events will be dynamically added here -->
+                    </div>
+                </section>
+
+                <section id="controls" class="panel bg-white p-6 rounded-xl shadow-lg text-center">
+                    <h2 class="text-2xl font-bold mb-4 text-gray-700">Game Controls</h2>
+                    <div class="flex space-x-4 mb-4">
+                        <button id="overtime-btn" class="w-full bg-red-100 text-red-700 border-2 border-red-200 px-4 py-3 rounded-lg hover:bg-red-200 transition-colors font-semibold flex items-center justify-center">
+                           <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                           Toggle Overtime
+                        </button>
+                    </div>
+                     <button id="save-exit-btn" class="w-full bg-blue-600 text-white px-6 py-3 rounded-lg font-bold mb-4 hover:bg-blue-700 transition-colors">Save & Exit to Menu</button>
+                    <button id="next-day-btn" class="w-full bg-green-600 text-white px-6 py-4 rounded-lg font-bold text-lg hover:bg-green-700 transition-transform transform hover:scale-105 shadow-md flex items-center justify-center">
+                        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path></svg>
+                        Proceed to Next Day
+                    </button>
+                </section>
+            </div>
+        </main>
+        
+        <!-- Modal for Game Over -->
+        <div id="game-over-modal" class="fixed inset-0 bg-black bg-opacity-75 hidden items-center justify-center z-50">
+            <div class="bg-white p-8 rounded-xl shadow-2xl text-center max-w-md mx-auto transform transition-all scale-95 opacity-0" id="modal-content">
+                <div id="modal-icon" class="mx-auto mb-4"></div>
+                <h2 id="modal-title" class="text-3xl font-bold mb-4">Project Failed</h2>
+                <p id="modal-message" class="text-gray-600 mb-6">You've run out of budget. The project has been cancelled.</p>
+                <button id="modal-restart-btn" class="w-full bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors font-semibold">Choose Different Project</button>
+            </div>
+        </div>
+
+    </div>
+    
+    <footer class="text-center text-gray-500 text-sm mt-8 pb-4">
+        Created at Taxila Business School
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            let gameState = {};
+            let currentProjectConfig = {};
+            let playerName = "Project Manager";
+            
+            const projectLibrary = {
+                utsav: {
+                    id: 'utsav',
+                    title: '"Utsav" - Festival App Launch',
+                    initialBudget: 3800000,
+                    totalDays: 95,
+                    tasks: [
+                        { id: 1, name: "Market Research", duration: 10, skill: "Analysis", dependencies: [], cost: 40000, color: 'bg-teal-500' },
+                        { id: 2, name: "UI/UX Design", duration: 15, skill: "Design", dependencies: [1], cost: 120000, color: 'bg-purple-500' },
+                        { id: 3, name: "Frontend Development", duration: 28, skill: "Frontend", dependencies: [2], cost: 320000, isDev: true, color: 'bg-blue-500' },
+                        { id: 4, name: "Backend Development", duration: 33, skill: "Backend", dependencies: [2], cost: 400000, isDev: true, color: 'bg-gray-700' },
+                        { id: 5, name: "API Integration", duration: 10, skill: "Backend", dependencies: [3, 4], cost: 80000, isDev: true, color: 'bg-gray-700' },
+                        { id: 6, name: "Quality Assurance", duration: 20, skill: "QA", dependencies: [5], cost: 160000, isQA: true, color: 'bg-yellow-500' },
+                        { id: 7, name: "User Acceptance Testing", duration: 10, skill: "QA", dependencies: [6], cost: 80000, isQA: true, color: 'bg-yellow-500' },
+                        { id: 8, name: "Deployment", duration: 5, skill: "Backend", dependencies: [7], cost: 40000, color: 'bg-green-500' },
+                        { id: 9, name: "Marketing Campaign", duration: 15, skill: "Analysis", dependencies: [1], cost: 200000, color: 'bg-teal-500' },
+                    ],
+                    availableTalent: [
+                        { name: 'Priya', skill: 'Design', level: 'Senior', productivity: 1.2, dailyCost: 8000, morale: 90 },
+                        { name: 'Rohan', skill: 'Frontend', level: 'Senior', productivity: 1.3, dailyCost: 9500, morale: 85 },
+                        { name: 'Sameer', skill: 'Backend', level: 'Senior', productivity: 1.4, dailyCost: 11000, morale: 95 },
+                        { name: 'Aisha', skill: 'QA', level: 'Senior', productivity: 1.2, dailyCost: 7000, morale: 80 },
+                        { name: 'Meera', skill: 'Analysis', level: 'Junior', productivity: 0.9, dailyCost: 5500, morale: 88 },
+                        { name: 'Vikram', skill: 'Frontend', level: 'Junior', productivity: 0.8, dailyCost: 6000, morale: 75 },
+                        { name: 'Sunita', skill: 'Backend', level: 'Junior', productivity: 0.8, dailyCost: 7000, morale: 92 },
+                        { name: 'Karan', skill: 'QA', level: 'Junior', productivity: 0.9, dailyCost: 4500, morale: 82 },
+                    ]
+                },
+                infraLeap: {
+                    id: 'infraLeap',
+                    title: '"InfraLeap" - IT Infrastructure Overhaul',
+                    initialBudget: 7000000,
+                    totalDays: 85,
+                    tasks: [
+                        { id: 1, name: "System Audit", duration: 15, skill: "Analysis", dependencies: [], cost: 150000, color: 'bg-teal-500' },
+                        { id: 2, name: "Cloud Architecture Design", duration: 20, skill: "Backend", dependencies: [1], cost: 500000, color: 'bg-gray-700' },
+                        { id: 3, name: "Data Migration Scaffolding", duration: 30, skill: "Backend", dependencies: [2], cost: 800000, isDev: true, color: 'bg-gray-700' },
+                        { id: 4, name: "Security Protocol Setup", duration: 25, skill: "Security", dependencies: [2], cost: 700000, isDev: true, color: 'bg-red-500' },
+                        { id: 5, name: "Live Data Migration", duration: 20, skill: "Backend", dependencies: [3], cost: 1000000, isDev: true, color: 'bg-gray-700' },
+                        { id: 6, name: "Penetration Testing", duration: 25, skill: "Security", dependencies: [4, 5], cost: 600000, isQA: true, color: 'bg-red-500' },
+                        { id: 7, name: "System Stress Testing", duration: 15, skill: "QA", dependencies: [5], cost: 400000, isQA: true, color: 'bg-yellow-500' },
+                        { id: 8, name: "Go-Live Deployment", duration: 5, skill: "Backend", dependencies: [6, 7], cost: 200000, color: 'bg-green-500' }
+                    ],
+                    availableTalent: [
+                        { name: 'Sameer', skill: 'Backend', level: 'Senior', productivity: 1.4, dailyCost: 11000, morale: 95 },
+                        { name: 'Aisha', skill: 'QA', level: 'Senior', productivity: 1.2, dailyCost: 7000, morale: 80 },
+                        { name: 'Dev', skill: 'Security', level: 'Senior', productivity: 1.5, dailyCost: 14000, morale: 90 },
+                        { name: 'Meera', skill: 'Analysis', level: 'Junior', productivity: 0.9, dailyCost: 5500, morale: 88 },
+                        { name: 'Sunita', skill: 'Backend', level: 'Junior', productivity: 0.8, dailyCost: 7000, morale: 92 },
+                        { name: 'Karan', skill: 'QA', level: 'Junior', productivity: 0.9, dailyCost: 4500, morale: 82 },
+                        { name: 'Nisha', skill: 'Security', level: 'Junior', productivity: 0.9, dailyCost: 8000, morale: 85 },
+                    ]
+                },
+                cementPlant: {
+                    id: 'cementPlant',
+                    title: '"Samriddhi Cement" - Plant Erection',
+                    initialBudget: 250000000, // 25 Crores
+                    totalDays: 250,
+                    tasks: [
+                        { id: 1, name: "Site Survey & Soil Testing", duration: 20, skill: "Analysis", dependencies: [], cost: 500000, color: 'bg-teal-500' },
+                        { id: 2, name: "Regulatory Clearances", duration: 60, skill: "Analysis", dependencies: [], cost: 2000000, color: 'bg-orange-500' },
+                        { id: 3, name: "Civil Foundation Design", duration: 30, skill: "Civil Eng", dependencies: [1], cost: 1500000, color: 'bg-stone-500' },
+                        { id: 4, name: "Heavy Equipment Procurement", duration: 120, skill: "Procurement", dependencies: [], cost: 10000000, color: 'bg-sky-500' },
+                        { id: 5, name: "Foundation & Civil Works", duration: 90, skill: "Civil Eng", dependencies: [3], cost: 50000000, isDev: true, color: 'bg-stone-500' },
+                        { id: 6, name: "Kiln & Preheater Erection", duration: 80, skill: "Mechanical Eng", dependencies: [4, 5], cost: 60000000, isDev: true, color: 'bg-slate-600' },
+                        { id: 7, name: "Mill & Crusher Installation", duration: 60, skill: "Mechanical Eng", dependencies: [4, 5], cost: 40000000, isDev: true, color: 'bg-slate-600' },
+                        { id: 8, name: "Electrical & Instrumentation", duration: 70, skill: "Electrical Eng", dependencies: [6, 7], cost: 25000000, isDev: true, color: 'bg-amber-500' },
+                        { id: 9, name: "Commissioning & Trial Run", duration: 40, skill: "QA", dependencies: [8], cost: 5000000, isQA: true, color: 'bg-yellow-500' },
+                        { id: 10, name: "Inauguration & Handover", duration: 10, skill: "Analysis", dependencies: [9], cost: 1000000, color: 'bg-green-500' }
+                    ],
+                    availableTalent: [
+                        { name: 'Rajesh Kumar', skill: 'Civil Eng', level: 'Senior', productivity: 1.4, dailyCost: 25000, morale: 90 },
+                        { name: 'Prakash Rao', skill: 'Mechanical Eng', level: 'Senior', productivity: 1.5, dailyCost: 28000, morale: 85 },
+                        { name: 'Sandeep Verma', skill: 'Electrical Eng', level: 'Senior', productivity: 1.3, dailyCost: 24000, morale: 92 },
+                        { name: 'Ananya Gupta', skill: 'Procurement', level: 'Senior', productivity: 1.2, dailyCost: 20000, morale: 95 },
+                        { name: 'Amit Joshi', skill: 'Civil Eng', level: 'Junior', productivity: 0.9, dailyCost: 15000, morale: 88 },
+                        { name: 'Kavita Singh', skill: 'Mechanical Eng', level: 'Junior', productivity: 0.8, dailyCost: 16000, morale: 82 },
+                        { name: 'Ravi Sharma', skill: 'Analysis', level: 'Junior', productivity: 0.9, dailyCost: 12000, morale: 90 },
+                        { name: 'Deepak Chen', skill: 'QA', level: 'Senior', productivity: 1.3, dailyCost: 22000, morale: 87 },
+                    ]
+                }
+            };
+            
+            const UIElements = {
+                headerSubtitle: document.getElementById('header-subtitle'),
+                nameEntryModal: document.getElementById('name-entry-modal'),
+                playerNameInput: document.getElementById('player-name-input'),
+                startGameBtn: document.getElementById('start-game-btn'),
+                projectSelectionModal: document.getElementById('project-selection-modal'),
+                continueModal: document.getElementById('continue-modal'),
+                continueBtn: document.getElementById('continue-btn'),
+                newGameBtn: document.getElementById('new-game-btn'),
+                continuePlayerName: document.getElementById('continue-player-name'),
+                savedProjectTitle: document.getElementById('saved-project-title'),
+                savedProjectDay: document.getElementById('saved-project-day'),
+                mainGame: document.querySelector('main'),
+                projectUtsavCard: document.getElementById('project-utsav'),
+                projectInfraLeapCard: document.getElementById('project-infraLeap'),
+                projectCementPlantCard: document.getElementById('project-cementPlant'),
+                projectTitle: document.getElementById('project-title'),
+                currentDay: document.getElementById('current-day'),
+                totalDays: document.getElementById('total-days'),
+                budget: document.getElementById('budget'),
+                burnRate: document.getElementById('burn-rate'),
+                schedule: document.getElementById('schedule'),
+                scheduleVariance: document.getElementById('schedule-variance'),
+                scope: document.getElementById('scope'),
+                tasksCompleted: document.getElementById('tasks-completed'),
+                quality: document.getElementById('quality'),
+                bugCount: document.getElementById('bug-count'),
+                teamMorale: document.getElementById('team-morale'),
+                timeline: document.getElementById('timeline'),
+                eventLog: document.getElementById('log'),
+                teamList: document.getElementById('team-list'),
+                hireOptions: document.getElementById('hire-options'),
+                hireBtn: document.getElementById('hire-btn'),
+                overtimeBtn: document.getElementById('overtime-btn'),
+                nextDayBtn: document.getElementById('next-day-btn'),
+                saveExitBtn: document.getElementById('save-exit-btn'),
+                modal: document.getElementById('game-over-modal'),
+                modalContent: document.getElementById('modal-content'),
+                modalIcon: document.getElementById('modal-icon'),
+                modalTitle: document.getElementById('modal-title'),
+                modalMessage: document.getElementById('modal-message'),
+                modalRestartBtn: document.getElementById('modal-restart-btn'),
+                playerScore: null, // Will be created dynamically
+            };
+
+            // --- API-based Database Functions ---
+             function getUserId() {
+                const params = new URLSearchParams(window.location.search);
+                return params.get("userId") || "guest";
+            }
+            async function saveGame() {
+                if(!gameState || gameState.gameEnded) return;
+                const userId = getUserId() // Hardcoded userId from provided API response
+                const stateToSave = {
+                    gameState: {...gameState},
+                    currentProjectId: currentProjectConfig.id,
+                };
+                
+                try {
+                    const response = await fetch('https://erp.taxila.in/api/game/project', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId: userId, name: playerName, gameState: stateToSave })
+                    });
+                    if (response.ok) {
+                        logEvent("Game saved successfully.", "info");
+                    } else {
+                        logEvent("Failed to save progress.", "danger");
+                        console.error("Failed to save game:", response.statusText);
+                    }
+                } catch (error) {
+                    logEvent("Network error: Could not save progress.", "danger");
+                    console.error("Network error saving game:", error);
+                }
+            }
+
+            async function loadGame() {
+                const userId = getUserId() // Hardcoded userId from provided API response
+                try {
+                    const response = await fetch(`https://erp.taxila.in/api/game/project?userId=${userId}`, {
+                        method: 'GET',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    if (response.ok) {
+                        const savedData = await response.json();
+                        // Correctly access the nested gameState object
+                        if (savedData && savedData.gameState && Object.keys(savedData.gameState).length > 0) {
+                            const loadedGameState = savedData.gameState.gameState;
+                            
+                            currentProjectConfig = projectLibrary[savedData.gameState.currentProjectId];
+                            gameState = loadedGameState;
+                            playerName = savedData.name;
+                            
+                            console.log("Game loaded successfully.");
+                            return true;
+                        }
+                    }
+                    return false;
+                } catch (error) {
+                    console.error("Failed to load game:", error);
+                    return false;
+                }
+            }
+            
+            async function clearSave() {
+                // This would be an API call to clear the save
+                // For this implementation, we will not send a request to clear the save
+            }
+            
+            // --- Game Flow & State Management ---
+
+            function showNameEntry() {
+                UIElements.mainGame.classList.add('hidden');
+                UIElements.projectSelectionModal.classList.add('hidden');
+                UIElements.continueModal.classList.add('hidden');
+                UIElements.nameEntryModal.classList.remove('hidden');
+                UIElements.headerSubtitle.textContent = "Welcome, please enter your name to begin.";
+            }
+            
+            function showContinueScreen() {
+                UIElements.mainGame.classList.add('hidden');
+                UIElements.projectSelectionModal.classList.add('hidden');
+                UIElements.nameEntryModal.classList.add('hidden');
+                UIElements.continueModal.classList.remove('hidden');
+                UIElements.continuePlayerName.textContent = playerName;
+                UIElements.savedProjectTitle.textContent = currentProjectConfig.title;
+                UIElements.savedProjectDay.textContent = `Day ${gameState.day} of ${currentProjectConfig.totalDays}`;
+            }
+
+            function showProjectSelection() {
+                UIElements.mainGame.classList.add('hidden');
+                UIElements.nameEntryModal.classList.add('hidden');
+                UIElements.continueModal.classList.add('hidden');
+                UIElements.projectSelectionModal.classList.remove('hidden');
+                UIElements.headerSubtitle.innerHTML = `Welcome, ${playerName}. Choose your project.`;
+            }
+            
+            function resumeGame() {
+                UIElements.projectSelectionModal.classList.add('hidden');
+                UIElements.continueModal.classList.add('hidden');
+                UIElements.nameEntryModal.classList.add('hidden');
+                UIElements.mainGame.classList.remove('hidden');
+                UIElements.headerSubtitle.innerHTML = `Managing for: ${playerName} <span id="player-score" class="font-bold text-indigo-600"></span>`;
+                UIElements.playerScore = document.getElementById('player-score');
+                
+                UIElements.projectTitle.textContent = currentProjectConfig.title;
+                UIElements.totalDays.textContent = currentProjectConfig.totalDays;
+                
+                updateUI();
+                renderTimeline();
+                renderTeam();
+                populateHireOptions();
+            }
+
+
+            function initializeGame(projectId) {
+                currentProjectConfig = projectLibrary[projectId];
+                
+                UIElements.projectSelectionModal.classList.add('hidden');
+                UIElements.nameEntryModal.classList.add('hidden');
+                UIElements.mainGame.classList.remove('hidden');
+                UIElements.headerSubtitle.innerHTML = `Managing for: ${playerName} <span id="player-score" class="font-bold text-indigo-600">(Efficiency: 100%)</span>`;
+                UIElements.playerScore = document.getElementById('player-score');
+                
+                gameState = {
+                    day: 0,
+                    budget: currentProjectConfig.initialBudget,
+                    team: [],
+                    tasks: JSON.parse(JSON.stringify(currentProjectConfig.tasks)).map(t => ({...t, progress: 0, completed: false, assigned: null, originalDuration: t.duration })),
+                    projectedEndDay: 0,
+                    gameEnded: false,
+                    bugs: 0,
+                    quality: 100,
+                    overtimeActive: false,
+                };
+                
+                UIElements.overtimeBtn.classList.remove('active');
+                UIElements.projectTitle.textContent = currentProjectConfig.title;
+                UIElements.totalDays.textContent = currentProjectConfig.totalDays;
+                
+                updateUI();
+                renderTimeline();
+                renderTeam();
+                populateHireOptions();
+                logEvent(`Project ${currentProjectConfig.title} has officially started. Your initial budget is ₹${currentProjectConfig.initialBudget.toLocaleString('en-IN')}. Hire your team to begin.`, "info");
+                UIElements.modal.classList.add('hidden');
+                UIElements.modalContent.classList.add('scale-95', 'opacity-0');
+            }
+            
+            function calculateProjectedEndDay() {
+                 let remainingWorkUnits = 0;
+                 gameState.tasks.forEach(task => {
+                    if(!task.completed) {
+                        remainingWorkUnits += (task.duration - task.progress);
+                    }
+                 });
+                 remainingWorkUnits += gameState.bugs * 2; 
+
+                 const dailyWorkRate = gameState.team.reduce((acc, member) => {
+                     return acc + member.productivity * (member.morale / 100);
+                 }, 0.1);
+                
+                 const projectedDays = remainingWorkUnits / dailyWorkRate;
+                 gameState.projectedEndDay = Math.ceil(gameState.day + projectedDays);
+            }
+            
+            function calculatePlayerScore() {
+                if (!currentProjectConfig.initialBudget) return 100;
+
+                // Budget Performance (40% weight)
+                const budgetPerf = Math.max(0, gameState.budget / currentProjectConfig.initialBudget);
+
+                // Quality Performance (30% weight)
+                const qualityPerf = gameState.quality / 100;
+
+                // Morale Performance (10% weight)
+                const avgMorale = gameState.team.length > 0 ? gameState.team.reduce((acc, m) => acc + m.morale, 0) / gameState.team.length : 100;
+                const moralePerf = avgMorale / 100;
+
+                // Schedule Performance (20% weight)
+                const scheduleVariance = gameState.projectedEndDay - currentProjectConfig.totalDays;
+                let schedulePerf = 1;
+                if (scheduleVariance > 0) {
+                    // Lose performance for being late
+                    schedulePerf = Math.max(0, 1 - (scheduleVariance / currentProjectConfig.totalDays));
+                } else {
+                    // Gain a small bonus for being early, capped at 10% bonus (total 1.1)
+                    schedulePerf = Math.min(1.1, 1 + ((-scheduleVariance / currentProjectConfig.totalDays) * 0.5));
+                }
+                
+                const totalScore = (budgetPerf * 40) + (qualityPerf * 30) + (schedulePerf * 20) + (moralePerf * 10);
+
+                return Math.round(totalScore);
+            }
+
+            async function nextDay() {
+                if (gameState.gameEnded) return;
+                gameState.day++;
+                
+                let dailyBurnRate = gameState.team.reduce((acc, member) => acc + member.dailyCost, 0);
+                if (gameState.overtimeActive) {
+                    dailyBurnRate *= 1.5;
+                    gameState.team.forEach(m => m.morale = Math.max(40, m.morale - 2));
+                } else {
+                    gameState.team.forEach(m => m.morale = Math.min(100, m.morale + 0.5));
+                }
+                gameState.budget -= dailyBurnRate;
+
+                const overtimeFactor = gameState.overtimeActive ? 1.5 : 1;
+                gameState.tasks.forEach(task => {
+                    if (!task.completed && areDependenciesMet(task)) {
+                        if (task.isQA) {
+                            if (gameState.bugs > 0) {
+                                const qaTeam = gameState.team.filter(m => m.skill === 'QA' || m.skill === 'Security');
+                                if (qaTeam.length > 0) {
+                                    const avgQAMorale = qaTeam.reduce((acc, m) => acc + m.morale, 0) / qaTeam.length;
+                                    const avgQAProd = qaTeam.reduce((acc, m) => acc + m.productivity, 0) / qaTeam.length;
+                                    let bugsFixed = (qaTeam.length * avgQAProd * (avgQAMorale / 100) * overtimeFactor) / 2;
+                                    bugsFixed = Math.min(gameState.bugs, bugsFixed);
+                                    gameState.bugs -= bugsFixed;
+                                    gameState.quality = Math.min(100, gameState.quality + bugsFixed * 0.5);
+                                }
+                            } else if (gameState.tasks.filter(t => t.isDev && !t.completed).length === 0) {
+                                task.completed = true;
+                                logEvent(`Task "${task.name}" is complete as bug backlog is empty.`, 'success');
+                            }
+                        } else {
+                            const assignedMembers = gameState.team.filter(m => m.skill === task.skill);
+                            if (assignedMembers.length > 0) {
+                                const avgMorale = assignedMembers.reduce((acc, m) => acc + m.morale, 0) / assignedMembers.length;
+                                const avgProd = assignedMembers.reduce((acc, m) => acc + m.productivity, 0) / assignedMembers.length;
+                                const progressToday = assignedMembers.length * avgProd * (avgMorale / 100) * overtimeFactor;
+                                task.progress += progressToday;
+                                
+                                if (task.progress >= task.duration) {
+                                    task.progress = task.duration;
+                                    task.completed = true;
+                                    logEvent(`Task "${task.name}" has been completed!`, 'success');
+                                    if(task.isDev) {
+                                        generateBugs(task, assignedMembers);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                if (Math.random() < 0.2) {
+                    triggerRandomEvent();
+                }
+                
+                calculateProjectedEndDay();
+                checkEndConditions();
+                updateUI();
+                await saveGame();
+            }
+
+            function generateBugs(task, members) {
+                const avgMorale = members.reduce((acc, m) => acc + m.morale, 0) / members.length;
+                const avgLevel = members.reduce((acc, m) => acc + (m.level === 'Senior' ? 1 : 2.2), 0) / members.length;
+                const baseBugChance = 0.08;
+                const bugChance = baseBugChance * avgLevel * (150 - avgMorale) / 100 * (gameState.overtimeActive ? 1.7 : 1);
+
+                if (Math.random() < bugChance) {
+                    const numBugs = Math.floor(Math.random() * 4) + 1;
+                    gameState.bugs += numBugs;
+                    gameState.quality = Math.max(0, gameState.quality - numBugs * 1.5);
+                    logEvent(`${numBugs} new bugs were discovered from the work on "${task.name}".`, 'danger');
+                }
+            }
+            
+             function areDependenciesMet(task) {
+                if (task.dependencies.length === 0) return true;
+                return task.dependencies.every(depId => {
+                    const depTask = gameState.tasks.find(t => t.id === depId);
+                    return depTask && depTask.completed;
+                });
+            }
+            
+            function checkEndConditions() {
+                const allTasksDone = gameState.tasks.every(t => t.completed);
+                const allBugsFixed = gameState.bugs <= 0;
+
+                if (gameState.budget <= 0) {
+                    endGame(false, "You've run out of budget! The project has been cancelled.");
+                } else if (allTasksDone && allBugsFixed) {
+                     if (gameState.quality < 80) {
+                        endGame(false, `Project completed, but with a quality of ${Math.round(gameState.quality)}%. The client is not satisfied. The project is a failure.`);
+                     } else {
+                        endGame(true, `Congratulations! You've successfully completed the project in ${gameState.day} days with a quality score of ${Math.round(gameState.quality)}%.`);
+                     }
+                } else if (gameState.day >= currentProjectConfig.totalDays * 1.5) {
+                    endGame(false, `Project timeline exceeded the hard deadline of ${Math.floor(currentProjectConfig.totalDays * 1.5)} days. The project is considered a failure.`);
+                }
+            }
+            
+            function endGame(isSuccess, message) {
+                gameState.gameEnded = true;
+                UIElements.modal.classList.remove('hidden');
+                setTimeout(() => {
+                    UIElements.modalContent.classList.remove('scale-95', 'opacity-0');
+                }, 10);
+                
+                UIElements.modalTitle.textContent = isSuccess ? "Project Success!" : "Project Failed";
+                UIElements.modalMessage.textContent = message;
+                
+                if(isSuccess) {
+                    UIElements.modalIcon.innerHTML = `<svg class="w-16 h-16 text-green-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+                } else {
+                    UIElements.modalIcon.innerHTML = `<svg class="w-16 h-16 text-red-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+                }
+                
+                let finalScore = `Final Budget: ₹${Math.round(gameState.budget).toLocaleString('en-IN')}. Final Day: ${gameState.day}. Final Efficiency: ${calculatePlayerScore()}%`;
+                UIElements.modalMessage.textContent += ` ${finalScore}`;
+            }
+
+            function updateUI() {
+                UIElements.currentDay.textContent = gameState.day;
+                UIElements.budget.textContent = `₹${Math.round(gameState.budget).toLocaleString('en-IN')}`;
+                
+                let dailyBurnRate = gameState.team.reduce((acc, member) => acc + member.dailyCost, 0);
+                if(gameState.overtimeActive) dailyBurnRate *= 1.5;
+                UIElements.burnRate.textContent = `Burn: ₹${dailyBurnRate.toLocaleString('en-IN')}/day`;
+                
+                const scheduleVariance = gameState.projectedEndDay - currentProjectConfig.totalDays;
+                UIElements.scheduleVariance.textContent = `Var: ${scheduleVariance > 0 ? '+' : ''}${scheduleVariance}d`;
+                UIElements.schedule.textContent = scheduleVariance <= 0 ? "On Track" : scheduleVariance <= 10 ? "At Risk" : "Delayed";
+                
+                const completedTasks = gameState.tasks.filter(t => t.completed).length;
+                const totalTasks = currentProjectConfig.tasks.length;
+                UIElements.tasksCompleted.textContent = `${completedTasks}/${totalTasks} Tasks`;
+                UIElements.scope.textContent = `${Math.round((completedTasks/totalTasks) * 100)}%`;
+                
+                const avgMorale = gameState.team.length > 0 ? gameState.team.reduce((acc, m) => acc + m.morale, 0) / gameState.team.length : 100;
+                UIElements.teamMorale.textContent = `${Math.round(avgMorale)}%`;
+
+                UIElements.quality.textContent = `${Math.round(gameState.quality)}%`;
+                UIElements.bugCount.textContent = `Bugs: ${Math.round(gameState.bugs)}`;
+                
+                if (UIElements.playerScore) {
+                    UIElements.playerScore.textContent = `(Efficiency: ${calculatePlayerScore()}%)`;
+                }
+
+                updateTimelineProgress();
+            }
+
+            function renderTimeline() {
+                UIElements.timeline.innerHTML = '';
+                gameState.tasks.forEach(task => {
+                    const isAvailable = areDependenciesMet(task);
+                    const taskEl = document.createElement('div');
+                    taskEl.className = `p-4 rounded-lg border-l-4 ${task.completed ? 'bg-green-50 border-green-400' : isAvailable ? 'bg-white border-gray-300 shadow-sm' : 'bg-gray-100 border-gray-300 opacity-60'}`;
+                    
+                    let durationText = `Effort: ${task.duration} units`;
+                    if (task.isQA) {
+                        durationText = `Bug Backlog: ${Math.round(gameState.bugs)} bugs`
+                    }
+
+                    taskEl.innerHTML = `
+                        <div class="flex justify-between items-center">
+                            <h4 class="font-semibold text-gray-800">${task.name}</h4>
+                            <span class="text-xs font-semibold px-2 py-1 rounded-full ${task.color.replace('bg-', 'bg-opacity-20 text-').replace('-500', '-800')}">${task.skill}</span>
+                        </div>
+                        <p class="text-xs text-gray-500 mb-2 mt-1">${durationText}</p>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+                            <div id="progress-${task.id}" class="h-2.5 rounded-full ${task.color}" style="width: 0%;"></div>
+                        </div>
+                    `;
+                    UIElements.timeline.appendChild(taskEl);
+                });
+                updateTimelineProgress();
+            }
+
+            function updateTimelineProgress() {
+                gameState.tasks.forEach(task => {
+                    const progressBar = document.getElementById(`progress-${task.id}`);
+                    if(progressBar) {
+                        let progressPercentage = (task.progress / task.duration) * 100;
+                        if (task.isQA) {
+                           const totalDevWork = currentProjectConfig.tasks.filter(t=>t.isDev).reduce((acc,t)=>acc+t.duration, 0);
+                           const bugsCreated = (gameState.quality < 100) ? (100 - gameState.quality) / 2 : 0;
+                           const totalPotentialBugs = totalDevWork / 10; 
+                           const bugsFixed = totalPotentialBugs - gameState.bugs;
+                           progressPercentage = totalPotentialBugs > 0 ? (bugsFixed/totalPotentialBugs) * 100 : 0;
+                           if(gameState.bugs <= 0 && gameState.tasks.filter(t => t.isDev && !t.completed).length === 0) progressPercentage = 100;
+                        }
+                        progressBar.style.width = `${progressPercentage}%`;
+                        if(task.completed) {
+                           progressBar.parentElement.parentElement.classList.add('bg-green-50', 'border-green-400');
+                        }
+                    }
+                });
+            }
+            
+            function renderTeam() {
+                UIElements.teamList.innerHTML = '';
+                if(gameState.team.length === 0) {
+                     UIElements.teamList.innerHTML = `<p class="text-gray-500 italic text-center p-4">Your team is empty. Hire someone to start making progress.</p>`;
+                } else {
+                    gameState.team.forEach(member => {
+                        const levelColor = member.level === 'Senior' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800';
+                        const memberEl = document.createElement('div');
+                        memberEl.className = 'bg-white p-3 rounded-lg shadow-sm border flex items-center justify-between';
+                        memberEl.innerHTML = `
+                            <div>
+                                <div class="flex items-center">
+                                     <p class="font-bold text-gray-800">${member.name}</p>
+                                     <span class="text-xs font-semibold px-2 py-0.5 rounded-full ml-2 ${levelColor}">${member.level}</span>
+                                </div>
+                                <p class="text-sm text-gray-600">${member.skill} Specialist</p>
+                                <p class="text-xs text-gray-500 mt-1">Cost: ₹${member.dailyCost.toLocaleString('en-IN')}/day | Morale: ${Math.round(member.morale)}%</p>
+                            </div>
+                            <button data-name="${member.name}" class="fire-btn bg-red-100 text-red-600 p-2 rounded-full hover:bg-red-200 transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                        `;
+                        UIElements.teamList.appendChild(memberEl);
+                    });
+                }
+            }
+            
+            function populateHireOptions() {
+                UIElements.hireOptions.innerHTML = '<option value="">Select a candidate...</option>';
+                currentProjectConfig.availableTalent.forEach(talent => {
+                    if (!gameState.team.some(m => m.name === talent.name)) {
+                        const option = document.createElement('option');
+                        option.value = talent.name;
+                        option.textContent = `${talent.name} (${talent.level} ${talent.skill}) - ₹${talent.dailyCost.toLocaleString('en-IN')}/day`;
+                        UIElements.hireOptions.appendChild(option);
+                    }
+                });
+            }
+
+            function logEvent(message, type = 'neutral') {
+                const icons = {
+                    success: `<svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`,
+                    warning: `<svg class="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`,
+                    danger: `<svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>`,
+                    info: `<svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`,
+                    neutral: `<svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`,
+                };
+
+                const logEntry = document.createElement('div');
+                logEntry.className = `event-log-entry flex items-start p-3 rounded-lg bg-gray-50`;
+                logEntry.innerHTML = `
+                    <div class="flex-shrink-0 mr-3">${icons[type] || icons['neutral']}</div>
+                    <div>
+                        <p class="text-sm text-gray-700"><span class="font-bold">[Day ${gameState.day}]</span> ${message}</p>
+                    </div>
+                `;
+                
+                UIElements.eventLog.prepend(logEntry);
+            }
+            
+            UIElements.nextDayBtn.addEventListener('click', nextDay);
+            
+            UIElements.saveExitBtn.addEventListener('click', async () => {
+                await saveGame();
+                showNameEntry();
+            });
+
+            UIElements.modalRestartBtn.addEventListener('click', () => {
+                clearSave();
+                showProjectSelection();
+            });
+            
+            UIElements.overtimeBtn.addEventListener('click', () => {
+                gameState.overtimeActive = !gameState.overtimeActive;
+                UIElements.overtimeBtn.classList.toggle('active');
+                if (gameState.overtimeActive) {
+                    logEvent("Overtime has been activated. Progress will be faster, but costs and stress will increase.", 'warning');
+                } else {
+                    logEvent("Overtime deactivated. Team returning to normal work hours.", 'info');
+                }
+            });
+
+            UIElements.hireBtn.addEventListener('click', () => {
+                const selectedName = UIElements.hireOptions.value;
+                if (!selectedName) return;
+                
+                const talent = currentProjectConfig.availableTalent.find(t => t.name === selectedName);
+                if (talent) {
+                    gameState.team.push({...talent});
+                    logEvent(`Hired ${talent.name}, a ${talent.level} ${talent.skill}.`, 'info');
+                    renderTeam();
+                    populateHireOptions();
+                    updateUI();
+                }
+            });
+
+            UIElements.teamList.addEventListener('click', (e) => {
+                const fireButton = e.target.closest('.fire-btn');
+                if (fireButton) {
+                    const memberName = fireButton.dataset.name;
+                    gameState.team = gameState.team.filter(m => m.name !== memberName);
+                    logEvent(`Fired ${memberName}. This will significantly impact team morale.`, 'danger');
+                    gameState.team.forEach(m => m.morale = Math.max(50, m.morale - 15));
+                    renderTeam();
+                    populateHireOptions();
+                    updateUI();
+                }
+            });
+
+            function triggerRandomEvent() {
+                const eventFunctions = [
+                    eventScopeCreep, eventKeyMemberSick, eventUnexpectedBug,
+                    eventProductivityBoost, eventVendorIssue, eventClientMeeting,
+                    eventSeniorPoaching
+                ];
+                const randomEvent = eventFunctions[Math.floor(Math.random() * eventFunctions.length)];
+                randomEvent();
+            }
+            
+            function createDecisionButtons(eventId, options, data = {}) {
+                let buttonsHTML = '<div class="mt-2 flex space-x-2">';
+                options.forEach(option => {
+                    let dataAttrs = `data-event="${eventId}" data-choice="${option.choice}"`;
+                    for (const key in data) {
+                        dataAttrs += ` data-${key}="${data[key]}"`;
+                    }
+                    buttonsHTML += `<button class="decision-btn text-xs bg-indigo-500 text-white px-3 py-1 rounded-md hover:bg-indigo-600" ${dataAttrs}>${option.text}</button>`;
+                });
+                buttonsHTML += '</div>';
+                return buttonsHTML;
+            }
+            
+            document.getElementById('log').addEventListener('click', e => {
+                if (e.target.classList.contains('decision-btn')) {
+                    const eventId = e.target.dataset.event;
+                    const choice = e.target.dataset.choice;
+                    handleDecision(eventId, choice, e.target.dataset);
+                    e.target.parentElement.remove();
+                }
+            });
+            
+            function handleDecision(eventId, choice, data) {
+                switch(eventId) {
+                    case 'scopeCreep':
+                        if (choice === 'accept') {
+                            gameState.budget += 150000;
+                            const newTask = { id: 10, name: "New Feature Request", duration: 15, skill: "Frontend", dependencies: [5], cost: 120000, progress: 0, completed: false, originalDuration: 15, isDev: true, color: 'bg-blue-500' };
+                            gameState.tasks.push(newTask);
+                            currentProjectConfig.tasks.push(newTask);
+                            logEvent("You accepted the new feature. Budget increased by ₹1,50,000, and a new task was added.", "info");
+                            renderTimeline();
+                        } else {
+                             gameState.team.forEach(m => m.morale = Math.max(60, m.morale - 5));
+                             logEvent("You rejected the feature. The client in Mumbai is unhappy, slightly affecting team morale.", "warning");
+                        }
+                        break;
+                    case 'vendorIssue':
+                         if (choice === 'pay') {
+                            gameState.budget -= 120000;
+                            logEvent("Paid the extra ₹1,20,000. The backend work can now proceed without delay.", "info");
+                         } else {
+                            const backendTask = gameState.tasks.find(t => t.skill === 'Backend' && !t.completed);
+                            if (backendTask) {
+                                backendTask.duration += 10;
+                                logEvent("You found another vendor. It delayed backend tasks.", "warning");
+                            }
+                         }
+                         break;
+                    case 'poaching':
+                        const member = gameState.team.find(m => m.name === data.member);
+                        if (!member) break;
+                        if (choice === 'raise') {
+                            member.dailyCost *= 1.2;
+                            member.morale = Math.min(100, member.morale + 20);
+                            logEvent(`You gave ${member.name} a 20% raise. They are staying with the project.`, 'success');
+                        } else {
+                            gameState.team = gameState.team.filter(m => m.name !== member.name);
+                            logEvent(`${member.name} has left the project for a competitor!`, 'danger');
+                        }
+                        renderTeam();
+                        populateHireOptions();
+                        break;
+                }
+                 calculateProjectedEndDay();
+                 updateUI();
+            }
+
+            function eventScopeCreep() {
+                const decisionId = 'scopeCreep';
+                const message = "The marketing team wants a new feature for the big Diwali campaign. It's 'urgent'. What do you do?" + 
+                createDecisionButtons(decisionId, [
+                    {choice: 'accept', text: 'Accept (+₹1.5L, new task)'},
+                    {choice: 'reject', text: 'Reject (Risk morale)'}
+                ]);
+                logEvent(message, 'warning');
+            }
+
+            function eventKeyMemberSick() {
+                if (gameState.team.length === 0) return;
+                const member = gameState.team[Math.floor(Math.random() * gameState.team.length)];
+                member.morale = Math.max(40, member.morale - 25);
+                logEvent(`${member.name} (${member.skill}) is down with viral fever and will be less productive.`, 'danger');
+            }
+
+            function eventUnexpectedBug() {
+                const incompleteTask = gameState.tasks.find(t => !t.completed && t.progress > 0 && t.isDev);
+                if (incompleteTask) {
+                    const bugs = Math.floor(Math.random() * 3) + 2;
+                    gameState.bugs += bugs;
+                    gameState.quality = Math.max(0, gameState.quality - bugs * 1.5);
+                    logEvent(`A critical architectural flaw was found from work on "${incompleteTask.name}", creating ${bugs} complex bugs!`, 'danger');
+                }
+            }
+
+            function eventProductivityBoost() {
+                if (gameState.team.length === 0) return;
+                gameState.team.forEach(m => m.morale = Math.min(100, m.morale + 10));
+                logEvent("Team morale is high after a successful team lunch outing! Everyone is more productive.", "success");
+            }
+            
+            function eventVendorIssue() {
+                const backendTask = gameState.tasks.find(t => t.skill === 'Backend' && !t.completed);
+                if (!backendTask) return;
+                
+                const decisionId = 'vendorIssue';
+                const message = "Your software vendor from Bangalore is demanding an unexpected ₹1,20,000 fee to fix a critical issue, or backend work will be delayed." + 
+                createDecisionButtons(decisionId, [
+                    {choice: 'pay', text: 'Pay the fee'},
+                    {choice: 'wait', text: 'Find another vendor (Delay)'}
+                ]);
+                logEvent(message, 'danger');
+            }
+            
+            function eventClientMeeting() {
+                logEvent("You have a progress meeting with the client. They seem pleased with the current trajectory.", "info");
+            }
+
+            function eventSeniorPoaching() {
+                const seniorMember = gameState.team.find(m => m.level === 'Senior');
+                if(!seniorMember) return;
+
+                const decisionId = 'poaching';
+                const message = `A competitor is trying to poach your Senior ${seniorMember.skill}, ${seniorMember.name}! They've been offered more money. What will you do?` +
+                createDecisionButtons(decisionId, [
+                    {choice: 'raise', text: 'Give 20% raise'},
+                    {choice: 'reject', text: 'Let them go'}
+                ], {member: seniorMember.name});
+                logEvent(message, 'danger');
+            }
+            
+            // --- Initial Setup & Event Listeners ---
+            
+            UIElements.startGameBtn.addEventListener('click', () => {
+                const name = UIElements.playerNameInput.value.trim();
+                if (name) {
+                    playerName = name;
+                }
+                showProjectSelection();
+            });
+
+            UIElements.continueBtn.addEventListener('click', () => {
+                resumeGame();
+            });
+            UIElements.newGameBtn.addEventListener('click', async () => {
+                await clearSave();
+                showProjectSelection();
+            });
+
+            UIElements.projectUtsavCard.addEventListener('click', () => initializeGame('utsav'));
+            UIElements.projectInfraLeapCard.addEventListener('click', () => initializeGame('infraLeap'));
+            UIElements.projectCementPlantCard.addEventListener('click', () => initializeGame('cementPlant'));
+            UIElements.nextDayBtn.addEventListener('click', nextDay);
+            UIElements.saveExitBtn.addEventListener('click', async () => {
+                await saveGame();
+                showProjectSelection();
+            });
+            UIElements.modalRestartBtn.addEventListener('click', showProjectSelection);
+            
+            // Initial check for a saved game on page load
+            window.onload = async () => {
+                if (await loadGame()) {
+                    showContinueScreen();
+                } else {
+                    showNameEntry();
+                }
+            };
+        });
+    </script>
+</body>
+</html>

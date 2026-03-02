@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>STRATSIM TBS: Apex Master Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&family=Playfair+Display:ital,wght@0,700;1,700&display=swap');
+        :root { --bg: #020617; --card: #0f172a; --blue: #3b82f6; --rose: #f43f5e; --emerald: #10b981; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: #f1f5f9; -webkit-tap-highlight-color: transparent; }
+        .tab-active { border-bottom: 3px solid var(--blue); color: var(--blue); font-weight: 700; background: #1e293b; }
+        .glass-card { background: var(--card); border-radius: 12px; border: 1px solid #1e293b; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); }
+        .btn-action { background: var(--blue); transition: all 0.2s; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; border: none; }
+        .btn-action:hover { background: #2563eb; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
+        
+        #processing-overlay {
+            position: fixed; inset: 0; background: rgba(2, 6, 23, 0.99); z-index: 5000;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            backdrop-filter: blur(12px); padding: 20px;
+        }
+        .progress-bar { width: 0%; height: 100%; background: var(--blue); transition: width 4s linear; }
+        
+        input, textarea { background: #020617; border: 1px solid #334155; border-radius: 8px; padding: 12px; color: var(--blue); font-family: monospace; outline: none; width: 100%; font-size: 16px; }
+        input:focus, textarea:focus { border-color: var(--blue); }
+        
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .ai-glow { border-left: 4px solid var(--rose); background: linear-gradient(90deg, #450a0a 0%, #0f172a 100%); }
+        .user-glow { border-left: 4px solid var(--blue); background: linear-gradient(90deg, #1e3a8a 0%, #0f172a 100%); }
+        .welcome-bg { background: radial-gradient(circle at top right, #1e3a8a, #020617); }
+        
+        #floating-help-btn {
+            position: fixed; bottom: 20px; left: 20px; z-index: 1000;
+            width: 50px; height: 50px; border-radius: 25px;
+            background: var(--blue); display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.5); cursor: pointer;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+
+        #help-modal, #rejection-modal, #dashboard-info-modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 4500;
+            display: none; align-items: center; justify-content: center; padding: 20px;
+        }
+
+        .manual-text p { margin-bottom: 1.5rem; line-height: 1.8; text-align: justify; }
+        .manual-text h3 { color: var(--blue); font-weight: 900; text-transform: uppercase; margin-top: 2.5rem; margin-bottom: 1.25rem; font-size: 1.2rem; border-left: 4px solid var(--blue); padding-left: 1rem; }
+        
+        .report-table { width: 100%; border-collapse: collapse; font-size: 10px; }
+        .report-table th, .report-table td { border: 1px solid #1e293b; padding: 8px; text-align: center; }
+        .report-table th { background: #1e293b; color: var(--blue); }
+        
+        #toast-container {
+            position: fixed; bottom: 24px; right: 24px; z-index: 6000;
+            display: flex; flex-direction: column; gap: 8px; pointer-events: none;
+        }
+
+        .event-banner { animation: slideDown 0.6s cubic-bezier(0.23, 1, 0.32, 1); }
+        @keyframes slideDown { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        #certificate-canvas { display: none; }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div id="toast-container"></div>
+
+    <!-- PERSISTENT BRANDING -->
+    <div id="sim-persistent-header" class="hidden bg-slate-900 border-b border-slate-800 p-2 text-center sticky top-0 z-[60]">
+        <p class="text-[9px] font-black tracking-[0.5em] text-slate-500 uppercase">STRATSIM TBS • Master Academic Suite</p>
+    </div>
+
+    <!-- FLOATING HELP -->
+    <div id="floating-help-btn" onclick="toggleHelp()">
+        <span class="font-black text-white text-xl">?</span>
+    </div>
+
+    <!-- MODALS -->
+    <div id="help-modal" onclick="toggleHelp()">
+        <div class="glass-card max-w-lg w-full p-8 space-y-6" onclick="event.stopPropagation()">
+            <h2 class="text-xl font-black text-blue-400 uppercase tracking-widest italic text-center underline decoration-rose-500">Board Regulations</h2>
+            <div class="space-y-4 text-xs text-slate-300 leading-relaxed">
+                <p>• <strong class="text-rose-400 uppercase">8% Ad Budget Cap:</strong> Marketing for any single brand cannot exceed 8% of your total liquid cash.</p>
+                <p>• <strong class="text-emerald-400 uppercase">30% Antitrust Rule:</strong> Your sales volume is capped at 30% of total market segment demand. Overproduction is waste.</p>
+                <p>• <strong class="text-white uppercase">Innovation Cycle:</strong> Mandatory R&D launch every 2nd quarter (Q2, Q4, etc.). 4 quarters of stagnation = Termination.</p>
+                <p>• <strong class="text-white uppercase">Pricing:</strong> Limit $1,500 or 5x Mfg Cost. Elasticity is set to EXPERT level.</p>
+                <p>• <strong class="text-blue-400 uppercase">Event Frequency:</strong> One macro-economic event is guaranteed every quarter.</p>
+            </div>
+            <button onclick="toggleHelp()" class="w-full btn-action text-white py-3 rounded-lg">Return to Simulation</button>
+        </div>
+    </div>
+
+    <div id="dashboard-info-modal" onclick="toggleDashboardInfo()">
+        <div class="glass-card max-w-2xl w-full p-8 space-y-6 overflow-y-auto max-h-[90vh]" onclick="event.stopPropagation()">
+            <h2 class="text-2xl font-black text-blue-400 uppercase italic tracking-tighter border-b border-blue-500/20 pb-4">Understanding the Dashboard</h2>
+            <div class="space-y-6 text-[13px] text-slate-300 leading-relaxed">
+                <div>
+                    <h4 class="text-white font-bold uppercase mb-2 flex items-center gap-2"><span class="w-2 h-2 bg-blue-500 rounded-full"></span> HUD: Liquidity & SPI</h4>
+                    <p>The top bar tracks your lifeblood. <strong>Liquidity</strong> is your total cash available for COGS, Ad-Spend, and R&D. The <strong>User SPI</strong> is your strategic grade—it rewards consistent profitability and penalizes losses with a -25% crash. Winning requires finishing Period 12 with an SPI higher than BetaCorp AI.</p>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold uppercase mb-2 flex items-center gap-2"><span class="w-2 h-2 bg-emerald-500 rounded-full"></span> Strategic Demand Forecast</h4>
+                    <p>This shows the <strong>Total Market Unit Potential</strong> after macro-events. <strong>Rule of thumb:</strong> You can only sell 30% of these numbers.</p>
+                </div>
+            </div>
+            <button onclick="toggleDashboardInfo()" class="w-full btn-action text-white py-4 rounded-xl font-black uppercase text-xs">Acknowledge Intelligence</button>
+        </div>
+    </div>
+
+    <div id="rejection-modal">
+        <div class="glass-card max-w-lg w-full p-8 space-y-6 border-rose-500/50 shadow-2xl shadow-rose-900/20">
+            <h2 class="text-xl font-black text-rose-500 uppercase tracking-tighter italic">Strategy Rejected</h2>
+            <p class="text-xs text-slate-400 font-bold uppercase tracking-widest">The board has identified the following breaches:</p>
+            <ul id="rejection-list" class="space-y-3 text-sm text-slate-200 list-disc list-inside"></ul>
+            <button onclick="closeRejection()" class="w-full btn-action bg-rose-600 hover:bg-rose-700 text-white py-3 rounded-lg mt-4">Revise Plan</button>
+        </div>
+    </div>
+
+    <!-- PROCESSING OVERLAY -->
+    <div id="processing-overlay">
+        <div class="text-center w-full max-w-sm">
+            <h2 class="text-2xl font-black italic text-white mb-1 uppercase tracking-tighter">STRATSIM TBS</h2>
+            <p id="proc-msg" class="text-[10px] text-slate-500 uppercase font-bold tracking-[0.2em]">Executing Quarterly Logic...</p>
+            <div class="w-full h-1 bg-slate-800 mt-6 rounded-full overflow-hidden">
+                <div id="loading-bar" class="progress-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- WELCOME SCREEN -->
+    <section id="screen-welcome" class="fixed inset-0 z-[100] welcome-bg flex items-center justify-center p-6 overflow-y-auto text-center">
+        <div class="max-w-md w-full">
+            <h3 class="text-blue-500 font-bold tracking-[0.3em] uppercase text-[10px] mb-2">Academic Simulation Suite</h3>
+            <h1 class="text-5xl md:text-7xl font-black text-white tracking-tighter mb-4 italic uppercase">STRATSIM <span class="text-blue-600">TBS</span></h1>
+            
+            <div id="load-game-container" class="hidden mb-6">
+                <div class="glass-card p-4 border-emerald-500 bg-emerald-500/10 mb-4 animate-pulse">
+                    <p class="text-emerald-400 text-xs font-black uppercase tracking-widest mb-2">Previous Session Found</p>
+                    <button onclick="loadGameFromCloud()" class="w-full bg-emerald-600 text-white py-3 rounded-lg font-black uppercase text-xs tracking-widest">Resume Existing Simulation</button>
+                </div>
+            </div>
+
+            <div class="space-y-4 text-left glass-card p-8 border-slate-700">
+                <p class="text-[9px] font-black text-slate-400 uppercase mb-4 text-center tracking-[0.2em]">Start New Simulation</p>
+                <div>
+                    <label class="text-[9px] font-black text-slate-500 uppercase mb-2 block tracking-widest">Executive Leadership Name</label>
+                    <input type="text" id="input-user-name" placeholder="Name for Certification">
+                </div>
+                <div>
+                    <label class="text-[9px] font-black text-slate-500 uppercase mb-2 block tracking-widest">Global Firm Identifier</label>
+                    <input type="text" id="input-firm-name" placeholder="Company ID">
+                </div>
+                <div id="welcome-error" class="hidden text-rose-500 text-[10px] font-bold uppercase tracking-widest text-center mt-2 animate-pulse">
+                    Identification Error: Provide all fields.
+                </div>
+                <button onclick="goToManual()" class="w-full btn-action text-white py-5 rounded-xl mt-4">Initialize System</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- STRATEGIC MANUAL SCREEN -->
+    <section id="screen-manual" class="hidden fixed inset-0 z-[90] bg-[#020617] overflow-y-auto p-4 md:p-12">
+        <div class="max-w-4xl mx-auto pb-24 text-left">
+            <p class="text-blue-500 font-black tracking-[0.4em] mb-2 uppercase text-xs">STRATSIM TBS ACADEMIC MASTER VERSION</p>
+            <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 border-b border-slate-800 pb-8 gap-6 text-left">
+                <div>
+                    <h2 class="text-4xl font-black italic uppercase tracking-tighter text-white">Strategic <span class="text-blue-500">Manual</span></h2>
+                    <p class="text-slate-500 text-[10px] font-bold uppercase tracking-[0.3em] mt-2">Taxila Business School • Module CS-901 Master Class</p>
+                </div>
+                <button onclick="startGame()" class="w-full md:w-auto btn-action text-white px-12 py-5 rounded-xl text-xs uppercase tracking-widest">Deploy strategy</button>
+            </header>
+
+            <div class="manual-text text-slate-400 text-[14px]">
+                <h3>1. Pedagogical Intent & Learning Outcomes</h3>
+                <p>The StratSim TBS simulation represents a pinnacle of management education. Participants are forced to move beyond static textbook definitions of the 4Ps to experience the "Friction of Competitive Warfare."</p>
+                <p>By the end of this 12-quarter intensive, participants will demonstrate an advanced mastery of dynamic positioning, macro-environmental survivability, and capital efficiency.</p>
+                
+                <h3>2. Regulatory Guardrails & Antitrust Compliance</h3>
+                <p><strong>I. The 8% Advertising Budget Cap:</strong> Marketing spend for any single brand is strictly capped at 8% of the firm's total quarterly liquidity.</p>
+                <p><strong>II. The 30% Market Share Ceiling:</strong> No player brand is permitted to fulfill more than 30% of total segment demand. This rule necessitates a diversified portfolio strategy.</p>
+                <p><strong>III. Price Regulatory Oversight:</strong> Retail prices are capped at $1,500 or 5x the Unit Manufacturing Cost.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- TERMINATION SCREEN -->
+    <section id="screen-terminated" class="hidden fixed inset-0 z-[200] bg-black flex items-center justify-center p-6 text-center">
+        <div class="max-w-lg w-full space-y-8 animate-pulse">
+            <h1 class="text-rose-600 font-black text-6xl tracking-tighter italic uppercase underline decoration-white decoration-4">TERMINATED</h1>
+            <div class="glass-card p-8 border-rose-900 shadow-2xl shadow-rose-900/20">
+                <p id="term-reason" class="text-white text-sm mb-6 italic leading-relaxed"></p>
+                <button onclick="location.reload()" class="w-full btn-action bg-white text-black hover:bg-slate-200 py-4 rounded-xl text-xs font-black uppercase">Re-Apply</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- MAIN APP -->
+    <div id="app" class="hidden max-w-7xl mx-auto p-2 md:p-6 pb-24">
+        <header class="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4 mb-6">
+            <div class="glass-card p-4 border-blue-500/20"><h1 id="display-firm-name" class="text-xs md:text-sm font-black italic uppercase text-blue-400 truncate">FIRM</h1><p class="text-[8px] text-slate-500 font-bold uppercase tracking-widest">Quarter <span id="display-period" class="text-white">1</span> / 12</p></div>
+            <div class="glass-card p-4 border-t-2 border-blue-500 user-glow"><p class="metric-label text-[8px]" id="display-user-label">USER SPI</p><div class="flex items-end justify-between"><p id="user-spi" class="text-lg md:text-2xl font-mono font-bold text-white">1,000</p><div id="user-spi-change" class="text-[8px] font-bold text-emerald-500">+0.0%</div></div></div>
+            <div class="glass-card p-4 border-t-2 border-rose-600 ai-glow"><p class="metric-label text-[8px]">AI SPI (BetaCorp)</p><div class="flex items-end justify-between"><p id="ai-spi" class="text-lg md:text-2xl font-mono font-bold text-white">1,000</p><div id="ai-spi-change" class="text-[8px] font-bold text-emerald-500">+0.0%</div></div></div>
+            <div class="glass-card p-4 border-t-2 border-emerald-500"><p class="metric-label text-[8px]">Liquidity</p><p id="user-budget" class="text-lg md:text-2xl font-mono font-bold text-emerald-400">$0</p></div>
+        </header>
+
+        <div id="event-box" class="hidden mb-6 rounded-xl p-5 border flex items-center gap-6 event-banner shadow-2xl">
+            <div id="event-icon" class="text-5xl"></div>
+            <div class="flex-1 text-white"><h2 id="event-title" class="font-black uppercase tracking-tight text-lg text-white"></h2><p id="event-desc" class="text-sm mt-1 text-slate-200"></p></div>
+        </div>
+
+        <nav class="flex overflow-x-auto no-scrollbar space-x-1 mb-6 bg-slate-900 p-1 rounded-xl border border-slate-800 sticky top-14 z-50">
+            <button onclick="switchTab('dashboard')" id="btn-dashboard" class="tab-btn px-6 py-4 text-[10px] font-bold rounded-lg transition-all tab-active uppercase tracking-widest">Market Hub</button>
+            <button onclick="switchTab('marketing')" id="btn-marketing" class="tab-btn px-6 py-4 text-[10px] font-bold rounded-lg transition-all text-slate-500 uppercase tracking-widest">Decisions</button>
+            <button onclick="switchTab('research')" id="btn-research" class="tab-btn px-6 py-4 text-[10px] font-bold rounded-lg transition-all text-slate-500 uppercase tracking-widest">R&D Lab</button>
+            <button onclick="switchTab('financials')" id="btn-financials" class="tab-btn px-6 py-4 text-[10px] font-bold rounded-lg transition-all text-slate-500 uppercase tracking-widest">Audits</button>
+            <button onclick="switchTab('history')" id="btn-history" class="tab-btn px-6 py-4 text-[10px] font-bold rounded-lg transition-all text-slate-500 uppercase tracking-widest">History</button>
+        </nav>
+
+        <main class="space-y-6">
+            <section id="view-dashboard" class="space-y-6">
+                <div class="flex justify-between items-center bg-blue-500/5 p-4 rounded-xl border border-blue-500/10">
+                    <div><h3 class="text-white font-black uppercase text-sm">Corporate Dashboard</h3><p class="text-[10px] text-slate-500 uppercase tracking-widest">Global Industry Standings</p></div>
+                    <div class="flex gap-2">
+                        <button onclick="saveGameToCloud()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-emerald-700 transition-all">Save Progress</button>
+                        <button onclick="toggleDashboardInfo()" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 transition-all">Guide</button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 space-y-6">
+                        <div class="glass-card p-6 border-t-4 border-emerald-500"><h3 class="font-black text-emerald-400 uppercase text-[10px] mb-4 tracking-[0.2em]">Quarterly Strategic Demand Forecast</h3><div id="demand-card-container" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div></div>
+                        <div class="glass-card p-4 h-64"><canvas id="chart-spi"></canvas></div>
+                    </div>
+                    <div class="space-y-6">
+                        <div class="glass-card p-4 h-64"><canvas id="chart-share"></canvas></div>
+                        <div class="glass-card p-6 ai-glow"><div class="flex justify-between items-center mb-4"><h3 class="font-black text-rose-500 uppercase text-[10px]">BetaCorp Monitoring</h3><div id="ai-policy-label" class="text-[8px] font-black text-slate-500 uppercase tracking-widest">Standard</div></div><div id="ai-decision-feed" class="space-y-3 text-[10px] font-mono text-slate-400"></div></div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="view-marketing" class="hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    <div class="lg:col-span-3 space-y-4" id="user-brand-list"></div>
+                    <div class="space-y-4"><div class="glass-card p-6 bg-slate-950 border-blue-500/30 border shadow-2xl"><h4 class="font-black text-slate-500 uppercase text-[10px] mb-4 tracking-widest uppercase">Submission</h4><div class="space-y-4 mb-8 text-[11px]"><div class="flex justify-between"><span>Ad Commit:</span><span id="total-ad-cost" class="text-blue-400 font-mono">$0</span></div><div class="flex justify-between pt-2 border-t border-slate-800"><span>Projected Liquid:</span><span id="est-remainder" class="text-emerald-400 font-mono">$0</span></div></div><button onclick="initiateTurnover()" class="w-full btn-action text-white py-5 rounded-xl font-black text-sm uppercase">Submit Strategy</button></div></div>
+                </div>
+            </section>
+
+            <section id="view-research" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6"><div class="lg:col-span-2 glass-card p-6"><h3 class="font-bold text-slate-400 uppercase text-[10px] mb-4">Consumer Ideal Points</h3><div class="overflow-x-auto"><table class="w-full text-[11px] border-collapse min-w-[500px] text-center"><thead class="bg-slate-800 text-slate-400 font-bold uppercase border-b border-slate-700"><tr><th class="p-4 text-left">Segment</th><th>Ideal Power</th><th>Ideal Design</th><th>Price</th><th>Trend</th></tr></thead><tbody id="research-table-body"></tbody></table></div></div><div class="glass-card p-6 border-blue-500/20 border"><h4 class="font-bold mb-4 text-xs uppercase text-blue-400 tracking-widest">R&D Lab</h4><div class="space-y-4"><input id="rd-name" type="text" placeholder="Brand ID"><div class="grid grid-cols-2 gap-2"><input id="rd-power" type="number" value="75"><input id="rd-design" type="number" value="75"></div><button onclick="launchRD()" class="w-full btn-action text-white py-4 rounded-xl text-xs font-black uppercase">Authorize $5,000</button></div></div></section>
+
+            <section id="view-financials" class="hidden"><div class="grid grid-cols-1 md:grid-cols-2 gap-6"><div class="glass-card p-6 border-t-4 border-blue-500"><h4 class="text-blue-400 mb-6 text-[10px] font-black uppercase tracking-widest">Advanced Financial Audit</h4><div id="user-pl" class="space-y-3 font-mono text-[11px]"></div></div><div class="glass-card p-6 border-t-4 border-rose-600"><h4 class="text-rose-500 mb-6 text-[10px] font-black uppercase tracking-widest text-right italic">BetaCorp Intelligence</h4><div id="ai-pl" class="space-y-3 font-mono text-[11px]"></div></div></div></section>
+            
+            <section id="view-history" class="hidden space-y-4">
+                <div class="glass-card p-6"><h3 class="text-blue-400 font-black uppercase text-xs mb-4">Quarterly Executive Log</h3><div class="overflow-x-auto"><table class="report-table text-white"><thead><tr><th>Q</th><th>Event</th><th>Brand</th><th>Price</th><th>Marketing</th><th>Prod</th><th>Outcome</th></tr></thead><tbody id="live-history-body"></tbody></table></div></div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // --- API CONFIGURATION ---
+        const API_CONFIG = {
+            baseUrl: "https://erp.taxila.in/api/game/strastim2"
+        };
+
+        function getUserId() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get("userId") || "guest";
+        }
+
+        // --- GAME ASSETS & CONSTANTS ---
+        const DATASETS = Array.from({length: 20}, () => ({
+            size: 30000 + (Math.random() * 20000),
+            weights: [0.25, 0.40, 0.20, 0.15].map(w => w + (Math.random() * 0.1 - 0.05)),
+            budget: 85000 + (Math.random() * 14000), 
+            aP: 50 + (Math.random() * 30), aD: 50 + (Math.random() * 30)
+        }));
+
+        const MACRO_EVENTS = [
+            { id: 'RECESSION', title: 'Deep Recession', desc: 'Demand falls 45%. Savers segment spikes.', icon: '📉', demandMod: 0.55, saverShift: 1.9, innovatorShift: 0.15, color: 'bg-rose-950 border-rose-500 text-white' },
+            { id: 'TARIFFS', title: 'Trade Embargo', desc: 'Manufacturing costs +40% industry-wide.', icon: '🚢', costMod: 1.40, color: 'bg-amber-950 border-amber-500 text-white' },
+            { id: 'INTEREST_RATES', title: 'Monetary Crisis', desc: 'Holding costs 6x higher. Clear inventory!', icon: '🏛️', invHoldMod: 6.0, color: 'bg-blue-950 border-blue-500 text-white' }
+        ];
+
+        const SEGMENTS = [
+            { id:0, name:'Professionals', iPower:85, iDesign:70, iPrice:480, growth:1.05 },
+            { id:1, name:'Savers', iPower:30, iDesign:30, iPrice:160, growth:1.02 },
+            { id:2, name:'Innovators', iPower:95, iDesign:95, iPrice:650, growth:1.15 },
+            { id:3, name:'Achievers', iPower:70, iDesign:85, iPrice:380, growth:1.08 }
+        ];
+
+        let state = {
+            un:"", fn:"", period:1, marketSize:0, activeEvent: null, isUserLeading: false, aiPolicy: "Standard",
+            lastRndPeriod: 0, rndLaunchedThisPeriod: false,
+            user:{ budget:0, spi:1000, spiHistory:[1000], brands:[], cumulative: { rev: 0, cogs: 0, mkt: 0, hold: 0, profit: 0 } },
+            ai:{ budget:12000, spi:1000, spiHistory:[1000], brands:[], cumulative: { rev: 0, cogs: 0, mkt: 0, hold: 0, profit: 0 } },
+            decisionHistory: [],
+            simulationId: localStorage.getItem('simulation_id') || crypto.randomUUID()
+        };
+
+        localStorage.setItem('simulation_id', state.simulationId);
+
+        let audioCtx, charts={};
+
+        // --- UI CORE ---
+        function toggleHelp() { document.getElementById('help-modal').style.display = (document.getElementById('help-modal').style.display === 'flex' ? 'none' : 'flex'); }
+        function toggleDashboardInfo() { document.getElementById('dashboard-info-modal').style.display = (document.getElementById('dashboard-info-modal').style.display === 'flex' ? 'none' : 'flex'); }
+        function closeRejection() { document.getElementById('rejection-modal').style.display = 'none'; }
+        
+        function goToManual() {
+            state.un = document.getElementById('input-user-name').value.trim();
+            state.fn = document.getElementById('input-firm-name').value.trim();
+            if(!state.un || !state.fn) return document.getElementById('welcome-error').classList.remove('hidden');
+            document.getElementById('screen-welcome').classList.add('hidden');
+            document.getElementById('screen-manual').classList.remove('hidden');
+        }
+
+        function startGame() {
+            if (!state.user.brands.length) {
+                const ds = DATASETS[Math.floor(Math.random()*DATASETS.length)];
+                state.marketSize = ds.size; state.user.budget = ds.budget;
+                SEGMENTS.forEach((s,i) => s.weight = ds.weights[i]);
+                state.user.brands = [{ name: state.fn.toUpperCase().substring(0, 8), price:null, adv:null, prod:null, power:ds.aP, design:ds.aD, cost:145, inv:0, sold:0, rev:0, awareness:0.3 }];
+                state.ai.brands = [{ name:'BETA', price:425, adv:1600, prod:8000, power:ds.aP, design:ds.aD, cost:145, inv:0, sold:0, rev:0, awareness:0.35 }];
+                state.activeEvent = MACRO_EVENTS[Math.floor(Math.random()*MACRO_EVENTS.length)];
+            }
+            
+            document.getElementById('app').classList.remove('hidden');
+            document.getElementById('sim-persistent-header').classList.remove('hidden');
+            document.getElementById('screen-manual').classList.add('hidden');
+            document.getElementById('screen-welcome').classList.add('hidden');
+            document.getElementById('display-firm-name').innerText = state.fn.toUpperCase();
+            render(); 
+            if (state.period === 1) runAIBrain();
+        }
+
+        // --- API OPERATIONS ---
+        async function saveGameToCloud() {
+            const userId = getUserId();
+            // Fallback for local testing
+            if (!API_CONFIG.baseUrl || API_CONFIG.baseUrl === "") {
+                notify("Local: Session Saved", "success");
+                localStorage.setItem(`save_${state.simulationId}`, JSON.stringify(state));
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_CONFIG.baseUrl}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: userId, gameState: state })
+                });
+                if (response.ok) {
+                    notify("Cloud Synchronized.", "success");
+                    // Flag local storage that a save exists
+                    localStorage.setItem(`save_${state.simulationId}`, "true");
+                } else throw new Error();
+            } catch (e) {
+                notify("Cloud Sync Failed.", "error");
+            }
+        }
+
+        async function loadGameFromCloud() {
+            const userId = getUserId();
+            
+            // First check if there is a local json save
+            const localSave = localStorage.getItem(`save_${state.simulationId}`);
+            if (localSave && localSave.startsWith('{')) {
+                state = JSON.parse(localSave);
+                startGame();
+                notify("Local Strategy Loaded.", "success");
+                return;
+            }
+
+            // Otherwise, attempt cloud retrieval
+            try {
+                const response = await fetch(`${API_CONFIG.baseUrl}?userId=${userId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && data.gameState) {
+                        state = data.gameState;
+                        startGame();
+                        notify("Cloud Intelligence Retrieved.", "success");
+                    } else {
+                        throw new Error("Empty data");
+                    }
+                }
+            } catch (e) {
+                notify("Retrieval Failed.", "error");
+            }
+        }
+
+        /**
+         * Consistently check for existing saves from local storage OR Cloud API
+         */
+        async function checkExistingSaves() {
+            const userId = getUserId();
+            const container = document.getElementById('load-game-container');
+            
+            // Check local flag first
+            const localFlag = localStorage.getItem(`save_${state.simulationId}`);
+            if (localFlag) {
+                container.classList.remove('hidden');
+                return;
+            }
+
+            // Check cloud if API is configured
+            if (API_CONFIG.baseUrl && API_CONFIG.baseUrl !== "") {
+                try {
+                    const response = await fetch(`${API_CONFIG.baseUrl}?userId=${userId}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data && data.gameState) {
+                            container.classList.remove('hidden');
+                        }
+                    }
+                } catch (e) {
+                    console.log("Cloud check skipped or failed.");
+                }
+            }
+        }
+
+        // --- ENGINE ---
+        function runAIBrain() {
+            const ev = state.activeEvent; 
+            const totalSize = state.marketSize * (ev?.demandMod || 1.0);
+            state.isUserLeading = state.user.spi > state.ai.spi;
+            state.aiPolicy = state.isUserLeading ? "Omega Protocol (Retaliation)" : "Innovation Blitz";
+            
+            state.ai.brands.forEach(b => {
+                const c = b.cost * (ev?.costMod || 1.0);
+                const mp = (c / (ev?.revenueMod || 1.0)) / (1 - (state.isUserLeading ? 0.20 : 0.45));
+                b.prod = Math.max(0, Math.min(Math.round(totalSize * 0.25 * 0.50) - b.inv, 25000));
+                b.price = Math.max(mp, 450);
+                b.adv = state.isUserLeading ? Math.min(state.ai.budget * 0.3, 5000) : 1500;
+            });
+
+            if (state.period % 3 === 0) {
+                const brandId = "B-Ω" + (state.ai.brands.length + 1);
+                state.ai.brands.push({ name: brandId, power: 85, design: 85, price: 550, adv: 2500, prod: 4000, cost: 170, inv: 0, sold: 0, rev: 0, awareness: 0.1 });
+            }
+        }
+
+        function executeLogic() {
+            const ev = state.activeEvent;
+            const pts = [...state.user.brands.map(b=>({...b, owner:'user'})), ...state.ai.brands.map(b=>({...b, owner:'ai'}))];
+            
+            pts.forEach(b => { 
+                b.inv = Math.round(b.inv * 0.8); 
+                b.pSold = 0; 
+                b.pRev = 0; 
+            });
+
+            const mSize = state.marketSize * (ev?.demandMod || 1.0);
+            SEGMENTS.forEach(seg => {
+                let w = seg.weight || 0.25;
+                if(ev?.id==='RECESSION') { 
+                    if(seg.id===1) w*=ev.saverShift; 
+                    if(seg.id===2) w*=ev.innovatorShift; 
+                }
+                const demand = mSize * w;
+                const utils = pts.map(b => {
+                    const dP = Math.abs(b.power - seg.iPower)/100, dPr = Math.max(0, (b.price - seg.iPrice)/seg.iPrice);
+                    return Math.exp(-(dP * 5.0) -(dPr * 12.0) +(Math.log(b.awareness + 0.05) * 1.6));
+                });
+                const sU = utils.reduce((s,u)=>s+u,0);
+                pts.forEach((b,i)=>{
+                    const sh = sU > 0 ? utils[i]/sU : 0;
+                    const maxSh = (b.owner === 'user') ? 0.30 : 0.80; 
+                    const sold = Math.min(demand * Math.min(sh, maxSh), (b.prod + b.inv));
+                    b.pSold += sold; b.pRev += sold * b.price;
+                });
+            });
+
+            const finalize = (k) => {
+                let r=0, c=0, a=0, h=0, invVal=0;
+                state[k].brands.forEach(b => {
+                    const res = pts.find(p => p.owner===k && p.name===b.name);
+                    b.sold = res.pSold; b.rev = res.pRev;
+                    b.inv = Math.max(0, (b.prod + b.inv) - b.sold);
+                    b.awareness = Math.min(0.95, (b.awareness * 0.6) + (b.adv/12000));
+                    const uc = b.cost * (ev?.costMod || 1.0);
+                    r+=b.rev; c+=b.sold*uc; a+=b.adv; h+=b.inv*uc*0.18;
+                    invVal += b.inv * uc;
+                });
+                const p = r - c - a - h;
+                state[k].cumulative.rev += r; state[k].cumulative.profit += p;
+                state[k].lastProfit = p; state[k].lastRev = r; state[k].lastInvVal = invVal;
+                state[k].budget = Math.max(10000, 10000 + (p * 0.5));
+                state[k].spi = Math.round(state[k].spi * Math.max(0.7, Math.min(1.4, 1.0 + (p/15000))));
+                state[k].spiHistory.push(state[k].spi);
+            };
+
+            finalize('user'); finalize('ai');
+            state.period++;
+            state.marketSize *= 1.05;
+            state.activeEvent = MACRO_EVENTS[Math.floor(Math.random()*MACRO_EVENTS.length)];
+            runAIBrain();
+            saveGameToCloud();
+        }
+
+        function initiateTurnover() {
+            const errors = [];
+            for(let b of state.user.brands) {
+                const maxPrice = Math.min(1500, b.cost * 5);
+                const maxAd = state.user.budget * 0.08;
+                if(b.price === null || b.adv === null) errors.push(`${b.name}: Null values.`);
+                if(b.price > maxPrice) errors.push(`${b.name}: Price too high.`);
+                if(b.adv > maxAd) errors.push(`${b.name}: Marketing > 8%.`);
+            }
+            if(errors.length) {
+                document.getElementById('rejection-list').innerHTML = errors.map(e=>`<li>${e}</li>`).join('');
+                document.getElementById('rejection-modal').style.display = 'flex';
+                return;
+            }
+
+            const overlay = document.getElementById('processing-overlay');
+            overlay.style.display = 'flex'; document.getElementById('loading-bar').style.width = '100%';
+            
+            setTimeout(() => {
+                executeLogic(); 
+                overlay.style.display = 'none'; 
+                document.getElementById('loading-bar').style.width = '0%';
+                if(state.user.lastProfit <= -50000) return handleTermination("Bankrupt: Board takeover.");
+                render(); switchTab('dashboard');
+            }, 3000);
+        }
+
+        // --- RENDERERS ---
+        function render() {
+            document.getElementById('display-period').innerText = state.period;
+            document.getElementById('user-spi').innerText = state.user.spi.toLocaleString();
+            document.getElementById('ai-spi').innerText = state.ai.spi.toLocaleString();
+            document.getElementById('user-budget').innerText = `$${Math.round(state.user.budget).toLocaleString()}`;
+            
+            const ev = state.activeEvent;
+            if (ev) {
+                document.getElementById('event-box').classList.remove('hidden');
+                document.getElementById('event-icon').innerText = ev.icon;
+                document.getElementById('event-title').innerText = ev.title;
+                document.getElementById('event-desc').innerText = ev.desc;
+                document.getElementById('event-box').className = `mb-6 rounded-xl p-5 border flex items-center gap-6 event-banner shadow-sm ${ev.color}`;
+            }
+
+            const totalSize = state.marketSize * (ev?.demandMod || 1.0);
+            document.getElementById('demand-card-container').innerHTML = SEGMENTS.map(s => {
+                let w = s.weight || 0.25;
+                return `<div class="p-3 bg-slate-900 border border-slate-800 rounded-xl text-center"><p class="text-[7px] text-slate-500 font-bold uppercase truncate">${s.name}</p><p class="text-base font-black text-blue-400 font-mono">${Math.round(totalSize*w).toLocaleString()}</p></div>`;
+            }).join('');
+
+            document.getElementById('user-brand-list').innerHTML = state.user.brands.map((b, i) => `
+                <div class="glass-card p-4 user-glow">
+                    <div class="flex justify-between mb-4 border-b border-blue-500/20 pb-2">
+                        <h4 class="font-black text-white italic uppercase text-lg">${b.name}</h4>
+                        <div class="text-right text-[8px] font-bold uppercase"><span class="text-blue-400 block tracking-widest">Base Cost: $${Math.round(b.cost * (ev?.costMod || 1))}</span></div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div><label class="text-[8px] uppercase text-slate-500">Price ($)</label><input type="number" onchange="upd(${i},'price',this.value)" value="${b.price||''}" placeholder="Limit $1500"></div>
+                        <div><label class="text-[8px] uppercase text-slate-500">Marketing ($)</label><input type="number" onchange="upd(${i},'adv',this.value)" value="${b.adv||''}" placeholder="Limit 8%"></div>
+                        <div><label class="text-[8px] uppercase text-slate-500">Prod Units</label><input type="number" onchange="upd(${i},'prod',this.value)" value="${b.prod||''}" placeholder="Units"></div>
+                    </div>
+                </div>`).join('');
+
+            document.getElementById('research-table-body').innerHTML = SEGMENTS.map(s => `<tr class="border-b border-slate-800"><td class="p-4 text-left font-bold text-slate-300 uppercase">${s.name}</td><td>${Math.round(s.iPower)}</td><td>${Math.round(s.iDesign)}</td><td class="text-emerald-500 font-bold">$${s.iPrice}</td></tr>`).join('');
+            document.getElementById('ai-decision-feed').innerHTML = state.ai.brands.map(b => `<div>${b.name}: Est. Price $${Math.round(b.price)}</div>`).join('');
+            
+            const renderAudit = (k) => {
+                const f = state[k];
+                return `<div class="space-y-2">
+                    <div class="flex justify-between"><span>Revenue</span><span>$${Math.round(f.lastRev || 0).toLocaleString()}</span></div>
+                    <div class="flex justify-between font-bold pt-2 border-t border-white/5"><span>Net Result</span><span class="${f.lastProfit >= 0 ? 'text-emerald-400' : 'text-rose-500'}">$${Math.round(f.lastProfit || 0).toLocaleString()}</span></div>
+                </div>`;
+            };
+            document.getElementById('user-pl').innerHTML = renderAudit('user');
+            document.getElementById('ai-pl').innerHTML = renderAudit('ai');
+
+            updateCharts();
+        }
+
+        function updateCharts() {
+            const ctxS = document.getElementById('chart-spi').getContext('2d'), ctxM = document.getElementById('chart-share').getContext('2d');
+            if (charts.spi) charts.spi.destroy(); if (charts.share) charts.share.destroy();
+            charts.spi = new Chart(ctxS, { type: 'line', data: { labels: state.user.spiHistory.map((_,i)=>`Q${i}`), datasets: [{ label: 'User', data: state.user.spiHistory, borderColor: '#3b82f6', tension: 0.1, fill: true, backgroundColor: 'rgba(59, 130, 246, 0.05)' }, { label: 'AI', data: state.ai.spiHistory, borderColor: '#f43f5e', borderDash:[5,5] }]}, options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } } }});
+            charts.share = new Chart(ctxM, { type: 'doughnut', data: { labels: ['User', 'AI'], datasets: [{ data: [state.user.lastRev || 1, state.ai.lastRev || 1], backgroundColor: ['#3b82f6', '#f43f5e'] }]}, options: { responsive:true, maintainAspectRatio:false, cutout:'80%' }});
+        }
+
+        function upd(i, f, v) { state.user.brands[i][f] = v===""?null:Number(v); }
+        function switchTab(t) { document.querySelectorAll('section').forEach(s => s.classList.add('hidden')); document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active')); document.getElementById(`view-${t}`).classList.remove('hidden'); document.getElementById(`btn-${t}`).classList.add('tab-active'); }
+        function launchRD() { const n = document.getElementById('rd-name').value.toUpperCase(); if(!n || state.user.budget < 5000) return notify("Liquidity Deficit.","error"); state.user.budget -= 5000; state.user.brands.push({ name:n, power:75, design:75, price:null, adv:null, prod:0, cost:150, inv:0, sold:0, rev:0, awareness:0.1 }); render(); notify("R&D Authorized.","success"); }
+        function notify(m, t) { const n = document.createElement('div'); n.className = `p-4 rounded-xl shadow-2xl text-white font-bold text-[10px] uppercase ${t==='error'?'bg-rose-500':'bg-emerald-500'}`; n.innerText = m; document.getElementById('toast-container').appendChild(n); setTimeout(() => n.remove(), 4000); }
+        function handleTermination(r) { document.getElementById('app').classList.add('hidden'); document.getElementById('screen-terminated').classList.remove('hidden'); document.getElementById('term-reason').innerText = r; }
+
+        window.onload = () => {
+            checkExistingSaves();
+        };
+    </script>
+</body>
+</html>

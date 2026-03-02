@@ -20,6 +20,9 @@ export default function Page(){
     faculties: [],
     specializations: [],
     subjects: [],
+
+
+    
     selected: {
       course: "",
       batch: "",
@@ -144,14 +147,13 @@ export default function Page(){
       subject: parseInt(data.selected.subject, 10), // Sending only one subject as an integer
       faculty: parseInt(data.selected.faculty, 10),
       total_classes: parseInt(data.selected.total_classes, 10),
-      classes_completed: 0,
       weightage_external: parseInt(data.selected.weightage_external, 10),
       weightage_internal: parseInt(data.selected.weightage_internal, 10),
       type: data.selected.type,
     };
 
     try {
-      const response = await authFetch("subject-mapping-viewset", {
+      const response = await authFetch(`subject-mapping-viewset/${subjectId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

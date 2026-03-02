@@ -1,0 +1,26 @@
+"use client";
+
+import { GlobalContext } from "@/components/GlobalContext";
+import { Award, HelpCircle } from "lucide-react";
+import Link from "next/link";
+import { useContext, useState } from "react";
+
+export default function HtmlPage() {
+      const [isOpen, setIsOpen] = useState(false);
+     const {state} =  useContext(GlobalContext)
+     const encodedState = encodeURIComponent(JSON.stringify(state.id));
+      const encodedStateName = encodeURIComponent(JSON.stringify(state.name));
+     console.log(encodedState)
+  return (
+    <div className="w-full h-screen py-8 bg-[#334155] px-8">
+     <div class="max-w-7xl mx-auto flex justify-between mb-3">
+              <Link href="/game/marketing-strategy/how-to-play" class="bg-yellow-100 text-yellow-700 px-4 py-1 rounded-sm flex items-center gap-1"> <Award /> How To Play</Link>
+            <Link href="/game/marketing-strategy/leaderboard" class="bg-green-100 text-green-700 px-4 py-1 rounded-sm flex items-center gap-1"> <Award /> See LeaderBoard</Link>
+        </div>
+      <iframe
+        src={`/marketing.html?userId=${encodedState}&name=${encodedStateName}`}
+        className="w-full h-full border-none"
+      />
+    </div>
+  );
+}

@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TAXILA SMART INTERVIEWER</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Nunito:wght@400;500;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    screens: {
+                        'xs': '475px',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: #f0f4f8;
+            overflow-x: hidden; /* Prevent horizontal scroll */
+        }
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Poppins', sans-serif;
+        }
+        .pulse {
+            animation: pulse-animation 2s infinite;
+        }
+        @keyframes pulse-animation {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #e0e7ff; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #4f46e5; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #4338ca; }
+
+        .main-container {
+            transition: all 0.5s ease-in-out;
+        }
+        .screen {
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+        }
+        .hidden {
+            display: none !important; /* Force hide to prevent layout shifts */
+            opacity: 0;
+            transform: scale(0.95);
+            pointer-events: none;
+        }
+        .visible {
+            display: block !important;
+            opacity: 1;
+            transform: scale(1);
+        }
+        .btn-primary {
+             background-image: linear-gradient(to right, #4f46e5, #6366f1);
+        }
+        .btn-primary:hover {
+             background-image: linear-gradient(to right, #4338ca, #4f46e5);
+        }
+        
+        /* Mobile-First Video Feed Logic */
+        #videoFeed {
+            position: fixed;
+            z-index: 50;
+            object-fit: cover;
+            transform: scaleX(-1); /* Mirror effect */
+            border: 2px solid white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        /* Desktop/Laptop Position (Bottom Right) */
+        @media (min-width: 768px) {
+            #videoFeed {
+                bottom: 20px;
+                right: 20px;
+                width: 240px;
+                height: 180px;
+            }
+        }
+
+        /* Mobile Position (Top Right, smaller) */
+        @media (max-width: 767px) {
+            #videoFeed {
+                top: 10px;
+                right: 10px;
+                width: 100px;
+                height: 133px; /* 3:4 aspect ratio approx */
+                border-width: 2px;
+            }
+            /* Adjust padding for main container on mobile to account for video */
+            #interviewScreen {
+                padding-top: 10px; 
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 min-h-screen">
+    
+    <div id="mainContainer" class="container mx-auto max-w-4xl w-full p-4 md:p-6 lg:p-8 pb-24 md:pb-8 relative">
+
+        <div id="welcomeScreen" class="visible screen bg-white rounded-2xl shadow-xl p-4 md:p-8 text-center border-t-8 border-indigo-600">
+            <h1 class="text-2xl md:text-4xl font-bold text-indigo-900 mb-2">TAXILA SMART INTERVIEWER</h1>
+            <p class="text-sm md:text-base text-gray-600 mb-1">Practice your interview skills with an AI-powered coach.</p>
+            <p class="text-xs text-gray-500 mb-6 font-semibold">Created at Taxila Business School, Jaipur</p>
+            
+            <div class="max-w-lg mx-auto space-y-4">
+                
+                <div class="text-left">
+                    <label class="block font-semibold text-gray-700 mb-1 text-sm md:text-base">Interview Type:</label>
+                    <div class="grid grid-cols-2 gap-2 bg-gray-50 rounded-lg p-1 border border-gray-200">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="interviewType" value="job" class="sr-only peer" checked>
+                            <span class="block text-center text-sm md:text-base rounded-md py-2 px-1 transition-all duration-200 peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:shadow-sm text-gray-600 hover:bg-gray-200">Job Interview</span>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="interviewType" value="admission" class="sr-only peer">
+                            <span class="block text-center text-sm md:text-base rounded-md py-2 px-1 transition-all duration-200 peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:shadow-sm text-gray-600 hover:bg-gray-200">Admission</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="languageSelect" class="block text-left font-semibold text-gray-700 mb-1 text-sm md:text-base">Interview Language:</label>
+                    <select id="languageSelect" class="w-full px-4 py-2 md:py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition text-sm md:text-base bg-white">
+                        <option value="en-IN">English (India)</option>
+                        <option value="en-US">English (US)</option>
+                        <option value="hi-IN">Hindi</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="playerName" class="block text-left font-semibold text-gray-700 mb-1 text-sm md:text-base">Your Name:</label>
+                    <input type="text" id="playerName" class="w-full px-4 py-2 md:py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition text-sm md:text-base" placeholder="e.g., Priya Sharma">
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label id="jobRoleLabel" for="jobRole" class="block text-left font-semibold text-gray-700 mb-1 text-sm md:text-base">Job Title:</label>
+                        <input type="text" id="jobRole" class="w-full px-4 py-2 md:py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition text-sm md:text-base" placeholder="e.g., Software Engineer">
+                    </div>
+                    <div>
+                        <label id="companyNameLabel" for="companyName" class="block text-left font-semibold text-gray-700 mb-1 text-sm md:text-base">Company (Optional):</label>
+                        <input type="text" id="companyName" class="w-full px-4 py-2 md:py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition text-sm md:text-base" placeholder="e.g., Google">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="experience" class="block text-left font-semibold text-gray-700 mb-1 text-sm md:text-base">Experience Summary (Optional):</label>
+                    <textarea id="experience" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition text-sm md:text-base" placeholder="Short summary..."></textarea>
+                </div>
+
+                <div>
+                    <label id="jobDescriptionLabel" for="jobDescription" class="block text-left font-semibold text-gray-700 mb-1 text-sm md:text-base">Job Description (Optional):</label>
+                    <textarea id="jobDescription" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition text-sm md:text-base" placeholder="Key responsibilities..."></textarea>
+                </div>
+
+                <div>
+                    <label for="cvUpload" class="block text-left font-semibold text-gray-700 mb-1 text-sm md:text-base">Upload CV (PDF/TXT):</label>
+                    <div class="relative border border-dashed border-gray-400 rounded-lg p-4 bg-gray-50 hover:bg-gray-100 transition">
+                        <input type="file" id="cvUpload" accept=".pdf,.txt" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"/>
+                        <div class="text-center">
+                            <span class="text-indigo-600 font-semibold text-sm">Click to upload</span> <span class="text-gray-500 text-sm">or drag and drop</span>
+                            <p id="cvStatus" class="text-xs text-gray-500 mt-1 h-4 overflow-hidden text-ellipsis whitespace-nowrap"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-left">
+                    <label class="block font-semibold text-gray-700 mb-1 text-sm md:text-base">Feedback Timing:</label>
+                    <div class="grid grid-cols-3 gap-2 bg-gray-50 rounded-lg p-1 border border-gray-200">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="feedbackCadence" value="immediate" class="sr-only peer" checked>
+                            <span class="block text-center text-xs md:text-sm rounded-md py-2 px-1 transition-all duration-200 peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:shadow-sm text-gray-600 hover:bg-gray-200">Immediate</span>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="feedbackCadence" value="batch" class="sr-only peer">
+                            <span class="block text-center text-xs md:text-sm rounded-md py-2 px-1 transition-all duration-200 peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:shadow-sm text-gray-600 hover:bg-gray-200">Every 5 Qs</span>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="feedbackCadence" value="end" class="sr-only peer">
+                            <span class="block text-center text-xs md:text-sm rounded-md py-2 px-1 transition-all duration-200 peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:shadow-sm text-gray-600 hover:bg-gray-200">At End</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-center py-2">
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="enableVideo" class="sr-only peer" checked>
+                        <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                        <span class="ms-3 text-sm font-medium text-gray-700">Enable Camera & Behavior Analysis</span>
+                    </label>
+                </div>
+            </div>
+
+            <div id="welcomeError" class="text-red-500 mt-4 text-sm font-semibold min-h-[1.25rem]"></div>
+            
+            <div class="mt-6 space-y-3">
+                <button id="startBtn" class="w-full btn-primary text-white font-bold py-3 md:py-4 px-6 rounded-xl shadow-lg active:scale-95 transition-transform text-lg">
+                    Start Interview
+                </button>
+                <button id="viewHistoryBtn" class="w-full bg-white border-2 border-gray-200 text-gray-600 font-bold py-3 px-6 rounded-xl hover:bg-gray-50 active:bg-gray-100 transition text-sm">
+                    View Past Attempts
+                </button>
+            </div>
+        </div>
+
+        <div id="historyScreen" class="hidden screen bg-white rounded-2xl shadow-xl p-4 md:p-8 border-t-8 border-indigo-600">
+            <h2 class="text-xl md:text-2xl font-bold text-center text-indigo-900 mb-6">Past Interviews</h2>
+            <div id="historyList" class="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
+                </div>
+            <div class="text-center mt-6">
+                <button id="backToWelcomeBtn" class="w-full md:w-auto md:px-12 btn-primary text-white font-bold py-3 rounded-xl shadow-md transition">
+                    Back to Menu
+                </button>
+            </div>
+        </div>
+
+        <div id="interviewScreen" class="hidden screen pb-24 md:pb-0">
+             <div class="mb-4 bg-white p-4 rounded-xl shadow-md flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+                <div class="pr-0 md:pr-24 w-full"> <h2 class="text-lg md:text-xl font-bold text-indigo-900 leading-tight" id="interviewTitle"></h2>
+                    <p class="text-xs md:text-sm text-gray-500 font-semibold mt-1" id="questionCounter"></p>
+                </div>
+                <div class="flex items-center justify-between w-full md:w-auto gap-2">
+                     <div id="cumulativeScoreDisplay" class="hidden text-xs md:text-sm font-bold text-indigo-700 bg-indigo-50 px-3 py-1.5 rounded-full border border-indigo-100 whitespace-nowrap"></div>
+                     <div id="timerDisplay" class="text-xs md:text-sm font-bold text-gray-700 bg-gray-100 px-3 py-1.5 rounded-full border border-gray-200 whitespace-nowrap ml-auto md:ml-0"></div>
+                     <button id="stopVideoBtn" class="px-3 py-1.5 bg-red-50 text-red-600 font-bold rounded-lg border border-red-100 text-xs hidden hover:bg-red-100 transition flex items-center gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                          <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" />
+                        </svg>
+                        Stop Camera
+                     </button>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-lg p-5 md:p-8 mb-4 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-1 h-full bg-indigo-500"></div>
+                <h3 class="text-xs md:text-sm font-bold uppercase tracking-wider text-gray-400 mb-2">Current Question</h3>
+                <div id="question" class="text-gray-800 text-lg md:text-2xl font-medium leading-relaxed min-h-[60px]"></div>
+                 <div id="questionLoader" class="flex flex-col items-center justify-center py-8 hidden">
+                    <svg class="animate-spin h-8 w-8 text-indigo-600 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    <span class="text-sm text-gray-500 animate-pulse">Thinking of next question...</span>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-lg p-4 md:p-6 flex flex-col h-auto">
+                <h3 class="text-xs md:text-sm font-bold uppercase tracking-wider text-gray-400 mb-2">Your Answer</h3>
+                <textarea id="answer" class="w-full flex-grow min-h-[120px] md:min-h-[150px] p-4 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition resize-y text-base md:text-lg mb-3" placeholder="Listening..."></textarea>
+                
+                <div id="status" class="text-center text-sm text-gray-500 mb-3 h-5 font-medium truncate"></div>
+                
+                <div class="flex justify-center">
+                    <button id="recordBtn" class="w-full md:w-auto px-8 py-4 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 active:scale-95 transition-all shadow-lg flex items-center justify-center gap-2 group">
+                        <div class="relative flex h-3 w-3">
+                          <span id="recordPing" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75 hidden"></span>
+                          <span class="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
+                        </div>
+                        <span id="recordBtnText">Record Answer</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div id="feedbackContainer" class="bg-white rounded-2xl shadow-lg p-5 md:p-8 mt-4 hidden border-l-4 border-yellow-400">
+                <div id="feedbackLoader" class="flex flex-col items-center justify-center py-10 hidden">
+                    <svg class="animate-spin h-10 w-10 text-indigo-600 mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    <span class="text-lg font-semibold text-gray-600">Analyzing Answer & Behavior...</span>
+                </div>
+                <div id="feedbackContent" class="space-y-6"></div>
+                
+                <div class="mt-8 flex flex-col md:flex-row gap-3 justify-center">
+                      <button id="nextQuestionBtn" class="w-full md:w-auto px-8 py-3 btn-primary text-white font-bold rounded-xl shadow-md hover:shadow-lg transform active:scale-95 transition hidden">
+                        Next Question
+                    </button>
+                    <button id="endInterviewBtn" class="w-full md:w-auto px-8 py-3 bg-gray-800 text-white font-bold rounded-xl shadow-md hover:bg-gray-900 transform active:scale-95 transition hidden">
+                        Finish & Get Report
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="finalReportScreen" class="hidden screen bg-white rounded-2xl shadow-xl p-4 md:p-8 border-t-8 border-indigo-600">
+            <h2 class="text-2xl md:text-3xl font-bold text-center text-indigo-900 mb-6">Interview Report</h2>
+            
+            <div id="overallScoreSection" class="text-center mb-8 p-6 rounded-2xl bg-gray-50 border border-gray-100">
+                <p class="text-sm font-bold uppercase tracking-widest text-gray-500 mb-2">Overall Performance</p>
+                <p id="overallScore" class="text-6xl md:text-7xl font-bold mb-2"></p>
+                <p id="overallMessage" class="text-lg md:text-xl font-medium"></p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-8">
+                <button id="downloadReportBtn" class="w-full py-3 bg-gray-700 text-white font-bold rounded-xl hover:bg-gray-800 transition shadow-sm flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    Download Report
+                </button>
+                 <button id="downloadVideoBtn" class="w-full py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2" disabled>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                    Download Video
+                </button>
+                <button id="backToWelcomeFromReportBtn" class="w-full py-3 btn-primary text-white font-bold rounded-xl shadow-sm flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                    Main Menu
+                </button>
+            </div>
+
+            <div id="interviewFeedbackSection" class="mb-8">
+                <h3 class="text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-100">Performance Detail</h3>
+                <div id="finalFeedbackLoader" class="flex items-center justify-center py-8 hidden">
+                    <svg class="animate-spin h-8 w-8 text-indigo-600 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    <span class="text-gray-600">Generating report...</span>
+                </div>
+                <div id="finalFeedbackContent" class="space-y-6"></div>
+            </div>
+
+            <div id="cvAnalysisSection" class="bg-indigo-50 rounded-2xl p-6">
+                <h3 class="text-xl font-bold text-indigo-900 mb-3">CV Analysis</h3>
+                <div id="cvAnalysisMessage" class="text-center text-gray-600 mb-4 text-sm"></div>
+                
+                <button id="analyzeCvBtn" class="w-full md:w-auto mx-auto block px-8 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition shadow-md">
+                    Analyze CV vs Job
+                </button>
+                
+                <div id="cvAnalysisResult" class="mt-6"></div>
+                
+                <div id="cvLoader" class="flex items-center justify-center py-8 hidden">
+                    <svg class="animate-spin h-8 w-8 text-indigo-600 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    <span class="text-gray-600">Analyzing CV...</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <video id="videoFeed" class="hidden bg-black" autoplay muted playsinline></video>
+
+    <script>
+        // DOM Elements
+        const mainContainer = document.getElementById('mainContainer');
+        const welcomeScreen = document.getElementById('welcomeScreen');
+        const historyScreen = document.getElementById('historyScreen');
+        const interviewScreen = document.getElementById('interviewScreen');
+        const finalReportScreen = document.getElementById('finalReportScreen');
+
+        const startBtn = document.getElementById('startBtn');
+        const viewHistoryBtn = document.getElementById('viewHistoryBtn');
+        const backToWelcomeBtn = document.getElementById('backToWelcomeBtn');
+        const backToWelcomeFromReportBtn = document.getElementById('backToWelcomeFromReportBtn');
+        
+        const playerNameInput = document.getElementById('playerName');
+        const experienceInput = document.getElementById('experience');
+        const jobRoleInput = document.getElementById('jobRole');
+        const companyNameInput = document.getElementById('companyName');
+        const jobDescriptionInput = document.getElementById('jobDescription');
+        const cvUploadInput = document.getElementById('cvUpload');
+        const cvStatus = document.getElementById('cvStatus');
+        const welcomeError = document.getElementById('welcomeError');
+        const languageSelect = document.getElementById('languageSelect');
+        const enableVideoCheckbox = document.getElementById('enableVideo');
+        
+        const jobRoleLabel = document.getElementById('jobRoleLabel');
+        const companyNameLabel = document.getElementById('companyNameLabel');
+        const jobDescriptionLabel = document.getElementById('jobDescriptionLabel');
+
+        const historyList = document.getElementById('historyList');
+
+        const interviewTitle = document.getElementById('interviewTitle');
+        const questionCounter = document.getElementById('questionCounter');
+        const timerDisplay = document.getElementById('timerDisplay');
+        const cumulativeScoreDisplay = document.getElementById('cumulativeScoreDisplay');
+        const questionEl = document.getElementById('question');
+        const answerEl = document.getElementById('answer');
+        const statusEl = document.getElementById('status');
+        const videoFeed = document.getElementById('videoFeed');
+        const stopVideoBtn = document.getElementById('stopVideoBtn');
+        
+        const recordBtn = document.getElementById('recordBtn');
+        const recordBtnText = document.getElementById('recordBtnText');
+        const recordPing = document.getElementById('recordPing');
+        
+        const feedbackContainer = document.getElementById('feedbackContainer');
+        const feedbackContent = document.getElementById('feedbackContent');
+        const nextQuestionBtn = document.getElementById('nextQuestionBtn');
+        const endInterviewBtn = document.getElementById('endInterviewBtn');
+        
+        const questionLoader = document.getElementById('questionLoader');
+        const feedbackLoader = document.getElementById('feedbackLoader');
+        const cvLoader = document.getElementById('cvLoader');
+
+        const overallScoreSection = document.getElementById('overallScoreSection');
+        const overallScoreEl = document.getElementById('overallScore');
+        const overallMessageEl = document.getElementById('overallMessage');
+        const downloadReportBtn = document.getElementById('downloadReportBtn');
+        const downloadVideoBtn = document.getElementById('downloadVideoBtn');
+
+        const interviewFeedbackSection = document.getElementById('interviewFeedbackSection');
+        const finalFeedbackLoader = document.getElementById('finalFeedbackLoader');
+        const finalFeedbackContent = document.getElementById('finalFeedbackContent');
+        const cvAnalysisSection = document.getElementById('cvAnalysisSection');
+        const cvAnalysisMessage = document.getElementById('cvAnalysisMessage');
+        const analyzeCvBtn = document.getElementById('analyzeCvBtn');
+        const cvAnalysisResult = document.getElementById('cvAnalysisResult');
+
+
+        // App State
+        let allSessions = [];
+        let interviewType = 'job';
+        let interviewLanguage = 'en-IN';
+        let playerName = '';
+        let experienceText = '';
+        let jobRole = '';
+        let companyName = '';
+        let jobDescription = '';
+        let cvText = '';
+        let currentCvAnalysis = null;
+        let feedbackCadence = 'immediate';
+        let interviewLog = [];
+        let currentQuestion = '';
+        let questionNumber = 0;
+        let isRecording = false;
+        let finalTranscript = '';
+        let interviewTimerId = null;
+        let mediaRecorder = null;
+        let recordedChunks = [];
+        let videoBlob = null;
+        let videoStream = null;
+        let audioStream = null;
+        const questionEmojis = ['🤔', '💼', '📈', '💡', '🎯', '🗣️', '✍️'];
+
+
+        // --- UI TRANSITION LOGIC ---
+        function switchScreen(activeScreen) {
+             [welcomeScreen, historyScreen, interviewScreen, finalReportScreen].forEach(screen => {
+                if (screen === activeScreen) {
+                    screen.classList.remove('hidden');
+                    // Small timeout to allow display:block to apply before opacity transition
+                    setTimeout(() => screen.classList.add('visible'), 10);
+                } else {
+                    screen.classList.remove('visible');
+                    // Wait for transition to finish before hiding
+                    setTimeout(() => screen.classList.add('hidden'), 300);
+                }
+            });
+            window.scrollTo(0, 0); // Reset scroll on screen change
+        }
+
+
+        // Speech Recognition Setup
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition;
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+
+            recognition.onstart = () => {
+                isRecording = true;
+                statusEl.textContent = "Listening...";
+                statusEl.classList.add('text-red-500', 'animate-pulse');
+                recordBtnText.textContent = 'Stop';
+                recordPing.classList.remove('hidden');
+                recordBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
+                recordBtn.classList.add('bg-gray-800', 'hover:bg-gray-900');
+                recordBtn.disabled = false;
+            };
+
+            recognition.onend = () => {
+                isRecording = false;
+                statusEl.classList.remove('text-red-500', 'animate-pulse');
+                recordBtnText.textContent = 'Record Answer';
+                recordPing.classList.add('hidden');
+                recordBtn.classList.remove('bg-gray-800', 'hover:bg-gray-900');
+                recordBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+                recordBtn.disabled = false;
+
+                const hasAnswer = answerEl.value.trim().length > 0;
+                if (hasAnswer) {
+                    statusEl.textContent = 'Processing...';
+                    interviewLog.push({ question: currentQuestion, answer: answerEl.value.trim(), score: 0, feedback: null });
+                    processAnswer();
+                } else {
+                     statusEl.textContent = "No answer detected.";
+                }
+            };
+
+            recognition.onresult = (event) => {
+                let interimTranscript = '';
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript + ' ';
+                    } else {
+                        interimTranscript += event.results[i][0].transcript;
+                    }
+                }
+                answerEl.value = finalTranscript + interimTranscript;
+                // Auto-scroll textarea to bottom
+                answerEl.scrollTop = answerEl.scrollHeight;
+            };
+
+             recognition.onerror = (event) => {
+                console.error("Speech recognition error:", event.error);
+                let errorMessage = `Error: ${event.error}`;
+                if (event.error === 'network') errorMessage = 'Network error. Check connection.';
+                else if (event.error === 'no-speech') errorMessage = 'No speech detected.';
+                else if (event.error === 'not-allowed') errorMessage = 'Mic access denied.';
+
+                statusEl.textContent = errorMessage;
+                
+                // Reset state
+                isRecording = false;
+                recordBtnText.textContent = 'Record Answer';
+                recordPing.classList.add('hidden');
+                recordBtn.classList.remove('bg-gray-800', 'hover:bg-gray-900');
+                recordBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+                recordBtn.disabled = false;
+            };
+
+        } else {
+            statusEl.textContent = "Browser incompatible (No Speech API).";
+            recordBtn.disabled = true;
+            recordBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+
+        // --- CV Parsing Logic ---
+        pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js`;
+
+        async function handleCvUpload(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                cvText = '';
+                cvStatus.textContent = '';
+                return;
+            }
+            cvStatus.textContent = `Reading ${file.name}...`;
+            try {
+                if (file.type === 'application/pdf') {
+                    const reader = new FileReader();
+                    reader.onload = async (e) => {
+                        try {
+                            const pdf = await pdfjsLib.getDocument({ data: e.target.result }).promise;
+                            let text = '';
+                            for (let i = 1; i <= pdf.numPages; i++) {
+                                const page = await pdf.getPage(i);
+                                const content = await page.getTextContent();
+                                text += content.items.map(item => item.str).join(' ');
+                            }
+                            cvText = text;
+                            cvStatus.textContent = `✅ ${file.name} loaded`;
+                            cvStatus.classList.add('text-green-600');
+                        } catch(err) {
+                             cvStatus.textContent = `❌ PDF Parse Error`;
+                             console.error(err);
+                        }
+                    };
+                    reader.readAsArrayBuffer(file);
+                } else if (file.type === 'text/plain') {
+                    cvText = await file.text();
+                    cvStatus.textContent = `✅ ${file.name} loaded`;
+                    cvStatus.classList.add('text-green-600');
+                } else {
+                    cvText = '';
+                    cvStatus.textContent = '❌ Invalid file type';
+                    cvStatus.classList.add('text-red-500');
+                }
+            } catch (error) {
+                console.error("Error reading CV:", error);
+                cvText = '';
+                cvStatus.textContent = `❌ Error reading file.`;
+            }
+        }
+
+
+        // Text-to-Speech Setup
+        let currentVoice = null;
+        function loadAndSetVoices() {
+            const voices = window.speechSynthesis.getVoices();
+            currentVoice = voices.find(voice => voice.lang === interviewLanguage) || voices.find(voice => voice.lang.startsWith(interviewLanguage.split('-')[0]));
+        };
+
+        const speak = (text, onEndCallback) => {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            loadAndSetVoices();
+            if (currentVoice) {
+                utterance.voice = currentVoice;
+            }
+            utterance.lang = interviewLanguage;
+            utterance.rate = 0.95;
+            utterance.pitch = 1.0;
+            
+            if (onEndCallback && typeof onEndCallback === 'function') {
+                utterance.onend = onEndCallback;
+            }
+
+            window.speechSynthesis.speak(utterance);
+        };
+        
+        if (typeof window.speechSynthesis.onvoiceschanged !== 'undefined') {
+            window.speechSynthesis.onvoiceschanged = loadAndSetVoices;
+        }
+        loadAndSetVoices();
+        
+        // Helper to get API key (assuming it is passed via URL or set globally)
+        function getapiKey() {
+             const params = new URLSearchParams(window.location.search);
+             // Use a placeholder or actual key source
+             return params.get("apiKey") || ""; 
+        }
+        
+        // --- API CALL LOGIC (Updated for Multimodal) ---
+        const apiKey = getapiKey(); 
+        const API_URL = (model) => `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+        
+        async function callGeminiAPI(prompt, imageBase64 = null, model = 'gemini-2.5-flash-preview-09-2025') {
+            const parts = [{ text: prompt }];
+            if (imageBase64) {
+                parts.push({
+                    inlineData: {
+                        mimeType: "image/jpeg",
+                        data: imageBase64
+                    }
+                });
+            }
+
+            const payload = {
+                contents: [{ parts: parts }],
+                 generationConfig: { responseMimeType: "application/json" }
+            };
+
+            let attempts = 0;
+            const maxAttempts = 3;
+            while(attempts < maxAttempts) {
+                try {
+                    const response = await fetch(API_URL(model), {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!response.ok) {
+                        const errorBody = await response.json();
+                        throw new Error(`API Error: ${response.status} - ${errorBody.error?.message || response.statusText}`);
+                    }
+                    const result = await response.json();
+                    if (result.candidates?.[0]?.content.parts?.[0]) {
+                        return JSON.parse(result.candidates[0].content.parts[0].text);
+                    } else {
+                        throw new Error("Invalid API response structure.");
+                    }
+                } catch (error) {
+                    attempts++;
+                    console.error(`API Attempt ${attempts} failed:`, error.message);
+                    if (attempts >= maxAttempts) throw error;
+                    await new Promise(res => setTimeout(res, 1000 * attempts));
+                }
+            }
+        }
+
+        // --- APPLICATION FLOW & STATE MANAGEMENT ---
+
+        function resetInterviewState() {
+            interviewLog = [];
+            currentQuestion = '';
+            questionNumber = 0;
+            currentCvAnalysis = null;
+            if (interviewTimerId) clearInterval(interviewTimerId);
+
+            // Stop streams and recorder
+            if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
+            if (videoStream) videoStream.getTracks().forEach(track => track.stop());
+
+            videoStream = null;
+            mediaRecorder = null;
+            recordedChunks = [];
+            videoBlob = null;
+            downloadVideoBtn.disabled = true;
+            videoFeed.classList.add('hidden');
+            stopVideoBtn.classList.add('hidden');
+        }
+
+
+        async function startInterview() {
+            resetInterviewState();
+            welcomeError.textContent = '';
+            playerName = playerNameInput.value.trim();
+            experienceText = experienceInput.value.trim();
+            jobRole = jobRoleInput.value.trim();
+            companyName = companyNameInput.value.trim();
+            jobDescription = jobDescriptionInput.value.trim();
+            feedbackCadence = document.querySelector('input[name="feedbackCadence"]:checked').value;
+            interviewType = document.querySelector('input[name="interviewType"]:checked').value;
+            interviewLanguage = languageSelect.value;
+            recognition.lang = interviewLanguage;
+            const useVideo = enableVideoCheckbox.checked;
+
+
+            if (!jobRole) {
+                const roleLabel = interviewType === 'job' ? 'job title' : 'program name';
+                welcomeError.textContent = `Please enter a ${roleLabel}.`;
+                return;
+            }
+            
+            try {
+                // Constraints based on user preference
+                const constraints = {
+                    audio: true,
+                    video: useVideo ? { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } } : false
+                };
+
+                videoStream = await navigator.mediaDevices.getUserMedia(constraints);
+                
+                if (useVideo) {
+                    videoFeed.srcObject = videoStream;
+                    videoFeed.onloadedmetadata = () => {
+                         videoFeed.classList.remove('hidden');
+                    };
+                    stopVideoBtn.classList.remove('hidden');
+                }
+
+                // Recorder Setup
+                recordedChunks = [];
+                // Check supported mime types for better mobile compatibility
+                let mimeType = 'video/webm';
+                if (MediaRecorder.isTypeSupported('video/mp4')) mimeType = 'video/mp4';
+                else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9')) mimeType = 'video/webm;codecs=vp9';
+                // If audio only, we can still use video container or switch to audio/webm
+                if (!useVideo && MediaRecorder.isTypeSupported('audio/webm')) mimeType = 'audio/webm';
+
+                mediaRecorder = new MediaRecorder(videoStream, { mimeType }); 
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) recordedChunks.push(event.data);
+                };
+                mediaRecorder.onstop = () => {
+                    if (recordedChunks.length > 0) {
+                        videoBlob = new Blob(recordedChunks, { type: mimeType });
+                        downloadVideoBtn.disabled = false;
+                        // Rename button if audio only
+                        if (!useVideo) {
+                             downloadVideoBtn.innerHTML = `
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
+                                Download Audio
+                             `;
+                        }
+                    }
+                    if(videoStream) videoStream.getTracks().forEach(track => track.stop());
+                };
+                mediaRecorder.start();
+
+            } catch (err) {
+                console.error("Camera/Mic Error: ", err);
+                welcomeError.textContent = 'Mic/Camera access denied. Features may be limited.';
+                videoFeed.classList.add('hidden');
+            }
+
+            cumulativeScoreDisplay.classList.add('hidden');
+            switchScreen(interviewScreen);
+
+            const welcomeName = playerName ? `${playerName}'s` : 'My';
+            const titleRole = interviewType === 'job' ? `Role: ${jobRole}` : `Admission: ${jobRole}`;
+            interviewTitle.textContent = `${welcomeName} ${titleRole}`;
+            
+            startInterviewTimer();
+            statusEl.textContent = 'Initializing...';
+            setTimeout(async () => {
+                await generateNewQuestion();
+            }, 1000);
+        }
+
+        function startInterviewTimer() {
+            let elapsedTime = 0;
+            const updateDisplay = () => {
+                const minutes = Math.floor(elapsedTime / 60);
+                const seconds = elapsedTime % 60;
+                timerDisplay.textContent = `${minutes}:${String(seconds).padStart(2, '0')}`;
+                elapsedTime++;
+            };
+            
+            updateDisplay();
+            interviewTimerId = setInterval(updateDisplay, 1000);
+        }
+
+        // Helper: Capture Frame from Video
+        function captureVideoFrame() {
+            if (!videoStream || videoFeed.classList.contains('hidden') || videoFeed.videoWidth === 0) return null;
+            const canvas = document.createElement('canvas');
+            canvas.width = videoFeed.videoWidth;
+            canvas.height = videoFeed.videoHeight;
+            canvas.getContext('2d').drawImage(videoFeed, 0, 0);
+            // Return base64 string without data prefix
+            return canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
+        }
+
+        async function processAnswer() {
+            // Capture frame right after answering
+            const imageSnapshot = captureVideoFrame();
+            
+            // Store snapshot in latest log entry if available
+            if (interviewLog.length > 0) {
+                interviewLog[interviewLog.length - 1].snapshot = imageSnapshot;
+            }
+
+            if (feedbackCadence === 'immediate') {
+                await getAndDisplayFeedback(interviewLog.slice(-1));
+            } else if (feedbackCadence === 'batch' && interviewLog.length % 5 === 0) {
+                await getAndDisplayFeedback(interviewLog.slice(-5));
+            } else {
+                await generateNewQuestion();
+            }
+        }
+
+        async function generateNewQuestion() {
+            questionNumber++;
+            questionCounter.textContent = `Q${questionNumber}`;
+            questionEl.textContent = '';
+            questionLoader.classList.remove('hidden');
+            feedbackContainer.classList.add('hidden');
+            feedbackContent.innerHTML = '';
+            nextQuestionBtn.classList.add('hidden');
+            endInterviewBtn.classList.add('hidden');
+            answerEl.value = '';
+            statusEl.textContent = '';
+            finalTranscript = '';
+            
+            const languageName = interviewLanguage.startsWith('hi') ? 'Hindi' : 'English';
+
+
+            if (questionNumber === 1) {
+                currentQuestion = interviewType === 'job' ? "Tell me about yourself." : "Please introduce yourself.";
+            } else {
+                const history = `Asked: ${interviewLog.map(item => item.question).join(', ')}`;
+                const cvContext = cvText ? `CV: "${cvText.substring(0, 1000)}..."` : "";
+                let prompt = '';
+
+                if (interviewType === 'job') {
+                    const companyContext = companyName ? `Target Company: "${companyName}"` : "";
+                    const jobDescContext = jobDescription ? `Job Desc: "${jobDescription.substring(0, 500)}"` : "";
+                    
+                    let questionStyle = `Generate one short, relevant interview question based on the role ${jobRole}.`;
+                    
+                    // Logic to ask about company occasionally
+                    const hasAskedCompanyQuestion = interviewLog.some(log => log.isCompanyQuestion);
+                    if(companyName && !hasAskedCompanyQuestion && questionNumber === 3) {
+                        questionStyle = `Ask a specific question about ${companyName} regarding their culture or products.`
+                    }
+
+                    prompt = `You are an interviewer for "${jobRole}" ${companyContext}. Language: ${languageName}. ${jobDescContext} ${cvContext} ${history}. Task: ${questionStyle} Return JSON: {"question": "text", "isCompanyQuestion": boolean}`;
+                } else { 
+                    prompt = `You are an admissions officer for "${jobRole}". Language: ${languageName}. ${cvContext} ${history}. Task: Ask a question about motivation or academic background. Return JSON: {"question": "text"}`;
+                }
+
+                try {
+                    const response = await callGeminiAPI(prompt);
+                    currentQuestion = response.question;
+                    if(response.isCompanyQuestion) {
+                        const currentLogEntry = interviewLog[interviewLog.length-1];
+                        if(currentLogEntry) currentLogEntry.isCompanyQuestion = true;
+                    }
+                } catch (error) {
+                    currentQuestion = "Describe a challenge you overcame recently.";
+                    console.error(error);
+                }
+            }
+
+            if (playerName && questionNumber > 1 && Math.random() < 0.2) {
+                currentQuestion = `${playerName}, ${currentQuestion.charAt(0).toLowerCase() + currentQuestion.slice(1)}`;
+            }
+
+            questionLoader.classList.add('hidden');
+            
+            const randomEmoji = questionEmojis[Math.floor(Math.random() * questionEmojis.length)];
+            questionEl.textContent = `${randomEmoji} ${currentQuestion}`;
+            
+            speak(currentQuestion, () => {
+                statusEl.textContent = 'Ready to record.';
+                // Optional: Auto-start recording
+                // toggleRecording(); 
+            });
+        }
+
+        function toggleRecording() {
+            if (!recognition) return;
+            recordBtn.disabled = true;
+            if (isRecording) {
+                recognition.stop();
+            } else {
+                answerEl.value = '';
+                finalTranscript = '';
+                recognition.start();
+            }
+        }
+
+        function updateCumulativeScoreDisplay() {
+            const scoredEntries = interviewLog.filter(entry => entry.score > 0);
+            if (scoredEntries.length > 0) {
+                const totalScore = scoredEntries.reduce((sum, item) => sum + item.score, 0);
+                const averageScore = totalScore / scoredEntries.length;
+                const percentageScore = Math.round((averageScore / 10) * 100);
+                cumulativeScoreDisplay.textContent = `Avg: ${percentageScore}%`;
+                cumulativeScoreDisplay.classList.remove('hidden');
+            }
+        }
+        
+        async function getAndDisplayFeedback(logEntries, targetElement = feedbackContent) {
+            feedbackContainer.classList.remove('hidden');
+            feedbackLoader.classList.remove('hidden');
+            recordBtn.disabled = true;
+            targetElement.innerHTML = '';
+            const languageName = interviewLanguage.startsWith('hi') ? 'Hindi' : 'English';
+
+            for (const entry of logEntries) {
+                // Base Prompt
+                let prompt = `Role: Behavioral Psychologist & Interview Coach. 
+                Context: Role: "${jobRole}". Question: "${entry.question}". Answer: "${entry.answer}". Language: ${languageName}.
+                
+                Analyze the following:
+                1. Content: Score (1-10), strengths, improvements.
+                2. Tone & Fluency: Detect confidence, unwanted pauses (hesitation), or nervous markers in the text.
+                3. Language Quality: Grammar, vocabulary, clarity (1-10).
+                4. Body Language (if image provided): Analyze facial expression (eye contact, stress, confidence).
+
+                Output JSON: {
+                    "score": [1-10], 
+                    "what_went_well": "concise point", 
+                    "areas_for_improvement": "concise point", 
+                    "example_answer": "better version",
+                    "behavioral_analysis": {
+                        "facial_expression": "Analysis of face/eyes from image (or 'N/A' if missing)",
+                        "tone_voice": "Inferred tone from text/style",
+                        "language_quality_score": [1-10],
+                        "fluency_notes": "Notes on pauses/fillers"
+                    }
+                }`;
+                
+                try {
+                    // Pass image snapshot if it exists for this entry
+                    const feedback = await callGeminiAPI(prompt, entry.snapshot);
+                    
+                    const logIndex = interviewLog.findIndex(item => item.question === entry.question && item.answer === entry.answer);
+                    if (logIndex > -1) {
+                        interviewLog[logIndex].score = feedback.score;
+                        interviewLog[logIndex].feedback = feedback;
+                    }
+                    displayFeedback(feedback, entry.question, targetElement);
+                    updateCumulativeScoreDisplay();
+                } catch (error) {
+                    console.error(error);
+                    targetElement.innerHTML += `<div class="text-red-500 text-sm">Feedback Error: ${error.message}</div>`;
+                }
+            }
+
+            feedbackLoader.classList.add('hidden');
+            nextQuestionBtn.classList.remove('hidden');
+            endInterviewBtn.classList.remove('hidden');
+            recordBtn.disabled = false;
+            
+            // Scroll to feedback
+            feedbackContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function displayFeedback(feedback, question, targetElement) {
+            const percentageScore = feedback.score * 10;
+            const scoreColor = percentageScore >= 60 ? 'text-indigo-600' : 'text-red-500';
+            const behavioral = feedback.behavioral_analysis || {};
+
+            const feedbackHTML = `
+                <div class="border border-gray-200 p-4 rounded-xl bg-gray-50 shadow-sm mb-4">
+                    <p class="text-xs font-bold text-gray-400 uppercase mb-1">Feedback For</p>
+                    <p class="text-sm font-semibold text-gray-800 mb-3 line-clamp-2">"${question}"</p>
+                    
+                    <div class="flex items-center gap-4 mb-4 bg-white p-3 rounded-lg border border-gray-100">
+                        <div class="text-center">
+                            <span class="block text-2xl font-bold ${scoreColor}">${percentageScore}%</span>
+                            <span class="text-xs text-gray-500">Content</span>
+                        </div>
+                         <div class="h-8 w-px bg-gray-200"></div>
+                        <div class="text-center">
+                            <span class="block text-2xl font-bold text-blue-600">${behavioral.language_quality_score || '-'}/10</span>
+                            <span class="text-xs text-gray-500">Language</span>
+                        </div>
+                        <div class="h-8 w-px bg-gray-200"></div>
+                        <div class="flex-1">
+                             <p class="text-xs text-green-700 mb-1">✅ ${feedback.what_went_well}</p>
+                             <p class="text-xs text-amber-700">⚠️ ${feedback.areas_for_improvement}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3 p-3 bg-indigo-50 rounded-lg border border-indigo-100 text-xs">
+                        <p class="font-bold text-indigo-800 mb-1">🧠 Behavioral & Communication Analysis</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            <p><span class="font-semibold">👀 Face/Eyes:</span> ${behavioral.facial_expression || 'N/A'}</p>
+                            <p><span class="font-semibold">🗣️ Tone:</span> ${behavioral.tone_voice || 'N/A'}</p>
+                            <p><span class="font-semibold">⏸️ Fluency:</span> ${behavioral.fluency_notes || 'N/A'}</p>
+                        </div>
+                    </div>
+
+                    <details class="group">
+                        <summary class="flex items-center gap-2 cursor-pointer text-xs font-bold text-indigo-600 select-none">
+                            <span>See Example Answer</span>
+                            <svg class="w-4 h-4 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                        </summary>
+                        <div class="mt-2 text-sm text-gray-700 bg-white p-3 rounded border border-gray-100 italic">
+                            "${feedback.example_answer}"
+                        </div>
+                    </details>
+                </div>`;
+            targetElement.innerHTML += feedbackHTML;
+        }
+
+        function calculateAndDisplayOverallScore(log) {
+            let percentageScore = 0;
+            if (log.length > 0) {
+                const totalScore = log.reduce((sum, item) => sum + (item.score || 0), 0);
+                const averageScore = totalScore / log.length;
+                percentageScore = Math.round((averageScore / 10) * 100);
+                
+                overallScoreEl.textContent = `${percentageScore}%`;
+                if (percentageScore >= 60) {
+                    overallScoreEl.className = 'text-5xl md:text-7xl font-bold text-green-600';
+                    overallMessageEl.textContent = `Great Job!`;
+                    overallMessageEl.className = 'text-lg text-green-700 font-bold';
+                } else {
+                    overallScoreEl.className = 'text-5xl md:text-7xl font-bold text-amber-500';
+                    overallMessageEl.textContent = `Keep Practicing!`;
+                    overallMessageEl.className = 'text-lg text-amber-700 font-bold';
+                }
+            } else {
+                overallScoreEl.textContent = 'N/A';
+                overallMessageEl.textContent = 'No answers recorded.';
+            }
+            return percentageScore;
+        }
+
+        function stopVideo() {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+            }
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+                videoStream = null;
+            }
+            videoFeed.classList.add('hidden');
+            stopVideoBtn.classList.add('hidden');
+        }
+
+        async function endInterview(isTimeUp = false) {
+            clearInterval(interviewTimerId);
+            
+            stopVideo();
+            
+            const unanalyzedEntries = interviewLog.filter(entry => !entry.feedback);
+            if (unanalyzedEntries.length > 0) {
+                interviewFeedbackSection.classList.remove('hidden');
+                finalFeedbackLoader.classList.remove('hidden');
+                await getAndDisplayFeedback(unanalyzedEntries, finalFeedbackContent);
+                finalFeedbackLoader.classList.add('hidden');
+            } else {
+                 interviewFeedbackSection.classList.add('hidden');
+            }
+            
+            const finalScore = calculateAndDisplayOverallScore(interviewLog);
+            await saveSession(finalScore); // Use await here
+            showFinalReport(interviewLog, finalScore);
+        }
+
+        function showFinalReport(log, score) {
+            switchScreen(finalReportScreen);
+            calculateAndDisplayOverallScore(log);
+            finalFeedbackContent.innerHTML = '';
+            log.forEach(entry => {
+                if(entry.feedback) displayFeedback(entry.feedback, entry.question, finalFeedbackContent);
+            });
+            
+            if (interviewType === 'job') {
+                cvAnalysisSection.classList.remove('hidden');
+                if (cvText && jobDescription) {
+                    cvAnalysisMessage.textContent = 'Analyze your CV against the Job Description.';
+                    analyzeCvBtn.disabled = false;
+                    analyzeCvBtn.classList.remove('hidden');
+                } else if (cvText) {
+                    cvAnalysisMessage.textContent = 'Add a Job Description for detailed analysis.';
+                    analyzeCvBtn.disabled = true;
+                    analyzeCvBtn.classList.add('hidden');
+                } else {
+                    cvAnalysisMessage.textContent = 'No CV uploaded.';
+                    analyzeCvBtn.disabled = true;
+                    analyzeCvBtn.classList.add('hidden');
+                }
+            } else {
+                cvAnalysisSection.classList.add('hidden');
+            }
+            cvAnalysisResult.innerHTML = ''; 
+        }
+
+        async function analyzeCv() {
+            analyzeCvBtn.disabled = true;
+            cvLoader.classList.remove('hidden');
+            cvAnalysisResult.innerHTML = '';
+            
+            // Limit text to avoid token limits
+            const truncCv = cvText.substring(0, 2000);
+            const truncJob = jobDescription.substring(0, 1000);
+
+            const prompt = `Role: Career Coach. CV: "${truncCv}". Job: "${truncJob}". Output JSON: {"fit_score": [1-100], "summary": "short summary", "strengths": ["point1", "point2"], "improvement_suggestions": ["point1", "point2"]}`;
+            try {
+                const analysis = await callGeminiAPI(prompt);
+                currentCvAnalysis = analysis;
+                displayCvAnalysis(analysis);
+            } catch (error) {
+                cvAnalysisResult.innerHTML = `<div class="text-red-500 text-sm">Analysis failed. Try shorter text.</div>`;
+            } finally {
+                cvLoader.classList.add('hidden');
+            }
+        }
+
+        function displayCvAnalysis(analysis) {
+            const createList = (items) => `<ul class="list-disc list-inside space-y-1 text-sm">${items.map(item => `<li>${item}</li>`).join('')}</ul>`;
+            cvAnalysisResult.innerHTML = `
+                <div class="flex items-center justify-between mb-4 bg-white p-4 rounded-xl">
+                    <span class="font-bold text-gray-700">Fit Score</span>
+                    <span class="text-3xl font-bold text-indigo-600">${analysis.fit_score}/100</span>
+                </div>
+                <div class="space-y-3">
+                    <div class="bg-white p-4 rounded-xl">
+                        <h4 class="text-sm font-bold text-gray-800 mb-2">Summary</h4>
+                        <p class="text-sm text-gray-600">${analysis.summary}</p>
+                    </div>
+                    <div class="bg-green-50 p-4 rounded-xl border border-green-100">
+                        <h4 class="text-sm font-bold text-green-800 mb-2">Strengths</h4>
+                        <div class="text-green-800">${createList(analysis.strengths)}</div>
+                    </div>
+                    <div class="bg-red-50 p-4 rounded-xl border border-red-100">
+                        <h4 class="text-sm font-bold text-red-800 mb-2">Improvements</h4>
+                        <div class="text-red-800">${createList(analysis.improvement_suggestions)}</div>
+                    </div>
+                </div>`;
+        }
+
+        function downloadReport() {
+            let reportContent = `TAXILA INTERVIEW REPORT - BEHAVIORAL ANALYSIS\n==========================================\n\n`;
+            reportContent += `Candidate: ${playerName || 'User'}\nRole: ${jobRole}\nScore: ${overallScoreEl.textContent}\n\n`;
+
+            interviewLog.forEach((entry, index) => {
+                reportContent += `QUESTION ${index + 1}: ${entry.question}\n`;
+                reportContent += `ANSWER: ${entry.answer}\n`;
+                
+                if (entry.feedback) {
+                    const b = entry.feedback.behavioral_analysis || {};
+                    reportContent += `\n[CONTENT ANALYSIS]\n`;
+                    reportContent += `- Strengths: ${entry.feedback.what_went_well}\n`;
+                    reportContent += `- Improvements: ${entry.feedback.areas_for_improvement}\n`;
+                    
+                    reportContent += `\n[BEHAVIORAL & COMMUNICATION]\n`;
+                    reportContent += `- Face/Eyes: ${b.facial_expression || 'N/A (No Video)'}\n`;
+                    reportContent += `- Tone: ${b.tone_voice || 'N/A'}\n`;
+                    reportContent += `- Fluency/Pauses: ${b.fluency_notes || 'N/A'}\n`;
+                    reportContent += `- Language Quality Score: ${b.language_quality_score || '0'}/10\n`;
+                }
+                reportContent += `\n--------------------------------\n\n`;
+            });
+            
+            if (currentCvAnalysis) {
+                reportContent += `CV ANALYSIS FIT SCORE: ${currentCvAnalysis.fit_score}/100\n`;
+            }
+
+            const blob = new Blob([reportContent], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Interview_Behavioral_Report.txt`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function downloadVideo() {
+            if (!videoBlob) return alert("No video recorded.");
+            const url = URL.createObjectURL(videoBlob);
+            const a = document.createElement('a');
+            a.style = 'display: none';
+            a.href = url;
+            a.download = `Interview_Recording.webm`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+        
+        // --- HISTORY & STORAGE (INTEGRATED API LOGIC) ---
+        
+        function getUserId() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get("userId") || "guest";
+        }
+        
+        async function saveSession(score) {
+            const userId = getUserId();
+            const session = {
+                date: new Date().toISOString(),
+                playerName,
+                experienceText,
+                jobRole,
+                companyName,
+                interviewType,
+                overallScore: score,
+                log: interviewLog,
+                cvAnalysis: currentCvAnalysis
+            };
+            
+            // NOTE: Use the correct Taxila API endpoint here
+            const YOUR_API_ENDPOINT = "https://erp.taxila.in/api/game/interview";
+            
+            try {
+                const response = await fetch(YOUR_API_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: userId, session })
+                });
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                console.log('Successfully saved to backend:', data);
+                
+                // Update local history list with the new session after successful save
+                allSessions.unshift(session);
+                if(allSessions.length > 10) allSessions.pop(); 
+                localStorage.setItem('taxilaInterviewHistory', JSON.stringify(allSessions));
+                
+            } catch (error) {
+                console.error("Error saving session to API, falling back to local storage:", error);
+                // Fallback to local storage if API fails
+                allSessions.unshift(session);
+                if(allSessions.length > 10) allSessions.pop();
+                localStorage.setItem('taxilaInterviewHistory', JSON.stringify(allSessions));
+            }
+        }
+
+        async function loadSessions() {
+            const userId = getUserId();
+            // NOTE: Use the correct Taxila API endpoint here
+            const YOUR_API_ENDPOINT = `https://erp.taxila.in/api/game/interview?userId=${userId}`;
+            
+            try {
+                const response = await fetch(YOUR_API_ENDPOINT);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                
+                if(data && data.sessions) {
+                    allSessions = data.sessions;
+                    // Optionally, update localStorage with the fetched data
+                    localStorage.setItem('taxilaInterviewHistory', JSON.stringify(allSessions));
+                } else {
+                     allSessions = [];
+                }
+            } catch(error) {
+                 console.error("Could not fetch sessions from API, falling back to local storage.", error);
+                 const saved = localStorage.getItem('taxilaInterviewHistory');
+                 if (saved) {
+                     allSessions = JSON.parse(saved);
+                 }
+            }
+        }
+
+        function displayHistory() {
+            switchScreen(historyScreen);
+            historyList.innerHTML = '';
+            if (allSessions.length === 0) {
+                historyList.innerHTML = '<p class="text-center text-gray-500 py-4">No past attempts found.</p>';
+                return;
+            }
+
+            allSessions.forEach((session, index) => {
+                const date = new Date(session.date).toLocaleDateString();
+                const scoreColor = session.overallScore >= 60 ? 'text-green-600' : 'text-amber-600';
+
+                const element = document.createElement('div');
+                element.className = 'p-4 border border-gray-200 rounded-xl hover:bg-gray-50 cursor-pointer transition flex justify-between items-center';
+                element.innerHTML = `
+                    <div>
+                        <p class="font-bold text-gray-800 text-sm">${session.jobRole}</p>
+                        <p class="text-xs text-gray-500">${session.companyName || 'General'} • ${date}</p>
+                    </div>
+                    <p class="text-xl font-bold ${scoreColor}">${session.overallScore}%</p>
+                `;
+                element.onclick = () => viewPastReport(index);
+                historyList.appendChild(element);
+            });
+        }
+
+        function viewPastReport(index) {
+            const session = allSessions[index];
+            playerName = session.playerName;
+            jobRole = session.jobRole;
+            interviewType = session.interviewType;
+            // Set for report re-rendering
+            currentCvAnalysis = session.cvAnalysis; 
+            showFinalReport(session.log, session.overallScore);
+            if(session.cvAnalysis) displayCvAnalysis(session.cvAnalysis);
+            downloadVideoBtn.disabled = true; 
+        }
+
+        function updateFormForInterviewType() {
+             interviewType = document.querySelector('input[name="interviewType"]:checked').value;
+             if (interviewType === 'job') {
+                experienceInput.parentElement.classList.remove('hidden');
+                jobRoleLabel.textContent = 'Job Title:';
+                jobRoleInput.placeholder = 'e.g., Software Engineer';
+                companyNameLabel.textContent = 'Company (Optional):';
+                jobDescriptionLabel.textContent = 'Job Description (Optional):';
+             } else {
+                experienceInput.parentElement.classList.add('hidden');
+                jobRoleLabel.textContent = 'Program Name:';
+                jobRoleInput.placeholder = 'e.g., MBA, B.Tech';
+                companyNameLabel.textContent = 'University (Optional):';
+                jobDescriptionLabel.textContent = 'Statement of Purpose (Optional):';
+             }
+        }
+
+        // Event Listeners
+        startBtn.addEventListener('click', startInterview);
+        cvUploadInput.addEventListener('change', handleCvUpload);
+        recordBtn.addEventListener('click', toggleRecording);
+        nextQuestionBtn.addEventListener('click', generateNewQuestion);
+        endInterviewBtn.addEventListener('click', () => endInterview(false));
+        stopVideoBtn.addEventListener('click', stopVideo);
+        analyzeCvBtn.addEventListener('click', analyzeCv);
+        downloadReportBtn.addEventListener('click', downloadReport);
+        downloadVideoBtn.addEventListener('click', downloadVideo);
+        viewHistoryBtn.addEventListener('click', displayHistory);
+        backToWelcomeBtn.addEventListener('click', () => switchScreen(welcomeScreen));
+        backToWelcomeFromReportBtn.addEventListener('click', () => {
+            resetInterviewState();
+            switchScreen(welcomeScreen);
+        });
+        document.querySelectorAll('input[name="interviewType"]').forEach(radio => {
+            radio.addEventListener('change', updateFormForInterviewType);
+        });
+        
+        // Initial setup
+        loadSessions();
+        switchScreen(welcomeScreen);
+
+    </script>
+</body>
+</html>

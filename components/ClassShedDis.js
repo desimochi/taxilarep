@@ -6,11 +6,14 @@ import { BanIcon, Calendar1Icon, SearchIcon, SquareUserRoundIcon } from "lucide-
 import Toast from "./Toast";
 import Link from "next/link";
 import { EyeIcon } from "@heroicons/react/24/outline";
+import { hasPermission } from "@/app/lib/checkPermission";
+import { useRouter } from "next/navigation";
 
 
 
 export default function ClassShedDis() {
   const [loading, setLoading] = useState(false);
+  const router = useRouter()
   const [error, setError] = useState(false);
   const [sclass, setsclass] = useState([]);
   const [timeerror, setTimeError] = useState("")
@@ -33,59 +36,55 @@ const [formData, setFormData] = useState({
   start_time: "",
   end_time : ""
 })
-
+ const hasadd = hasPermission(("c2c33c8eda72efef3e7a986f035d5a82e0e9e951585ecf379e82902c2ff55088"))
+  const hasedit = hasPermission(("9ddd4893a3df8b6b0caae6893805aa60f009b5f48cfa413a708e78e7d3e6a1f2"))
+  const hasView = hasPermission(("07a09a5fc494b902800797af057188d858d753ab1bc26d853f2a5246ec3b9fc4"))
   useEffect(() => {
+    if(!hasView){
+         router.replace("/unauthorized")
+    }else{
     fetchAllData(currentPage);
+    }
   }, [currentPage]);
-
+if(!hasView){
+  return null;
+}
   const fetchAllData = async (page) => {
     setLoading(true);
+    const params = new URLSearchParams();
+    if (selectedTerm) params.append('mapping__term', selectedTerm);
+    if (selectedSubject) params.append('mapping', selectedSubject);
+    if (s_date) params.append('s_date', s_date);
+    if (e_date) params.append('e_date', e_date);
+    if (currentPage) params.append('page', currentPage);
     try {
-      const response = await authFetch(`class-schedule-viewset?page=${page}`);
+      const [response, response1, response2] = await Promise.all([
+        authFetch(`class-schedule-viewset?${params.toString()}`),
+        authFetch("terms-list"),
+        authFetch("subjects-list")
+      ]);
       const data = await response.json();
+      const data1 = await response1.json();
+      const data2 = await response2.json();
 
       if (data && data.data) {
         setsclass(data.data);
         setTotalPages(data.extra?.total);
-        const uniqueTerms = Array.from(
-          new Map(
-              data.data
-                  .filter(item => item.mapping && item.mapping.term)
-                  .map(item => [item.mapping.term.id, item.mapping.term])
-          ).values()
-      );
-      setTerms(uniqueTerms);
-
-      const uniqueSubjects = Array.from(
-        new Map(
-            data.data
-                .filter(item => item.mapping && item.mapping.term && item.mapping.subject)
-                .map(item => [item.mapping.subject.name, { 
-                    termId: item.mapping.term.id, 
-                    subjectMappingId: item.mapping.id, 
-                    subjectName: item.mapping.subject.name 
-                }])
-        ).values()
-    );
-    setSubjectas(uniqueSubjects);
+        setTerms(data1.data)
+    setSubjectas(data2.data);
       } else {
-        setClassSchedule([]);
+        setsclass([]);
         setTotalPages(1);
       }
     } catch (error) {
       console.error("Error fetching data:", error);
-      setClassSchedule([]);
+      setsclass([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleTermChange = (e) => {
-    const termId = e.target.value;
-    setSelectedTerm(termId);
-    const filtered = subjectas.filter(sub => sub.termId.toString() === termId);
-    setFilteredSubjects(filtered);
-};
+ 
 const handleSubmit = async () => {
     try {
         setLoading(true);
@@ -96,6 +95,7 @@ const handleSubmit = async () => {
         if (selectedSubject) params.append('mapping', selectedSubject);
         if (s_date) params.append('s_date', s_date);
         if (e_date) params.append('e_date', e_date);
+        if (currentPage) params.append('page', currentPage);
 
         const url = `class-schedule-viewset?${params.toString()}`;
 
@@ -104,7 +104,7 @@ const handleSubmit = async () => {
 
         const data = await response.json();
         setsclass(data.data);
-        setTotalPages(data.extra?.total);
+        setTotalPages(data.extra?.total || 1);
         setCurrentPage(1)
     } catch (error) {
         setError(error.message);
@@ -190,7 +190,7 @@ const confirmReschdule = async () => {
     }
 };
   return (
-    <div className="px-12 py-16">
+    <div className="px-2 sm:px-12 py-6 sm:py-16">
        {showPopup && (
                 <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50">
                     {showToast && <Toast message={message}/>}
@@ -227,36 +227,40 @@ const confirmReschdule = async () => {
                     </div>}
                 </div>
             )}
+          <div className="flex justify-between items-center">
+            <div>
          <h1 className="text-3xl font-bold mb-2 font-sans">Class Schedule </h1>
                     <p className="text-sm text-gray-500 mb-8">Everyhting you need to know about Class Schedule</p>
-                    
+                    </div>
+                    {hasadd && <Link href={`/add-class`} className="bg-red-800 text-green-50 px-4 py-2 rounded-sm shadow-sm hover:shadow-xl transition-shadow">Add Class</Link>}
+                    </div>         
                     <hr className=" border  border-spacing-y-0.5 mb-6"/>
-                    <div className="mb-4 flex items-center justify-between ">
-                        <div className="w-1/5">
-                    <select value={selectedTerm} onChange={handleTermChange} className=" w-full border border-gray-300 rounded-sm p-2 text-gray-500 ">
+                    <div className="mb-4 grid grid-cols-2 sm:grid-cols-5 gap-2 items-center justify-between ">
+                        <div className="">
+                    <select value={selectedTerm} onChange={(e)=>setSelectedTerm(e.target.value)} className=" w-full border border-gray-300 rounded-sm p-2 text-gray-500 ">
                         <option value="">Select Term</option>
                         {terms.map(term => (
                             <option key={term.id} value={term.id}>{term.name}</option>
                         ))}
                     </select>
                     </div>
-                    <div className="w-1/5">
-                    <select onChange={(e) => setSelectedSubject(e.target.value)} disabled={!selectedTerm} className=" border w-full border-gray-300 rounded-sm p-2 text-gray-500">
+                    <div className="">
+                    <select onChange={(e) => setSelectedSubject(e.target.value)} className=" border w-full border-gray-300 rounded-sm p-2 text-gray-500">
                         <option value="">Select Subject</option>
-                        {filteredSubjects.map(sub => (
-                            <option key={sub.subjectMappingId} value={sub.subjectMappingId}>
-                                {sub.subjectName}
+                        {subjectas.map(sub => (
+                            <option key={sub.id} value={sub.id}>
+                                {sub.name}
                             </option>
                         ))}
                     </select>
                 </div>
-                <div className="w-1/5">
+                <div className="">
                     <input type="date" className="w-full border border-gray-300 rounded-sm p-1 text-gray-500" onChange={(e) => setStartDate(e.target.value)} />
                 </div>
-                <div className="w-1/5">
+                <div className="">
                     <input type="date" className="w-full border border-gray-300 rounded-sm p-1 text-gray-500" onChange={(e) => setEndDate(e.target.value)} />
                 </div>
-                <button className="flex gap-1 justify-center w-fit border bg-red-700 py-2 px-8 text-white rounded-sm hover:bg-red-100 hover:text-red-800 transition duration-300 ease-in-out items-center" onClick={handleSubmit}><SearchIcon className="h-4 w-4"/> Search</button>
+                <button className="flex gap-1 justify-center w-fit border bg-gray-500 py-2 px-8 text-white rounded-sm hover:bg-gray-100 hover:text-red-800 transition duration-300 ease-in-out items-center" onClick={handleSubmit}><SearchIcon className="h-4 w-4"/> Search</button>
                        
                            </div>
       {loading ? (
@@ -270,12 +274,13 @@ const confirmReschdule = async () => {
                 <th className="border px-4 py-2">Term</th>
                 <th className="border px-4 py-2">Batch</th>
                 <th className="border px-4 py-2">Subject</th>
+                <th className="border px-4 py-2">Type</th>
                 <th className="border px-4 py-2">Faculty</th>
                 <th className="border px-4 py-2">Class Date</th>
                 <th className="border px-4 py-2">Start Time</th>
                 <th className="border px-4 py-2">End Time</th>
                 <th className="border px-4 py-2">Staus</th>
-                <th className="border px-4 py-2">Action</th>
+               {hasedit &&  <th className="border px-4 py-2">Action</th>}
               </tr>
             </thead>
             <tbody>
@@ -286,6 +291,7 @@ const confirmReschdule = async () => {
                     <td className="px-6 py-3">{cls.mapping.term?.name}</td>
                     <td className="px-6 py-3">{cls.mapping.batch?.name}</td>
                     <td className="px-6 py-3">{cls.mapping.subject?.name}</td>
+                    <td className="px-6 py-3">{cls.mapping?.type  ==="main"? <span className="text-sm text-green-800 bg-green-50 rounded-sm px-2 py-.5 border">main</span>:<span className="text-sm text-red-800 bg-red-50 rounded-sm px-2 py-.5 border">{cls.mapping?.type}</span>}</td>
                     <td className="px-6 py-3">{cls.mapping.faculty?.first_name} {cls.mapping.faculty?.last_name}</td>
                     <td className="px-6 py-3">{cls.date}</td>
                     <td className="px-6 py-3">{cls.start_time}</td>
@@ -294,17 +300,17 @@ const confirmReschdule = async () => {
           {cls.is_cancel ? (
             <span className="bg-red-100 text-sm text-red-800 py-0.5 px-3 rounded-sm">Cancelled</span>
           ) : cls.is_complete ? (
-            <Link href={`attendance/class-attendance/${cls.id}`} className="bg-gray-100 text-sm text-gray-800 py-0.5 px-3 rounded-sm"><EyeIcon className="h-4 w-4"/></Link>
+            <Link href={`attendance/class-attendance/${cls.id}`} className="bg-gray-100 text-sm flex items-center justify-center w-fit text-gray-800 py-0.5 px-3 rounded-sm"><EyeIcon className="h-4 w-4"/></Link>
           ) : cls.is_ready_for_attendance ? (
             <span className="bg-violet-100 text-sm text-violet-800 py-0.5 px-3 rounded-sm">Attendance Not Marked</span>
           ) : (<span className="bg-green-100 text-sm text-green-800 py-0.5 px-3 rounded-sm">Scheduled</span>)}
         </td>
-                          <td className="px-6 py-3 flex gap-3 items-center">{!cls.is_cancel && <button className="bg-green-600 text-white rounded-sm py-1 px-2" onClick={() => handleCancelClick(cls.id, "cancel")}><BanIcon className="h-5 w-5 cursor-pointer"/></button>} <button className="bg-red-600 text-white rounded-sm py-1 px-2">{!cls.is_complete? <Calendar1Icon className="h-5 w-5 cursor-pointer" onClick={() => handleCancelClick(cls.id, "reshed")}/> : <SquareUserRoundIcon  className="h-5 w-5"/>}</button></td>
+                   {hasedit &&       <td className="px-6 py-3 flex gap-3 items-center">{!cls.is_cancel && <button className="bg-green-600 text-white rounded-sm py-1 px-2" onClick={() => handleCancelClick(cls.id, "cancel")}><BanIcon className="h-5 w-5 cursor-pointer"/></button>} <button className="bg-red-600 text-white rounded-sm py-1 px-2">{!cls.is_complete? <Calendar1Icon className="h-5 w-5 cursor-pointer" onClick={() => handleCancelClick(cls.id, "reshed")}/> : <SquareUserRoundIcon  className="h-5 w-5"/>}</button></td>}
                       </tr>
                   ))
               ) : (
                   <tr>
-                      <td colSpan={4} className="text-center py-4">No Class Schedule</td>
+                      <td colSpan={11} className="text-center py-4">No Class Schedule</td>
                   </tr>
               )}
             </tbody>

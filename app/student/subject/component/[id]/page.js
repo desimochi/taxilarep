@@ -11,6 +11,7 @@ import { EyeDropperIcon, EyeSlashIcon } from "@heroicons/react/24/outline"
 import StudentAnswerSub from "@/components/StudentAnswerSub";
 import StudentAnswerView from "@/components/StudentAnswerView";
 import AnswerAdd from "@/components/AnswerAdd";
+import BackButton from "@/components/ui/Backbutton";
 
 export default function Page(){
     const {id} = useParams()
@@ -84,7 +85,7 @@ export default function Page(){
         return now < start || now > end;
     };
     return(
-        <div className="px-6 py-6">
+        <div className="px-2 sm:px-6 py-6">
             {editDetails && <>
             <div
                       id="crud-modal"
@@ -130,22 +131,17 @@ export default function Page(){
                       </div>
                     </div>
             </>}
-             <button 
-                onClick={() => router.back()} 
-                className="px-6 py-1 flex align-middle items-center gap-1 text-gray-600 text-sm rounded"
-            >
-                <ArrowLeft className='h-4 w-4' /> Back to List
-            </button>
-            <div className="border border-gray-300 rounded-xl mt-4 bg-gradient-to-bl from-gray-700 to-stone-900 text-white p-8 mx-6 mb-8">
-                    <div className="flex justify-between items-center">
+            <BackButton/>
+            <div className="border border-gray-300 rounded-xl mt-4 bg-gradient-to-bl from-gray-700 to-stone-900 text-white p-8 mb-8">
+                    <div className="flex flex-col sm:flex-row justify-between items-center">
                         <h5 className="text-2xl font-bold">
                             {students?.name || 'N/A'} Component Details
                         </h5>
-                        <div className="flex gap-2">
-                            <p className="bg-red-600 px-4 py-1 rounded-sm">
+                        <div className="flex gap-2 mt-3 sm:mt-0">
+                            <p className="bg-red-600 text-sm px-4 py-1 rounded-sm">
                                 Type - {students?.type || 'N/A'}
                             </p>
-                            <p className="bg-green-600 px-4 py-1 rounded-sm">
+                            <p className="bg-green-600 text-sm px-4 py-1 rounded-sm">
                                 Max Marks - {students?.max_marks || 'N/A'}
                             </p>
                         </div>
@@ -203,47 +199,76 @@ export default function Page(){
         <h3 className="font-bold bg-red-700 w-fit px-3 py-0.5 text-red-100 rounded-sm">
           Subcomponent Details
         </h3>
-        <div className="grid grid-cols-2 gap-4 mt-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
           {additionalData.length > 0 ? (
             additionalData.map((subcomp) => (
+              console.log(subcomp),
               <div key={subcomp.id} className="border p-4 rounded-sm">
-                <div className="flex justify-between items-center">
-                <h5 className="mt-3 font-bold">{subcomp.name}</h5>
-                <span className=" flex gap-1 items-center text-sm text-red-600 underline"><EyeIcon className="h-4 w-4"/><Link href={`/student/subject/subcomponent/${subcomp.id}`}>See Details</Link></span>
-                </div>
-                    
-                <hr className="border border-b-2 border-red-600 w-12 mt-1" />
-                <div className="flex justify-between mt-4">
-                  <p className="font-bold">Start Date</p>
-                  <p>{subcomp?.start_date ? new Date(subcomp.start_date).toLocaleString("en-IN", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        timeZoneName: "short",
-      }) : "NA"}</p>
-                </div>
-                <div className="flex justify-between mt-4">
-                  <p className="font-bold">End Date</p>
-                  <p>{subcomp?.end_date ? new Date(subcomp.end_date).toLocaleString("en-IN", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        timeZoneName: "short",
-      }) : "NA"}</p>
-                </div>
-                <button
-                  onClick={() => handleOpenModal(subcomp.id)}  
-                  className="text-sm bg-red-600 w-full py-1.5 rounded-sm text-white shadow-sm hover:shadow-xl transition-shadow mt-6"
-                >
-                  Submit Answer
-                </button>
-              </div>
+  <div className="flex justify-between items-center">
+    <h5 className="mt-3 font-bold">{subcomp.name}</h5>
+    <span className="flex gap-1 items-center text-sm text-red-600 underline">
+      <EyeIcon className="h-4 w-4" />
+      <Link href={`/student/subject/subcomponent/${subcomp.id}`}>
+        See Details
+      </Link>
+    </span>
+  </div>
+
+  <hr className="border border-b-2 border-red-600 w-12 mt-1" />
+
+  <div className="flex justify-between mt-4">
+    <p className="font-bold">Start Date</p>
+    <p>
+      {subcomp?.start_date
+        ? new Date(subcomp.start_date).toLocaleString("en-IN", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            timeZoneName: "short",
+          })
+        : "NA"}
+    </p>
+  </div>
+
+  <div className="flex justify-between mt-4">
+    <p className="font-bold">End Date</p>
+    <p>
+      {subcomp?.end_date
+        ? new Date(subcomp.end_date).toLocaleString("en-IN", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            timeZoneName: "short",
+          })
+        : "NA"}
+    </p>
+  </div>
+
+  {/* 🔥 Disable if current time > end_date */}
+  {(() => {
+    const isExpired =
+      subcomp?.end_date && new Date() > new Date(subcomp.end_date);
+
+    return (
+      <button
+        onClick={() => !isExpired && handleOpenModal(subcomp.id)}
+        disabled={isExpired}
+        className={`text-sm w-full py-1.5 rounded-sm text-white shadow-sm transition-shadow mt-6 
+          ${isExpired ? "bg-gray-400 cursor-not-allowed" : "bg-red-600 hover:shadow-xl"}
+        `}
+      >
+        {isExpired ? "Submission Closed" : "Submit Answer"}
+      </button>
+    );
+  })()}
+</div>
+
             ))
           ) : (
         <p>Details Not Updated Yet</p>
@@ -253,7 +278,7 @@ export default function Page(){
       </div>
     )}
   </div>
-</div>: <div className="grid grid-cols-[1fr_2fr] gap-4">
+</div>: <div className="grid sm:grid-cols-[1fr_2fr] gap-4">
   <div className="border border-gray-300 p-6 rounded-sm">
     <h3 className="bg-black rounded-sm text-white text-center py-1.5">
       Components Details

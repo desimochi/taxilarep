@@ -15,4 +15,10 @@ export function getAccessToken() {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
   }
-  
+  export function savePermission(permission){
+    localStorage.setItem("permission", permission)
+  }
+
+  export function getPermission(permission){
+    return localStorage.getItem("permission");
+  }

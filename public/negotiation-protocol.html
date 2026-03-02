@@ -1,0 +1,1513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Negotiation Protocol | Taxila Business School</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --panel-color: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --accent-gold: #f59e0b;
+            --font-family: 'Roboto Condensed', 'Arial Narrow', sans-serif;
+            --header-height: 60px;
+            --nav-height: 60px;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: var(--font-family);
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            letter-spacing: 0.5px;
+        }
+
+        /* CRT SCANLINE EFFECT */
+        body::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            z-index: 998;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        /* STRESS OVERLAY (VIGNETTE) */
+        #stress-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            pointer-events: none;
+            z-index: 900;
+            box-shadow: inset 0 0 100px rgba(0,0,0,0.8);
+            transition: box-shadow 0.5s ease;
+        }
+
+        .stress-active {
+            box-shadow: inset 0 0 150px rgba(239, 68, 68, 0.5) !important;
+            animation: pulse-stress 1.5s infinite alternate;
+        }
+
+        @keyframes pulse-stress {
+            from { box-shadow: inset 0 0 100px rgba(239, 68, 68, 0.3); }
+            to { box-shadow: inset 0 0 180px rgba(239, 68, 68, 0.7); }
+        }
+
+        /* SHAKE ANIMATION */
+        .shake-screen {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+            40%, 60% { transform: translate3d(6px, 0, 0); }
+        }
+
+        /* WELCOME SCREEN */
+        #welcome-screen {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--bg-color);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .welcome-card {
+            background: var(--panel-color);
+            padding: 40px;
+            border-radius: 4px;
+            border: 1px solid var(--accent-gold);
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.7);
+        }
+
+        .tbs-logo {
+            font-weight: 700;
+            font-size: 1.8rem;
+            color: var(--accent-gold);
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .game-title {
+            font-size: 2.2rem;
+            font-weight: 300;
+            color: var(--text-primary);
+            margin: 10px 0 30px 0;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--text-secondary);
+            padding-bottom: 10px;
+        }
+
+        .input-group { margin-bottom: 25px; text-align: left; }
+        .input-label { display: block; color: var(--accent-blue); font-size: 0.9rem; margin-bottom: 5px; font-weight: bold; text-transform: uppercase; }
+        
+        #player-name-input {
+            width: 100%;
+            padding: 12px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: white;
+            font-family: var(--font-family);
+            font-size: 1.2rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        #player-name-input:focus { border-color: var(--accent-blue); }
+
+        .start-btn {
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-family: var(--font-family);
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.2s;
+        }
+        .start-btn:hover { background: #2563eb; transform: translateY(-2px); }
+
+        /* HEADER */
+        header {
+            height: var(--header-height);
+            background-color: var(--panel-color);
+            padding: 0 20px;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+            flex-shrink: 0;
+        }
+
+        .brand {
+            font-size: 1.3rem;
+            font-weight: 300;
+            letter-spacing: 1px;
+            color: var(--text-primary);
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .brand strong { color: var(--accent-gold); font-weight: 700; }
+        .brand-sub { font-size: 0.8rem; color: var(--text-secondary); border-left: 1px solid #555; padding-left: 10px; display: none; }
+        @media(min-width: 900px) { .brand-sub { display: inline; } }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .sys-btn {
+            background: transparent;
+            border: 1px solid #475569;
+            color: var(--text-secondary);
+            padding: 4px 10px;
+            font-family: var(--font-family);
+            font-size: 0.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        .sys-btn:hover { border-color: var(--accent-blue); color: var(--accent-blue); background: rgba(59, 130, 246, 0.1); }
+
+        /* SAVE/LOAD SPECIFIC BUTTONS */
+        .sys-btn.save-btn { border-color: var(--accent-green); color: var(--accent-green); }
+        .sys-btn.save-btn:hover { background: rgba(16, 185, 129, 0.1); }
+        .sys-btn.load-btn { border-color: var(--accent-gold); color: var(--accent-gold); }
+        .sys-btn.load-btn:hover { background: rgba(245, 158, 11, 0.1); }
+
+        .status-bar {
+            display: flex;
+            gap: 20px;
+            font-size: 1rem;
+            color: var(--text-secondary);
+            align-items: center;
+        }
+
+        #mission-timer {
+            font-weight: bold;
+            color: var(--accent-red);
+            font-family: monospace;
+            font-size: 1.2rem;
+            background: #000;
+            padding: 2px 8px;
+            border: 1px solid #333;
+        }
+
+        /* MAIN LAYOUT */
+        .container {
+            display: grid;
+            grid-template-columns: 280px 1fr 280px;
+            gap: 1px;
+            flex: 1;
+            background-color: #334155;
+            overflow: hidden;
+            position: relative;
+            visibility: hidden;
+        }
+
+        /* PANELS */
+        .panel {
+            background-color: var(--bg-color);
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        /* METRICS */
+        .metric-box {
+            background-color: var(--panel-color);
+            border: 1px solid #334155;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-left: 3px solid var(--accent-blue);
+        }
+        .metric-label { font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 2px; }
+        .metric-value { font-size: 1.4rem; font-weight: 300; }
+
+        /* CHECKLIST */
+        .p-check-list { list-style: none; padding: 0; margin-top: 15px; }
+        .p-check-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; background-color: #333; border: 1px solid #555; }
+        .status-dot.active { background-color: var(--accent-green); box-shadow: 0 0 5px var(--accent-green); border-color: var(--accent-green); }
+
+        /* DIALOGUE */
+        .dialogue-history {
+            flex-grow: 1;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            padding-right: 5px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .msg {
+            padding: 15px;
+            border-radius: 2px;
+            max-width: 90%;
+            line-height: 1.4;
+            font-size: 1rem;
+            animation: fadeIn 0.3s ease-out;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .msg.system { background: rgba(30, 41, 59, 0.9); border: 1px solid var(--accent-gold); color: var(--accent-gold); width: 100%; max-width: 100%; text-align: center; font-family: monospace; font-size: 0.9rem; }
+        .msg.npc { background: #1e293b; align-self: flex-start; border-left: 3px solid var(--accent-red); color: #e2e8f0; }
+        .msg.user { background: #1e3a8a; align-self: flex-end; text-align: right; border-right: 3px solid var(--accent-blue); color: #fff; }
+
+        /* CHOICES */
+        .choices-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            min-height: 120px;
+            flex-shrink: 0;
+        }
+
+        .choice-btn {
+            background-color: var(--panel-color);
+            border: 1px solid #475569;
+            color: var(--text-primary);
+            padding: 15px;
+            cursor: pointer;
+            text-align: left;
+            font-family: var(--font-family);
+            font-size: 0.95rem;
+            position: relative;
+            transition: all 0.1s;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .choice-btn:hover { border-color: var(--accent-blue); background: #1e3a8a; }
+        .choice-btn:active { transform: translateY(1px); }
+        .choice-btn:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); pointer-events: none; }
+
+        .stratagem-tag {
+            font-size: 0.7rem;
+            color: var(--accent-blue);
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        /* LOGS */
+        .log-console {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: var(--accent-green);
+            background: #000;
+            padding: 15px;
+            height: 100%;
+            overflow-y: auto;
+            border: 1px solid #334155;
+        }
+        .log-line { margin-bottom: 6px; border-bottom: 1px solid #111; padding-bottom: 4px; }
+        .log-line::before { content: '>'; margin-right: 8px; opacity: 0.5; }
+
+        /* MOBILE NAV */
+        .mobile-nav {
+            display: none;
+            height: var(--nav-height);
+            background: var(--panel-color);
+            border-top: 1px solid #334155;
+            justify-content: space-around;
+            align-items: center;
+            flex-shrink: 0;
+            z-index: 20;
+        }
+        .nav-btn { background: none; border: none; color: var(--text-secondary); font-size: 0.8rem; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px; width: 100%; height: 100%; cursor: pointer; text-transform: uppercase; }
+        .nav-btn.active { color: var(--accent-blue); background: rgba(59, 130, 246, 0.1); border-top: 2px solid var(--accent-blue); }
+        .nav-icon { font-size: 1.2rem; }
+
+        /* MODALS */
+        .modal-overlay, .insta-overlay, .linkedin-overlay, .financial-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 100;
+            display: none; flex-direction: column; background-color: var(--bg-color); overflow-y: auto;
+        }
+        .modal-overlay { background: rgba(0,0,0,0.95); justify-content: center; align-items: center; padding: 20px; }
+        .modal-card {
+            background: var(--panel-color); width: 100%; max-width: 600px; padding: 30px;
+            border: 1px solid var(--accent-gold); box-shadow: 0 0 50px rgba(0,0,0,0.8);
+        }
+        .modal-title { color: var(--accent-gold); margin-top: 0; font-size: 1.5rem; text-transform: uppercase; border-bottom: 1px solid #333; padding-bottom: 15px; margin-bottom: 20px; }
+        .modal-body { margin-bottom: 30px; line-height: 1.6; color: #cbd5e1; font-size: 1rem; }
+        .btn-primary, .close-btn {
+            background-color: var(--accent-blue); color: white; border: none; padding: 12px 25px;
+            cursor: pointer; font-weight: bold; font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; width: 100%;
+        }
+        .close-btn { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); width: auto; min-width: 200px; background: var(--accent-red); box-shadow: 0 5px 20px rgba(0,0,0,0.5); z-index: 210; }
+
+        /* CERTIFICATE OVERLAY */
+        #certificate-overlay { background: #f0f0f0; color: #000; z-index: 300; }
+        #cert-wrapper {
+            display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; max-width: 1000px;
+        }
+        #cert-canvas-container { 
+            padding: 10px; display: flex; justify-content: center; width: 100%; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3); margin-bottom: 20px;
+        }
+        #cert-canvas-container img { max-height: 60vh; width: auto; max-width: 100%; }
+        
+        .cert-actions { display: flex; gap: 15px; width: 100%; justify-content: center; flex-wrap: wrap; }
+        .cert-btn { 
+            flex: 1; min-width: 200px; max-width: 300px; padding: 15px; border: none; font-weight: bold; font-size: 1rem; 
+            cursor: pointer; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 10px;
+            border-radius: 4px; color: white; transition: transform 0.2s; text-decoration: none;
+        }
+        .cert-btn:hover { transform: translateY(-2px); }
+        .dl-btn { background: var(--accent-green); }
+        .li-btn { background: #0077b5; }
+        .menu-btn { background: #333; margin-top: 10px; width: auto; min-width: 200px; }
+
+        /* FINANCIALS */
+        .financial-overlay { padding: 20px; padding-bottom: 100px; }
+        .fin-container { max-width: 900px; margin: 0 auto; width: 100%; }
+        .fin-header { border-bottom: 2px solid #334155; padding-bottom: 15px; margin-bottom: 30px; }
+        .fin-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; margin-top: 10px; background: #151f32; border: 1px solid #334155; }
+        .fin-table th { text-align: left; color: var(--text-secondary); padding: 12px; border-bottom: 1px solid #334155; background: #1e293b; text-transform: uppercase; font-size: 0.8rem; }
+        .fin-table td { padding: 12px; border-bottom: 1px solid #334155; color: #e2e8f0; }
+        .fin-table td.num { text-align: right; font-family: 'Courier New', monospace; font-weight: bold; }
+        .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); font-size: 6rem; color: rgba(255,255,255,0.03); font-weight: 900; pointer-events: none; text-transform: uppercase; white-space: nowrap; }
+
+        /* SOCIAL MEDIA */
+        .insta-header, .linkedin-header-card { max-width: 700px; margin: 20px auto; }
+        .insta-header { display: flex; gap: 20px; align-items: center; border-bottom: 1px solid #333; padding-bottom: 20px; }
+        .insta-pic { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(45deg, #f09433, #dc2743, #bc1888); padding: 3px; }
+        .insta-pic-inner { width: 100%; height: 100%; background: #000; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; }
+        .insta-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; max-width: 700px; margin: 0 auto 100px auto; }
+        .insta-post { aspect-ratio: 1; background-color: #1e293b; display: flex; align-items: center; justify-content: center; font-size: 3rem; cursor: pointer; transition: 0.2s; }
+        .insta-post:hover { background-color: #2d3748; }
+        
+        .linkedin-container { max-width: 700px; margin: 0 auto; padding-bottom: 100px; }
+        .linkedin-header-card { background: #1e1e1e; border: 1px solid #333; position: relative; padding-bottom: 20px; }
+        .linkedin-banner { height: 120px; background: linear-gradient(90deg, #0077b5, #004182); }
+        .linkedin-pfp-wrapper { position: absolute; top: 70px; left: 20px; width: 100px; height: 100px; background: #1e1e1e; border-radius: 50%; padding: 5px; }
+        .linkedin-pfp { width: 100%; height: 100%; background: #333; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 3rem; }
+        .linkedin-info { padding: 60px 20px 0 20px; }
+        .linkedin-section { background: #1e1e1e; border: 1px solid #333; padding: 20px; margin-top: 15px; }
+        .activity-item { border-bottom: 1px solid #333; padding-bottom: 15px; margin-bottom: 15px; }
+        .activity-meta { font-size: 0.8rem; color: #888; text-transform: uppercase; margin-bottom: 5px; }
+
+        @media (max-width: 900px) {
+            .container { display: flex; flex-direction: column; }
+            .panel { width: 100%; display: none; }
+            .panel.active-panel { display: flex; }
+            .mobile-nav { display: flex; }
+            .status-bar { display: none; } 
+            .fin-grid { grid-template-columns: 1fr; }
+            .choices-grid { grid-template-columns: 1fr; max-height: 45vh; overflow-y: auto; }
+            .insta-grid { grid-template-columns: repeat(2, 1fr); }
+            header { padding: 0 15px; }
+            .header-buttons .sys-btn { padding: 4px 6px; font-size: 0.7rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- STRESS OVERLAY -->
+<div id="stress-overlay"></div>
+
+<!-- WELCOME SCREEN -->
+<div id="welcome-screen">
+    <div class="welcome-card">
+        <div class="tbs-logo">Taxila Business School</div>
+        <div class="game-title">NEGOTIATION PROTOCOL</div>
+        <div style="margin-bottom: 30px; color: #cbd5e1; font-size: 1rem; line-height: 1.5;">
+            <strong>MISSION BRIEFING:</strong><br>
+            You are a lead negotiator for Meridian Capital.<br>
+            <strong>Target:</strong> Dr. Arjun Rao, Vayu Aerospace.<br>
+            <strong>Objective:</strong> Acquire 51% stake. Save the legacy.<br>
+            <span style="color:var(--accent-red)">WARNING: Failure results in immediate termination.</span>
+        </div>
+        
+        <div class="input-group">
+            <label for="player-name-input" class="input-label">ENTER OPERATIVE NAME</label>
+            <input type="text" id="player-name-input" placeholder="Name..." autocomplete="off">
+        </div>
+        
+        <button class="start-btn" onclick="startGame()">START MISSION</button>
+        <button class="sys-btn load-btn" style="margin-top:15px; width: 100%; padding: 12px;" onclick="loadGame()">LOAD PREVIOUS MISSION</button>
+    </div>
+</div>
+
+<!-- MAIN UI -->
+<header>
+    <div class="brand"><strong>NEGOTIATION</strong> PROTOCOL <span class="brand-sub">| TAXILA BUSINESS SCHOOL</span></div>
+    
+    <div class="header-controls">
+        <div class="header-buttons">
+            <button class="sys-btn save-btn" id="save-btn" onclick="saveGame()" style="display: none;">SAVE</button>
+            <button class="sys-btn load-btn" id="load-btn" onclick="loadGame()" style="display: none;">LOAD</button>
+            <button class="sys-btn" onclick="showModal('MISSION OBJECTIVE', objectiveContent)">OBJECTIVE</button>
+            <button class="sys-btn" onclick="showModal('OPERATIONAL MANUAL', helpContent)">HELP</button>
+        </div>
+        <div class="status-bar">
+            <span>TIME: <span id="mission-timer">40:00</span></span>
+            <span>SCORE: <span id="header-score">65</span></span>
+        </div>
+    </div>
+</header>
+
+<div class="container" id="game-container">
+    <div class="panel" id="panel-intel">
+        <h4 style="color: var(--text-secondary); margin-top:0;">VITAL SIGNS</h4>
+        <div class="metric-box" style="border-color: var(--accent-gold);">
+            <div class="metric-label">Performance Score</div>
+            <div class="metric-value" id="val-score">65</div>
+        </div>
+        <div class="metric-box" style="border-color: var(--accent-green);">
+            <div class="metric-label">Rapport (Trust)</div>
+            <div class="metric-value" id="val-trust">25%</div>
+        </div>
+        <div class="metric-box" style="border-color: var(--accent-blue);">
+            <div class="metric-label">Turn Count</div>
+            <div class="metric-value" id="val-turn">0 / 16</div>
+        </div>
+        <h4 style="color: var(--text-secondary);">INTEL ACQUIRED</h4>
+        <ul class="p-check-list">
+            <li class="p-check-item"><div class="status-dot" id="pc-insta"></div> Personal Profile</li>
+            <li class="p-check-item"><div class="status-dot" id="pc-linkedin"></div> Professional Code</li>
+            <li class="p-check-item"><div class="status-dot" id="pc-fin"></div> Financial Stress</li>
+        </ul>
+    </div>
+
+    <div class="panel active-panel" id="panel-game">
+        <div class="dialogue-history" id="chat-history"></div>
+        <div class="choices-grid" id="choices-area"></div>
+    </div>
+
+    <div class="panel" id="panel-log">
+        <h4 style="color: var(--text-secondary); margin-top:0;">TACTICAL LOG</h4>
+        <div class="log-console" id="console-log">
+            <div class="log-line">System Ready...</div>
+        </div>
+    </div>
+</div>
+
+<nav class="mobile-nav">
+    <button class="nav-btn" onclick="switchTab('panel-intel', this)"><span class="nav-icon">📊</span><span>Intel</span></button>
+    <button class="nav-btn active" onclick="switchTab('panel-game', this)"><span class="nav-icon">💻</span><span>Terminal</span></button>
+    <button class="nav-btn" onclick="switchTab('panel-log', this)"><span class="nav-icon">📝</span><span>Log</span></button>
+</nav>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="feedback-modal">
+    <div class="modal-card">
+        <h2 class="modal-title" id="modal-title">Analysis</h2>
+        <div class="modal-body" id="modal-content"></div>
+        <button class="btn-primary" onclick="closeModal()">PROCEED</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="insta-post-detail" style="z-index: 205;">
+    <div class="modal-card" style="text-align: center;">
+        <div id="detail-icon" style="font-size: 5rem; margin-bottom: 20px;"></div>
+        <div id="detail-caption" style="font-size: 1.2rem; line-height: 1.6; color: #fff; margin-bottom:30px;"></div>
+        <button class="btn-primary" onclick="closeOverlay('insta-post-detail')">CLOSE</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="certificate-overlay" style="z-index: 300;">
+    <div id="cert-wrapper">
+        <h2 style="color: #333; margin-bottom: 15px;">CERTIFICATE ISSUED</h2>
+        <div id="cert-canvas-container"></div>
+        
+        <p style="color: #555; max-width: 600px; text-align: center; margin-bottom: 20px;">
+            Congratulations! You have demonstrated exceptional negotiation skills. 
+            Download your certificate and upload it to LinkedIn to showcase your strategic capabilities.
+        </p>
+
+        <div class="cert-actions">
+            <a id="download-link" download="Taxila_Negotiation_Certificate.png" class="cert-btn dl-btn">
+                <span>⬇️</span> DOWNLOAD PNG
+            </a>
+            <a href="https://www.linkedin.com/feed/" target="_blank" class="cert-btn li-btn">
+                <span>🔗</span> OPEN LINKEDIN
+            </a>
+        </div>
+        
+        <button class="cert-btn menu-btn" onclick="location.reload()">RETURN TO MENU</button>
+    </div>
+</div>
+
+<!-- DATA OVERLAYS -->
+<div class="insta-overlay" id="insta-view">
+    <div class="insta-header">
+        <div class="insta-pic"><div class="insta-pic-inner">👨🏽‍✈️</div></div>
+        <div class="insta-bio"><h2>@dr_arjun_rao_vayu</h2><p>Founder, Vayu Aerospace. <br>Engineer. Dreamer. Jai Hind 🇮🇳</p></div>
+    </div>
+    <div class="insta-grid" id="insta-grid-content"></div>
+    <button class="close-btn" onclick="closeOverlay('insta-view')">EXIT PROFILE</button>
+</div>
+
+<div class="linkedin-overlay" id="linkedin-view">
+    <div class="linkedin-container">
+        <div class="linkedin-header-card">
+            <div class="linkedin-banner"></div>
+            <div class="linkedin-pfp-wrapper"><div class="linkedin-pfp">👨🏽‍✈️</div></div>
+            <div class="linkedin-info"><h1>Dr. Arjun Rao</h1><h3>Chairman & Founder at Vayu Aerospace</h3><div class="location">Bengaluru, India</div></div>
+        </div>
+        <div class="linkedin-section"><h2>Activity Feed</h2><div id="linkedin-feed-content"></div></div>
+    </div>
+    <button class="close-btn" onclick="closeOverlay('linkedin-view')">EXIT NETWORK</button>
+</div>
+
+<div class="financial-overlay" id="financial-view">
+    <div class="fin-container">
+        <div class="watermark">CONFIDENTIAL</div>
+        <div class="fin-header">
+            <h1>FINANCIAL REPORT</h1>
+            <h3 style="color:var(--accent-red)">CLEARANCE: TOP SECRET // FORENSIC AUDIT</h3>
+        </div>
+        <div class="fin-section">
+            <h2 style="color:var(--accent-blue); border-bottom:1px solid #333; padding-bottom:5px; margin-top: 0;">ENTITY: VAYU AEROSPACE & DEFENCE LTD.</h2>
+            <table class="fin-table">
+                <thead><tr><th>Item</th><th style="text-align:right">Value (INR Cr)</th><th>Notes</th></tr></thead>
+                <tbody id="fin-corp-body"></tbody>
+            </table>
+        </div>
+        <div class="fin-section" style="margin-top:30px;">
+            <h2 style="color:var(--accent-gold); border-bottom:1px solid #333; padding-bottom:5px;">ENTITY: RAO FAMILY TRUST</h2>
+            <table class="fin-table">
+                <thead><tr><th>Asset / Liability</th><th style="text-align:right">Valuation</th><th>Status</th></tr></thead>
+                <tbody id="fin-personal-body"></tbody>
+            </table>
+        </div>
+        <div style="margin-top:30px; border:1px solid var(--accent-red); padding:15px; background: rgba(239, 68, 68, 0.1);">
+            <strong style="color:var(--accent-red)">FORENSIC INSIGHT:</strong> <span id="fin-insight-text"></span>
+        </div>
+    </div>
+    <button class="close-btn" onclick="closeOverlay('financial-view')">CLOSE REPORT</button>
+</div>
+
+<script>
+    // --- CUSTOM API CONFIGURATION ---
+    const SAVE_API_URL = 'https://erp.taxila.in/api/game/negotiation-protocol'; // REPLACE WITH YOUR API
+    const LOAD_API_URL = 'https://erp.taxila.in/api/game/negotiation-protocol'; // REPLACE WITH YOUR API
+function getUserId() {
+                const params = new URLSearchParams(window.location.search);
+                return params.get("userId") || "guest";
+            }
+    // --- CONTENT STRINGS ---
+    const objectiveContent = `
+        <ul style="padding-left: 20px;">
+            <li><strong>PRIMARY TARGET:</strong> Secure 51% controlling stake in Vayu Aerospace.</li>
+            <li><strong>SECONDARY TARGET:</strong> Ensure Dr. Rao remains as a willing partner (High Trust).</li>
+            <li style="margin-top:10px; color:var(--accent-red)"><strong>FAILURE CONDITIONS:</strong>
+                <ul>
+                    <li>Performance Score drops below 60.</li>
+                    <li>Timer reaches 00:00.</li>
+                </ul>
+            </li>
+            <li style="margin-top:10px; color:var(--accent-gold)"><strong>S-RANK CRITERIA:</strong> Score 85+ (Certificate Awarded).</li>
+        </ul>
+    `;
+
+    const helpContent = `
+        <p><strong>PHASE 1: INTELLIGENCE GATHERING</strong><br>
+        Analyze the target's digital footprint. Use the 'Intel' tab.
+        <ul>
+            <li><strong>Instagram:</strong> Reveals Personal Archetype (Guardian vs Technocrat vs Swadeshi).</li>
+            <li><strong>LinkedIn:</strong> Reveals Professional Ideology (Efficiency vs Legacy vs Sovereignty).</li>
+            <li><strong>Financials:</strong> Reveals the Crisis Point (Debt vs R&D vs Supply Chain).</li>
+        </ul>
+        <em style="color:var(--accent-gold)">Profiling correctly grants +5 score. Incorrect deducts -10 (critical).</em></p>
+        
+        <p><strong>PHASE 2: THE GAUNTLET</strong><br>
+        A 16-turn linear negotiation.
+        <ul>
+            <li><strong>Gold Choice (+1):</strong> Aligns with his profile.</li>
+            <li><strong>Grey Choice (-2):</strong> Neutral/Corporate (Wasted opportunity).</li>
+            <li><strong>Red Choice (-15):</strong> Triggers his anxieties (Critical Damage).</li>
+        </ul>
+        </p>
+    `;
+
+    // --- SCENARIO ENGINE ---
+    const ScenarioEngine = {
+        archetypes: ["Guardian", "Technocrat", "Swadeshi"],
+        crises: ["Debt", "R&D", "SupplyChain"],
+        quirks: ["Legacy", "Efficiency", "Sovereignty"],
+        current: null,
+        script: [],
+        seed: 0,
+
+        generate: function(seed) {
+            this.seed = seed;
+            const aIndex = seed % 3;
+            const cIndex = (seed + 1) % 3;
+            const qIndex = (seed + 2) % 3;
+
+            this.current = {
+                id: seed,
+                archetype: this.archetypes[aIndex],
+                crisis: this.crises[cIndex],
+                quirk: this.quirks[qIndex]
+            };
+            this.generateScript();
+            console.log("Scenario Loaded:", this.current);
+        },
+
+        generateScript: function() {
+            const { archetype, crisis, quirk } = this.current;
+            this.script = [];
+
+            // 1. Opening
+            this.script.push({
+                rao: "(He stands with his back to you, looking out the window.) \"My secretary insisted I take this meeting. I assume you are here to talk about 'synergies' and 'exits'. Speak fast.\"",
+                options: [
+                    { t: "Deferential", text: "Dr. Rao, I am not here to buy. I am here to learn if we can help preserve Vayu's mission.", s: 1, analysis: "Excellent. You de-escalated his 'Corporate Invader' bias immediately." },
+                    { t: "Direct", text: "We know about the debt, Dr. Rao. Let's not waste time.", s: -15, analysis: "Terrible. You triggered his pride. Never lead with leverage against a Patriarch." },
+                    { t: "Corporate", text: "We have a proposal for a 100% acquisition at market rate.", s: -2, analysis: "Too transactional. He doesn't care about the market rate, he cares about the mission." }
+                ]
+            });
+
+            // 2. Archetype Challenge
+            let archText = archetype === "Guardian" ? "My father started this on a lathe machine. Why should I sell?" :
+                           archetype === "Technocrat" ? "Do you even know the tolerance levels of our V-44 rotors? Or just spreadsheets?" :
+                           "We build for India. Foreign capital usually comes with strings attached.";
+            
+            this.script.push({
+                rao: `(He turns.) "${archText}"`,
+                options: [
+                    { t: "Aligned", text: archetype === "Technocrat" ? "I've studied the specs. Your composite work is brilliant." : "We respect the legacy/mission above all.", s: 1, analysis: `Correct. You validated his identity as a ${archetype}.` },
+                    { t: "Generic", text: "We have a global presence.", s: -2, analysis: "Weak. He doesn't care about your size, he cares about your understanding." },
+                    { t: "Financial", text: "We can offer a good price.", s: -2, analysis: "Wrong pivot. You are talking money when he is talking values." }
+                ]
+            });
+
+            // 3. Crisis Reveal
+            let crisisText = crisis === "Debt" ? "The banks are calling. Indus Bank wants the estate." :
+                             crisis === "R&D" ? "We have burned everything on the prototype. Payroll is due Monday." :
+                             "The supply chain is broken. We have orders but no chips.";
+            
+            this.script.push({
+                rao: `(He sighs.) "Honesty then. ${crisisText} Why should I trust you?"`,
+                options: [
+                    { t: "Solution", text: "We inject cash immediately to solve this specific pain.", s: 1, analysis: "Good. You offered a lifeline without being predatory." },
+                    { t: "Leverage", text: "You have no choice, Dr. Rao.", s: -20, analysis: "Fatal Error. You cornered a man who values honor over survival. He will fight you now." },
+                    { t: "Vague", text: "We have resources.", s: -5, analysis: "Ineffective. He needs a concrete solution, not corporate fluff." }
+                ]
+            });
+
+            // 4. Quirk/Ideology Check
+            let quirkText = quirk === "Legacy" ? "What happens to the name 'Vayu'?" :
+                            quirk === "Efficiency" ? "Will you drown us in corporate bureaucracy?" :
+                            "Does the IP stay in India? Or does it go to New York?";
+            
+            this.script.push({
+                rao: `"${quirkText}"`,
+                options: [
+                    { t: "Reassure", text: quirk === "Sovereignty" ? "The IP stays here. Sovereignty is key." : "We operate with a light touch / Name stays.", s: 1, analysis: `Perfect. You directly addressed his ${quirk} concern.` },
+                    { t: "Hedge", text: "We will integrate systems over time.", s: -2, analysis: "Suspicious. He hears 'hostile takeover'." },
+                    { t: "Corporate", text: "Standard integration protocols apply.", s: -15, analysis: "Disastrous. You confirmed his worst fears about losing control." }
+                ]
+            });
+
+            // 5. VALUATION
+            this.script.push({
+                rao: "\"Okay. Let's say I believe you. What is the number? And don't insult me.\"",
+                options: [
+                    { t: "Fair", text: "₹3,200 Crores. A respectful valuation.", s: -2, analysis: "It's fair, but it lacks the emotional hook he needs." },
+                    { t: "Lowball", text: "₹2,800 Crores. Given the debt, it's fair.", s: -15, analysis: "Insulting. You are squeezing him when he is down." },
+                    { t: "Structure", text: "₹3,000 Crores + 5% Equity for Employee Trust.", s: 1, analysis: "Brilliant. You sacrificed cash for 'Dharma'. He respects that." }
+                ]
+            });
+
+            // 6. HR / STAFF
+            this.script.push({
+                rao: "\"And my people? 400 engineers. Families.\"",
+                options: [
+                    { t: "Guarantee", text: "No layoffs for 3 years. Guaranteed.", s: 1, analysis: "The right move. He views his staff as family." },
+                    { t: "Rational", text: "We only trim the inefficiency.", s: -15, analysis: "To him, 'inefficiency' means 'loyalty'. You missed the culture." },
+                    { t: "Vague", text: "We will review the roster.", s: -2, analysis: "Uncertainty creates distrust." }
+                ]
+            });
+
+            // 7. VULTURE ACCUSATION
+            this.script.push({
+                rao: "\"I hear Meridian is a 'Vulture Fund'. Buying cheap, stripping assets.\"",
+                options: [
+                    { t: "Reframe", text: "We are capital partners, not vultures. We build.", s: 1, analysis: "Strong frame control. You defined the relationship." },
+                    { t: "Deny", text: "That is slander.", s: -2, analysis: "Defensive. Makes you look guilty." },
+                    { t: "Attack", text: "Right now, you are carrion, Dr. Rao.", s: -50, analysis: "MISSION KILL. You just declared war." } 
+                ]
+            });
+
+            // 8. ROLE
+            this.script.push({
+                rao: "\"What happens to me? Do I just walk away?\"",
+                options: [
+                    { t: "Role", text: "Chairman Emeritus. You guide the vision.", s: 1, analysis: "Respectful. You gave him a throne, even if it has less power." },
+                    { t: "Retire", text: "You've earned a rest in Coorg.", s: -15, analysis: "He doesn't want to rest. He wants to matter." },
+                    { t: "Consult", text: "We can hire you as a consultant.", s: -2, analysis: "A consultant is an outsider. He is the founder." }
+                ]
+            });
+
+            // 9. CONTROL/VETO
+            this.script.push({
+                rao: "\"Chairman... with veto power?\"",
+                options: [
+                    { t: "Compromise", text: "On product roadmap, yes. On finance, no.", s: 1, analysis: "Smart trade. You kept financial control but gave him creative control." },
+                    { t: "Yes", text: "Full veto power.", s: -2, analysis: "Dangerous. You gave away too much leverage." }, 
+                    { t: "No", text: "We can't have dual control.", s: -2, analysis: "Technically true, but friction-inducing." } 
+                ]
+            });
+
+            // 10. COMPETITION
+            this.script.push({
+                rao: "\"The Chinese are flooding the market with cheap drones. It worries me.\"",
+                options: [
+                    { t: "Nationalist", text: "Together, we build a firewall. Total dominance.", s: 1, analysis: "You aligned with his patriotic anxiety." },
+                    { t: "Market", text: "We can beat them on price.", s: -2, analysis: "A race to the bottom insults his quality standards." },
+                    { t: "Ignore", text: "That's a government problem.", s: -2, analysis: "Dismissive." }
+                ]
+            });
+
+            // 11. TIMELINE
+            this.script.push({
+                rao: "\"How fast can we close? The lenders are aggressive.\"",
+                options: [
+                    { t: "Speed", text: "72 Hours. Due diligence is done.", s: 1, analysis: "Decisive. You relieved his immediate stress." },
+                    { t: "Process", text: "Standard 60 days.", s: -15, analysis: "He doesn't have 60 days. You failed to read the urgency." }, 
+                    { t: "Caution", text: "Let's not rush.", s: -2, analysis: "Tone deaf." }
+                ]
+            });
+
+            // 12. OPERATIONAL FREEDOM
+            this.script.push({
+                rao: "\"Will I have to report to some MBA in a glass tower?\"",
+                options: [
+                    { t: "Autonomy", text: "Vayu remains an independent subsidiary.", s: 1, analysis: "You preserved his 'Fiefdom'." },
+                    { t: "Structure", text: "You report to the Regional VP.", s: -15, analysis: "You just demoted a King to a middle manager." },
+                    { t: "Honesty", text: "There is oversight, but respectful.", s: -2, analysis: "Okay, but 'Autonomy' was the magic word." }
+                ]
+            });
+
+            // 13. THE ESTATE (Personal Leverage)
+            this.script.push({
+                rao: "\"The clause about the Coorg estate... you will release the lien immediately?\"",
+                options: [
+                    { t: "Reassure", text: "Within 24 hours of signing. Your home is safe.", s: 1, analysis: "You saved his family honor." },
+                    { t: "Leverage", text: "Once the transition is complete.", s: -15, analysis: "You are holding his home hostage. He will resent you forever." },
+                    { t: "Process", text: "It takes time.", s: -2, analysis: "Bureaucratic answer to an emotional question." }
+                ]
+            });
+
+            // 14. BRANDING
+            this.script.push({
+                rao: "\"And the name? Vayu Aerospace?\"",
+                options: [
+                    { t: "Keep", text: "The name stays. It's a legacy brand.", s: 1, analysis: "Ego preservation." },
+                    { t: "Change", text: "Meridian Defense India.", s: -15, analysis: "You erased his identity. Deal breaker." },
+                    { t: "Hybrid", text: "Meridian-Vayu.", s: -2, analysis: "Compromise that nobody likes." }
+                ]
+            });
+
+            // 15. FINAL HESITATION
+            this.script.push({
+                rao: "\"My father built this... it is hard to let go.\"",
+                options: [
+                    { t: "Validate", text: "You aren't letting go. You are ensuring it survives.", s: 1, analysis: "Perfect psychological validation." },
+                    { t: "Push", text: "It's time, Dr. Rao.", s: -2, analysis: "Too pushy for the final moment." },
+                    { t: "Silence", text: "(Wait respectfully)", s: -2, analysis: "Silence is good, but validation is better here." }
+                ]
+            });
+
+            // 16. CLOSING
+            this.script.push({
+                rao: "(He picks up the pen, hand trembling slightly.)",
+                options: [
+                    { t: "Ritual", text: "(Touch feet/Bow) We are just the custodians. You are the creator.", s: 1, analysis: "The ultimate cultural sign of respect. You won." },
+                    { t: "Business", text: "Sign here, please.", s: -2, analysis: "Cold. You missed the human moment." },
+                    { t: "Comfort", text: "It will be okay.", s: -2, analysis: "Patronizing." }
+                ]
+            });
+        }
+    };
+
+    // --- GAME ENGINE (STATIC PHASES) ---
+    const scenario = {
+        'start': {
+            type: 'system',
+            text: "MISSION: Acquire 'Vayu Aerospace'. <br>TARGET: Dr. Arjun Rao.<br><br><b>PHASE 1: INTELLIGENCE</b><br>Analyze Dr. Rao's digital footprint before engaging.",
+            options: [{ text: "Enter Intelligence Hub", stratagem: "Initialize", next: 'recon_hub' }]
+        },
+        'recon_hub': {
+            type: 'system',
+            text: "<b>INTELLIGENCE HUB</b><br>Review sources. Deduce his Personal Driver & Professional Code.",
+            options: [
+                { text: "Instagram (Personal)", action: 'open_insta', stratagem: "Culture" },
+                { text: "LinkedIn (Professional)", action: 'open_linkedin', stratagem: "Ideology" },
+                { text: "Financials (Forensic)", action: 'open_fin', stratagem: "Leverage" },
+                { text: ">> PROCEED TO PROFILING", next: 'profile_personal', stratagem: "Deduce" },
+                { text: "[Shortcut] Skip to Negotiation (Risky)", next: 'fail_game_over', stratagem: "Reckless", score: -20, feedback: "Skipped Due Diligence.", analysis: "You entered blind. Dr. Rao sensed your lack of preparation." }
+            ]
+        },
+        'profile_personal': {
+            type: 'system',
+            text: "<b>STEP 1/2: PERSONAL ARCHETYPE</b><br>Based on the Instagram evidence, what drives Dr. Rao?",
+            options: [
+                { text: "The Narcissist (Fame)", next: 'profile_professional', score: -10, feedback: "Incorrect Profile.", analysis: "He posts about others/ancestors, not himself. He is not a Narcissist." },
+                { text: "The Guardian (Legacy/Duty)", next: 'profile_professional', check: "Guardian", feedback: "Correct Profile.", analysis: "Correct. He views himself as the custodian of his father's legacy." },
+                { text: "The Technocrat (Specs/Science)", next: 'profile_professional', check: "Technocrat", feedback: "Correct Profile.", analysis: "Correct. He is driven by engineering perfection." },
+                { text: "The Swadeshi (Nationalist)", next: 'profile_professional', check: "Swadeshi", feedback: "Correct Profile.", analysis: "Correct. He is driven by national pride." },
+                { text: "The Materialist (Money)", next: 'profile_professional', score: -10, feedback: "Incorrect Profile.", analysis: "He lives simply and turned down buyouts. Money is not his driver." },
+                { text: "The Hedonist (Lifestyle)", next: 'profile_professional', score: -10, feedback: "Incorrect Profile.", analysis: "His posts show hard work and simplicity, not hedonism." }
+            ]
+        },
+        'profile_professional': {
+            type: 'system',
+            text: "<b>STEP 2/2: PROFESSIONAL CODE</b><br>Based on LinkedIn evidence, what is his ideology?",
+            options: [
+                { text: "Globalist (Open Market)", next: 'check_score', score: -10, feedback: "Incorrect Profile.", analysis: "He actively opposes imports and foreign dependence." },
+                { text: "Sovereignty/Nationalist", next: 'check_score', check: "Sovereignty", feedback: "Correct Profile.", analysis: "Correct. He believes in indigenous self-reliance." },
+                { text: "Venture Capitalist (Exit)", next: 'check_score', score: -10, feedback: "Incorrect Profile.", analysis: "He hates 'quick exits' and financial engineering." },
+                { text: "Pure Science/R&D", next: 'check_score', check: "Efficiency", feedback: "Correct Profile.", analysis: "Correct. He focuses on R&D over rapid scaling." },
+                { text: "Legacy/Family Business", next: 'check_score', check: "Legacy", feedback: "Correct Profile.", analysis: "Correct. He treats the company as a family trust." },
+                { text: "Opportunist (Profit)", next: 'check_score', score: -10, feedback: "Incorrect Profile.", analysis: "He prioritizes mission over profit." }
+            ]
+        },
+        'check_score': {
+            type: 'system',
+            text: "CALCULATING PROFILE...",
+            onEnter: () => {
+                if (state.score >= 75) {
+                    state.trust = 40;
+                    state.text = `<b>PROFILE: PERFECT (S)</b><br>Target: <b>${ScenarioEngine.current.archetype} - ${ScenarioEngine.current.quirk}</b>.<br>Strategy: Align with this profile.`;
+                } else {
+                    state.trust = 10;
+                    state.text = "<b>PROFILE: FAILED</b><br>You misread him. Proceed with extreme caution.";
+                }
+                return 'negotiation_start';
+            },
+            options: [{ text: "Enter Negotiation Room", next: 'negotiation_start' }]
+        },
+        'negotiation_start': {
+            type: 'system',
+            text: "<b>PHASE 2: THE GAUNTLET</b><br>You must navigate 16 turns of negotiation. Each choice impacts Score and Trust immediately.",
+            options: [{ text: "Begin Session", action: 'start_gauntlet' }]
+        },
+        'fail_game_over': {
+            type: 'system',
+            text: "<b>MISSION FAILED</b><br>Dr. Rao ejected you from the building.",
+            onEnter: () => { document.getElementById('choices-area').innerHTML += `<div style='grid-column: span 2; text-align:center; color: var(--accent-red)'>FINAL SCORE: ${state.score}</div><button class="choice-btn" style="grid-column:span 2; margin-top:10px;" onclick="downloadReport()">DOWNLOAD MISSION DOSSIER</button><button class="choice-btn" style="grid-column:span 2; margin-top:10px;" onclick="location.reload()">RESTART</button>`; },
+            options: []
+        }
+    };
+
+    // --- GAME STATE ---
+    let state = {
+        playerName: "Operative",
+        score: 65,
+        turn: 0,
+        pChecks: { insta: false, linkedin: false, fin: false },
+        personality: { personal: null, professional: null },
+        decisionLog: [],
+        currentNode: 'start' // Track current phase for saving
+    };
+
+    let audioCtx, timerInterval, timeLeft = 40 * 60;
+
+    // --- SAVE & LOAD CORE ---
+    async function saveGame() {
+        if (state.turn === 0 && state.currentNode === 'start') {
+            addLog("System: Cannot save at starting terminal.");
+            return;
+        }
+        const userId = getUserId();
+        const gameData = {
+            state: state,
+            timeLeft: timeLeft,
+            seed: ScenarioEngine.seed,
+            chatHTML: document.getElementById('chat-history').innerHTML,
+            timestamp: new Date().toISOString()
+        };
+
+        try {
+            addLog("System: Uploading Mission Data...");
+            const response = await fetch(SAVE_API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({userId:userId, gameState:gameData})
+            });
+
+            if (response.ok) {
+                addLog("System: Mission State Securely Stored.");
+            } else {
+                addLog("System Error: API Connection Failed.");
+            }
+        } catch (e) {
+            console.error("Save error:", e);
+            addLog("System: Local storage fallback activated (API error).");
+            localStorage.setItem('nego_protocol_save', JSON.stringify(gameData));
+        }
+    }
+
+    async function loadGame() {
+        let savedData = null;
+        const userId = getUserId();
+        try {
+            addLog("System: Retrieving Mission Data...");
+            const response = await fetch(`${LOAD_API_URL}?userId=${userId}`);
+            if (response.ok) {
+                const res = await response.json();
+                savedData = res.gameState;
+            }
+        } catch (e) {
+            console.warn("API load failed, checking local storage...");
+        }
+
+
+        if (!savedData) {
+            addLog("System Error: No previous mission found.");
+            return;
+        }
+
+        // Restore State
+        state = savedData.state;
+        timeLeft = savedData.timeLeft;
+        ScenarioEngine.generate(savedData.seed);
+
+        // UI Restore
+        document.getElementById('welcome-screen').style.display = 'none';
+        document.getElementById('game-container').style.visibility = 'visible';
+        document.getElementById('save-btn').style.display = 'inline-block';
+        document.getElementById('load-btn').style.display = 'inline-block';
+
+        populateSocialMedia();
+        populateFinancials();
+        updateMetrics();
+        
+        document.getElementById('chat-history').innerHTML = savedData.chatHTML;
+        document.getElementById('chat-history').scrollTop = document.getElementById('chat-history').scrollHeight;
+
+        initAudio();
+        startTimer();
+
+        if (state.turn > 0) {
+            startNegotiationTurn(); // Resume from current turn
+        } else {
+            renderNode(state.currentNode); // Resume from profiling node
+        }
+
+        addLog(`System: Operative ${state.playerName} Re-authenticated.`);
+    }
+
+    // --- DOM UTILS ---
+    function switchTab(panelId, btn) {
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active-panel'));
+        document.getElementById(panelId).classList.add('active-panel');
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+
+    function addLog(text) {
+        const log = document.getElementById('console-log');
+        const div = document.createElement('div');
+        div.className = 'log-line';
+        div.innerText = text;
+        log.appendChild(div);
+        log.scrollTop = log.scrollHeight;
+    }
+
+    // --- INITIALIZATION ---
+    function startGame() {
+        const input = document.getElementById('player-name-input');
+        if (!input.value.trim()) { input.style.borderColor = 'red'; return; }
+        state.playerName = input.value.trim();
+        
+        const seed = Math.floor(Math.random() * 20);
+        ScenarioEngine.generate(seed);
+
+        document.getElementById('welcome-screen').style.display = 'none';
+        document.getElementById('game-container').style.visibility = 'visible';
+        
+        // Show Save/Load once started
+        document.getElementById('save-btn').style.display = 'inline-block';
+        document.getElementById('load-btn').style.display = 'inline-block';
+
+        populateSocialMedia();
+        populateFinancials();
+        
+        updateMetrics();
+        addLog(`Operative ${state.playerName} initialized.`);
+        addLog(`Loading Scenario Seed: #${seed + 100}`);
+        
+        initAudio();
+        startTimer();
+        renderNode('start');
+    }
+
+    // --- DYNAMIC DATA POPULATION ---
+    function populateSocialMedia() {
+        const instaGrid = document.getElementById('insta-grid-content');
+        instaGrid.innerHTML = '';
+        let instaContent = [];
+        
+        if (ScenarioEngine.current.archetype === "Guardian") {
+            instaContent = [
+                { i: "👴🏽", c: "My father's machine. 1972. #Legacy" }, { i: "🏡", c: "Coorg estate. Roots." }, { i: "🕉️", c: "Duty above fruits. - Gita" },
+                { i: "🍛", c: "Lunch with the team. Family." }, { i: "🕰️", c: "Time passes, values stay." }, { i: "🌺", c: "Ayudha Puja. Blessings." },
+                { i: "🇮🇳", c: "Jai Hind." }, { i: "📜", c: "Old blueprints." }, { i: "🕯️", c: "Respecting ancestors." }
+            ];
+        } else if (ScenarioEngine.current.archetype === "Technocrat") {
+            instaContent = [
+                { i: "⚙️", c: "Tolerance: 0.001mm. Perfection." }, { i: "✈️", c: "V-44 Rotor test. Beautiful." }, { i: "📐", c: "Design is intelligence made visible." },
+                { i: "🔧", c: "Shop floor > Boardroom." }, { i: "🔬", c: "New alloy analysis." }, { i: "🚀", c: "Thrust vectors." },
+                { i: "🔭", c: "Look up." }, { i: "🎓", c: "Lecture at IISc." }, { i: "📉", c: "Data never lies." }
+            ];
+        } else {
+            instaContent = [
+                { i: "🇮🇳", c: "Made in India. 100%." }, { i: "🛑", c: "No imports. We build here." }, { i: "🦅", c: "Sovereign Skies." },
+                { i: "🧱", c: "Building the nation." }, { i: "🤝", c: "Self-reliance is freedom." }, { i: "💂", c: "For our soldiers." },
+                { i: "🗺️", c: "Map of indigenous supply chain." }, { i: "🚫", c: "Refused foreign buyout." }, { i: "🐅", c: "Indian power." }
+            ];
+        }
+        
+        const fillers = [{i:"☕",c:"Fuel."}, {i:"🌥️",c:"Storm coming."}, {i:"📵",c:"Detox."}];
+        instaContent = [...instaContent, ...fillers];
+
+        instaContent.forEach(p => {
+            const safeC = p.c.replace(/"/g, '&quot;');
+            instaGrid.innerHTML += `<div class="insta-post" onclick="openPostDetail('${p.i}', '${safeC}')"><span style="z-index:1">${p.i}</span></div>`;
+        });
+
+        const liFeed = document.getElementById('linkedin-feed-content');
+        liFeed.innerHTML = '';
+        let liContent = [];
+
+        if (ScenarioEngine.current.quirk === "Legacy") {
+            liContent = [
+                { t: "POST", c: "Companies are not assets to be stripped. They are communities. #PeopleFirst" },
+                { t: "REPOST", a: "HistoryTV", c: "We must remember where we came from.", comment: "Exactly." },
+                { t: "COMMENT", a: "Student", c: "Advice?", r: "Respect your elders and your craft." }
+            ];
+        } else if (ScenarioEngine.current.quirk === "Efficiency") {
+            liContent = [
+                { t: "POST", c: "Bureaucracy is the rust on the engine of progress. We need faster procurement." },
+                { t: "COMMENT", a: "TechCrunch", c: "Hardware is hard.", r: "Physics doesn't care about your ROI." },
+                { t: "LIKE", a: "Elon Musk", c: "Rockets are hard." }
+            ];
+        } else { 
+            liContent = [
+                { t: "POST", c: "Technology Transfer is a myth. We must own the IP source code. #Atmanirbhar" },
+                { t: "REPOST", a: "DefTech", c: "Imports down.", comment: "Good. We are not a marketplace." },
+                { t: "POST", c: "To young founders: Don't sell your soul for foreign capital." }
+            ];
+        }
+        
+        liContent.forEach(l => {
+            let html = `<div class="activity-item"><div class="activity-meta">${l.t} • ${l.a ? 'Interaction' : 'Posted by Arjun'}</div><div style="font-size:0.9rem; color:#e2e8f0;">${l.c}</div>`;
+            if(l.comment) html += `<div style="margin-top:5px; padding:5px; border-left:2px solid #555;">${l.comment}</div>`;
+            if(l.r) html += `<div style="margin-top:5px; font-weight:bold; color:white;">Response: ${l.r}</div>`;
+            html += `</div>`;
+            liFeed.innerHTML += html;
+        });
+    }
+
+    function populateFinancials() {
+        if (!ScenarioEngine.current) return;
+
+        const corp = document.getElementById('fin-corp-body');
+        const pers = document.getElementById('fin-personal-body');
+        const insight = document.getElementById('fin-insight-text');
+
+        let crisisText = "";
+        let corpHtml = "";
+        let persHtml = "";
+
+        if (ScenarioEngine.current.crisis === "Debt") {
+            crisisText = "Dr. Rao has personally guaranteed corporate loans using his Coorg Estate. Bank foreclosure is imminent (30 days).";
+            corpHtml = `
+                <tr><td>Revenue</td><td class="num">120 Cr</td><td>Stable</td></tr>
+                <tr><td>Net Loss</td><td class="num" style="color:var(--accent-red)">(25 Cr)</td><td>Interest Payments</td></tr>
+                <tr><td>Debt</td><td class="num" style="color:var(--accent-red)">450 Cr</td><td>Indus Bank</td></tr>`;
+            persHtml = `
+                <tr><td>Coorg Estate</td><td class="num">85 Cr</td><td><strong>Pledged</strong></td></tr>
+                <tr><td>Mortgage</td><td class="num" style="color:var(--accent-red)">Overdue</td><td>Foreclosure Risk</td></tr>`;
+        } else if (ScenarioEngine.current.crisis === "R&D") {
+            crisisText = "Vayu has burned all cash on the V-44 Prototype. They cannot pay salaries next month. The team will walk.";
+            corpHtml = `
+                <tr><td>R&D Spend</td><td class="num" style="color:var(--accent-red)">18 Cr/mo</td><td>Unsustainable</td></tr>
+                <tr><td>Cash Hand</td><td class="num" style="color:var(--accent-red)">2 Cr</td><td><strong>Runway: 1 Week</strong></td></tr>`;
+            persHtml = `
+                <tr><td>Personal Savings</td><td class="num">0</td><td>Liquidated</td></tr>
+                <tr><td>Wife's Jewelry</td><td class="num">Sold</td><td>To pay Jr Staff</td></tr>`;
+        } else {
+            crisisText = "Supply chain collapse. Critical chips from Taiwan blocked. Vayu has orders but no parts. Penalties will bankrupt them.";
+            corpHtml = `
+                <tr><td>Order Book</td><td class="num">4000 Cr</td><td>Frozen</td></tr>
+                <tr><td>Penalties</td><td class="num" style="color:var(--accent-red)">50 Cr</td><td>Due to delay</td></tr>`;
+            persHtml = `
+                <tr><td>Liquid Assets</td><td class="num">High</td><td>But frozen in escrow</td></tr>`;
+        }
+
+        corp.innerHTML = corpHtml;
+        pers.innerHTML = persHtml;
+        insight.innerText = crisisText;
+    }
+
+    // --- RENDER LOGIC ---
+    function renderNode(nodeId) {
+        state.currentNode = nodeId; // Set for saving
+
+        if (nodeId === 'check_score') {
+            const next = scenario['check_score'].onEnter();
+            const chat = document.getElementById('chat-history');
+            chat.innerHTML += `<div class="msg system">${state.text}</div>`;
+            const choices = document.getElementById('choices-area');
+            choices.innerHTML = `<button class="choice-btn" onclick="renderNode('${next}')">Enter Negotiation Room</button>`;
+            return;
+        }
+
+        const node = scenario[nodeId];
+        const chat = document.getElementById('chat-history');
+        
+        if (node.type === 'npc') chat.innerHTML += `<div class="msg npc"><strong>${node.sender}:</strong>${node.text}</div>`;
+        else chat.innerHTML += `<div class="msg system">${node.text}</div>`;
+        
+        chat.scrollTop = chat.scrollHeight;
+        const choicesDiv = document.getElementById('choices-area');
+        choicesDiv.innerHTML = '';
+
+        if (node.options) {
+            node.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'choice-btn';
+                btn.innerHTML = `<span class="stratagem-tag">${opt.stratagem || 'Action'}</span>${opt.text}`;
+                
+                btn.onclick = () => {
+                    const allBtns = choicesDiv.querySelectorAll('.choice-btn');
+                    allBtns.forEach(b => b.disabled = true);
+
+                    if (opt.action === 'reload') location.reload();
+                    else if (opt.action === 'open_insta') openOverlay('insta-view', 'pc-insta');
+                    else if (opt.action === 'open_linkedin') openOverlay('linkedin-view', 'pc-linkedin');
+                    else if (opt.action === 'open_fin') openOverlay('financial-view', 'pc-fin');
+                    else if (opt.action === 'start_gauntlet') startNegotiationTurn();
+                    else {
+                        // Check Logic for Profiling
+                        let pts = opt.score || 0;
+                        if (opt.check) {
+                            if (opt.check === ScenarioEngine.current.archetype || opt.check === ScenarioEngine.current.quirk) {
+                                pts = 5;
+                                opt.feedback = "Correct Analysis.";
+                                opt.analysis = `Correct. You identified the ${opt.check} trait based on the evidence.`;
+                            } else {
+                                pts = -10;
+                                opt.feedback = "Incorrect Analysis.";
+                                opt.analysis = `Incorrect. You misidentified the trait. Dr. Rao is a ${ScenarioEngine.current.archetype}/${ScenarioEngine.current.quirk}.`;
+                            }
+                        }
+
+                        // LOG THE DECISION
+                        state.decisionLog.push({
+                            turn: nodeId.includes('profile') ? "Profiling Phase" : "Pre-Game",
+                            choice: opt.text,
+                            score: pts,
+                            analysis: opt.analysis || "N/A"
+                        });
+
+                        let isAlive = updateState(pts);
+                        if (!isAlive) return;
+
+                        if (opt.next) {
+                            renderNode(opt.next);
+                        }
+                    }
+                };
+                choicesDiv.appendChild(btn);
+            });
+        }
+    }
+
+    // --- 16 TURN GAUNTLET ---
+    function startNegotiationTurn() {
+        if (state.turn >= 16) { endGame(); return; }
+        
+        const script = ScenarioEngine.script[state.turn];
+        const chat = document.getElementById('chat-history');
+        
+        updateMetrics();
+        
+        // Clear area and show NPC dialogue
+        chat.innerHTML += `<div class="msg npc"><strong>Dr. Arjun Rao:</strong><br>${script.rao}</div>`;
+        chat.scrollTop = chat.scrollHeight;
+
+        const choicesDiv = document.getElementById('choices-area');
+        choicesDiv.innerHTML = '';
+        
+        script.options.forEach(o => {
+            const btn = document.createElement('button');
+            btn.className = 'choice-btn';
+            btn.innerHTML = `<span class="stratagem-tag">${o.t}</span>${o.text}`;
+            btn.onclick = () => {
+                const allBtns = choicesDiv.querySelectorAll('.choice-btn');
+                allBtns.forEach(b => b.disabled = true);
+                chat.innerHTML += `<div class="msg user">${o.text}</div>`;
+                
+                // LOG THE DECISION
+                state.decisionLog.push({
+                    turn: `Turn ${state.turn + 1}`,
+                    choice: o.text,
+                    score: o.s,
+                    analysis: o.analysis
+                });
+
+                const isAlive = updateState(o.s);
+                if (isAlive) { state.turn++; setTimeout(startNegotiationTurn, 800); }
+            };
+            choicesDiv.appendChild(btn);
+        });
+    }
+
+    // --- SYSTEM CORE ---
+    function updateState(points) {
+        state.score += points;
+        state.score = Math.max(0, Math.min(100, state.score));
+        updateMetrics();
+        
+        // VISUAL STRESS
+        const overlay = document.getElementById('stress-overlay');
+        if (state.score < 65) {
+            overlay.classList.add('stress-active');
+        } else {
+            overlay.classList.remove('stress-active');
+        }
+
+        if (points < 0) {
+            document.body.classList.add('shake-screen');
+            setTimeout(() => document.body.classList.remove('shake-screen'), 500);
+        }
+
+        if (state.score < 60) {
+            triggerTermination("PERFORMANCE SCORE CRITICAL (<60)");
+            return false;
+        }
+        return true;
+    }
+
+    function triggerTermination(reason) {
+        document.getElementById('choices-area').innerHTML = `
+            <div style='grid-column: span 2; text-align:center; color: var(--accent-red)'><strong>MISSION TERMINATED</strong><br>${reason}</div>
+            <button class="choice-btn" style="grid-column:span 2" onclick="downloadReport()">DOWNLOAD MISSION DOSSIER</button>
+            <button class="choice-btn" style="grid-column:span 2; margin-top:5px;" onclick="location.reload()">RESTART</button>
+        `;
+    }
+
+    function endGame() {
+        const chat = document.getElementById('chat-history');
+        let result = state.score >= 85 ? "SUCCESS (S-RANK)" : "FAILED";
+        chat.innerHTML += `<div class="msg system">NEGOTIATION CONCLUDED<br>Final Score: ${state.score} (${result})</div>`;
+        chat.scrollTop = chat.scrollHeight;
+        
+        const choices = document.getElementById('choices-area');
+        choices.innerHTML = '';
+        if(state.score >= 85) {
+            choices.innerHTML = `<button class="choice-btn" style="background:var(--accent-gold); color:black;" onclick="document.getElementById('certificate-overlay').style.display='flex'; generateCertificate()">🏆 GET CERTIFICATE</button>`;
+        }
+        choices.innerHTML += `<button class="choice-btn" onclick="downloadReport()">DOWNLOAD MISSION DOSSIER</button>`;
+        choices.innerHTML += `<button class="choice-btn" onclick="location.reload()">RESTART</button>`;
+    }
+
+    function downloadReport() {
+        let content = `MISSION DOSSIER: TAXILA NEGOTIATION PROTOCOL\n`;
+        content += `--------------------------------------------------\n`;
+        content += `OPERATIVE: ${state.playerName}\n`;
+        content += `DATE: ${new Date().toLocaleString()}\n`;
+        content += `FINAL SCORE: ${state.score}/100\n`;
+        content += `OUTCOME: ${state.score >= 85 ? 'SUCCESS (S-RANK)' : (state.score >= 60 ? 'PARTIAL (C-RANK)' : 'FAILURE')}\n`;
+        content += `--------------------------------------------------\n\n`;
+        
+        content += `TACTICAL DECISION LOG:\n\n`;
+        
+        state.decisionLog.forEach(log => {
+            const status = log.score > 0 ? "[OPTIMAL]" : (log.score === 0 ? "[INEFFICIENT]" : "[CRITICAL ERROR]");
+            content += `${log.turn} | ${status}\n`;
+            content += `CHOICE: ${log.choice}\n`;
+            content += `ANALYSIS: ${log.analysis}\n`;
+            content += `IMPACT: ${log.score > 0 ? '+' : ''}${log.score} Pts\n`;
+            content += `--------------------------------------------------\n`;
+        });
+
+        content += `\nEND OF REPORT`;
+
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Mission_Dossier_${state.playerName}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+    }
+
+    function generateCertificate() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 1000; canvas.height = 700;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#fffdf0'; ctx.fillRect(0,0,1000,700);
+        ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 10; ctx.strokeRect(20,20,960,660);
+        
+        ctx.textAlign = 'center'; ctx.fillStyle = '#1e293b';
+        ctx.font = 'bold 50px "Arial Narrow"'; ctx.fillText('TAXILA BUSINESS SCHOOL', 500, 150);
+        ctx.font = '30px "Arial"'; ctx.fillText('CERTIFICATE OF MASTERY', 500, 220);
+        ctx.fillText('Awarded to', 500, 300);
+        ctx.font = 'bold 60px "Arial"'; ctx.fillStyle = '#b91c1c'; ctx.fillText(state.playerName, 500, 380);
+        ctx.fillStyle = '#000'; ctx.font = '25px "Arial"'; ctx.fillText(`For completing Negotiation Protocol with Score: ${state.score}`, 500, 480);
+        
+        ctx.font = 'italic 25px "Times New Roman"'; ctx.fillText('Prof. Alka Jain, MBA PhD', 750, 600);
+        ctx.font = '20px "Arial"'; ctx.fillText('Director, Taxila Business School', 750, 630);
+
+        const img = new Image(); img.src = canvas.toDataURL(); img.style.maxWidth = '100%';
+        document.getElementById('cert-canvas-container').innerHTML = '';
+        document.getElementById('cert-canvas-container').appendChild(img);
+        
+        // Setup download link
+        document.getElementById('download-link').href = canvas.toDataURL('image/png');
+    }
+
+    // --- AUDIO & TIME ---
+    function initAudio() {
+        if (audioCtx) return;
+        try {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            audioCtx = new AudioContext();
+            
+            if (audioCtx.state === 'suspended') {
+                const resumeAudio = () => {
+                    audioCtx.resume();
+                    document.removeEventListener('click', resumeAudio);
+                    document.removeEventListener('touchstart', resumeAudio);
+                };
+                document.addEventListener('click', resumeAudio);
+                document.addEventListener('touchstart', resumeAudio);
+            }
+
+            const masterGain = audioCtx.createGain();
+            masterGain.gain.value = 0.3;
+            masterGain.connect(audioCtx.destination);
+
+            const osc1 = audioCtx.createOscillator();
+            osc1.type = 'sawtooth';
+            osc1.frequency.value = 80;
+            const filter1 = audioCtx.createBiquadFilter();
+            filter1.type = 'lowpass';
+            filter1.frequency.value = 200;
+            osc1.connect(filter1).connect(masterGain);
+            osc1.start();
+
+            const osc2 = audioCtx.createOscillator();
+            osc2.type = 'sine';
+            osc2.frequency.value = 84;
+            const gain2 = audioCtx.createGain();
+            gain2.gain.value = 0.4;
+            osc2.connect(gain2).connect(masterGain);
+            osc2.start();
+            
+        } catch (e) {
+            console.error("Audio Engine Error:", e);
+        }
+    }
+
+    function startTimer() {
+        if(timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            const m = Math.floor(timeLeft/60).toString().padStart(2,'0'), s = (timeLeft%60).toString().padStart(2,'0');
+            const el = document.getElementById('mission-timer');
+            if(el) { 
+                el.innerText = `${m}:${s}`; 
+                if(timeLeft<300) el.style.color='red';
+            }
+            if(timeLeft<=0) { clearInterval(timerInterval); triggerTermination("TIME EXPIRED"); }
+        }, 1000);
+    }
+
+    // --- MODALS ---
+    function openOverlay(id, checkId) { 
+        document.getElementById(id).style.display = 'flex'; 
+        if(checkId) {
+            if(checkId === 'pc-insta') state.pChecks.insta = true;
+            if(checkId === 'pc-linkedin') state.pChecks.linkedin = true;
+            if(checkId === 'pc-fin') state.pChecks.fin = true;
+        }
+        updateMetrics(); 
+    }
+    function closeOverlay(id) { document.getElementById(id).style.display = 'none'; if(id !== 'insta-post-detail') renderNode('recon_hub'); }
+    function openPostDetail(i,c) { document.getElementById('detail-icon').innerHTML=i; document.getElementById('detail-caption').innerText=c; document.getElementById('insta-post-detail').style.display='flex'; }
+    function showModal(t,c,n,cb) { 
+        document.getElementById('modal-title').innerText=t; document.getElementById('modal-content').innerHTML=c;
+        document.getElementById('feedback-modal').style.display='flex';
+        document.querySelector('#feedback-modal .btn-primary').onclick = () => {
+            document.getElementById('feedback-modal').style.display='none';
+            if(cb) cb(); else if(n) renderNode(n);
+        };
+    }
+    function closeModal() { document.getElementById('feedback-modal').style.display='none'; }
+    function updateMetrics() {
+        document.getElementById('val-score').innerText = state.score;
+        document.getElementById('header-score').innerText = state.score;
+        document.getElementById('val-turn').innerText = `${state.turn}/16`;
+        if(state.pChecks.insta) document.getElementById(`pc-insta`).classList.add('active');
+        if(state.pChecks.linkedin) document.getElementById(`pc-linkedin`).classList.add('active');
+        if(state.pChecks.fin) document.getElementById(`pc-fin`).classList.add('active');
+    }
+</script>
+</body>
+</html>

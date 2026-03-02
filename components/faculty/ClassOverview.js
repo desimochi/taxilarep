@@ -40,7 +40,7 @@ export default function ClassOverview() {
       ) : (
         <div className="overflow-x-auto shadow-md sm:rounded-lg">
           <table className="w-full text-sm text-left text-gray-800 dark:text-gray-400">
-            <thead className="text-xs text-gray-100 uppercase bg-black dark:bg-gray-700 dark:text-gray-400">
+            <thead className="text-xs text-red-800 uppercase bg-red-50 dark:bg-gray-700 dark:text-gray-400">
               <tr>
                 <th scope="col" className="px-6 py-3">Subject Name</th>
                 <th scope="col" className="px-6 py-3">Total Classes</th>
@@ -50,22 +50,40 @@ export default function ClassOverview() {
               </tr>
             </thead>
             <tbody>
-              {sclass.map((product, index) => (
-                <tr key={index} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200">
-                  <td className="px-6 py-4">{product.subject.name}</td>
-                  <td className="px-6 py-4">{product.total_classes}</td>
-                  <td className="px-6 py-4">{product.classes_completed}</td>
-                  <td className="px-6 py-4">
-                    {product.total_classes - product.classes_completed}
-                  </td>
-                  <td className="px-6 py-4">
-                    <Link href={`/subjects/details/${product.id}`} className="font-medium text-blue-600 dark:text-blue-500 hover:underline">
-                      See Details
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+  {sclass.length > 0 ? (
+    sclass.map((product, index) => (
+      <tr
+        key={product.id || index}
+        className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200"
+      >
+        <td className="px-6 py-4">{product.subject.name}</td>
+        <td className="px-6 py-4">{product.total_classes}</td>
+        <td className="px-6 py-4">{product.classes_completed}</td>
+        <td className="px-6 py-4">
+          {product.total_classes - product.classes_completed}
+        </td>
+        <td className="px-6 py-4">
+          <Link
+            href={`/subjects/details/${product.id}`}
+            className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+          >
+            See Details
+          </Link>
+        </td>
+      </tr>
+    ))
+  ) : (
+    <tr>
+      <td
+        colSpan={5}
+        className="text-center py-4 text-gray-500 bg-white dark:bg-gray-800"
+      >
+        No Subject Found
+      </td>
+    </tr>
+  )}
+</tbody>
+
           </table>
         </div>
       )}

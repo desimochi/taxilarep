@@ -1,0 +1,1343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project: Bharat Launch - Taxila Business School</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body {
+            /* Apply Poppins and default to light weight */
+            font-family: 'Poppins', sans-serif;
+            font-weight: 300;
+            overscroll-behavior: none;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #1f2937; }
+        ::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #4b5563; }
+
+        /* Style for buttons */
+        button:hover, a:hover { transform: translateY(-1px); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+
+        /* Table styles */
+        #research-data-table td, #research-data-table th { padding: 8px 12px; border: 1px solid #374151; text-align: left; font-size: 0.875rem; white-space: nowrap; }
+        #research-data-table th { background-color: #374151; color: #d1d5db; position: sticky; top: 0; z-index: 10; font-weight: 400; /* Medium weight for headers */ }
+        #research-data-table tr:nth-child(even) { background-color: #273142; }
+
+        /* Allocation Sliders */
+        .allocation-slider-label { display: flex; justify-content: space-between; font-size: 0.875rem; margin-bottom: 0.25rem; }
+        .allocation-slider-value { font-weight: 600; color: white; } /* Bolder for values */
+
+        /* City Profile Stats */
+        .city-stat { background-color: #374151; padding: 0.75rem; border-radius: 0.5rem; }
+        .city-stat-label { font-size: 0.75rem; font-weight: 400; color: #9ca3af; text-transform: uppercase; }
+        .city-stat-value { font-size: 1rem; font-weight: 600; color: #f3f4f6; } /* Bolder for values */
+
+        /* Disabled Panel */
+        .disabled-panel { opacity: 0.5; pointer-events: none; }
+
+        /* Headings - use slightly bolder weights */
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 600; /* Semi-bold for headings */
+        }
+        #main-header {
+             font-weight: 600; /* Ensure main header is bold enough */
+        }
+
+        /* Certificate Fonts */
+        .font-cert-title {
+            font-family: 'Poppins', sans-serif; /* Keep Poppins for consistency */
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        .font-cert-name {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600; /* Bold Name */
+            color: #3b82f6; /* blue-500 */
+        }
+        /* Signature font can remain cursive if desired, or switch to Poppins */
+        .font-cert-signature {
+             font-family: 'Poppins', sans-serif;
+             font-weight: 400; /* Regular weight for signature */
+        }
+
+        /* Print styles - Kept for potential fallback, but download buttons are primary */
+        @media print {
+            body { background-color: #ffffff; font-weight: 400; }
+            body > *:not(#certificate-modal-backdrop, #report-modal-backdrop) { display: none !important; }
+            #certificate-modal-backdrop, #report-modal-backdrop { display: none !important; }
+            /* ... rest of print styles ... */
+             body.print-certificate #certificate-modal-backdrop { position: absolute !important; top: 0 !important; left: 0 !important; width: 100% !important; height: 100% !important; background-color: #ffffff !important; display: flex !important; align-items: flex-start !important; justify-content: center !important; padding: 0 !important; margin: 0 !important; z-index: 9999 !important; }
+            body.print-certificate #certificate-modal { width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; border: 10px solid #1f2937 !important; box-shadow: none !important; margin: 0 !important; color: #1f2937 !important; background-color: #ffffff !important; }
+            body.print-certificate #certificate-content { border-color: #d1d5db !important; }
+            body.print-certificate #certificate-actions { display: none !important; }
+            body.print-certificate .cert-print-text-dark { color: #1f2937 !important; }
+            body.print-certificate .cert-print-text-blue { color: #2563eb !important; }
+            body.print-certificate .cert-print-border-dark { border-color: #374151 !important; }
+            body.print-certificate h1, body.print-certificate h2, body.print-certificate h3 { font-weight: 600 !important; }
+            body.print-report #report-modal-backdrop { position: absolute !important; top: 0 !important; left: 0 !important; width: 100% !important; height: 100% !important; background-color: #ffffff !important; display: flex !important; align-items: flex-start !important; justify-content: center !important; padding: 0 !important; margin: 0 !important; z-index: 9999 !important; }
+            body.print-report #report-modal { width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; border: 10px solid #1f2937 !important; box-shadow: none !important; margin: 0 !important; color: #1f2937 !important; background-color: #ffffff !important; }
+            body.print-report #report-actions { display: none !important; }
+            body.print-report #report-modal .bg-gray-100 { background-color: #f9fafb !important; }
+            body.print-report #report-modal .text-blue-600 { color: #2563eb !important; }
+            body.print-report #report-modal .text-green-600 { color: #16a34a !important; }
+            body.print-report #report-modal .text-gray-900 { color: #1f2937 !important; }
+            body.print-report #report-modal .text-gray-700 { color: #374151 !important; }
+            body.print-report #report-modal .text-gray-600 { color: #4b5563 !important; }
+        }
+
+        /* Modal transitions */
+        .modal-fade { transition: opacity 0.3s ease-out, transform 0.3s ease-out; }
+        .modal-hidden { opacity: 0; transform: scale(0.95); pointer-events: none; }
+        .modal-visible { opacity: 1; transform: scale(1); pointer-events: auto; }
+        .backdrop-fade { transition: background-color 0.3s ease-out; }
+        .backdrop-hidden { background-color: rgba(0,0,0,0); pointer-events: none; }
+        .backdrop-visible { background-color: rgba(0,0,0,0.75); pointer-events: auto; }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-200 antialiased">
+
+    <div id="welcome-modal-backdrop" class="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-visible backdrop-fade">
+        <div id="welcome-modal" class="bg-gray-800 rounded-lg shadow-2xl p-8 max-w-lg w-full modal-visible modal-fade">
+            <h2 class="text-3xl text-blue-400 mb-2 text-center">Taxila Business School</h2>
+            <h3 class="text-2xl text-white mb-4 text-center">Welcome, Manager!</h3>
+            <p class="text-gray-300 mb-6 text-center">You are the new Product Manager for a D2C Smart Nutrition drink. Your 3-year mission starts now.</p>
+            <div>
+                <label for="player-name" class="block text-sm font-medium text-gray-300 mb-2">Please enter your name:</label>
+                <input type="text" id="player-name" class="w-full bg-gray-700 border border-gray-600 rounded-md p-3 text-white text-lg focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., Priya Singh">
+                <p id="name-error" class="text-red-400 text-sm mt-2 h-4"></p>
+            </div>
+            <button id="start-simulation-btn" class="w-full mt-4 bg-blue-600 text-white font-semibold text-lg py-3 rounded-lg shadow-lg hover:bg-blue-700 transition-colors">
+                Begin Simulation
+            </button>
+            <button id="load-game-welcome-btn" class="w-full mt-3 bg-gray-600 text-white font-semibold text-lg py-3 rounded-lg shadow-lg hover:bg-gray-700 transition-colors">
+                Load Game
+            </button>
+        </div>
+    </div>
+
+
+    <div id="main-container" class="container mx-auto max-w-screen-2xl p-4 lg:p-6 hidden">
+
+        <header class="mb-4 flex flex-col sm:flex-row justify-between items-center space-y-2 sm:space-y-0">
+            <div>
+                <h1 id="main-header" class="text-3xl text-white">
+                    Project: <span class="text-blue-400">Bharat Launch</span>
+                </h1>
+                <p class="text-sm text-blue-300">Taxila Business School</p>
+            </div>
+            <div class="flex space-x-2">
+                <button id="save-game-btn" class="bg-yellow-500 text-gray-900 font-semibold py-2 px-4 rounded-lg shadow-lg hover:bg-yellow-600 transition-colors text-sm">
+                    <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v5l4 4 4-4V7m0 0v1h.5a2 2 0 012 2v3a2 2 0 01-2 2H6a2 2 0 01-2-2v-3a2 2 0 012-2H8m0 0V4"></path></svg>
+                    Save Game
+                </button>
+                <button id="load-game-btn" class="bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg shadow-lg hover:bg-gray-700 transition-colors text-sm">
+                    <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2.086a8.001 8.001 0 00-11.586 11.586 8.001 8.001 0 0011.586-11.586zm-11.586 11.586L4 20m16-16l-4 4"></path></svg>
+                    Load Game
+                </button>
+            </div>
+            <p class="text-lg text-gray-400 hidden sm:block">Advanced Business Analytics Simulation</p>
+        </header>
+        <p id="header-subtitle" class="mb-6 text-center text-gray-300">Phase: Quarter 0 (Research & Analysis). Use the database to build a strategy.</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+            <div class="bg-gray-800 p-5 rounded-lg shadow-lg"> <div class="text-sm font-medium text-gray-400 uppercase">Quarter</div> <div id="metric-quarter" class="text-3xl text-white mt-2">0</div> </div>
+            <div id="metric-survey-budget-card" class="bg-gray-800 p-5 rounded-lg shadow-lg"> <div class="text-sm font-medium text-gray-400 uppercase">Survey Budget (Q0)</div> <div id="metric-survey-budget" class="text-3xl text-yellow-400 mt-2">₹1,00,00,000</div> </div>
+            <div class="bg-gray-800 p-5 rounded-lg shadow-lg"> <div class="text-sm font-medium text-gray-400 uppercase">Live Score</div> <div id="metric-score" class="text-3xl text-white mt-2">0</div> <div class="text-xs text-gray-400">(Target: 100)</div> </div> <div class="bg-gray-800 p-5 rounded-lg shadow-lg"> <div class="text-sm font-medium text-gray-400 uppercase">Total Profit</div> <div id="metric-profit" class="text-3xl text-green-400 mt-2">₹0</div> </div>
+            <div class="bg-gray-800 p-5 rounded-lg shadow-lg"> <div class="text-sm font-medium text-gray-400 uppercase">Market Share</div> <div id="metric-share" class="text-3xl text-white mt-2">0%</div> </div>
+            <div class="bg-gray-800 p-5 rounded-lg shadow-lg"> <div class="text-sm font-medium text-gray-400 uppercase">Brand Awareness</div> <div id="metric-awareness" class="text-3xl text-white mt-2">0%</div> </div>
+        </div>
+
+        <div class="w-full">
+            <div class="mb-4 border-b border-gray-700">
+                <nav id="tabs-nav" class="-mb-px flex space-x-8" aria-label="Tabs">
+                    <button id="tab-research" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-lg text-blue-400 border-blue-500"> Market Research Database </button>
+                    <button id="tab-decisions" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-lg text-gray-400 border-transparent hover:text-gray-200 hover:border-gray-500"> Strategy & Projection </button>
+                    <button id="tab-results" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-lg text-gray-400 border-transparent hover:text-gray-200 hover:border-gray-500"> Quarterly Reports </button>
+                </nav>
+            </div>
+
+            <div id="content-research" class="">
+                 <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    <div class="lg:col-span-1 space-y-6 sticky top-6 h-max">
+                        <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+                             <h2 class="text-xl text-green-400 mb-4 border-b border-gray-700 pb-2">Research Filters</h2>
+                             <div class="space-y-4">
+                                 <div> <label for="survey-location" class="block text-sm font-medium text-gray-300 mb-1">City</label> <select id="survey-location" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 text-white focus:ring-blue-500 focus:border-blue-500"> <option value="all">All India (10 Cities)</option> <optgroup label="Tier 1"> <option value="Mumbai">Mumbai</option> <option value="Delhi">Delhi</option> <option value="Bangalore">Bangalore</option> <option value="Chennai">Chennai</option> </optgroup> <optgroup label="Tier 2"> <option value="Pune">Pune</option> <option value="Jaipur">Jaipur</option> <option value="Indore">Indore</option> </optgroup> <optgroup label="Tier 3"> <option value="Lucknow">Lucknow</option> <option value="Patna">Patna</option> <option value="Guwahati">Guwahati</option> </optgroup> </select> </div>
+                                 <div> <label for="survey-income" class="block text-sm font-medium text-gray-300 mb-1">Annual Income (Bracket)</label> <select id="survey-income" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 text-white focus:ring-blue-500 focus:border-blue-500"> <option value="all">All Incomes</option> <option value="low">< 3 Lakh</option> <option value="mid">3 - 10 Lakh</option> <option value="high">10 - 25 Lakh</option> <option value="vhigh">> 25 Lakh</option> </select> </div>
+                                 <div> <label for="survey-age" class="block text-sm font-medium text-gray-300 mb-1">Primary Shopper Age</label> <select id="survey-age" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 text-white focus:ring-blue-500 focus:border-blue-500"> <option value="all">All Ages</option> <option value="18-25">18-25</option> <option value="26-35">26-35</option> <option value="36-50">36-50</option> <option value="50+">50+</option> </select> </div>
+                                 <button id="run-survey-btn" class="w-full bg-green-600 text-white font-semibold py-2 rounded-lg hover:bg-green-700 transition-colors"> Run Query (Get Segment Size & Cost) </button>
+                             </div>
+                        </div>
+                        <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+                            <h2 class="text-xl text-purple-400 mb-2 border-b border-gray-700 pb-2">Gemini Custom Survey</h2>
+                            <p class="text-sm text-gray-400 mb-1">Design a 5-question survey. (Q0 Only)</p>
+                            <p class="text-sm font-semibold text-yellow-400 mb-4">Cost: <span id="custom-survey-cost-display">₹800 / Respondent</span></p>
+                            <div class="space-y-2"> <textarea id="q1" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 text-sm text-white" rows="2" placeholder="Question 1..."></textarea> <textarea id="q2" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 text-sm text-white" rows="2" placeholder="Question 2..."></textarea> <textarea id="q3" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 text-sm text-white" rows="2" placeholder="Question 3..."></textarea> <textarea id="q4" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 text-sm text-white" rows="2" placeholder="Question 4..."></textarea> <textarea id="q5" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 text-sm text-white" rows="2" placeholder="Question 5..."></textarea> </div>
+                            <button id="check-efficacy-btn" class="w-full mt-4 bg-purple-600 text-white font-semibold py-2 rounded-lg hover:bg-purple-700 transition-colors"> Check Efficacy (Gemini AI) </button>
+                            <div id="efficacy-report" class="mt-3 text-sm p-3 bg-gray-900 rounded-md hidden"></div>
+                            <button id="run-custom-survey-btn" class="w-full mt-3 bg-green-600 text-white font-semibold py-2 rounded-lg transition-colors" disabled> Run This Survey </button>
+                            <p id="estimated-survey-cost" class="text-sm text-center text-gray-400 mt-2">Run Query to estimate total cost.</p>
+                        </div>
+                        <div id="custom-survey-report-container" class="space-y-4"></div>
+                        <div id="q0-summary-card" class="bg-gray-800 p-6 rounded-lg shadow-lg border-2 border-blue-500"> <h2 class="text-xl text-blue-400 mb-2">Q0 Final Analytics Summary</h2> <p class="text-sm text-gray-300 mb-4">When Q0 research is complete, proceed to the next phase.</p> <button id="proceed-to-projection-btn" class="w-full bg-blue-600 text-white font-semibold text-lg py-3 rounded-lg shadow-lg hover:bg-blue-700 transition-colors"> Proceed to Projection Phase </button> </div>
+                    </div>
+                    <div class="lg:col-span-3 bg-gray-800 p-6 rounded-lg shadow-lg">
+                        <div id="city-profile-card" class="mb-6 bg-gray-700 p-4 rounded-lg shadow-inner hidden">
+                            <h2 id="city-profile-title" class="text-xl text-white mb-3">City Profile</h2>
+                            <h3 class="text-md font-semibold text-gray-300 mb-2">Demographics</h3>
+                            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-4">
+                                <div class="city-stat"> <div class="city-stat-label">Population</div> <div id="city-profile-pop" class="city-stat-value">N/A</div> </div>
+                                <div class="city-stat"> <div class="city-stat-label">Avg. PCI (Annual)</div> <div id="city-profile-pci" class="city-stat-value">N/A</div> </div>
+                                <div class="city-stat"> <div class="city-stat-label">Literacy Rate</div> <div id="city-profile-lit" class="city-stat-value">N/A</div> </div>
+                                <div class="city-stat"> <div class="city-stat-label">M/F Ratio</div> <div id="city-profile-mf" class="city-stat-value">N/A</div> </div>
+                                <div class="city-stat"> <div class="city-stat-label">Mobile Penetration</div> <div id="city-profile-mobile" class="city-stat-value">N/A</div> </div>
+                            </div>
+                            <h3 class="text-md font-semibold text-gray-300 mb-2">Market Landscape</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <div class="city-stat"> <div class="city-stat-label">Competitors</div> <div id="city-profile-comp-count" class="city-stat-value">N/A</div> </div>
+                                <div class="city-stat"> <div class="city-stat-label">Avg. Competitor Price</div> <div id="city-profile-comp-price" class="city-stat-value">N/A</div> </div>
+                                <div class="city-stat"> <div class="city-stat-label">Total Competitor Share</div> <div id="city-profile-comp-share" class="city-stat-value">N/A</div> </div>
+                            </div>
+                        </div>
+
+                        <h2 class="text-xl text-white mb-4">Filtered Segment Query Results</h2>
+                        <div id="survey-results-summary" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                            <div class="bg-gray-700 p-4 rounded-lg"> <div class="text-sm font-medium text-gray-400">Segment Size</div> <div id="insight-size" class="text-2xl font-semibold text-white">N/A</div> </div>
+                            <div class="bg-gray-700 p-4 rounded-lg"> <div class="text-sm font-medium text-gray-400">Avg. Price Sensitivity</div> <div id="insight-price-sensitivity" class="text-2xl font-semibold text-white">N/A</div> </div>
+                            <div class="bg-gray-700 p-4 rounded-lg"> <div class="text-sm font-medium text-gray-400">Avg. Brand Consciousness</div> <div id="insight-brand" class="text-2xl font-semibold text-white">N/A</div> </div>
+                            <div class="bg-gray-700 p-4 rounded-lg"> <div class="text-sm font-medium text-gray-400">Avg. Annual Income</div> <div id="insight-avg-income" class="text-2xl font-semibold text-white">N/A</div> </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div class="bg-gray-700 p-4 rounded-lg"> <h3 class="text-lg font-semibold text-white mb-2">Key Purchase Drivers</h3> <div id="insight-driver" class="space-y-1 text-sm text-gray-300">N/A</div> </div>
+                            <div class="bg-gray-700 p-4 rounded-lg"> <h3 class="text-lg font-semibold text-white mb-2">Top Media Channels</h3> <div id="insight-media" class="space-y-1 text-sm text-gray-300">N/A</div> </div>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white mb-2">Raw Data Sample (First 50 Families)</h3>
+                        <div class="h-96 overflow-auto border border-gray-700 rounded-lg">
+                            <table id="research-data-table" class="w-full">
+                                <thead> <tr> <th>Family ID</th> <th>City</th> <th>Income Bracket</th> <th>Annual Income (₹)</th> <th>Age</th> <th>Driver</th> <th>Top Media</th> <th>Price Sens.</th> <th>Brand Cons.</th> </tr> </thead>
+                                <tbody id="research-data-tbody"> <tr><td colspan="9" class="text-center text-gray-400 p-4">Run a query to see sample data.</td></tr> </tbody>
+                            </table>
+                        </div>
+                    </div>
+                 </div>
+            </div>
+            <div id="content-decisions" class="hidden space-y-6">
+                 <div id="projection-card" class="hidden bg-gray-800 p-6 rounded-lg shadow-lg border-2 border-green-500">
+                     <h2 class="text-2xl text-green-400 mb-2">Pre-Launch Projection Report</h2>
+                     <p class="text-gray-300 mb-4">Based on Q0 research, forecast unit sales for the first year.</p>
+                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                         <div> <label for="proj-q1">Q1 Sales (Units)</label> <input type="number" id="proj-q1" class="w-full bg-gray-700 rounded p-2 text-white" placeholder="e.g., 50000"> </div>
+                         <div> <label for="proj-q2">Q2 Sales (Units)</label> <input type="number" id="proj-q2" class="w-full bg-gray-700 rounded p-2 text-white" placeholder="e.g., 75000"> </div>
+                         <div> <label for="proj-q3">Q3 Sales (Units)</label> <input type="number" id="proj-q3" class="w-full bg-gray-700 rounded p-2 text-white" placeholder="e.g., 100000"> </div>
+                         <div> <label for="proj-q4">Q4 Sales (Units)</label> <input type="number" id="proj-q4" class="w-full bg-gray-700 rounded p-2 text-white" placeholder="e.g., 125000"> </div>
+                     </div>
+                     <button id="launch-product-btn" class="w-full md:w-1/2 mx-auto mt-6 bg-green-600 text-white font-semibold py-3 rounded-lg hover:bg-green-700"> Lock Projections & LAUNCH (Start Q1) </button>
+                </div>
+                 <div id="decisions-panel" class="disabled-panel grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-1 space-y-6">
+                         <div class="bg-gray-800 p-6 rounded-lg shadow-lg"> <h2 class="text-xl text-blue-400 mb-4">1. Product Design</h2> <p class="text-sm text-gray-400">Allocate 100 points.</p> <label class="allocation-slider-label">Quality <span id="quality-val">40</span></label> <input type="range" id="decision-quality" min="10" max="80" value="40" class="w-full product-slider"> <label class="allocation-slider-label mt-3">Taste <span id="taste-val">30</span></label> <input type="range" id="decision-taste" min="10" max="80" value="30" class="w-full product-slider"> <label class="allocation-slider-label mt-3">Packaging <span id="packaging-val">30</span></label> <input type="range" id="decision-packaging" min="10" max="80" value="30" class="w-full product-slider"> <div class="mt-2 text-center font-semibold">Total Points: <span id="product-points-total">100</span> / 100</div> <div class="mt-1 text-center font-semibold text-yellow-400">Est. COGS: <span id="cogs-display">₹0</span></div> </div>
+                         <div class="bg-gray-800 p-6 rounded-lg shadow-lg"> <h2 class="text-xl text-blue-400 mb-4">2. Price</h2> <p class="text-sm text-yellow-400 mb-3">Rule: Price cannot be >15% above Avg. Competitor Price.</p> <label for="decision-price" class="text-sm font-medium">Price per Unit (INR)</label> <input type="number" id="decision-price" value="250" class="w-full bg-gray-700 rounded p-2 mt-1 text-white"> </div>
+                     </div>
+                    <div class="lg:col-span-1 space-y-6">
+                         <div class="bg-gray-800 p-6 rounded-lg shadow-lg"> <h2 class="text-xl text-blue-400 mb-4">3. Place (Distribution)</h2> <div class="space-y-2"> <div><input id="dist-online" type="checkbox" class="h-4 w-4 rounded"> <label for="dist-online" class="ml-2">D2C Online</label></div> <div><input id="dist-marketplaces" type="checkbox" class="h-4 w-4 rounded"> <label for="dist-marketplaces" class="ml-2">E-Marketplaces</label></div> <div><input id="dist-supermarkets" type="checkbox" class="h-4 w-4 rounded"> <label for="dist-supermarkets" class="ml-2">Supermarkets (T1)</label></div> <div><input id="dist-kirana" type="checkbox" class="h-4 w-4 rounded"> <label for="dist-kirana" class="ml-2">Kirana Stores (T2/3)</label></div> </div> </div>
+                         <div class="bg-gray-800 p-6 rounded-lg shadow-lg"> <h2 class="text-xl text-blue-400 mb-4">4. Promotion (Marketing)</h2> <label for="decision-budget" class="text-sm font-medium">Total Quarterly Budget (INR)</label> <input type="range" id="decision-budget" min="1000000" max="100000000" step="1000000" value="10000000" class="w-full"> <div id="budget-display" class="font-semibold text-center mt-1">₹10,000,000</div> <h3 class="mt-4 mb-2">Marketing Mix (100%)</h3> <div id="promo-mix"> <label class="allocation-slider-label">Digital <span id="promo-digital-val">25%</span></label> <input type="range" id="promo-digital" min="0" max="100" value="25" class="w-full promo-slider"> <label class="allocation-slider-label">Influencer <span id="promo-influencer-val">25%</span></label> <input type="range" id="promo-influencer" min="0" max="100" value="25" class="w-full promo-slider"> <label class="allocation-slider-label">TV <span id="promo-tv-val">25%</span></label> <input type="range" id="promo-tv" min="0" max="100" value="25" class="w-full promo-slider"> <label class="allocation-slider-label">Print/OOH <span id="promo-print-val">25%</span></label> <input type="range" id="promo-print" min="0" max="100" value="25" class="w-full promo-slider"> <div class="font-semibold text-center mt-2">Total Allocated: <span id="promo-total-val">100</span>%</div> </div> </div>
+                     </div>
+                    <div class="lg:col-span-1 space-y-6">
+                         <div class="bg-gray-800 p-6 rounded-lg shadow-lg border-2 border-yellow-500 h-48"> <h2 class="text-xl text-yellow-400 mb-2">Dynamic Market Event</h2> <div id="market-event-log"><p>Q0: Research phase.</p></div> </div>
+                         <button id="main-action-btn" class="w-full bg-blue-600 text-white font-semibold text-lg py-4 rounded-lg"> End Quarter & Run Simulation </button>
+                     </div>
+                </div>
+            </div>
+            <div id="content-results" class="hidden">
+                 <div class="bg-gray-800 p-6 rounded-lg shadow-lg"> <h2 class="text-xl text-gray-400 mb-4">Quarterly Results Log</h2> <div id="results-log" class="space-y-4 h-[70vh] overflow-y-auto pr-2"><p>No results yet.</p></div> </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-backdrop" class="fixed inset-0 z-40 backdrop-hidden backdrop-fade"></div>
+    <div id="modal" class="fixed inset-0 flex items-center justify-center z-50 p-4 modal-hidden modal-fade">
+        <div class="bg-gray-800 rounded-lg shadow-2xl p-8 max-w-lg w-full modal-hidden modal-fade" id="modal-content">
+             <h2 id="modal-title" class="text-2xl font-semibold text-white mb-4">Welcome!</h2>
+             <p id="modal-text" class="text-gray-300 mb-6">Simulation starting...</p>
+             <button id="modal-close-btn" class="w-full bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700">Start</button>
+        </div>
+    </div>
+
+    <div id="certificate-modal-backdrop" class="fixed inset-0 z-40 flex items-center justify-center p-4 backdrop-hidden backdrop-fade"> <div id="certificate-modal" class="bg-white rounded-lg shadow-2xl max-w-2xl w-full modal-hidden modal-fade">
+             <div class="p-8 md:p-12 relative">
+                 <div id="certificate-content" class="border-4 border-gray-800 cert-print-border-dark p-6 md:p-10 text-center">
+                     <h3 class="text-2xl font-semibold text-blue-600 cert-print-text-blue">Taxila Business School</h3>
+                     <h1 class="text-4xl md:text-5xl font-cert-title text-gray-900 cert-print-text-dark my-6"> Certificate of Completion </h1>
+                     <p class="text-lg text-gray-700 cert-print-text-dark">This certifies that</p>
+                     <h2 id="cert-player-name" class="text-3xl md:text-4xl font-cert-name my-4 cert-print-text-blue"> [Your Name Here] </h2>
+                     <p class="text-lg text-gray-700 cert-print-text-dark"> has completed the </p>
+                     <p class="text-xl font-semibold text-gray-900 cert-print-text-dark mt-1"> Project: Bharat Launch Strategic Simulation </p>
+                     <div class="my-8">
+                         <p class="text-md text-gray-600 cert-print-text-dark">with a</p>
+                         <p class="text-2xl font-semibold text-gray-900 cert-print-text-dark">Final Score: <span id="cert-final-score" class="text-blue-600 cert-print-text-blue">N/A</span> / 100</p>
+                         <p id="cert-message" class="text-sm text-gray-500 mt-2 cert-print-text-dark"></p>
+                     </div>
+                     <div class="mt-10 pt-4 border-t border-gray-300 cert-print-border-dark text-left">
+                         <p class="font-cert-signature text-xl text-gray-800 cert-print-text-dark"> Prof. Sanjoli Jain PhD </p>
+                         <p class="text-sm text-gray-600 cert-print-text-dark">Program Director, Taxila Business School</p>
+                     </div>
+                 </div>
+             </div>
+             <div id="certificate-actions" class="bg-gray-100 p-6 rounded-b-lg flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+                 <button id="download-cert-png-btn" class="w-full sm:w-auto bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg flex items-center justify-center hover:bg-blue-700"> <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> Download (PNG) </button>
+                 <a id="share-cert-btn" href="#" target="_blank" class="w-full sm:w-auto bg-gray-700 text-white font-semibold py-3 px-6 rounded-lg flex items-center justify-center hover:bg-gray-800"> <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"></path></svg> Share on LinkedIn </a>
+                 <button id="view-report-btn" class="w-full sm:w-auto bg-gray-700 text-white font-semibold py-3 px-6 rounded-lg flex items-center justify-center hover:bg-gray-800">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V7a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    View Report
+                </button>
+                 <button id="play-again-cert-btn" class="w-full sm:w-auto bg-green-600 text-white font-semibold py-3 px-6 rounded-lg flex items-center justify-center hover:bg-green-700">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2.086a8.001 8.001 0 00-11.586 11.586 8.001 8.001 0 0011.586-11.586zm-11.586 11.586L4 20m16-16l-4 4"></path></svg>
+                    Play Again
+                </button>
+             </div>
+        </div>
+    </div>
+
+    <div id="report-modal-backdrop" class="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-hidden backdrop-fade"> <div id="report-modal" class="bg-white rounded-lg shadow-2xl max-w-2xl w-full modal-hidden modal-fade">
+            <div class="p-8 md:p-12 relative text-gray-900">
+                <h1 class="text-3xl font-bold text-center text-blue-600 mb-6">Player Debriefing Report</h1>
+                
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="bg-gray-100 p-4 rounded-lg">
+                        <div class="text-sm font-medium text-gray-600 uppercase">Final Score</div>
+                        <div id="report-final-score" class="text-3xl font-bold text-blue-600">N/A</div>
+                    </div>
+                    <div class="bg-gray-100 p-4 rounded-lg">
+                        <div class="text-sm font-medium text-gray-600 uppercase">Total Profit</div>
+                        <div id="report-total-profit" class="text-3xl font-bold text-green-600">N/A</div>
+                    </div>
+                    <div class="bg-gray-100 p-4 rounded-lg">
+                        <div class="text-sm font-medium text-gray-600 uppercase">Peak Market Share</div>
+                        <div id="report-peak-share" class="text-2xl font-semibold">N/A</div>
+                    </div>
+                    <div class="bg-gray-100 p-4 rounded-lg">
+                        <div class="text-sm font-medium text-gray-600 uppercase">Peak Brand Awareness</div>
+                        <div id="report-peak-awareness" class="text-2xl font-semibold">N/A</div>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <h2 class="text-xl font-semibold mb-2">Projection vs. Actual (Year 1)</h2>
+                    <div id="report-projection-summary" class="bg-gray-100 p-4 rounded-lg">
+                        <p>No data yet.</p>
+                    </div>
+                </div>
+
+                <div>
+                    <h2 class="text-xl font-semibold mb-2">Suggestions for Improvement</h2>
+                    <ul id="report-suggestions-list" class="list-disc list-inside space-y-2 text-gray-700 bg-gray-100 p-4 rounded-lg">
+                        <li>Complete the simulation to receive feedback.</li>
+                    </ul>
+                </div>
+            </div>
+            <div id="report-actions" class="bg-gray-100 p-6 rounded-b-lg flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+                 <button id="download-report-txt-btn" class="w-full sm:w-auto bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg flex items-center justify-center hover:bg-blue-700">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    Download (TXT)
+                </button>
+                <button id="view-cert-btn" class="w-full sm:w-auto bg-gray-700 text-white font-semibold py-3 px-6 rounded-lg flex items-center justify-center hover:bg-gray-800">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12 12 0 0012 21.054a12 12 0 008.618-15.048z"></path></svg>
+                    View Certificate
+                </button>
+                <button id="play-again-btn" class="w-full sm:w-auto bg-green-600 text-white font-semibold py-3 px-6 rounded-lg flex items-center justify-center hover:bg-green-700">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2.086a8.001 8.001 0 00-11.586 11.586 8.001 8.001 0 0011.586-11.586zm-11.586 11.586L4 20m16-16l-4 4"></path></svg>
+                    Play Again
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="delay-modal-backdrop" class="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-hidden backdrop-fade" style="z-index: 60;"> <div id="delay-modal" class="bg-gray-800 rounded-lg shadow-2xl p-8 max-w-sm w-full modal-hidden modal-fade">
+            <h2 class="text-2xl text-white mb-4 text-center">Simulating Quarter...</h2>
+            <p class="text-gray-300 mb-6 text-center">Running calculations for Q<span id="delay-quarter-num">1</span>...</p>
+            <div class="w-full bg-gray-700 rounded-full h-4">
+                <div id="delay-progress-bar" class="bg-blue-600 h-4 rounded-full" style="width: 0%; transition: width 4s linear;"></div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // --- CONSTANTS & CONFIG ---
+        const API_ENDPOINT = 'http://localhost:3000/api/game/product'; // Your specified API endpoint
+        const SURVEY_COST_PER_RESPONDENT = 800;
+        const TOTAL_MARKET_SIZE = 10000000;
+        const TOTAL_FAMILIES = 20000;
+        const ALL_FAMILIES = [];
+        let currentFilteredSegmentSize = 0;
+
+        const CITIES_DATA = { /* ... city data ... */
+            'Mumbai':    { tier: 'T1', pci: 380000, populationWeight: 18, brandConsciousMod: 1.2, population: '2.1 Cr', mfRatio: '933 F/1k M', literacy: '90.2%', mobilePenetration: '92%', competitors: { count: 5, avgPrice: 300, localShare: 0.7 } },
+            'Delhi':     { tier: 'T1', pci: 440000, populationWeight: 20, brandConsciousMod: 1.2, population: '3.3 Cr', mfRatio: '871 F/1k M', literacy: '88.7%', mobilePenetration: '95%', competitors: { count: 5, avgPrice: 290, localShare: 0.65 } },
+            'Bangalore': { tier: 'T1', pci: 620000, populationWeight: 12, brandConsciousMod: 1.4, population: '1.4 Cr', mfRatio: '923 F/1k M', literacy: '89.1%', mobilePenetration: '96%', competitors: { count: 4, avgPrice: 310, localShare: 0.6 } },
+            'Chennai':   { tier: 'T1', pci: 300000, populationWeight: 10, brandConsciousMod: 1.1, population: '1.2 Cr', mfRatio: '989 F/1k M', literacy: '90.3%', mobilePenetration: '91%', competitors: { count: 3, avgPrice: 280, localShare: 0.55 } },
+            'Pune':      { tier: 'T2', pci: 270000, populationWeight: 8,  brandConsciousMod: 1.0, population: '7.2 M',  mfRatio: '948 F/1k M', literacy: '89.5%', mobilePenetration: '88%', competitors: { count: 3, avgPrice: 260, localShare: 0.5 } },
+            'Jaipur':    { tier: 'T2', pci: 190000, populationWeight: 6,  brandConsciousMod: 0.9, population: '4.2 M',  mfRatio: '900 F/1k M', literacy: '83.3%', mobilePenetration: '85%', competitors: { count: 2, avgPrice: 240, localShare: 0.45 } },
+            'Indore':    { tier: 'T2', pci: 160000, populationWeight: 5,  brandConsciousMod: 0.8, population: '3.2 M',  mfRatio: '928 F/1k M', literacy: '85.6%', mobilePenetration: '82%', competitors: { count: 2, avgPrice: 230, localShare: 0.4 } },
+            'Lucknow':   { tier: 'T3', pci: 130000, populationWeight: 7,  brandConsciousMod: 0.7, population: '3.9 M',  mfRatio: '915 F/1k M', literacy: '82.5%', mobilePenetration: '78%', competitors: { count: 2, avgPrice: 220, localShare: 0.35 } },
+            'Patna':     { tier: 'T3', pci: 90000,  populationWeight: 8,  brandConsciousMod: 0.6, population: '2.8 M',  mfRatio: '897 F/1k M', literacy: '83.1%', mobilePenetration: '70%', competitors: { count: 1, avgPrice: 210, localShare: 0.3 } },
+            'Guwahati':  { tier: 'T3', pci: 120000, populationWeight: 6,  brandConsciousMod: 0.7, population: '1.2 M',  mfRatio: '930 F/1k M', literacy: '91.2%', mobilePenetration: '75%', competitors: { count: 1, avgPrice: 215, localShare: 0.3 } }
+        };
+        const CITIES_WEIGHTED_ARRAY = [];
+        for (const [city, data] of Object.entries(CITIES_DATA)) { for(let i=0; i<data.populationWeight; i++) { CITIES_WEIGHTED_ARRAY.push(city); } }
+        const getWeightedRandomCity = () => CITIES_WEIGHTED_ARRAY[Math.floor(Math.random() * CITIES_WEIGHTED_ARRAY.length)];
+
+        // --- GAME STATE ---
+        let state = { 
+            playerName: "", quarter: 0, totalProfit: 0, marketShare: 0, brandAwareness: 0, 
+            cash: 50000000, surveyBudget: 10000000, previousResults: [], 
+            projections: { q1: 0, q2: 0, q3: 0, q4: 0 }, finalScore: 0,
+            productDecisions: { quality: 40, taste: 30, packaging: 30 }, // Store 4P decisions in state for persistence
+            priceDecision: 250,
+            distDecisions: { online: false, marketplaces: false, supermarkets: false, kirana: false },
+            promoDecisions: { budget: 10000000, digital: 25, influencer: 25, tv: 25, print: 25 }
+        };
+
+        // --- DOM ELEMENTS (Declared globally, assigned in initializeUI) ---
+        let ui = {};
+
+        // --- HELPER FUNCTIONS ---
+        const formatCurrency = (value) => `₹${new Intl.NumberFormat('en-IN').format(Math.round(value))}`;
+        const formatPercent = (value) => `${(value * 100).toFixed(1)}%`;
+        const getRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
+        const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+        const randFloat = (min, max, decimals) => parseFloat((Math.random() * (max - min) + min).toFixed(decimals));
+        const clamp = (val, min, max) => Math.max(min, Math.min(val, max));
+        
+        // Function to hide the delay modal and clean up
+        function hideDelayModal() {
+            if (ui.delayModal) {
+                ui.delayModal.classList.add('modal-hidden');
+                ui.delayModal.classList.remove('modal-visible');
+            }
+            // Delay backdrop removal slightly to allow the modal transition to finish
+            setTimeout(() => {
+                if (ui.delayModalBackdrop) {
+                    ui.delayModalBackdrop.classList.add('backdrop-hidden');
+                    ui.delayModalBackdrop.classList.remove('backdrop-visible');
+                }
+            }, 300);
+        }
+
+        // --- DATA GENERATION (Keep ALL_FAMILIES outside of state, as it's too large/static for API persistence) ---
+        function generateFamilyData(count) { /* ... unchanged ... */ 
+            if (ALL_FAMILIES.length > 0) return; // Only generate once
+            for (let i = 0; i < count; i++) { 
+                const cN = getWeightedRandomCity(); 
+                const cD = CITIES_DATA[cN]; 
+                const aI = cD.pci * randFloat(0.4, 2.5, 2); 
+                let iB; 
+                if (aI < 300000) iB = 'low'; 
+                else if (aI < 1000000) iB = 'mid'; 
+                else if (aI < 2500000) iB = 'high'; 
+                else iB = 'vhigh'; 
+                const aR = Math.random(); 
+                const age = aR < 0.25 ? '18-25' : (aR < 0.6 ? '26-35' : (aR < 0.85 ? '36-50' : '50+')); 
+                let dr; 
+                if (iB === 'low') dr = Math.random() < 0.6 ? 'Price' : 'Convenience'; 
+                else if (iB === 'vhigh') dr = Math.random() < 0.5 ? 'Quality' : 'Brand'; 
+                else dr = getRandom(['Price', 'Quality', 'Convenience', 'Brand']); 
+                let tM; 
+                if (age === '18-25') tM = Math.random() < 0.6 ? 'Influencer' : 'Digital'; 
+                else if (age === '50+') tM = Math.random() < 0.5 ? 'TV' : 'Print'; 
+                else tM = getRandom(['Digital', 'Influencer', 'TV', 'Print']); 
+                ALL_FAMILIES.push({ id: i + 1, location: cN, tier: cD.tier, income: iB, annualIncome: aI, familySize: cD.tier === 'T3' ? randInt(3, 7) : randInt(2, 5), age: age, primaryDriver: dr, topMedia: tM, priceSensitivity: randFloat(4, 10, 1), brandConscious: clamp(randFloat(1, 10, 1) * cD.brandConsciousMod, 1, 10) }); 
+            } 
+            console.log(`Generated ${ALL_FAMILIES.length} data points.`); 
+        }
+
+        // --- TAB NAVIGATION ---
+        function setupTabs() { ui.tabs.decisions.addEventListener('click', () => switchTab('decisions')); ui.tabs.research.addEventListener('click', () => switchTab('research')); ui.tabs.results.addEventListener('click', () => switchTab('results')); }
+        function switchTab(tabName) { 
+            if (state.quarter === 0 && ui.projectionCard && !ui.projectionCard.classList.contains('hidden') && tabName !== 'decisions') { return; } 
+            
+            // This is required to make sure the right decisions are loaded into the UI *before* switching
+            if (tabName === 'decisions') {
+                loadDecisionsToUI(); 
+            }
+
+            ui.content.decisions.classList.add('hidden'); ui.content.research.classList.add('hidden'); ui.content.results.classList.add('hidden'); 
+            ui.tabs.decisions.className = "whitespace-nowrap py-4 px-1 border-b-2 font-medium text-lg text-gray-400 border-transparent hover:text-gray-200 hover:border-gray-500"; 
+            ui.tabs.research.className = "whitespace-nowrap py-4 px-1 border-b-2 font-medium text-lg text-gray-400 border-transparent hover:text-gray-200 hover:border-gray-500"; 
+            ui.tabs.results.className = "whitespace-nowrap py-4 px-1 border-b-2 font-medium text-lg text-gray-400 border-transparent hover:text-gray-200 hover:border-gray-500"; 
+            ui.content[tabName].classList.remove('hidden'); 
+            ui.tabs[tabName].className = "whitespace-nowrap py-4 px-1 border-b-2 font-medium text-lg text-blue-400 border-blue-500"; 
+        }
+
+        // --- DECISION SLIDERS ---
+        // New: Store decisions from UI back into state
+        function storeDecisionsFromUI() {
+            state.productDecisions = { 
+                quality: parseInt(ui.product.quality.value), 
+                taste: parseInt(ui.product.taste.value), 
+                packaging: parseInt(ui.product.packaging.value) 
+            };
+            state.priceDecision = parseFloat(ui.price.value) || 0;
+            state.distDecisions = { 
+                online: ui.dist.online.checked, 
+                marketplaces: ui.dist.marketplaces.checked, 
+                supermarkets: ui.dist.supermarkets.checked, 
+                kirana: ui.dist.kirana.checked 
+            };
+            state.promoDecisions = {
+                budget: parseFloat(ui.promo.budgetSlider.value) || 0, 
+                digital: parseInt(ui.promo.digital.value), 
+                influencer: parseInt(ui.promo.influencer.value), 
+                tv: parseInt(ui.promo.tv.value), 
+                print: parseInt(ui.promo.print.value)
+            };
+        }
+
+        // New: Load decisions from state into UI
+        function loadDecisionsToUI() {
+            if (state.quarter === 0) return; // Decisions UI not active until Q1
+
+            ui.product.quality.value = state.productDecisions.quality;
+            ui.product.taste.value = state.productDecisions.taste;
+            ui.product.packaging.value = state.productDecisions.packaging;
+            updateProductSliders(true); // Force a full UI update for product
+
+            ui.price.value = state.priceDecision;
+
+            ui.dist.online.checked = state.distDecisions.online;
+            ui.dist.marketplaces.checked = state.distDecisions.marketplaces;
+            ui.dist.supermarkets.checked = state.distDecisions.supermarkets;
+            ui.dist.kirana.checked = state.distDecisions.kirana;
+
+            ui.promo.budgetSlider.value = state.promoDecisions.budget;
+            ui.promo.budgetDisplay.textContent = formatCurrency(state.promoDecisions.budget);
+            ui.promo.digital.value = state.promoDecisions.digital;
+            ui.promo.influencer.value = state.promoDecisions.influencer;
+            ui.promo.tv.value = state.promoDecisions.tv;
+            ui.promo.print.value = state.promoDecisions.print;
+            updatePromoSliders(null, true); // Force a full UI update for promo
+        }
+
+        function updateProductSliders(isLoad=false) { 
+            // Add check: Are all elements needed for this function ready?
+            if (!ui.product?.quality || !ui.product?.taste || !ui.product?.packaging || !ui.product?.qualityVal || !ui.product?.tasteVal || !ui.product?.packagingVal || !ui.product?.totalPoints) {
+                console.error("Product slider elements not ready for updateProductSliders.");
+                return;
+            }
+            let t=parseInt(ui.product.quality.value)+parseInt(ui.product.taste.value)+parseInt(ui.product.packaging.value); if(t>100){const q=parseInt(ui.product.quality.value),a=parseInt(ui.product.taste.value),p=parseInt(ui.product.packaging.value),e=t-100;ui.product.quality.value=q-q/t*e;ui.product.taste.value=a-a/t*e;ui.product.packaging.value=p-p/t*e} let fQ=Math.round(ui.product.quality.value),fT=Math.round(ui.product.taste.value),fP=Math.round(ui.product.packaging.value),fTt=fQ+fT+fP; if(fTt!==100){fQ-=fTt-100} ui.product.quality.value=fQ;ui.product.taste.value=fT;ui.product.packaging.value=fP;ui.product.qualityVal.textContent=fQ;ui.product.tasteVal.textContent=fT;ui.product.packagingVal.textContent=fP;ui.product.totalPoints.textContent=fQ+fT+fP; updateCOGS();
+            if (!isLoad) storeDecisionsFromUI(); // Save to state on user interaction
+        }
+        function updateCOGS() { 
+            if (!ui.product?.quality || !ui.product?.taste || !ui.product?.packaging || !ui.product?.cogsDisplay) {
+                 console.error("COGS elements not ready.");
+                 return;
+            }
+            const q=parseInt(ui.product.quality.value),t=parseInt(ui.product.taste.value),p=parseInt(ui.product.packaging.value); const cogs=50+q*.8+t*.5+p*.3; ui.product.cogsDisplay.textContent=formatCurrency(cogs); 
+        }
+        function updatePromoSliders(changedSlider, isLoad=false) { 
+            if (!ui.promo?.sliders || ui.promo.sliders.length === 0 || !ui.promo?.digitalVal || !ui.promo?.influencerVal || !ui.promo?.tvVal || !ui.promo?.printVal || !ui.promo?.totalVal) { console.error("Promo slider elements not ready for updatePromoSliders."); return;} 
+            let s=Array.from(ui.promo.sliders),t=s.reduce((sum,s)=>sum+parseInt(s.value),0); if(t>100){let o=s.filter(s=>s!==changedSlider),e=t-100,oT=o.reduce((sum,s)=>sum+parseInt(s.value),0); if(oT>0){for(let l of o){l.value=parseInt(l.value)-parseInt(l.value)/oT*e}}else{changedSlider.value=100}} let fT=0; s.forEach((s,i)=>{let v=Math.round(s.value); if(i===s.length-1){v=100-fT} s.value=v;fT+=v}); ui.promo.digitalVal.textContent=`${ui.promo.digital.value}%`;ui.promo.influencerVal.textContent=`${ui.promo.influencer.value}%`;ui.promo.tvVal.textContent=`${ui.promo.tv.value}%`;ui.promo.printVal.textContent=`${ui.promo.print.value}%`;ui.promo.totalVal.textContent=`${fT}%`; 
+            if (!isLoad) storeDecisionsFromUI(); // Save to state on user interaction
+        }
+
+        // --- MARKET RESEARCH (DATABASE QUERY) ---
+        function runSurvey() { 
+            if (!ui.survey?.location || !ui.survey?.income || !ui.survey?.age || !ui.survey.insights?.cityProfileCard) { console.error("Survey UI elements not ready."); return; } 
+            
+            // NOTE: This filter information is *NOT* saved in the state, it's temporary for the Q0 query
+            const filters = { location: ui.survey.location.value, income: ui.survey.income.value, age: ui.survey.age.value }; 
+            
+            if (filters.location !== 'all' && CITIES_DATA[filters.location]) { const cD = CITIES_DATA[filters.location]; ui.survey.insights.cityProfileTitle.textContent = `${filters.location} - Profile`; ui.survey.insights.cityProfilePop.textContent = cD.population; ui.survey.insights.cityProfilePCI.textContent = formatCurrency(cD.pci) + ' (Avg)'; ui.survey.insights.cityProfileLit.textContent = cD.literacy; ui.survey.insights.cityProfileMF.textContent = cD.mfRatio; ui.survey.insights.cityProfileMobile.textContent = cD.mobilePenetration; ui.survey.insights.cityProfileCompCount.textContent = cD.competitors.count; ui.survey.insights.cityProfileCompPrice.textContent = formatCurrency(cD.competitors.avgPrice); ui.survey.insights.cityProfileCompShare.textContent = formatPercent(cD.competitors.localShare); ui.survey.insights.cityProfileCard.classList.remove('hidden'); } else { ui.survey.insights.cityProfileCard.classList.add('hidden'); } 
+            const filteredData = ALL_FAMILIES.filter(f => (filters.location === 'all' || f.location === filters.location) && (filters.income === 'all' || f.income === filters.income) && (filters.age === 'all' || f.age === filters.age)); 
+            currentFilteredSegmentSize = filteredData.length; 
+            if (filteredData.length === 0) { ui.survey.insights.size.textContent = '0'; ui.survey.insights.avgIncome.textContent = 'N/A'; ui.survey.insights.priceSensitivity.textContent = 'N/A'; ui.survey.insights.brand.textContent = 'N/A'; ui.survey.insights.driver.innerHTML = '<p>No data</p>'; ui.survey.insights.media.innerHTML = '<p>No data</p>'; ui.survey.tableBody.innerHTML = '<tr><td colspan="9">No families.</td></tr>'; } else { const avgInc = filteredData.reduce((a, f) => a + f.annualIncome, 0) / filteredData.length; const avgPS = filteredData.reduce((a, f) => a + f.priceSensitivity, 0) / filteredData.length; const avgBC = filteredData.reduce((a, f) => a + f.brandConscious, 0) / filteredData.length; const dC = filteredData.reduce((a, f) => { a[f.primaryDriver] = (a[f.primaryDriver] || 0) + 1; return a; }, {}); const mC = filteredData.reduce((a, f) => { a[f.topMedia] = (a[f.topMedia] || 0) + 1; return a; }, {}); ui.survey.insights.size.textContent = `${filteredData.length} (${formatPercent(filteredData.length / TOTAL_FAMILIES)})`; ui.survey.insights.avgIncome.textContent = formatCurrency(avgInc); ui.survey.insights.priceSensitivity.textContent = `${avgPS.toFixed(1)} / 10`; ui.survey.insights.brand.textContent = `${avgBC.toFixed(1)} / 10`; const fD = (c) => Object.entries(c).sort((a, b) => b[1] - a[1]).map(([k, v]) => `<div>${k}: <span>${formatPercent(v / filteredData.length)}</span></div>`).join(''); ui.survey.insights.driver.innerHTML = fD(dC); ui.survey.insights.media.innerHTML = fD(mC); ui.survey.tableBody.innerHTML = ''; const s = filteredData.slice(0, 50); s.forEach(f => { const r = document.createElement('tr'); r.innerHTML = `<td>${f.id}</td><td>${f.location}</td><td>${f.income}</td><td>${formatCurrency(f.annualIncome)}</td><td>${f.age}</td><td>${f.primaryDriver}</td><td>${f.topMedia}</td><td>${f.priceSensitivity.toFixed(1)}</td><td>${f.brandConscious.toFixed(1)}</td>`; ui.survey.tableBody.appendChild(r); }); } updateSurveyCostDisplay(); 
+        }
+
+        // --- CUSTOM QUESTIONNAIRE ---
+        let lastEfficacyScore = -10;
+        function updateSurveyCostDisplay() { if (!ui.questionnaire?.costDisplay || !ui.questionnaire?.estimatedCostDisplay || !ui.questionnaire?.runSurveyBtn) { return; } if (state.quarter !== 0) { ui.questionnaire.costDisplay.textContent = "₹800 / Respondent (Q0 Only)"; ui.questionnaire.estimatedCostDisplay.textContent = "Surveys disabled after Q0."; ui.questionnaire.runSurveyBtn.disabled = true; return; } ui.questionnaire.costDisplay.textContent = `₹${SURVEY_COST_PER_RESPONDENT} / Respondent`; if (currentFilteredSegmentSize > 0) { const estCost = currentFilteredSegmentSize * SURVEY_COST_PER_RESPONDENT; ui.questionnaire.estimatedCostDisplay.textContent = `Est. Total Cost (${currentFilteredSegmentSize} respondents): ${formatCurrency(estCost)}`; if (estCost > state.surveyBudget) { ui.questionnaire.runSurveyBtn.disabled = true; showEfficacyReport(`Budget (${formatCurrency(state.surveyBudget)}) too low for est. cost (${formatCurrency(estCost)}).`, "low"); } else { ui.questionnaire.runSurveyBtn.disabled = false; if (ui.questionnaire.efficacyReport && ui.questionnaire.efficacyReport.textContent.startsWith("Budget")) { ui.questionnaire.efficacyReport.classList.add('hidden'); } } } else { ui.questionnaire.estimatedCostDisplay.textContent = "Run Query to estimate total cost."; ui.questionnaire.runSurveyBtn.disabled = true; } }
+        function checkEfficacy() { const q=[ui.questionnaire.q1.value, ui.questionnaire.q2.value, ui.questionnaire.q3.value, ui.questionnaire.q4.value, ui.questionnaire.q5.value].filter(q=>q.trim().length > 0); if (q.length < 3) { showEfficacyReport("Low Efficacy: Need >= 3 questions.", "low"); lastEfficacyScore = -10; return; } let s=0; const gK=["price", "quality", "taste", "packaging", "convenience", "brand", "online", "store", "tv", "ad", "social media", "influencer", "buy", "prefer", "pay more", "trade-off", "vs"]; const bK=["income", "age", "location", "city", "tier", "like", "good", "nice", "health", "happy"]; q.forEach(q=>{ const lq=q.toLowerCase(); let qs=0; let fG=false; gK.forEach(k=>{if(lq.includes(k)){qs+=2;fG=true}}); bK.forEach(k=>{if(lq.includes(k)){qs-=3}}); if(lq.length<15 || lq.length>150){qs-=1} if(fG&&!lq.includes("?")){qs-=1} s+=qs; }); lastEfficacyScore = s; if (s > 5) { showEfficacyReport(`High Efficacy (${s})...`, "high"); } else if (s > 0) { showEfficacyReport(`Medium Efficacy (${s})...`, "medium"); } else { showEfficacyReport(`Low Efficacy (${s})...`, "low"); } }
+        function showEfficacyReport(text, level) { if (!ui.questionnaire || !ui.questionnaire.efficacyReport) return; const rE=ui.questionnaire.efficacyReport; rE.textContent=text; rE.classList.remove('hidden', 'text-green-400', 'text-yellow-400', 'text-red-400'); if(level==="high")rE.classList.add('text-green-400'); else if(level==="medium")rE.classList.add('text-yellow-400'); else rE.classList.add('text-red-400'); }
+        async function runCustomSurvey() { const filters = { location: ui.survey.location.value, income: ui.survey.income.value, age: ui.survey.age.value }; const currentFilteredData = ALL_FAMILIES.filter(f => (filters.location === 'all' || f.location === filters.location) && (filters.income === 'all' || f.income === filters.income) && (filters.age === 'all' || f.age === filters.age)); const currentSegmentSize = currentFilteredData.length; const actualCost = currentSegmentSize * SURVEY_COST_PER_RESPONDENT; if (currentSegmentSize === 0) { showEfficacyReport("Survey Failed: No families match.", "low"); return; } if (state.surveyBudget < actualCost) { showEfficacyReport(`Failed: Budget (${formatCurrency(state.surveyBudget)}) < Cost (${formatCurrency(actualCost)}).`, "low"); return; } state.surveyBudget -= actualCost; updateDashboard(); const questions = [ui.questionnaire.q1.value, ui.questionnaire.q2.value, ui.questionnaire.q3.value, ui.questionnaire.q4.value, ui.questionnaire.q5.value].filter(q => q.trim().length > 0); const filterText = [filters.location, filters.income, filters.age].filter(f => f !== 'all').join(', ') || 'All India'; showEfficacyReport("Gemini is analyzing...", "medium"); ui.questionnaire.runSurveyBtn.disabled = true; const avgInc = currentFilteredData.reduce((a, f) => a + f.annualIncome, 0) / currentSegmentSize; const avgPS = currentFilteredData.reduce((a, f) => a + f.priceSensitivity, 0) / currentSegmentSize; const dC = currentFilteredData.reduce((a, f) => { a[f.primaryDriver] = (a[f.primaryDriver] || 0) + 1; return a; }, {}); const mC = currentFilteredData.reduce((a, f) => { a[f.topMedia] = (a[f.topMedia] || 0) + 1; return a; }, {}); const sDesc = `Target segment: ${filterText}.`; const dSum = `Data:\n- Size: ${currentSegmentSize}\n- Avg Income: ${formatCurrency(avgInc)}\n- Avg Price Sens: ${avgPS.toFixed(1)}/10\n- Drivers: ${JSON.stringify(dC)}\n- Media: ${JSON.stringify(mC)}`; const userQuestions = `My questions were:\n1. ${questions[0] || ""}\n2. ${questions[1] || ""}\n3. ${questions[2] || ""}\n4. ${questions[3] || ""}\n5. ${questions[4] || ""}`; const prompt = `Act as MBA Analyst... Based *only* on data/questions, give insight... Start with "Gemini Insight:"\n\n${sDesc}\n${dSum}\n${userQuestions}`; const apiKey = ""; const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`; const payload = { contents: [{ parts: [{ text: prompt }] }], }; let insight = "Gemini failed..."; try { const response = await exponentialBackoff(() => fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })); if (!response.ok) throw new Error(`API Error: ${response.statusText}`); const result = await response.json(); const newInsight = result.candidates?.[0]?.content?.parts?.[0]?.text; if (newInsight) insight = newInsight.replace("Gemini Insight:", "").trim(); else insight = "Gemini returned no text."; } catch (error) { console.error("Gemini API fail:", error); insight = `Gemini API fail. Default insight...`; } logCustomInsight(insight, filterText, state.quarter); state.previousResults.push({ quarter: state.quarter, customInsight: { text: insight, filters: filterText } }); const reportCard = document.createElement('div'); reportCard.className = 'bg-gray-800 p-6 rounded-lg shadow-lg border-l-4 border-purple-400'; reportCard.innerHTML = `<h2 class="text-xl font-bold text-purple-400 mb-2">Gemini Survey Report</h2><p class="text-sm text-gray-400 mb-1">Segment:</p><p class="text-sm font-semibold text-white mb-3">${filterText}</p><p class="text-sm text-gray-400 mb-1">Insight:</p><p class="text-md text-gray-200">${insight}</p>`; ui.questionnaire.reportContainer.prepend(reportCard); [ui.questionnaire.q1, ui.questionnaire.q2, ui.questionnaire.q3, ui.questionnaire.q4, ui.questionnaire.q5].forEach(q => q.value = ''); showEfficacyReport("Survey complete!", "high"); updateSurveyCostDisplay(); }
+        function logCustomInsight(insightText, filterText, quarter) { const lE=document.createElement('div'); lE.className='bg-gray-700 p-4 rounded-md shadow border-l-4 border-purple-400'; lE.innerHTML=`<div class="flex justify-between items-center mb-1"><span class="font-bold text-white text-xl">Gemini Insight (Q${quarter})</span></div><p class="text-sm italic">${filterText}</p><p>${insightText}</p>`; if(ui.resultsLog) { ui.resultsLog.prepend(lE); const p=ui.resultsLog.querySelector('.italic'); if(p&&p.textContent==="No results yet.")p.remove(); } }
+        async function exponentialBackoff(apiCall, maxRetries = 5, baseDelay = 1000) { let r=0; while(r<maxRetries){try{const res=await apiCall(); if(res.ok)return res; if(res.status===429){const d=baseDelay*Math.pow(2,r)+Math.random()*1000; console.warn(`429 Retrying ${d}ms`); await new Promise(res=>setTimeout(res,d)); r++} else{throw new Error(`API fail: ${res.status}`)}} catch(e){console.error("Net error:",e); const d=baseDelay*Math.pow(2,r)+Math.random()*1000; console.warn(`Net error Retrying ${d}ms`); await new Promise(res=>setTimeout(res,d)); r++}} throw new Error("API fail max retries"); }
+
+        // --- GAME FLOW LOGIC ---
+        function mainAction() { if (state.quarter > 0) { 
+            storeDecisionsFromUI(); // Save current decisions before running the quarter
+            endQuarter(); 
+        } }
+        function enterProjectionPhase() { 
+            state.quarter = 0; ui.headerSubtitle.textContent = "Phase: Q0 (Projection)..."; 
+            ui.projectionCard.classList.remove('hidden'); 
+            switchTab('decisions'); 
+            ui.questionnaire.runSurveyBtn.disabled = true; ui.questionnaire.checkEfficacyBtn.disabled = true; ui.survey.runBtn.disabled = true; 
+            ui.questionnaire.estimatedCostDisplay.textContent = "N/A (Projection Phase)"; 
+            ui.q0SummaryCard.classList.add('hidden'); 
+        }
+        function launchProduct() { 
+            const p1=parseInt(ui.projection.q1.value)||0, p2=parseInt(ui.projection.q2.value)||0, p3=parseInt(ui.projection.q3.value)||0, p4=parseInt(ui.projection.q4.value)||0; 
+            if(p1<=0||p2<=0||p3<=0||p4<=0){showModal("Invalid Projection", "Projections must be greater than 0 for all four quarters.", true); return;} 
+            state.projections={q1:p1,q2:p2,q3:p3,q4:p4}; 
+            console.log("Projections:", state.projections); 
+            state.quarter = 1; 
+            ui.headerSubtitle.textContent = "Phase: Q1 Launched..."; 
+            ui.projectionCard.classList.add('hidden'); 
+            ui.decisionsPanel.classList.remove('disabled-panel'); 
+            ui.mainActionBtn.textContent = "End Q1..."; 
+            ui.mainActionBtn.classList.remove('hidden'); 
+            ui.tabs.research.classList.remove('hidden'); 
+            ui.questionnaire.runSurveyBtn.disabled = true; ui.questionnaire.checkEfficacyBtn.disabled = true; ui.survey.runBtn.disabled = false; 
+            ui.questionnaire.costDisplay.textContent = "N/A (Q0 Only)"; 
+            ui.questionnaire.estimatedCostDisplay.textContent = "Surveys disabled."; 
+            ui.questionnaire.efficacyReport.classList.add('hidden'); 
+            ui.questionnaire.reportContainer.classList.add('hidden'); 
+            ui.q0SummaryCard.classList.add('hidden'); 
+            
+            // Set initial 4P decisions in state and UI
+            storeDecisionsFromUI();
+            
+            updateDashboard(); 
+            updateMarketEvent("Q1: Launched!"); 
+            showModal("Launched!", `Projections locked. Q1 has begun.`, false, true); 
+        }
+        
+        // --- NEW endQuarter function with delay ---
+        function endQuarter() {
+            // --- 1. Get Decisions & Validate ---
+            const d = {
+                product: state.productDecisions, // Use stored decisions
+                price: state.priceDecision,
+                dist: state.distDecisions,
+                promo: state.promoDecisions
+            };
+            if (d.price <= 0 || d.promo.budget < 1000000) {
+                showModal("Invalid Decisions", "Price must be > 0 and Promotion Budget must be at least ₹1,000,000.", true);
+                // Re-enable button after error
+                ui.mainActionBtn.disabled = false;
+                ui.mainActionBtn.textContent = `End Q${state.quarter}...`;
+                return;
+            }
+            
+            // --- 2. Disable UI & Show Delay Modal ---
+            ui.mainActionBtn.disabled = true;
+            ui.mainActionBtn.textContent = "Simulating...";
+            ui.delayQuarterNum.textContent = state.quarter;
+            
+            // Reset and show modal
+            ui.delayProgressBar.style.transition = 'none'; // Reset transition
+            ui.delayProgressBar.style.width = '0%'; // Reset width
+            ui.delayModalBackdrop.classList.remove('backdrop-hidden');
+            ui.delayModalBackdrop.classList.add('backdrop-visible');
+            ui.delayModal.classList.remove('modal-hidden');
+            ui.delayModal.classList.add('modal-visible');
+
+            // --- 3. Trigger the 4-second simulation ---
+            // Force a reflow so the transition applies
+            setTimeout(() => {
+                ui.delayProgressBar.style.transition = 'width 4s linear';
+                ui.delayProgressBar.style.width = '100%';
+            }, 50); // Small delay to ensure CSS reset is applied first
+
+            // --- Robust Simulation Runner ---
+            const currentQuarter = state.quarter; // Capture quarter for context
+            
+            const simulationRunner = () => {
+                try {
+                    // --- 4. Run Simulation Logic (Placeholder) ---
+                    // NOTE: The actual calculation logic (calculateQuarterlyResults) is missing
+                    // from the provided HTML, so this part is currently simulated/placeholder.
+                    // Assuming API returns results object { revenue, totalCosts, unitsSold, profit, ... }
+                    const r = calculateQuarterlyResults(d, getMarketEvent()); 
+                    
+                    state.quarter++;
+                    state.totalProfit += r.profit;
+                    state.cash += r.profit;
+                    state.marketShare = r.newMarketShare;
+                    state.brandAwareness = r.newBrandAwareness;
+                    state.previousResults.push({ quarter: currentQuarter, ...r });
+
+                    // --- 5. Update UI & Hide Modal ---
+                    hideDelayModal();
+
+                    ui.headerSubtitle.textContent = `Phase: Q${state.quarter}...`;
+                    ui.mainActionBtn.textContent = `End Q${state.quarter}...`;
+                    
+                    updateDashboard();
+                    updateMarketEvent(r.eventText);
+                    updateResultsLog();
+                    updateSurveyCostDisplay();
+                    
+                    const score = calculateScore();
+                    state.finalScore = score;
+
+                    // --- 6. Check Game Over ---
+                    if (state.cash <= 0) {
+                        ui.mainActionBtn.disabled = true;
+                        ui.mainActionBtn.textContent = "Game Over (Bankrupt)";
+                        showReportModal();
+                        showCertificateModal(score, "Bankrupt.");
+                    } else if (state.quarter > 12) {
+                        ui.mainActionBtn.disabled = true;
+                        ui.mainActionBtn.textContent = "Game Over (Completed)";
+                        showReportModal();
+                        showCertificateModal(score, "Completed 3 years.");
+                    } else {
+                        // Re-enable button for next quarter
+                        ui.mainActionBtn.disabled = false;
+                        showModal(`Q${currentQuarter} Complete!`, r.insightText, true);
+                    }
+                } catch (error) {
+                    console.error(`Simulation logic failed for Q${currentQuarter}:`, error);
+                    hideDelayModal();
+                    ui.mainActionBtn.disabled = false;
+                    ui.mainActionBtn.textContent = `End Q${currentQuarter}...`;
+                    showModal(`Q${currentQuarter} Failed`, `An error occurred during simulation. The quarter's results could not be calculated. Check console for details.`, true);
+                }
+            };
+            
+            // Attach a listener to the progress bar to ensure the action runs exactly after the animation finishes.
+            // This is generally more reliable than a simple setTimeout(..., 4000).
+            const runOnce = (event) => {
+                if (event.propertyName === 'width' && ui.delayProgressBar.style.width === '100%') {
+                    ui.delayProgressBar.removeEventListener('transitionend', runOnce);
+                    simulationRunner();
+                }
+            };
+            
+            // Add the listener only if the progress bar element is available
+            if (ui.delayProgressBar) {
+                 ui.delayProgressBar.addEventListener('transitionend', runOnce);
+            } else {
+                // Fallback to the original setTimeout if for some reason the element or listener setup failed
+                 console.warn("Progress bar not found, falling back to 4-second delay.");
+                 setTimeout(simulationRunner, 4000);
+            }
+        }
+
+        // Placeholder for missing simulation function (needed to avoid runtime errors)
+        function calculateQuarterlyResults(decisions, event) {
+            console.log("Running simulation placeholder for decisions:", decisions, "event:", event);
+
+            // Mock results (must align with what the logic expects, especially r.insightText, r.eventText, newMarketShare, newBrandAwareness)
+            const units = state.projections[`q${state.quarter}`] || 50000;
+            const revenue = units * decisions.price;
+            const cogs = (50 + decisions.product.quality * 0.8 + decisions.product.taste * 0.5 + decisions.product.packaging * 0.3) * units;
+            const totalCosts = cogs + decisions.promo.budget;
+            const profit = revenue - totalCosts;
+
+            // Simple update logic
+            const newShare = state.marketShare + randFloat(-0.01, 0.03, 3);
+            const newAwareness = state.brandAwareness + decisions.promo.budget / 100000000; // Awareness grows with budget
+            
+            return {
+                revenue: revenue,
+                totalCosts: totalCosts,
+                unitsSold: units,
+                profit: profit,
+                newMarketShare: clamp(newShare, 0, 0.5),
+                newBrandAwareness: clamp(newAwareness, 0, 0.8),
+                eventText: event || "No significant market event.",
+                insightText: profit > 0 ? "Good performance this quarter! Profit is up." : "Loss incurred. Re-evaluate strategy.",
+                salesBySegment: { city: { Mumbai: units * 0.4, Delhi: units * 0.3, Bangalore: units * 0.2, Chennai: units * 0.1 }, income: { mid: units * 0.6, high: units * 0.4 } },
+                driverOfBuyers: { Quality: units * 0.5, Price: units * 0.5 }
+            };
+        }
+        
+        // Placeholder for missing event function (needed to avoid runtime errors)
+        function getMarketEvent() {
+            const events = [
+                "New competitor launches similar product.",
+                "Festival season drives up demand (+15% units).",
+                "Supply chain disruption increases COGS (+10%).",
+                "No significant event this quarter.",
+                "Major digital channel partner increases ad rates (+20% Digital cost).",
+            ];
+            return getRandom(events);
+        }
+
+        // --- SCORE CALCULATION (Updated) ---
+        function calculateScore() { const profitGoal = 150000000; const score = (state.totalProfit / profitGoal) * 100; return clamp(score, 0, 100); }
+
+        // --- UI UPDATE FUNCTIONS ---
+        function updateDashboard() { ui.metrics.quarter.textContent=state.quarter; ui.metrics.profit.textContent=formatCurrency(state.totalProfit); ui.metrics.profit.className=`text-3xl font-semibold mt-2 ${state.totalProfit>=0?'text-green-400':'text-red-400'}`; ui.metrics.share.textContent=formatPercent(state.marketShare); ui.metrics.awareness.textContent=formatPercent(state.brandAwareness); const cS=calculateScore(); ui.metrics.score.textContent=cS.toFixed(0); if(state.quarter===0){ui.metrics.surveyBudgetCard.classList.remove('hidden'); ui.metrics.surveyBudget.textContent=formatCurrency(state.surveyBudget);} else{ui.metrics.surveyBudgetCard.classList.add('hidden');} }
+        function updateMarketEvent(eventText) { ui.marketEventLog.innerHTML=`<p class="font-semibold text-gray-400">Q${state.quarter}: ${eventText}</p>`; }
+        function updateResultsLog() { ui.resultsLog.innerHTML = ''; if (state.previousResults.length === 0) { ui.resultsLog.innerHTML = '<p>No results yet.</p>'; return; } const fD = (c) => { const t = Object.values(c).reduce((s, a) => s + a, 0); if (t === 0) return '<li>N/A</li>'; return Object.entries(c).filter(([k,v]) => v > 0).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([k, v]) => `<li>${k}: <span>${formatPercent(v / t)}</span></li>`).join(''); }; [...state.previousResults].reverse().forEach(r => { if (r.customInsight) { logCustomInsight(r.customInsight.text, r.customInsight.filters, r.quarter); return; } const lE = document.createElement('div'); lE.className = 'bg-gray-700 p-4 rounded-md shadow'; const pC = r.profit >= 0 ? 'text-green-400' : 'text-red-400'; lE.innerHTML = `<div class="flex justify-between items-center mb-2"><span class="font-semibold text-xl">Q ${r.quarter} Report</span><span class="font-semibold text-2xl ${pC}">${formatCurrency(r.profit)}</span></div><p class="text-xs italic">Event: ${r.eventText}</p><div class="grid md:grid-cols-2 gap-4"><div><h4>Financials</h4><ul><li>Rev: ${formatCurrency(r.revenue)}</li><li>Costs: ${formatCurrency(r.totalCosts)}</li><li>Units: ${new Intl.NumberFormat('en-IN').format(r.unitsSold)}</li></ul></div><div><h4>Insight</h4><p>${r.insightText}</p></div><div class="md:col-span-2"><h4>Customer Analysis</h4><div class="flex justify-around text-sm"><div><h5>By City</h5><ul>${fD(r.salesBySegment.city)}</ul></div><div><h5>By Income</h5><ul>${fD(r.salesBySegment.income)}</ul></div><div><h5>By Driver</h5><ul>${fD(r.driverOfBuyers)}</ul></div></div></div></div>`; ui.resultsLog.appendChild(lE); }); }
+
+        // --- MODAL LOGIC (In-Game) ---
+        function showModal(title, text, isWarning = false) { // Removed isGameOver parameter
+             if (!ui.modalTitle || !ui.modalText || !ui.modalCloseBtn || !ui.modalBackdrop || !ui.modal || !ui.modalContent) { console.error("In-game modal elements are missing."); return; }
+             ui.modalTitle.textContent=title;
+             ui.modalText.textContent=text;
+             if(isWarning){
+                 ui.modalCloseBtn.textContent="OK";
+                 ui.modalCloseBtn.onclick=closeModal;
+             } else { // Intro modal
+                 ui.modalCloseBtn.textContent="Let's Go!";
+                 ui.modalCloseBtn.onclick=closeModal;
+             }
+             ui.modalBackdrop.classList.remove('backdrop-hidden'); ui.modalBackdrop.classList.add('backdrop-visible');
+             ui.modal.classList.remove('modal-hidden'); ui.modal.classList.add('modal-visible');
+             ui.modalContent.classList.remove('modal-hidden'); ui.modalContent.classList.add('modal-visible');
+         }
+
+        function closeModal() { // Check elements before acting
+             if (!ui.modalContent || !ui.modal || !ui.modalBackdrop) return;
+             ui.modalContent.classList.add('modal-hidden'); ui.modalContent.classList.remove('modal-visible');
+             ui.modal.classList.add('modal-hidden'); ui.modal.classList.remove('modal-visible');
+             setTimeout(()=>{ui.modalBackdrop.classList.add('backdrop-hidden'); ui.modalBackdrop.classList.remove('backdrop-visible');}, 300);
+         }
+
+        // --- CERTIFICATE & REPORT MODAL LOGIC (NEW) ---
+        
+        // --- NEW PNG Download Function ---
+        function downloadCertificateAsPng() {
+            const certElement = document.getElementById('certificate-content');
+            if (!certElement) {
+                console.error("Certificate content element not found!");
+                return;
+            }
+
+            // Show a brief loading state
+            const btn = ui.downloadCertPngBtn;
+            if (!btn) return; // Guard clause
+            const originalText = btn.innerHTML;
+            btn.innerHTML = "Generating...";
+            btn.disabled = true;
+
+            html2canvas(certElement, {
+                scale: 2, // Increase resolution
+                useCORS: true, // Try to fetch cross-origin images/fonts
+                allowTaint: true // Allow tainting (might be needed for fonts)
+            }).then(canvas => {
+                const dataUrl = canvas.toDataURL('image/png');
+                const link = document.createElement('a');
+                link.download = 'Taxila_Certificate.png';
+                link.href = dataUrl;
+                link.click();
+                // Restore button
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }).catch(err => {
+                console.error("Failed to generate PNG:", err);
+                showModal("Download Error", "Could not generate PNG. Please take a screenshot.", true);
+                // Restore button
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            });
+        }
+
+        // --- NEW TXT Download Function ---
+        function downloadReportAsText() {
+            try {
+                // 1. Get all the data
+                const score = ui.reportFinalScore.textContent;
+                const profit = ui.reportTotalProfit.textContent;
+                const share = ui.reportPeakShare.textContent;
+                const awareness = ui.reportPeakAwareness.textContent;
+                
+                let reportContent = `==================================\n`;
+                reportContent += ` PLAYER DEBRIEFING REPORT \n`;
+                reportContent += `==================================\n\n`;
+                reportContent += `Final Score: ${score}\n`;
+                reportContent += `Total Profit: ${profit}\n`;
+                reportContent += `Peak Market Share: ${share}\n`;
+                reportContent += `Peak Brand Awareness: ${awareness}\n\n`;
+
+                reportContent += `----------------------------------\n`;
+                reportContent += ` PROJECTION VS. ACTUAL (YEAR 1)\n`;
+                reportContent += `----------------------------------\n`;
+                // Extract from innerText to avoid HTML tags
+                const projSummary = ui.reportProjectionSummary.innerText || "No projection data.";
+                reportContent += `${projSummary}\n\n`;
+
+                reportContent += `----------------------------------\n`;
+                reportContent += ` SUGGESTIONS FOR IMPROVEMENT\n`;
+                reportContent += `----------------------------------\n`;
+                const suggestions = ui.reportSuggestionsList.innerText || "No suggestions.";
+                reportContent += `${suggestions}\n\n`;
+                
+                reportContent += `Report generated from Taxila Business School Simulation.`;
+
+                // 2. Create and trigger download link
+                const element = document.createElement('a');
+                element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(reportContent));
+                element.setAttribute('download', 'Taxila_Report.txt');
+                element.style.display = 'none';
+                document.body.appendChild(element);
+                element.click();
+                document.body.removeChild(element);
+            } catch (e) {
+                console.error("Failed to generate text report:", e);
+                showModal("Download Error", "Could not generate text file.", true);
+            }
+        }
+
+
+        function showCertificateModal(finalScore, message, isPreview = false) { 
+            if (!ui.certificateModalBackdrop || !ui.certificateModal) return; // Guard clause
+            if(!isPreview && ui.mainContainer){ui.mainContainer.classList.add('hidden');} 
+            if(ui.certPlayerName) ui.certPlayerName.textContent=isPreview?"[Your Name Here]":state.playerName; 
+            if(ui.certFinalScore) ui.certFinalScore.textContent=isPreview?"N/A":finalScore.toFixed(0); 
+            if(ui.certMessage) ui.certMessage.textContent=isPreview?"Complete the simulation to earn your certificate.":message; 
+            if(isPreview){
+                if(ui.certificateActions) ui.certificateActions.classList.add('hidden');
+            } else {
+                if(ui.certificateActions) ui.certificateActions.classList.remove('hidden'); 
+                const lU=`https://www.linkedin.com/shareArticle?mini=true&url=https://taxila.in&title=${encodeURIComponent(`I completed the Taxila Business School simulation!`)}&summary=${encodeURIComponent(`I finished Project: Bharat Launch from Taxila Business School with a score of ${finalScore.toFixed(0)}/100! #TaxilaBusinessSchool #MBA #Analytics`)}`; 
+                if(ui.shareCertBtn) ui.shareCertBtn.href=lU;
+            } 
+            
+            // Only show if it's a preview. If it's the end of the game, showReportModal() will be called first.
+            if (isPreview) {
+                ui.certificateModalBackdrop.classList.remove('backdrop-hidden'); 
+                ui.certificateModalBackdrop.classList.add('backdrop-visible');
+                ui.certificateModal.classList.remove('modal-hidden'); 
+                ui.certificateModal.classList.add('modal-visible');
+            }
+        }
+        function hideCertificateModal() { if(ui.certificateModal){ui.certificateModal.classList.add('modal-hidden'); ui.certificateModal.classList.remove('modal-visible');} if(ui.certificateModalBackdrop){setTimeout(()=>{ui.certificateModalBackdrop.classList.add('backdrop-hidden'); ui.certificateModalBackdrop.classList.remove('backdrop-visible');}, 300);} }
+        
+        function generateSuggestions() {
+            const suggestions = [];
+            const actuals = state.previousResults.filter(r => r.quarter).map(r => r.unitsSold);
+            
+            // 1. Projection Accuracy
+            if (actuals.length > 0) {
+                const proj = [state.projections.q1, state.projections.q2, state.projections.q3, state.projections.q4];
+                let totalProj = 0;
+                let totalActual = 0;
+                for(let i=0; i < actuals.length && i < 4; i++) {
+                    totalProj += proj[i];
+                    totalActual += actuals[i];
+                }
+                if (totalProj > 0) {
+                    const accuracy = totalActual / totalProj;
+                    if (accuracy < 0.5) suggestions.push("Your projections were highly optimistic. Use the Q0 research data more carefully to build a realistic forecast.");
+                    else if (accuracy > 2.0) suggestions.push("Your projections were too pessimistic! You underestimated the market demand your strategy could capture.");
+                } else {
+                    suggestions.push("Your projections were 0, which made it impossible to gauge accuracy.");
+                }
+            }
+
+            // 2. Profitability
+            if (state.totalProfit <= 0 && state.quarter > 1) {
+                suggestions.push("Profitability was a major issue. Re-evaluate your Cost of Goods (Product Mix) vs. your Price Point. You may have priced too low for your quality, or your quality was too high for your target segment.");
+            }
+
+            // 3. Sales & Pricing
+            const priceErrors = state.previousResults.filter(r => r.insightText && r.insightText.includes("CRITICAL: Price >15%"));
+            if (priceErrors.length > 2) {
+                suggestions.push("You frequently priced your product more than 15% above competitors, which critically impacted sales. Respect local market price sensitivity.");
+            } else if (state.marketShare < 0.05 && state.quarter > 4) {
+                 suggestions.push("Market share remained low. This could be due to low brand awareness (increase promotion budget) or a mismatch between your 4Ps and your target segments' drivers.");
+            }
+
+            // 4. Custom Survey
+            const usedSurvey = state.previousResults.some(r => r.customInsight);
+            if (!usedSurvey) {
+                suggestions.push("You didn't use the Q0 Gemini Custom Survey. This tool could have provided unique insights to differentiate your strategy from the basic data.");
+            }
+
+            if (suggestions.length === 0) {
+                suggestions.push("You ran a balanced simulation. To improve, try a more aggressive (or niche) marketing strategy to see if you can capture a dominant market share.");
+            }
+
+            return suggestions;
+        }
+
+        function showReportModal() {
+            if (!ui.reportModalBackdrop || !ui.reportModal) return;
+            if (ui.mainContainer) ui.mainContainer.classList.add('hidden'); // Hide main game
+
+            const suggestions = generateSuggestions();
+            const peakShare = Math.max(0, ...state.previousResults.map(r => r.newMarketShare || 0));
+            const peakAwareness = Math.max(0, ...state.previousResults.map(r => r.newBrandAwareness || 0));
+            const actuals = state.previousResults.filter(r => r.quarter).map(r => ({ q: r.quarter, units: r.unitsSold }));
+            
+            ui.reportFinalScore.textContent = state.finalScore.toFixed(0) + " / 100";
+            ui.reportTotalProfit.textContent = formatCurrency(state.totalProfit);
+            ui.reportTotalProfit.className = `text-3xl font-bold ${state.totalProfit >= 0 ? 'text-green-600' : 'text-red-600'}`;
+            ui.reportPeakShare.textContent = formatPercent(peakShare);
+            ui.reportPeakAwareness.textContent = formatPercent(peakAwareness);
+
+            // Populate Projections vs. Actuals
+            let projHtml = '<ul class="text-sm list-disc list-inside">';
+            const proj = state.projections;
+            const formatNum = (num) => num.toLocaleString('en-IN');
+            projHtml += `<li>Q1: Proj: ${formatNum(proj.q1)} / Actual: ${formatNum(actuals[0]?.units || 0)}</li>`;
+            projHtml += `<li>Q2: Proj: ${formatNum(proj.q2)} / Actual: ${formatNum(actuals[1]?.units || 0)}</li>`;
+            projHtml += `<li>Q3: Proj: ${formatNum(proj.q3)} / Actual: ${formatNum(actuals[2]?.units || 0)}</li>`;
+            projHtml += `<li>Q4: Proj: ${formatNum(proj.q4)} / Actual: ${formatNum(actuals[3]?.units || 0)}</li>`;
+            projHtml += '</ul>';
+            ui.reportProjectionSummary.innerHTML = projHtml;
+
+            // Populate Suggestions
+            ui.reportSuggestionsList.innerHTML = suggestions.map(s => `<li class="text-gray-700">${s}</li>`).join('');
+
+            // Show Modal (Report is the default at end of game)
+            ui.reportModalBackdrop.classList.remove('backdrop-hidden');
+            ui.reportModalBackdrop.classList.add('backdrop-visible');
+            ui.reportModal.classList.remove('modal-hidden');
+            ui.reportModal.classList.add('modal-visible');
+
+            // Hide certificate modal (it might be prepped but should not be visible)
+            if (ui.certificateModal) ui.certificateModal.classList.add('modal-hidden');
+            if (ui.certificateModal) ui.certificateModal.classList.remove('modal-visible');
+            if (ui.certificateModalBackdrop) ui.certificateModalBackdrop.classList.add('backdrop-hidden');
+            if (ui.certificateModalBackdrop) ui.certificateModalBackdrop.classList.remove('backdrop-visible');
+        }
+
+        // --- NEW: SAVE/LOAD GAME IMPLEMENTATION ---
+        function getapiKey() {
+                const params = new URLSearchParams(window.location.search);
+                return params.get("apiKey") || "guest";
+            }
+             function getUserId() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get("userId") || "guest";
+        }
+        async function saveGame() {
+            const userId = getUserId();
+            if (state.playerName === "") {
+                showModal("Save Error", "Please enter your name first.", true);
+                return;
+            }
+            
+            // Save current decisions from UI to state before sending
+            if (state.quarter >= 1) {
+                storeDecisionsFromUI();
+            }
+
+            try {
+                const response = await fetch(API_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({userId:userId, name:state.playerName, gameState: state }), // Send the entire state object
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API returned status ${response.status}`);
+                }
+                
+                showModal("Game Saved!", "Your progress has been successfully saved to the local server.", false);
+            } catch (error) {
+                console.error("Save Game Failed:", error);
+                showModal("Save Error", `Failed to save game. Check your local API server: ${error.message}`, true);
+            }
+        }
+        
+        async function loadGame() {
+            const userId =getUserId();
+            try {
+                const response = await fetch(`${API_ENDPOINT}?userId=${userId}`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API returned status ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (!data || !data.gameState) {
+                    showModal("Load Error", "Saved game data is empty or invalid.", true);
+                    return;
+                }
+
+                // --- 1. Overwrite Global State ---
+                state = data.gameState;
+                
+                // --- 2. Hide Welcome Screen & Show Main App ---
+                if (ui.welcomeModalBackdrop) {
+                    ui.welcomeModal.classList.remove('modal-visible'); ui.welcomeModal.classList.add('modal-hidden');
+                    ui.welcomeModalBackdrop.classList.add('backdrop-hidden'); ui.welcomeModalBackdrop.classList.remove('backdrop-visible');
+                }
+                
+                if (ui.mainContainer && state.playerName !== "") {
+                    // Must initialize UI elements that rely on ALL_FAMILIES first
+                    generateFamilyData(TOTAL_FAMILIES); 
+                    initializeListeners(); // Re-initialize listeners for the main app
+                    ui.mainContainer.classList.remove('hidden');
+                    
+                    // --- 3. Sync Loaded State to UI ---
+                    syncStateToUI();
+                    
+                    showModal("Game Loaded!", `Welcome back, PM ${state.playerName}. You are in Q${state.quarter}.`, false);
+                } else {
+                    showModal("Load Error", "Game loaded, but player name is missing. Starting new game.", true);
+                    location.reload(); // Fallback to reload
+                }
+                
+            } catch (error) {
+                console.error("Load Game Failed:", error);
+                showModal("Load Error", `Failed to load game. Check your local API server: ${error.message}`, true);
+            }
+        }
+        
+        // New: Function to update all UI elements based on the global state
+        function syncStateToUI() {
+            // Header
+            ui.mainHeader.innerHTML = `Project: <span class="text-blue-400">Bharat Launch</span> (PM: ${state.playerName})`;
+            ui.headerSubtitle.textContent = state.quarter === 0 ? "Phase: Quarter 0 (Research & Analysis). Use the database to build a strategy." : `Phase: Q${state.quarter}...`;
+            
+            // Dashboard
+            updateDashboard();
+            
+            // Research Tab (We cannot restore Q0 filter state, but we can restore custom insights)
+            ui.questionnaire.reportContainer.innerHTML = '';
+            state.previousResults.filter(r => r.customInsight).forEach(r => {
+                const reportCard = document.createElement('div'); 
+                reportCard.className = 'bg-gray-800 p-6 rounded-lg shadow-lg border-l-4 border-purple-400'; 
+                reportCard.innerHTML = `<h2 class="text-xl font-bold text-purple-400 mb-2">Gemini Survey Report (Q${r.quarter})</h2><p class="text-sm text-gray-400 mb-1">Segment: <span class="text-white">${r.customInsight.filters}</span></p><p class="text-sm text-gray-400 mb-1">Insight:</p><p class="text-md text-gray-200">${r.customInsight.text}</p>`;
+                ui.questionnaire.reportContainer.prepend(reportCard);
+            });
+            updateSurveyCostDisplay();
+            
+            // Decisions Tab
+            if (state.quarter === 0) {
+                ui.projectionCard.classList.remove('hidden');
+                ui.decisionsPanel.classList.add('disabled-panel');
+                ui.q0SummaryCard.classList.remove('hidden');
+                ui.mainActionBtn.classList.add('hidden');
+                
+                // Restore Projections if any
+                ui.projection.q1.value = state.projections.q1 || "";
+                ui.projection.q2.value = state.projections.q2 || "";
+                ui.projection.q3.value = state.projections.q3 || "";
+                ui.projection.q4.value = state.projections.q4 || "";
+            } else {
+                ui.projectionCard.classList.add('hidden');
+                ui.decisionsPanel.classList.remove('disabled-panel');
+                ui.q0SummaryCard.classList.add('hidden');
+                ui.mainActionBtn.classList.remove('hidden');
+                ui.mainActionBtn.textContent = `End Q${state.quarter}...`;
+                loadDecisionsToUI(); // Restore 4P decisions
+            }
+            
+            // Results Tab
+            updateResultsLog(); // Populate the log with previous results
+            updateMarketEvent(state.previousResults.filter(r => r.eventText).pop()?.eventText || "Game loaded.");
+            
+            // Ensure correct tab is shown
+            switchTab(state.quarter === 0 ? 'research' : 'decisions');
+        }
+
+        // --- INITIALIZATION ---
+         function initializeUI() {
+             try {
+                 ui = {
+                     welcomeModalBackdrop: document.getElementById('welcome-modal-backdrop'), welcomeModal: document.getElementById('welcome-modal'), playerNameInput: document.getElementById('player-name'), nameError: document.getElementById('name-error'), startSimulationBtn: document.getElementById('start-simulation-btn'), loadGameWelcomeBtn: document.getElementById('load-game-welcome-btn'), // NEW
+                     mainContainer: document.getElementById('main-container'), mainHeader: document.getElementById('main-header'), headerSubtitle: document.getElementById('header-subtitle'), 
+                     saveGameBtn: document.getElementById('save-game-btn'), loadGameBtn: document.getElementById('load-game-btn'), // NEW
+                     tabsNav: document.getElementById('tabs-nav'), tabs: { decisions: document.getElementById('tab-decisions'), research: document.getElementById('tab-research'), results: document.getElementById('tab-results'), }, content: { decisions: document.getElementById('content-decisions'), research: document.getElementById('content-research'), results: document.getElementById('content-results'), },
+                     metrics: { quarter: document.getElementById('metric-quarter'), profit: document.getElementById('metric-profit'), share: document.getElementById('metric-share'), awareness: document.getElementById('metric-awareness'), surveyBudgetCard: document.getElementById('metric-survey-budget-card'), surveyBudget: document.getElementById('metric-survey-budget'), score: document.getElementById('metric-score'), },
+                     decisionsPanel: document.getElementById('decisions-panel'), projectionCard: document.getElementById('projection-card'), projection: { q1: document.getElementById('proj-q1'), q2: document.getElementById('proj-q2'), q3: document.getElementById('proj-q3'), q4: document.getElementById('proj-q4'), launchBtn: document.getElementById('launch-product-btn'), },
+                     product: { quality: document.getElementById('decision-quality'), taste: document.getElementById('decision-taste'), packaging: document.getElementById('decision-packaging'), qualityVal: document.getElementById('quality-val'), tasteVal: document.getElementById('taste-val'), packagingVal: document.getElementById('packaging-val'), totalPoints: document.getElementById('product-points-total'), cogsDisplay: document.getElementById('cogs-display'), sliders: document.querySelectorAll('.product-slider'), },
+                     price: document.getElementById('decision-price'), dist: { online: document.getElementById('dist-online'), marketplaces: document.getElementById('dist-marketplaces'), supermarkets: document.getElementById('dist-supermarkets'), kirana: document.getElementById('dist-kirana'), },
+                     promo: { budgetSlider: document.getElementById('decision-budget'), budgetDisplay: document.getElementById('budget-display'), digital: document.getElementById('promo-digital'), influencer: document.getElementById('promo-influencer'), tv: document.getElementById('promo-tv'), print: document.getElementById('promo-print'), digitalVal: document.getElementById('promo-digital-val'), influencerVal: document.getElementById('promo-influencer-val'), tvVal: document.getElementById('promo-tv-val'), printVal: document.getElementById('promo-print-val'), totalVal: document.getElementById('promo-total-val'), sliders: document.querySelectorAll('.promo-slider'), },
+                     survey: {
+                         location: document.getElementById('survey-location'), income: document.getElementById('survey-income'), age: document.getElementById('survey-age'), runBtn: document.getElementById('run-survey-btn'),
+                         insights: { size: document.getElementById('insight-size'), avgIncome: document.getElementById('insight-avg-income'), priceSensitivity: document.getElementById('insight-price-sensitivity'), driver: document.getElementById('insight-driver'), media: document.getElementById('insight-media'), brand: document.getElementById('insight-brand'), cityProfileCard: document.getElementById('city-profile-card'), cityProfileTitle: document.getElementById('city-profile-title'), cityProfilePop: document.getElementById('city-profile-pop'), cityProfilePCI: document.getElementById('city-profile-pci'), cityProfileLit: document.getElementById('city-profile-lit'), cityProfileMF: document.getElementById('city-profile-mf'), cityProfileMobile: document.getElementById('city-profile-mobile'), cityProfileCompCount: document.getElementById('city-profile-comp-count'), cityProfileCompPrice: document.getElementById('city-profile-comp-price'), cityProfileCompShare: document.getElementById('city-profile-comp-share'), },
+                         tableBody: document.getElementById('research-data-tbody'),
+                     },
+                     questionnaire: { q1: document.getElementById('q1'), q2: document.getElementById('q2'), q3: document.getElementById('q3'), q4: document.getElementById('q4'), q5: document.getElementById('q5'), checkEfficacyBtn: document.getElementById('check-efficacy-btn'), efficacyReport: document.getElementById('efficacy-report'), runSurveyBtn: document.getElementById('run-custom-survey-btn'), costDisplay: document.getElementById('custom-survey-cost-display'), estimatedCostDisplay: document.getElementById('estimated-survey-cost'), reportContainer: document.getElementById('custom-survey-report-container'), },
+                     mainActionBtn: document.getElementById('main-action-btn'), proceedToProjectionBtn: document.getElementById('proceed-to-projection-btn'), q0SummaryCard: document.getElementById('q0-summary-card'), marketEventLog: document.getElementById('market-event-log'), resultsLog: document.getElementById('results-log'),
+                     modal: document.getElementById('modal'), modalBackdrop: document.getElementById('modal-backdrop'), modalContent: document.getElementById('modal-content'), modalTitle: document.getElementById('modal-title'), modalText: document.getElementById('modal-text'), modalCloseBtn: document.getElementById('modal-close-btn'),
+                     certificateModalBackdrop: document.getElementById('certificate-modal-backdrop'), certificateModal: document.getElementById('certificate-modal'), certPlayerName: document.getElementById('cert-player-name'), certFinalScore: document.getElementById('cert-final-score'), certMessage: document.getElementById('cert-message'), 
+                     downloadCertPngBtn: document.getElementById('download-cert-png-btn'), // Updated ID
+                     shareCertBtn: document.getElementById('share-cert-btn'), certificateActions: document.getElementById('certificate-actions'), playAgainCertBtn: document.getElementById('play-again-cert-btn'), viewReportBtn: document.getElementById('view-report-btn'), // Added
+                     // New Report UI Elements
+                     reportModalBackdrop: document.getElementById('report-modal-backdrop'), reportModal: document.getElementById('report-modal'), reportFinalScore: document.getElementById('report-final-score'), reportTotalProfit: document.getElementById('report-total-profit'), reportPeakShare: document.getElementById('report-peak-share'), reportPeakAwareness: document.getElementById('report-peak-awareness'), reportProjectionSummary: document.getElementById('report-projection-summary'), reportSuggestionsList: document.getElementById('report-suggestions-list'), 
+                     downloadReportTxtBtn: document.getElementById('download-report-txt-btn'), // Updated ID
+                     playAgainBtn: document.getElementById('play-again-btn'), viewCertBtn: document.getElementById('view-cert-btn'), // Added
+                     // Delay Modal UI
+                     delayModalBackdrop: document.getElementById('delay-modal-backdrop'),
+                     delayModal: document.getElementById('delay-modal'),
+                     delayQuarterNum: document.getElementById('delay-quarter-num'),
+                     delayProgressBar: document.getElementById('delay-progress-bar'),
+                 };
+                 
+                 // Initial setup of decision sliders for correct value display before game starts
+                 ui.product.sliders = document.querySelectorAll('.product-slider');
+                 ui.promo.sliders = document.querySelectorAll('.promo-slider');
+                 updateProductSliders(true); // Initial update for display
+                 updatePromoSliders(null, true); // Initial update for display
+                 
+             } catch (error) {
+                 console.error("Error during initializeUI:", error);
+                 const nameError = document.getElementById('name-error');
+                 if(nameError) nameError.textContent = "Initialization failed. Please refresh.";
+             }
+         }
+
+        function initializeListeners() { // Separated from initializeSimulation for loadGame use
+             // Check essential elements required for adding listeners
+             if (!ui.promo?.budgetSlider) { console.error("Missing promo budget slider"); return false; }
+             if (!ui.survey?.runBtn) { console.error("Missing run survey button"); return false; }
+             if (!ui.mainActionBtn) { console.error("Missing main action button"); return false; }
+             if (!ui.projection?.launchBtn) { console.error("Missing launch product button"); return false; }
+             if (!ui.proceedToProjectionBtn) { console.error("Missing proceed button"); return false; }
+             if (!ui.questionnaire?.checkEfficacyBtn) { console.error("Missing check efficacy button"); return false; }
+             if (!ui.questionnaire?.runSurveyBtn) { console.error("Missing run custom survey button"); return false; }
+             if (!ui.downloadCertPngBtn) { console.error("Missing download cert PNG button"); return false; } 
+             if (!ui.downloadReportTxtBtn) { console.error("Missing download report TXT button"); return false; } 
+             if (!ui.playAgainBtn) { console.error("Missing play again button"); return false; }
+             if (!ui.playAgainCertBtn) { console.error("Missing play again cert button"); return false; }
+             if (!ui.viewCertBtn) { console.error("Missing view cert button"); return false; } 
+             if (!ui.viewReportBtn) { console.error("Missing view report button"); return false; } 
+             if (!ui.tabs?.decisions || !ui.tabs?.research || !ui.tabs?.results) { console.error("Missing tab buttons"); return false; }
+             
+             // Check new save/load buttons
+             if (!ui.saveGameBtn || !ui.loadGameBtn || !ui.loadGameWelcomeBtn) { console.error("Missing save/load buttons."); return false; }
+
+
+            console.log("Init sim logic...");
+            setupTabs();
+            // Add listeners
+            ui.promo.budgetSlider.addEventListener('input',(e)=>{ if(ui.promo.budgetDisplay) ui.promo.budgetDisplay.textContent=formatCurrency(e.target.value); storeDecisionsFromUI(); }); // ADDED storeDecisionsFromUI
+            ui.price.addEventListener('input', storeDecisionsFromUI); // ADDED listener
+            ui.dist.online.addEventListener('change', storeDecisionsFromUI); // ADDED listener
+            ui.dist.marketplaces.addEventListener('change', storeDecisionsFromUI); // ADDED listener
+            ui.dist.supermarkets.addEventListener('change', storeDecisionsFromUI); // ADDED listener
+            ui.dist.kirana.addEventListener('change', storeDecisionsFromUI); // ADDED listener
+
+            ui.survey.runBtn.addEventListener('click',runSurvey);
+            ui.survey.location.addEventListener('change',updateSurveyCostDisplay);
+            ui.mainActionBtn.addEventListener('click',mainAction);
+            ui.projection.launchBtn.addEventListener('click',launchProduct);
+            ui.proceedToProjectionBtn.addEventListener('click',enterProjectionPhase);
+            ui.questionnaire.checkEfficacyBtn.addEventListener('click',checkEfficacy);
+            ui.questionnaire.runSurveyBtn.addEventListener('click',runCustomSurvey);
+            ui.product.sliders.forEach(s=>s.addEventListener('input',updateProductSliders));
+            ui.promo.sliders.forEach(s=>s.addEventListener('input',()=>updatePromoSliders(s)));
+            
+            // --- NEW Save/Load Listeners ---
+            ui.saveGameBtn.addEventListener('click', saveGame);
+            ui.loadGameBtn.addEventListener('click', loadGame);
+            ui.loadGameWelcomeBtn.addEventListener('click', loadGame);
+
+
+            // --- Download Listeners ---
+            ui.downloadCertPngBtn.addEventListener('click', downloadCertificateAsPng);
+            ui.downloadReportTxtBtn.addEventListener('click', downloadReportAsText);
+
+
+            // Play Again Listeners
+            ui.playAgainBtn.addEventListener('click', () => location.reload());
+            ui.playAgainCertBtn.addEventListener('click', () => location.reload());
+
+            // Modal Toggle Listeners
+            ui.viewCertBtn.addEventListener('click', () => {
+                if (ui.reportModalBackdrop && ui.certificateModalBackdrop && ui.reportModal && ui.certificateModal) {
+                    // Hide Report
+                    ui.reportModal.classList.add('modal-hidden');
+                    ui.reportModal.classList.remove('modal-visible');
+                    ui.reportModalBackdrop.classList.add('backdrop-hidden');
+                    ui.reportModalBackdrop.classList.remove('backdrop-visible');
+                    
+                    // Show Certificate
+                    ui.certificateModal.classList.remove('modal-hidden');
+                    ui.certificateModal.classList.add('modal-visible');
+                    ui.certificateModalBackdrop.classList.remove('backdrop-hidden');
+                    ui.certificateModalBackdrop.classList.add('backdrop-visible');
+                }
+            });
+            ui.viewReportBtn.addEventListener('click', () => {
+                if (ui.reportModalBackdrop && ui.certificateModalBackdrop && ui.reportModal && ui.certificateModal) {
+                    // Hide Certificate
+                    ui.certificateModal.classList.add('modal-hidden');
+                    ui.certificateModal.classList.remove('modal-visible');
+                    ui.certificateModalBackdrop.classList.add('backdrop-hidden');
+                    ui.certificateModalBackdrop.classList.remove('backdrop-visible');
+
+                    // Show Report
+                    ui.reportModal.classList.remove('modal-hidden');
+                    ui.reportModal.classList.add('modal-visible');
+                    ui.reportModalBackdrop.classList.remove('backdrop-hidden');
+                    ui.reportModalBackdrop.classList.add('backdrop-visible');
+                }
+            });
+
+
+            return true; // Indicate success
+        }
+
+        function initializeSimulation() {
+             generateFamilyData(TOTAL_FAMILIES);
+             if (!initializeListeners()) return false;
+            
+             // Initial state UI updates
+             updateDashboard(); 
+             runSurvey(); 
+             switchTab('research'); 
+             updateSurveyCostDisplay(); 
+             ui.mainActionBtn.classList.add('hidden');
+             
+             // Show intro modal
+             showModal("Welcome to Q0: Research", `Welcome, PM ${state.playerName}. ₹1 Cr survey budget (₹800/resp). ₹5 Cr ops cash. Research, then click 'Proceed'.`);
+             return true;
+        }
+
+        // --- WELCOME SCREEN LOGIC ---
+        function handleWelcomeScreen() {
+             if (!ui.playerNameInput || !ui.nameError || !ui.welcomeModal || !ui.welcomeModalBackdrop || !ui.mainHeader) { console.error("Core welcome/header elements check failed."); return; }
+             const playerName = ui.playerNameInput.value.trim();
+             if (playerName.length === 0) { ui.nameError.textContent = "Please enter name."; return; }
+             if (playerName.length > 50) { ui.nameError.textContent = "Name too long."; return; }
+             state.playerName = playerName;
+             ui.mainHeader.innerHTML = `Project: <span class="text-blue-400">Bharat Launch</span> (PM: ${playerName})`;
+
+             ui.welcomeModal.classList.remove('modal-visible'); ui.welcomeModal.classList.add('modal-hidden');
+             setTimeout(() => { ui.welcomeModalBackdrop.classList.add('backdrop-hidden'); ui.welcomeModalBackdrop.classList.remove('backdrop-visible'); }, 300);
+
+             if (ui.certificateModalBackdrop && ui.certificateModal && ui.certPlayerName && ui.certFinalScore && ui.certMessage && ui.certificateActions) { setTimeout(() => { showCertificateModal(0, "", true); }, 350); }
+             else { console.warn("Certificate elements not found, skipping preview."); }
+
+             setTimeout(() => {
+                 if (ui.certificateModalBackdrop && ui.certificateModal) { hideCertificateModal(); }
+                 setTimeout(() => {
+                     if (ui.mainContainer) {
+                         ui.mainContainer.classList.remove('hidden');
+                         // Initialize simulation only AFTER main container is visible
+                         if (!initializeSimulation()) {
+                             console.error("initializeSimulation returned false, showing error modal.");
+                             if (ui.modalTitle && ui.modalText && ui.modalCloseBtn && ui.modalBackdrop && ui.modal && ui.modalContent) {
+                                 showModal("Initialization Error", "Failed to fully load simulation components after showing main container. Please refresh.", true);
+                             } else {
+                                 // NOTE: This is normally alert(), but we must follow the rule
+                                 console.error("Critical initialization error. Please refresh the page.");
+                             }
+                         }
+                     }
+                     else { console.error("mainContainer missing."); }
+                 }, 350);
+             }, 5350);
+        }
+
+        // Use DOMContentLoaded instead of window.onload
+        document.addEventListener('DOMContentLoaded', () => {
+             initializeUI(); // Initialize ALL UI elements FIRST
+            // Then add listeners for welcome screen
+            if(ui.startSimulationBtn) { ui.startSimulationBtn.addEventListener('click', handleWelcomeScreen); }
+            else { console.error("Start button missing."); }
+             if (ui.playerNameInput) { ui.playerNameInput.addEventListener('keypress', (e) => { if(ui.nameError) ui.nameError.textContent = ""; if (e.key === 'Enter') { handleWelcomeScreen(); } }); }
+             else { console.error("Player name input missing."); }
+             // Listener for load game on welcome screen
+             if (ui.loadGameWelcomeBtn) { ui.loadGameWelcomeBtn.addEventListener('click', loadGame); }
+        });
+
+    </script>
+</body>
+</html>

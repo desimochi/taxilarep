@@ -1,0 +1,264 @@
+"use client";
+
+import { useState, useEffect, useContext, use } from "react";
+import { authFetch } from "@/app/lib/fetchWithAuth";
+import Link from "next/link";
+import { ArrowLeft, CrossIcon, DownloadCloudIcon, DownloadIcon } from "lucide-react";
+import { GlobalContext } from "@/components/GlobalContext";
+import toast from "react-hot-toast";
+
+export default function ListSubject({enrollment_number}) {
+    const [term, setTerm] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [modal, setModal] = useState(false)
+    const [sub, setSub] = useState("")
+    const [termperiod, setTermPeriod] = useState("")
+    const [examPeriod, setExamPeriod] = useState("")
+    const [fname, setFname] = useState("")
+    const [sname, setSname] = useState("")
+    const [sr, setSr] = useState("")
+    const [gpa, setGpa] = useState(0);
+    const [cgpa, setCgpa] = useState(0);
+    const {state} =  useContext(GlobalContext)
+    const [display, setdisplay] = useState(true)
+    const [marks, setMarks] =useState("")
+    const [showresult, setshowResult] = useState(false)
+    const [error, setError] = useState("");
+    const [result, setResult] = useState([])
+    const [formData, setFormData] = useState({
+        type: "main",
+        term: "",
+        enrollment_number: "",
+    });
+
+    useEffect(() => {
+        async function fetchData() {
+            setLoading(true);
+            try {
+                // Fetch terms
+                const termResponse = await authFetch("terms-list");
+
+                // Check if the response is OK
+                if (!termResponse.ok) {
+                    throw new Error("Something went wrong");
+                }
+
+                const termData = await termResponse.json();
+                setTerm(termData.data);
+            } catch (error) {
+                setError(error.message);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        fetchData();
+    }, []);
+
+    // Handle form data changes
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({
+            ...formData,
+            [name]: value,
+        });
+    };
+
+    // Handle form submission
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError("");
+console.log({type: "main", term:formData.term, enrollment_number})
+        try {
+            // Send the form data to the backend
+            const response = await authFetch("student-result", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({type: "main", term:formData.term, enrollment_number}),
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.message);
+            }
+
+            // Handle successful form submission
+            
+            setResult(data.data)
+            setGpa(data.extra.till_datetime)
+            setCgpa(data.extra.cgpa)
+            setFname(data.extra?.father_name || 'NA')
+            setSname(data.extra?.student_name || 'NA')
+            setTermPeriod(data.extra.term_period)
+            setSr(data.extra?.sr_number)
+            setExamPeriod(data.extra.exam_period)
+            if(data.data.length>0){
+                setdisplay(false)
+                setshowResult(true)
+            }else{
+                setError("No Result Found")
+            }
+            
+        } catch (error) {
+            setError(error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+  async function hadleMarks(e) {
+  e.preventDefault();
+        setLoading(true);
+        setError("");
+        try {
+            // Send the form data to the backend
+            const response = await authFetch(`marks-inhance-using-taxila-currency/${sub.id}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({subject_id: sub.subject_id, student_id:state.user_id, inhanced_marks:marks}),
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.message);
+            }
+        } catch (err){
+            return toast.error(err.message || "Error enhancing marks");
+        }
+  }
+    
+    console.log(term)
+    return (
+        <> 
+       {modal && (
+  <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center mt-24">
+    <div className="bg-white rounded-xl shadow-lg p-6 max-w-sm w-full relative">
+        <div className="flex justify-end">
+            <CrossIcon onClick={()=>setModal(false)} className="rotate-45 " />
+        </div>
+        {error && <p className="text-red-600 text-sm mb-3">{error}</p>}
+        <div className="flex flex-col">
+        <label className="text-sm font-bold mb-2">Enter Marks </label>
+        <input type="number" value={marks} onChange={(e)=>setMarks(e.target.value)} className="border border-gray-200 p-2 rounded-md shadow"  />
+        </div>
+        <button onClick={(e)=>hadleMarks(e)} className="mt-4 bg-red-800 w-full rounded-md py-2 text-white">Submit</button>
+    </div>
+  </div>
+)}
+      {display && <div className=" py-8">
+            <div className="border border-gray-300 rounded-sm p-4 px-6">
+                <h3 className="text-center text-xl text-red-800 font-bold">Enhance Marks</h3>
+                <hr className="border border-b-2 mt-3 mb-4" />
+                <form onSubmit={handleSubmit}>
+                 
+
+                    <div className="mt-2">
+                        <label className="font-bold mb-2 mt-2">Term</label>
+                        <select
+                            name="term"
+                            className="border border-gray-300 w-full p-2"
+                            value={formData.term}
+                            onChange={handleChange}
+                            required
+                        >
+                            <option value="">Select Term</option>
+                            {term.map((item) => (
+                                <option key={item.id} value={item.id}>
+                                    {item.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+              
+
+                    <hr className="border border-b-2 mt-4 mb-4" />
+
+                    {error && <p className="text-red-600">{error}</p>}
+
+                    <button
+                        type="submit"
+                        className="bg-red-800 py-2 rounded-sm w-full text-white"
+                        disabled={loading}
+                    >
+                        {loading ? "Submitting..." : "See Result"}
+                    </button>
+                </form>
+            </div>
+        </div>}
+        {showresult && (
+  result.length > 0 ? (
+    <div className=" py-8">
+  
+      <div className="flex justify-between items-center mt-4 mb-2">
+      <div className="px-2 p-6">
+        <h2 className="text-2xl font-bold">Enhance Marks</h2>
+        <p className="text-sm text-gray-600">See the final exam result</p>
+      </div>
+      <div className="flex gap-2">
+  
+       
+        {/* <Link
+          href={`/student/result/download?term=${formData.term}&type=${formData.type}&enrollment_number=${formData.enrollment_number}`}
+          className="bg-red-800 text-white px-4 py-1 rounded-sm flex items-center gap-2"
+        >
+          <DownloadCloudIcon className="h-3 w-3" />
+          Download
+        </Link> */}
+      </div>
+      </div>
+      <hr className="border border-b-2 mb-6 " />
+      <table className="overflow-x-auto w-full text-center mt-2">
+                                    <thead className="min-w-full border border-red-200 rounded-lg">
+                                        <tr className="text-red-700 bg-red-50 font-normal text-sm border-b">
+                                            <th scope="col" className="px-6 py-3">S.no.</th>
+                                            <th scope="col" className="px-6 py-3">Subject</th>
+                                            <th scope="col" className="px-6 py-3">External Marks</th>
+                                            <th scope="col" className="px-6 py-3">Internal Marks</th>
+                                            <th scope="col" className="px-6 py-3">Total Marks</th>
+                                            <th scope="col" className="px-6 py-3">Realtive Total Marks</th>
+                                            <th scope="col" className="px-6 py-3">Pass/Fail</th>
+                                    {state.role_name === 'Student' &&         <th scope="col" className="px-6 py-3">Resit</th>}
+                                        </tr>
+                                    </thead>
+                                    {result.map((item, index)=>(
+                                        <tr key={index} className="border-b text-sm">
+                                            <td className="p-3">{index+1}</td>
+                                            <td className="p-2">{item.subject_name}</td>
+                                            <td className="p-2">{Math.floor(item.external_marks * 100) / 100}</td>
+                                            <td className="p-2">{Math.floor(item.internal_marks * 100) / 100}</td>
+                                            <td className="p-2">{Math.floor(item.total_marks * 100) / 100}</td>
+                                            <td className="p-2">{item.scaled_total_marks}</td>
+                                            {item.is_pass ? <td className="bg-green-50 text-green-800 px-4 py-1 rounded-sm">Pass</td> : <td><span className="bg-red-50 text-red-800 px-4 py-1 rounded-sm">Fail</span></td>}
+                                           
+                                            {state.role_name === 'Student' && (
+ (
+    <td>
+      <button onClick={() => (setModal(true), setSub(item))} disabled={
+   !item.is_pass ||
+  new Date(gpa) < new Date()
+} className="bg-red-800 text-red-50 px-4 py-1 disabled:bg-red-400 disabled:cursor-not-allowed rounded-sm text-center">
+        Enhance Marks 
+      </button>
+    </td>
+  )
+)}
+
+                                        </tr>
+                                    ))}
+                                    </table>
+    </div>
+  ) : (
+    <div className="px-16 py-8">
+      <p className="text-center text-gray-500">No results found.</p>
+    </div>
+  )
+)}
+
+        
+        </>
+
+    );
+}

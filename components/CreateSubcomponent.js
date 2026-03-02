@@ -2,12 +2,13 @@
 import { authFetch } from "@/app/lib/fetchWithAuth";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import BackButton from "./ui/Backbutton";
 
 export default function CreateSubComponent() {
     const [components, setComponents] = useState([]);
     const [marks, setMarks] = useState(0);
     const [selectedComponentId, setSelectedComponentId] = useState(null);
-    const [formSections, setFormSections] = useState([{ name: "", max_marks: "", description: "" }]);
+    const [formSections, setFormSections] = useState([{ name: "", max_marks: "", description: "", is_submission:"" }]);
     const router = useRouter();
     const searchParams = useSearchParams();
     const componentId = searchParams.get("componentId");
@@ -68,35 +69,38 @@ export default function CreateSubComponent() {
     const handleChange = (index, e) => {
         const { name, value } = e.target;
         const updatedSections = [...formSections];
-
-        if (name === "max_marks") {
-            const newMarks = parseInt(value) || 0;
-            const totalMarks = updatedSections.reduce((sum, sec, i) => sum + (i === index ? newMarks : sec.max_marks), 0);
-
-            // Ensure total subcomponent marks do not exceed parent component marks
-            if (totalMarks > marks || newMarks > marks) {
-                setError(true);
-                return;
-            } else {
-                setError(false);
-            }
-
-            updatedSections[index][name] = newMarks;
+       console.log(e.target.value)
+        if (name === "is_submission") {
+            updatedSections[index][name] = value === "true";
+          console.log(updatedSections)
+        } else if (name === "max_marks") {
+          const newMarks = parseInt(value) || 0;
+          const totalMarks = updatedSections.reduce((sum, sec, i) => sum + (i === index ? newMarks : sec.max_marks), 0);
+      
+          if (totalMarks > marks || newMarks > marks) {
+            setError(true);
+            return;
+          } else {
+            setError(false);
+          }
+      
+          updatedSections[index][name] = newMarks;
         } else {
-            updatedSections[index][name] = value;
+          updatedSections[index][name] = value;
         }
-
+      
         setFormSections(updatedSections);
-    };
-
+      };
+      
     const handleSubmit = async (e) => {
         e.preventDefault();
         const payload = {
-            subcomponent_data: formSections.map(({ name, max_marks, description }) => ({
+            subcomponent_data: formSections.map(({ name, max_marks, description, is_submission }) => ({
                 component: parseInt(selectedComponentId),
                 name,
                 max_marks: parseInt(max_marks) || 0,
-                description
+                description,
+                is_submission
             }))
         };
 
@@ -125,13 +129,14 @@ export default function CreateSubComponent() {
     };
 
     const addSection = () => {
-        setFormSections([...formSections, { name: "", max_marks: "", description: "" }]);
+        setFormSections([...formSections, { name: "", max_marks: "", description: "", is_submission:"" }]);
     };
 
     return (
-        <div className="flex justify-center items-center w-full rounded-sm py-12">
+        <div className="flex flex-col justify-center sm:items-center w-full rounded-sm px-2 py-12">
+            <BackButton/>
             <div className="border border-gray-300 shadow-sm hover:shadow-md rounded-sm">
-                <h4 className="px-60 py-4 bg-gradient-to-bl font-bold from-gray-700 to-stone-900 text-white">
+                <h4 className="sm:px-60 py-4 bg-gradient-to-bl font-bold from-gray-700 to-stone-900 text-white">
                     Create Sub Component
                 </h4>
                 <form className="py-5 px-5" onSubmit={handleSubmit}>
@@ -190,6 +195,16 @@ export default function CreateSubComponent() {
                                     />
                                 </div>
                             </div>
+                            <label className="font-bold">Online Submission Required</label>
+                            <select
+  name="is_submission"
+  onChange={(e) => handleChange(index, e)}
+  value={formData.is_submission}
+  className="bg-white border border-gray-300 mb-3 text-gray-700 text-sm rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+><option value="">Select A Value</option>
+  <option value="true">Yes</option>
+  <option value="false">No</option>
+</select>
                             <label className="font-bold">Description</label>
                             <input
                                 type="text"

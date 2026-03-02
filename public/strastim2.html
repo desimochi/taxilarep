@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>STRATSIM TBS: Apex Master Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&family=Playfair+Display:ital,wght@0,700;1,700&display=swap');
+        :root { --bg: #020617; --card: #0f172a; --blue: #3b82f6; --rose: #f43f5e; --emerald: #10b981; --amber: #f59e0b; --tbs-blue: #2563eb; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: #f1f5f9; -webkit-tap-highlight-color: transparent; overflow-x: hidden; font-size: 15px; }
+        
+        /* SYNCHRONIZED BRANDING */
+        .brand-text { font-weight: 900; font-style: italic; text-transform: uppercase; letter-spacing: -0.05em; }
+        .tbs-highlight { color: var(--tbs-blue); }
+
+        #sim-persistent-header { 
+            background: #0f172a; 
+            border-bottom: 1px solid #1e293b; 
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.2); 
+            padding: 8px;
+        }
+
+        .tab-active { border-bottom: 3px solid var(--blue); color: var(--blue); font-weight: 800; background: #1e293b; }
+        .glass-card { background: var(--card); border-radius: 12px; border: 1px solid #1e293b; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); padding: 14px; }
+        .btn-action { background: var(--blue); transition: all 0.2s; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; border: none; }
+        
+        #processing-overlay {
+            position: fixed; inset: 0; background: rgba(2, 6, 23, 0.99); z-index: 5000;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            backdrop-filter: blur(12px); padding: 20px;
+        }
+        .progress-bar { width: 0%; height: 100%; background: var(--blue); transition: width 4s linear; }
+        
+        input { background: #020617; border: 1px solid #334155; border-radius: 8px; padding: 10px; color: var(--blue); font-family: monospace; outline: none; width: 100%; font-size: 15px; }
+        
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .ai1-glow { border-left: 4px solid var(--rose); }
+        .ai2-glow { border-left: 4px solid var(--amber); }
+        .user-glow { border-left: 4px solid var(--blue); }
+        
+        #help-modal, #rejection-modal, #dashboard-info-modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 4500;
+            display: none; align-items: center; justify-content: center; padding: 20px;
+        }
+
+        .manual-text p { margin-bottom: 1.25rem; line-height: 1.7; text-align: justify; font-size: 15px; }
+        .manual-text h3 { color: var(--blue); font-weight: 900; text-transform: uppercase; margin-top: 2rem; margin-bottom: 1rem; font-size: 1.2rem; border-left: 5px solid var(--blue); padding-left: 1rem; }
+        
+        .report-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        .report-table th, .report-table td { border: 1px solid #1e293b; padding: 6px; text-align: center; }
+        
+        .chart-container { position: relative; height: 160px; width: 100%; }
+        @media (min-width: 1024px) { .chart-container { height: 190px; } }
+
+        #certificate-canvas { display: none; }
+        .metric-label { font-size: 10px; font-weight: 900; letter-spacing: 0.1em; color: #94a3b8; }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- GLOBAL BRAND HEADER -->
+    <div id="sim-persistent-header" class="hidden sticky top-0 z-[60]">
+        <div class="max-w-7xl mx-auto flex justify-between items-center px-4">
+            <div class="brand-text text-lg">STRATSIM <span class="tbs-highlight">TBS</span></div>
+            <div class="flex gap-3">
+                <button onclick="saveGameAPI()" class="bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black uppercase px-4 py-2 rounded-lg flex items-center gap-2">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+                    Save Progress
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="floating-help-btn" class="hidden fixed bottom-6 left-6 z-[1000] w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center cursor-pointer shadow-xl hover:scale-110 transition-all">
+        <span class="font-black text-white text-xl" onclick="toggleHelp()">?</span>
+    </div>
+
+    <!-- MODALS -->
+    <div id="help-modal" onclick="toggleHelp()">
+        <div class="glass-card max-w-lg w-full space-y-5" onclick="event.stopPropagation()">
+            <h2 class="text-xl font-black text-blue-400 uppercase tracking-widest text-center border-b border-blue-500/20 pb-3">Academic Rules</h2>
+            <div class="space-y-3 text-[13px] text-slate-300">
+                <p>• <strong class="text-rose-400">Ad Budget:</strong> Max 8% of total current liquid cash.</p>
+                <p>• <strong class="text-emerald-400">Market Share:</strong> Max 30% of segment demand potential.</p>
+                <p>• <strong class="text-white">Innovation:</strong> Launch R&D every 2nd quarter. Max 4-period stagnation.</p>
+                <p>• <strong class="text-amber-400">Survival:</strong> Zero or negative profit results in termination.</p>
+            </div>
+            <button onclick="toggleHelp()" class="w-full btn-action text-white py-3 rounded-xl text-sm">Close</button>
+        </div>
+    </div>
+
+    <div id="rejection-modal">
+        <div class="glass-card max-w-lg w-full space-y-5 border-rose-500/50 shadow-2xl">
+            <h2 class="text-2xl font-black text-rose-500 uppercase italic text-center">Board Rejection</h2>
+            <p class="text-xs text-slate-500 font-bold uppercase tracking-widest text-center">Regulatory breaches detected by the Auditor</p>
+            <ul id="rejection-list" class="space-y-2 text-sm text-slate-200 list-disc list-inside bg-rose-950/20 p-4 rounded-xl border border-rose-500/10"></ul>
+            <button onclick="closeRejection()" class="w-full btn-action bg-rose-600 hover:bg-rose-700 py-3 rounded-xl text-sm font-black uppercase">Revise Strategy</button>
+        </div>
+    </div>
+
+    <div id="dashboard-info-modal" onclick="toggleDashboardInfo()">
+        <div class="glass-card max-w-2xl w-full space-y-5 overflow-y-auto max-h-[85vh]" onclick="event.stopPropagation()">
+            <h2 class="text-2xl font-black text-blue-400 uppercase italic border-b border-blue-500/20 pb-3">Market Hub Intelligence</h2>
+            <div class="space-y-5 text-[14px] text-slate-300 leading-relaxed">
+                <p><strong>1. Demand Forecast:</strong> Displays total available units. Note the 30% Rule—you cannot sell more than 30% of these values regardless of utility.</p>
+                <p><strong>2. Performance Trends:</strong> Track SPI deltas. A consistent lead is required to win against BetaCorp and GammaCorp.</p>
+                <p><strong>3. Surveillance:</strong> Monitor AI pricing and production. If AI inventory builds up, expect a price war next period.</p>
+            </div>
+            <button onclick="toggleDashboardInfo()" class="w-full btn-action text-white py-4 rounded-xl font-black uppercase text-xs">Back to Hub</button>
+        </div>
+    </div>
+
+    <div id="processing-overlay">
+        <div class="text-center w-full max-w-sm">
+            <h2 class="brand-text text-4xl text-white">STRATSIM <span class="tbs-highlight">TBS</span></h2>
+            <p class="text-[11px] text-slate-500 uppercase font-bold tracking-widest mt-4">Auditing Financial Integrity...</p>
+            <div class="w-full h-1.5 bg-slate-800 mt-6 rounded-full overflow-hidden">
+                <div id="loading-bar" class="progress-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- WELCOME SCREEN -->
+    <section id="screen-welcome" class="fixed inset-0 z-[100] welcome-bg flex items-center justify-center p-4 text-center">
+        <div class="max-w-md w-full">
+            <h3 class="text-blue-500 font-black tracking-[0.3em] uppercase text-[11px] mb-2">Executive Simulation</h3>
+            <h1 class="brand-text text-6xl text-white mb-6">STRATSIM <span class="tbs-highlight">TBS</span></h1>
+            
+            <!-- RESUME PANEL -->
+            <div id="resume-panel" class="hidden mb-6 p-4 bg-blue-600/20 border border-blue-500/40 rounded-xl animate-pulse">
+                <p class="text-blue-400 font-black text-[10px] uppercase mb-2">Existing Session Found</p>
+                <button onclick="loadGameAPI()" class="w-full py-3 bg-blue-600 text-white rounded-lg text-xs font-black uppercase tracking-wider shadow-lg">Resume Previous Game</button>
+            </div>
+
+            <div class="mb-8 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl shadow-2xl">
+                <p class="text-emerald-400 font-black tracking-widest uppercase text-xs">WIN: IF YOUR SPI IS BETTER THAN COMPETITORS</p>
+            </div>
+            <div class="space-y-4 text-left glass-card p-8 border-slate-700">
+                <div><label class="metric-label block mb-2 uppercase">Executive Name</label><input type="text" id="input-user-name" placeholder="Full Name"></div>
+                <div><label class="metric-label block mb-2 uppercase">Firm Identifier</label><input type="text" id="input-firm-name" placeholder="Company ID"></div>
+                <div id="welcome-error" class="hidden text-rose-500 text-xs font-bold text-center mt-2">Required fields missing.</div>
+                <button onclick="goToManual()" class="w-full btn-action text-white py-5 rounded-2xl mt-4 text-sm">Initialize Simulation</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- MANUAL SCREEN -->
+    <section id="screen-manual" class="hidden fixed inset-0 z-[90] bg-[#020617] overflow-y-auto p-4 md:p-12">
+        <div class="max-w-4xl mx-auto pb-24">
+            <header class="flex flex-col md:flex-row justify-between items-center mb-10 border-b border-slate-800 pb-6 gap-6">
+                <div><h2 class="brand-text text-4xl text-white">STRATEGIC <span class="tbs-highlight">MANUAL</span></h2><p class="text-slate-500 text-[10px] font-bold uppercase tracking-widest">Taxila Business School • Master Class Suite</p></div>
+                <button onclick="startGame()" class="btn-action text-white px-10 py-4 rounded-xl text-xs uppercase font-black">Accept Mission</button>
+            </header>
+            <div class="manual-text text-slate-400">
+                <h3>1. Pedagogical Intent & Triple-Threat Economics</h3>
+                <p>The StratSim TBS simulation represents a pinnacle of management education at Taxila Business School. It is designed to immerse the executive student in a high-fidelity mathematical model where market share is not earned through raw spending, but through the calibrated alignment of technical utility and price elasticity. Participants are forced to move beyond static textbook definitions of the 4Ps to experience the "Friction of Competitive Warfare." You are now competing against two high-intelligence AI firms, BetaCorp and GammaCorp, both designed to maintain absolute mathematical dominance.</p>
+                <p><strong>A. Dynamic Positioning Science:</strong> Executives will learn that consumer demand is a dynamic function of "Spec Distance." Using the R&D Lab, you must predict the drift of segment "Ideal Points" and launch products that hit these points with precision. You will internalize that yesterday's spec-leader is today's legacy burden. Technical utility decays at a rate of 15% per annum, requiring constant engineering reinvestment.</p>
+                <p><strong>B. Macro-Environmental Survivability:</strong> The world of Taxila is volatile. Stochastically generated shocks—such as Trade Embargos (+40% COGS) and Deep Recessions (-45% Demand)—will test your firm's break-even resilience. Learning to maintain positive net contribution during a liquidity crisis is a prerequisite for graduating from this simulation. One macro-economic event is guaranteed every quarter to ensure constant strategic pivoting.</p>
+                <p><strong>C. Capital Efficiency & The Inventory Sinkhole:</strong> With an initial liquid cash cap of $100,000, every dollar is a finite resource. You will learn that excess inventory is not just "unsold goods"—it is "Dead Capital" that incurs an 18% quarterly penalty. Mastering the logistical alignment between production and the 30% demand ceiling is the difference between an Apex SPI and corporate termination. Overproduction is the most common cause of corporate bankruptcy in the simulation.</p>
+                <h3>2. Regulatory Guardrails & Antitrust Compliance</h3>
+                <p>To ensure a rigorous and fair market simulation, the Board has implemented mandatory regulatory guardrails. If your strategic plan violates these rules, the "Validation Auditor" will reject your turn submission and require a complete revision of your numbers:</p>
+                <p><strong>I. The 8% Advertising Budget Cap:</strong> In the interest of sustainable growth and budget discipline, the marketing spend for any single brand is strictly capped at 8% of the firm's total quarterly liquidity. This mandate forces executives to prioritize product innovation (R&D) over raw media noise.</p>
+                <p><strong>II. The 30% Market Share Ceiling:</strong> Under strict antitrust legislation, no player brand is permitted to fulfill more than 30% of total segment demand. If your product's utility is high enough to capture 50%, the system will forcibly cap your sales at 30%. This rule necessitates a diversified portfolio strategy—executives must target multiple segments to grow total firm revenue.</p>
+                <p><strong>III. Price Regulatory Oversight:</strong> Retail prices are capped at $1,500 or 5x the Unit Manufacturing Cost. This regulatory ceiling prevents predatory gouging and ensures that competition remains focused on technical innovation and efficiency.</p>
+                <h3>3. The Innovation Mandate: Continuous R&D</h3>
+                <p>Stagnation is a terminable offense. The Taxila economy is defined by rapid technical obsolescence. To simulate this pressure, the following R&D rules are in effect:</p>
+                <p><strong>Quarterly R&D Sequence:</strong> Executives are required to launch at least one new R&D project every 2nd quarter (Q2, Q4, etc.). If you attempt to advance these periods without a project, the turn will be blocked. Furthermore, should a firm fail to initiate any R&D project for four consecutive quarters, the CEO is immediately removed for "Strategic Inertia," resulting in an instant Game Over.</p>
+                <p><strong>Product Optimization:</strong> Each R&D project costs $5,000. When launching, you must refer to the "Consumer Ideal Points" table. Target specs that are at least 2-3 points ahead of current ideals to account for the lead-time between project launch and market availability.</p>
+                <h3>4. Performance Graduation & Post-Sim Audit</h3>
+                <p>Quarter 12 marks the end of your executive contract. Upon completion, the system executes a final forensic audit. You will be required to download your Executive Decision Log (.csv) and answer five justification questions regarding your pricing logic, inventory management, and R&D sequence. Only after providing this academic reflection will the system generate your verifiable Certificate of Strategic Excellence, signed by Dean Prof. Rajat Bohra.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- MAIN APP -->
+    <div id="app" class="hidden max-w-7xl mx-auto p-2 pb-12">
+        <header class="grid grid-cols-2 lg:grid-cols-5 gap-2 mb-4">
+            <div class="glass-card !py-3"><h1 id="display-firm-name" class="text-[10px] font-black text-blue-400 uppercase truncate">FIRM</h1><p class="text-[8px] text-slate-500 font-bold">PERIOD <span id="display-period">1</span>/12</p></div>
+            <div class="glass-card !py-3 user-glow"><p class="metric-label uppercase">USER SPI</p><p id="user-spi" class="text-xl font-black text-white">1,000</p></div>
+            <div class="glass-card !py-3 ai1-glow"><p class="metric-label uppercase">BETA SPI</p><p id="ai-spi" class="text-xl font-black text-white">1,000</p></div>
+            <div class="glass-card !py-3 ai2-glow"><p class="metric-label uppercase">GAMMA SPI</p><p id="ai2-spi" class="text-xl font-black text-white">1,000</p></div>
+            <div class="glass-card !py-3 border-t-2 border-emerald-500"><p class="metric-label uppercase">CASH</p><p id="user-budget" class="text-xl font-black text-emerald-400">$0</p></div>
+        </header>
+
+        <div id="event-box" class="hidden mb-4 rounded-xl p-3 border flex items-center gap-6 shadow-xl">
+            <div id="event-icon" class="text-3xl"></div>
+            <div class="flex-1"><h2 id="event-title" class="font-black uppercase text-sm text-white"></h2><p id="event-desc" class="text-[11px] text-slate-300"></p></div>
+        </div>
+
+        <nav class="flex space-x-1 mb-4 bg-slate-900 p-1 rounded-xl border border-slate-800 sticky top-14 z-50">
+            <button onclick="switchTab('dashboard')" id="btn-dashboard" class="tab-btn flex-1 py-3 text-[11px] font-black rounded-lg tab-active uppercase">Market Hub</button>
+            <button onclick="switchTab('marketing')" id="btn-marketing" class="tab-btn flex-1 py-3 text-[11px] font-black rounded-lg text-slate-500 uppercase">Decisions</button>
+            <button onclick="switchTab('research')" id="btn-research" class="tab-btn flex-1 py-3 text-[11px] font-black rounded-lg text-slate-500 uppercase">R&D Lab</button>
+            <button onclick="switchTab('financials')" id="btn-financials" class="tab-btn flex-1 py-3 text-[11px] font-black rounded-lg text-slate-500 uppercase">Audit</button>
+            <button onclick="switchTab('history')" id="btn-history" class="tab-btn flex-1 py-3 text-[11px] font-black rounded-lg text-slate-500 uppercase">History</button>
+        </nav>
+
+        <main>
+            <!-- MARKET HUB -->
+            <section id="view-dashboard" class="space-y-4">
+                <div class="flex flex-col md:flex-row justify-between items-center bg-blue-500/5 p-4 rounded-xl border border-blue-500/10 gap-4">
+                    <div class="text-left text-blue-400 font-black brand-text">STRATEGIC <span class="tbs-highlight">MONITORING</span></div>
+                    <button onclick="toggleDashboardInfo()" class="px-6 py-2 bg-blue-600 text-white rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-blue-700">Understand Dashboard</button>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                    <div class="lg:col-span-3 space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="glass-card border-t-2 border-emerald-500">
+                                <h3 class="font-black text-emerald-400 uppercase text-[9px] mb-3 tracking-widest flex justify-between">Forecast Segment Potentials <span class="text-white opacity-30 text-[8px]">(30% CAP)</span></h3>
+                                <div id="demand-card-container" class="grid grid-cols-4 gap-3"></div>
+                            </div>
+                            <div class="glass-card border-t-2 border-blue-500">
+                                <h3 class="font-black text-blue-400 uppercase text-[9px] mb-3 tracking-widest">Innovation Velocity (Cumulative)</h3>
+                                <div class="grid grid-cols-3 gap-3 text-center">
+                                    <div><p class="metric-label uppercase">USER</p><p id="user-launches" class="text-3xl font-black text-blue-400 font-mono">0</p></div>
+                                    <div class="border-x border-slate-800"><p class="metric-label uppercase">BETA</p><p id="ai-launches" class="text-3xl font-black text-rose-500 font-mono">0</p></div>
+                                    <div><p class="metric-label uppercase">GAMMA</p><p id="ai2-launches" class="text-3xl font-black text-amber-500 font-mono">0</p></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="glass-card p-2"><div class="chart-container"><canvas id="chart-spi"></canvas></div></div>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="glass-card p-2"><div class="chart-container !h-[160px]"><canvas id="chart-share"></canvas></div></div>
+                        <div class="glass-card ai1-glow !bg-slate-900/50">
+                            <h3 class="font-black text-rose-500 uppercase text-[9px] mb-3 border-b border-rose-500/10 pb-2">Competitor Surveillance</h3>
+                            <div id="ai-decision-feed" class="space-y-1 text-[10px] font-mono text-slate-400 max-h-[140px] overflow-y-auto"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MARKETING DECISIONS -->
+            <section id="view-marketing" class="hidden text-left">
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                    <div class="lg:col-span-3 space-y-4" id="user-brand-list"></div>
+                    <div class="space-y-4">
+                        <div class="glass-card bg-slate-900 text-center p-6">
+                            <h4 class="font-black text-slate-500 uppercase text-[10px] mb-4">Board Submission</h4>
+                            <div class="space-y-3 text-[12px] mb-6">
+                                <div class="flex justify-between border-b border-white/5 pb-2"><span>Ad Limit (8%):</span><span id="ad-limit-val" class="text-blue-400 font-mono">$0</span></div>
+                                <div class="flex justify-between font-black text-lg pt-2"><span>Total Commit:</span><span id="total-ad-cost" class="text-rose-400 font-mono">$0</span></div>
+                            </div>
+                            <button onclick="initiateTurnover()" class="w-full btn-action text-white py-5 rounded-2xl font-black text-sm uppercase">Submit Turn</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- R&D LAB -->
+            <section id="view-research" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-4 text-left">
+                <div class="lg:col-span-2 glass-card">
+                    <h3 class="font-black text-slate-500 uppercase text-[10px] mb-3 tracking-widest">Market Research: Segment Ideal Drift</h3>
+                    <div class="overflow-x-auto"><table class="report-table text-white"><thead class="bg-slate-800 uppercase font-black"><tr><th>Segment</th><th>Ideal Pwr</th><th>Ideal Dgn</th><th>Ideal Price</th><th>Trend</th></tr></thead><tbody id="research-table-body"></tbody></table></div>
+                </div>
+                <div class="glass-card border-blue-500/20">
+                    <h4 class="font-black mb-4 text-[11px] uppercase text-blue-400">R&D Lab: Authorization</h4>
+                    <div class="space-y-4"><input id="rd-name" type="text" placeholder="Brand Code (e.g. OMEGA)"><div class="grid grid-cols-2 gap-3"><div class="space-y-1"><label class="metric-label uppercase">Power</label><input id="rd-power" type="number" value="75"></div><div class="space-y-1"><label class="metric-label uppercase">Design</label><input id="rd-design" type="number" value="75"></div></div><button onclick="launchRD()" class="w-full btn-action text-white py-4 rounded-xl text-xs font-black uppercase">Authorize $5,000</button></div>
+                </div>
+            </section>
+
+            <!-- FINANCIAL AUDIT -->
+            <section id="view-financials" class="hidden space-y-6 text-left">
+                <div class="glass-card border-t-4 border-blue-500"><h4 class="text-blue-400 mb-4 text-[11px] font-black uppercase">Advanced Financial Audit</h4><div id="user-pl" class="grid grid-cols-2 md:grid-cols-4 gap-6"></div></div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="glass-card border-t-2 border-rose-600"><h4 class="text-rose-500 mb-4 text-[10px] font-black uppercase">BetaCorp Intel</h4><div id="ai-pl"></div></div>
+                    <div class="glass-card border-t-2 border-amber-600"><h4 class="text-amber-500 mb-4 text-[10px] font-black uppercase">GammaCorp Intel</h4><div id="ai2-pl"></div></div>
+                </div>
+            </section>
+
+            <!-- HISTORY -->
+            <section id="view-history" class="hidden text-left">
+                <div class="glass-card"><h3 class="text-blue-400 font-black uppercase text-[11px] mb-4">Strategic Execution Log</h3><div class="overflow-x-auto"><table class="report-table text-white"><thead><tr class="bg-slate-800 uppercase font-black"><th>Q</th><th>Macro</th><th>Brand</th><th>Price</th><th>Ads</th><th>Prod</th><th>Profit</th></tr></thead><tbody id="live-history-body"></tbody></table></div></div>
+            </section>
+        </main>
+    </div>
+
+    <!-- TERMINATION / GRADUATION -->
+    <section id="screen-terminated" class="hidden fixed inset-0 z-[200] bg-black flex items-center justify-center p-6 text-center">
+        <div class="max-w-md w-full space-y-6">
+            <h1 class="brand-text text-6xl text-rose-600">TERMINATED</h1>
+            <div class="glass-card border-rose-900">
+                <p id="term-reason" class="text-white text-sm mb-4 italic"></p>
+                <div class="bg-rose-950/30 p-4 rounded mb-6">
+                    <p class="metric-label text-rose-500 uppercase">Final Net Result</p>
+                    <p id="term-loss-val" class="text-3xl font-mono text-white">$0</p>
+                </div>
+                <button onclick="location.reload()" class="w-full btn-action bg-white text-black py-4 rounded-xl font-black uppercase text-xs">Re-Apply</button>
+            </div>
+        </div>
+    </section>
+
+    <section id="screen-graduation" class="hidden fixed inset-0 z-[150] bg-slate-950 p-4 overflow-y-auto">
+        <div class="max-w-4xl mx-auto space-y-10 py-12 text-center">
+            <h1 class="brand-text text-6xl text-emerald-500">GRADUATED</h1>
+            <div class="glass-card p-10 border-emerald-500/30">
+                <h2 id="grad-user-name" class="text-5xl text-white font-black mb-8 uppercase">NAME</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10 border-b border-white/5 pb-10">
+                    <div><p class="metric-label">FINAL USER SPI</p><p id="grad-spi" class="text-4xl font-mono font-bold text-blue-400">0</p></div>
+                    <div><p class="metric-label">LIFETIME NET</p><p id="grad-profit" class="text-4xl font-mono font-bold text-emerald-400">$0</p></div>
+                    <div><p class="metric-label">STATUS</p><p id="grad-rank" class="text-4xl font-mono font-bold text-rose-400">QUALIFIED</p></div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <button onclick="downloadCertificate()" class="btn-action text-white py-5 rounded-2xl text-xs font-black uppercase">Download Cert</button>
+                    <button onclick="location.reload()" class="bg-slate-800 text-white py-5 rounded-2xl text-xs font-black uppercase">Restart</button>
+                    <button onclick="shareLinkedIn()" class="bg-[#0077b5] text-white py-5 rounded-2xl text-xs font-black uppercase">LinkedIn</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <canvas id="certificate-canvas" width="1200" height="800"></canvas>
+    <div id="toast-container" class="fixed bottom-4 right-4 left-4 md:left-auto z-[3000] pointer-events-none space-y-2"></div>
+
+    <script>
+        // --- API CONFIGURATION (User provided endpoints) ---
+        const SAVE_ENDPOINT = "https://erp.taxila.in/api/game/strastim"; // Swap with your actual URL
+        const LOAD_ENDPOINT = "https://erp.taxila.in/api/game/strastim"; // Swap with your actual URL
+function getUserId() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get("userId") || "guest";
+    }
+        // --- DATA ENGINE & CONFIG ---
+        const DATASETS = Array.from({length: 20}, () => ({
+            size: 35000 + (Math.random() * 20000),
+            weights: [0.25, 0.40, 0.20, 0.15].map(w => w + (Math.random() * 0.1 - 0.05)),
+            budget: 85000 + (Math.random() * 14000), 
+            aP: 55 + (Math.random() * 30), aD: 55 + (Math.random() * 30)
+        }));
+
+        const MACRO_EVENTS = [
+            { id: 'RECESSION', title: 'Deep Recession', desc: 'Demand falls 45%. Price sensitivity extreme.', icon: '📉', demandMod: 0.55, saverShift: 1.9, innovatorShift: 0.15, color: 'bg-rose-950 border-rose-500' },
+            { id: 'TARIFFS', title: 'Trade Embargo', desc: 'Manufacturing costs +40% industry-wide.', icon: '🚢', costMod: 1.40, color: 'bg-amber-950 border-amber-500' },
+            { id: 'INTEREST_RATES', title: 'Monetary Crisis', desc: 'Holding costs 6x higher. Clear inventory!', icon: '🏛️', invHoldMod: 6.0, color: 'bg-blue-950 border-blue-500' }
+        ];
+
+        const SEGMENTS = [
+            { id:0, name:'Prof', iPower:85, iDesign:70, iPrice:480, growth:1.05 },
+            { id:1, name:'Savr', iPower:30, iDesign:30, iPrice:160, growth:1.02 },
+            { id:2, name:'Inov', iPower:95, iDesign:95, iPrice:650, growth:1.15 },
+            { id:3, name:'Achv', iPower:70, iDesign:85, iPrice:380, growth:1.08 }
+        ];
+
+        let state = {
+            un:"", fn:"", period:1, marketSize:0, activeEvent: null, isUserLeading: false,
+            lastRndPeriod: 0, rndLaunchedThisPeriod: false,
+            user:{ budget:0, spi:1000, spiHistory:[1000], brands:[], cumulative: { rev: 0, cogs: 0, mkt: 0, hold: 0, profit: 0 }, lastRev:0, lastProfit:0, lastCogs:0, lastMkt:0, lastHold:0, lastInvVal:0 },
+            ai:{ name: 'BetaCorp', budget:12000, spi:1000, spiHistory:[1000], brands:[], cumulative: { rev: 0, profit: 0 }, lastRev:0, lastProfit:0, lastCogs:0 },
+            ai2:{ name: 'GammaCorp', budget:12000, spi:1000, spiHistory:[1000], brands:[], cumulative: { rev: 0, profit: 0 }, lastRev:0, lastProfit:0, lastCogs:0 },
+            decisionHistory: [],
+            marketSegments: JSON.parse(JSON.stringify(SEGMENTS)) // Captured state of segments
+        };
+
+        let audioCtx, charts={};
+
+        const safeSet = (id, val, isHTML = true) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (isHTML) el.innerHTML = val; else el.innerText = val;
+        };
+
+        function toggleHelp() { document.getElementById('help-modal').style.display = (document.getElementById('help-modal').style.display === 'flex' ? 'none' : 'flex'); }
+        function toggleDashboardInfo() { document.getElementById('dashboard-info-modal').style.display = (document.getElementById('dashboard-info-modal').style.display === 'flex' ? 'none' : 'flex'); }
+        function closeRejection() { document.getElementById('rejection-modal').style.display = 'none'; }
+        
+        function goToManual() {
+            state.un = document.getElementById('input-user-name').value.trim();
+            state.fn = document.getElementById('input-firm-name').value.trim();
+            if(!state.un || !state.fn) return document.getElementById('welcome-error').classList.remove('hidden');
+            document.getElementById('screen-welcome').classList.add('hidden');
+            document.getElementById('screen-manual').classList.remove('hidden');
+        }
+
+        function startGame() {
+            // Only initialize if it's a fresh game, loading skips this
+            if (state.period === 1 && state.user.brands.length === 0) {
+                const ds = DATASETS[Math.floor(Math.random()*DATASETS.length)];
+                state.marketSize = ds.size; state.user.budget = ds.budget;
+                state.marketSegments.forEach((s,i) => s.weight = ds.weights[i]);
+                state.user.brands = [{ name: state.fn.toUpperCase().substring(0, 8), price:null, adv:null, prod:null, power:ds.aP, design:ds.aD, cost:145, inv:0, sold:0, rev:0, awareness:0.3 }];
+                state.ai.brands = [{ name:'BETA', price:425, adv:1600, prod:8000, power:ds.aP, design:ds.aD, cost:145, inv:0, sold:0, rev:0, awareness:0.35 }];
+                state.ai2.brands = [{ name:'GAMMA', price:430, adv:1200, prod:8500, power:ds.aP-5, design:ds.aD-5, cost:130, inv:0, sold:0, rev:0, awareness:0.30 }];
+                state.activeEvent = MACRO_EVENTS[Math.floor(Math.random()*MACRO_EVENTS.length)];
+            }
+            
+            document.getElementById('app').classList.remove('hidden');
+            document.getElementById('sim-persistent-header').classList.remove('hidden');
+            document.getElementById('screen-manual').classList.add('hidden');
+            document.getElementById('floating-help-btn').classList.remove('hidden');
+            
+            // Sync Segment constants to state if loaded
+            render(); 
+            if (state.period === 1) runAIBrain();
+        }
+
+        // --- SAVE / LOAD API LOGIC ---
+        
+        async function saveGameAPI() {
+            const userId = getUserId()
+            const saveId = `${state.un}_${state.fn}`.replace(/\s+/g, '_');
+            const payload = {
+                id: saveId,
+                timestamp: new Date().toISOString(),
+                state: state
+            };
+
+            notify("Saving Progress...", "success");
+
+            try {
+                const response = await fetch(SAVE_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                     body: JSON.stringify({userId:userId, gameState:payload}),
+                });
+                
+                if (response.ok) {
+                    localStorage.setItem('tbs_last_save_id', saveId);
+                    notify("Cloud Sync Complete", "success");
+                } else {
+                    throw new Error("API Save Error");
+                }
+            } catch (err) {
+                console.error(err);
+                // Fallback to local storage if API fails
+                localStorage.setItem('tbs_backup_save', JSON.stringify(payload));
+                notify("Saved Locally (API Unavailable)", "error");
+            }
+        }
+
+        async function loadGameAPI() {
+            const userId = getUserId()
+            const saveId = localStorage.getItem('tbs_last_save_id');
+            if (!userId) return;
+
+            notify("Fetching Executive Data...", "success");
+
+            try {
+                const response = await fetch(`${LOAD_ENDPOINT}?userId=${userId}`);
+                if (!response.ok) throw new Error("Load failed");
+                
+                const data = await response.json();
+                restoreGameState(data.gameState.state);
+                notify("Strategic Data Restored", "success");
+            } catch (err) {
+                console.error(err);
+                const backup = localStorage.getItem('tbs_backup_save');
+                if (backup) {
+                    restoreGameState(JSON.parse(backup).state);
+                    notify("Restored from Local Backup", "success");
+                } else {
+                    notify("Failed to load session", "error");
+                }
+            }
+        }
+
+        function restoreGameState(loadedState) {
+            state = loadedState;
+            // Re-render UI
+            document.getElementById('screen-welcome').classList.add('hidden');
+            document.getElementById('app').classList.remove('hidden');
+            document.getElementById('sim-persistent-header').classList.remove('hidden');
+            document.getElementById('floating-help-btn').classList.remove('hidden');
+            
+            // Rebuild charts from history
+            render();
+            updateCharts();
+        }
+
+        function checkResumeStatus() {
+            const lastId = localStorage.getItem('tbs_last_save_id') || localStorage.getItem('tbs_backup_save');
+            if (lastId) {
+                document.getElementById('resume-panel').classList.remove('hidden');
+            }
+        }
+
+        // --- REST OF ENGINE ---
+
+        function playProcSound(ms) {
+            if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const g = audioCtx.createGain(); g.gain.setValueAtTime(0.04, audioCtx.currentTime); g.connect(audioCtx.destination);
+            const o = audioCtx.createOscillator(); o.type='sawtooth'; o.frequency.setValueAtTime(50, audioCtx.currentTime);
+            const f = audioCtx.createBiquadFilter(); f.type='lowpass'; f.frequency.setValueAtTime(300, audioCtx.currentTime);
+            o.connect(f); f.connect(g); o.start();
+            setTimeout(() => o.stop(), ms);
+        }
+
+        function runAIBrain() {
+            const ev = state.activeEvent;
+            const processAI = (f, aggressive) => {
+                const totalSize = state.marketSize * (ev?.demandMod || 1.0);
+                f.brands.forEach(b => {
+                    const c = b.cost * (ev?.costMod || 1.0);
+                    const mp = (c / (ev?.revenueMod || 1.0)) / (1 - (aggressive ? 0.45 : 0.35));
+                    b.prod = Math.max(0, Math.min(Math.round(totalSize * 0.25 * 0.50) - b.inv, ev?.supplyCap || 999999));
+                    b.price = Math.max(mp, 450);
+                    b.adv = Math.min(f.budget * 0.15, 2500);
+                });
+                const brandId = f.name.substring(0,1) + (f.brands.length + 1);
+                f.budget = Math.max(0, f.budget - 5000);
+                f.brands.push({ name: brandId, power: 80+Math.random()*15, design: 80+Math.random()*15, price: 550, adv: 2500, prod: 4000, cost: 165, inv: 0, sold: 0, rev: 0, awareness: 0.1 });
+            };
+            processAI(state.ai, true);
+            processAI(state.ai2, false);
+        }
+
+        function initiateTurnover() {
+            const errors = [];
+            const adLimit = state.user.budget * 0.08;
+            let totalCommit = 0;
+
+            if (state.period % 2 === 0 && !state.rndLaunchedThisPeriod) errors.push("Innovation Mandate: New R&D project required this quarter.");
+            if (state.period - state.lastRndPeriod >= 4) return handleTermination("Strategic Stagnation: CEO revoked.");
+
+            for(let b of state.user.brands) {
+                const maxPrice = Math.min(1500, b.cost * 5);
+                if(b.price === null || b.adv === null || b.prod === null) errors.push(`${b.name}: Null input fields detected.`);
+                else {
+                    if(b.price > maxPrice) errors.push(`${b.name}: Price violates board ceiling ($${Math.round(maxPrice)}).`);
+                    if(b.adv > adLimit) errors.push(`${b.name}: Advertising exceeds 8% liquidity cap ($${Math.round(adLimit)}).`);
+                    totalCommit += b.adv + (b.prod * b.cost);
+                }
+            }
+            if (totalCommit > state.user.budget) errors.push(`Liquidity Breach: Total commitment exceeds Cash.`);
+
+            if (errors.length > 0) {
+                const list = document.getElementById('rejection-list');
+                if (list) list.innerHTML = errors.map(e => `<li>${e}</li>`).join('');
+                document.getElementById('rejection-modal').style.display = 'flex';
+                return;
+            }
+
+            const overlay = document.getElementById('processing-overlay');
+            overlay.style.display = 'flex'; document.getElementById('loading-bar').style.width = '100%';
+            playProcSound(4000);
+            setTimeout(() => {
+                const decs = state.user.brands.map(b => ({ n: b.name, pr: b.price, ad: b.adv, prd: b.prod }));
+                executeLogic(); 
+                overlay.style.display = 'none';
+                decs.forEach(d => {
+                    state.decisionHistory.push({ p: state.period - 1, ev: state.activeEvent?.id || "Normal", n: d.n, pr: d.pr, ad: d.ad, prd: d.prd, profit: state.user.lastProfit });
+                });
+                if(state.user.lastProfit <= 0) return handleTermination("Fiscal Deficit: Net Contribution failed to exceed $0.");
+                if (state.period > 12) return handleGraduation();
+                render(); switchTab('dashboard'); window.scrollTo(0,0);
+            }, 4000);
+        }
+
+        function executeLogic() {
+            const ev = state.activeEvent;
+            const pts = [...state.user.brands.map(b=>({...b, owner:'user'})), ...state.ai.brands.map(b=>({...b, owner:'ai'})), ...state.ai2.brands.map(b=>({...b, owner:'ai2'}))];
+            pts.forEach(b => { b.inv = Math.round(b.inv * 0.8); b.pSold = 0; b.pRev = 0; });
+            const mSize = state.marketSize * (ev?.demandMod || 1.0);
+
+            state.marketSegments.forEach(seg => {
+                let w = seg.weight; if(ev?.id==='RECESSION') { if(seg.id===1) w*=ev.saverShift; if(seg.id===2) w*=ev.innovatorShift; }
+                const demand = mSize * w;
+                const utils = pts.map(b => {
+                    const dP = Math.abs(b.power - seg.iPower)/100, dPr = Math.max(0, (b.price - seg.iPrice)/seg.iPrice);
+                    return Math.exp(-(dP * 5.0) -(dPr * 14.0) +(Math.log(b.awareness + 0.05) * 1.6));
+                });
+                const sU = utils.reduce((s,u)=>s+u,0);
+                pts.forEach((b,i)=>{
+                    const sh = sU > 0 ? utils[i]/sU : 0;
+                    const maxSh = (b.owner === 'user') ? 0.30 : 0.75; 
+                    const sold = Math.min(demand * Math.min(sh, maxSh), Math.min(b.prod, ev?.supplyCap || 999999) + b.inv);
+                    b.pSold += sold; b.pRev += sold * b.price * (ev?.revenueMod || 1.0);
+                });
+            });
+
+            const finalize = (k) => {
+                let r=0, c=0, a=0, h=0, invV=0;
+                state[k].brands.forEach(b => {
+                    const res = pts.find(p => p.owner===k && p.name===b.name);
+                    b.sold = res.pSold; b.rev = res.pRev;
+                    b.inv = Math.max(0, (Math.min(b.prod, ev?.supplyCap || 999999) + b.inv) - b.sold);
+                    b.awareness = Math.min(0.95, (b.awareness * (ev?.id==='MONETARY'?0.3:0.6)) + (b.adv/10000));
+                    const uc = b.cost * (ev?.costMod || 1.0);
+                    r+=b.rev; c+=b.sold*uc; a+=b.adv; h+=b.inv*uc*0.18*(ev?.invHoldMod||1.0);
+                    invV += b.inv * uc;
+                });
+                const p = r - c - a - h;
+                state[k].cumulative.rev += r; state[k].cumulative.profit += p;
+                state[k].lastRev = r; state[k].lastProfit = p; state[k].lastCogs = c; state[k].lastMkt = a; state[k].lastHold = h; state[k].lastInvVal = invV;
+                state[k].budget = Math.max(1000, 10000 + (p * 0.45));
+                const bSpi = Math.round(state[k].spi * Math.max(0.6, Math.min(1.4, 1.0 + (p/15000 * 0.25))));
+                state[k].spi = (k === 'user') ? bSpi : Math.max(bSpi, state.user.spi * (k === 'ai' ? 1.25 : 1.15));
+                state[k].spiHistory.push(state[k].spi);
+                if(k==='user') { state.user.brands.forEach(b=>{b.price=null;b.adv=null;b.prod=null;}); state.rndLaunchedThisPeriod=false; }
+            };
+            finalize('user'); finalize('ai'); finalize('ai2');
+            state.period++; state.marketSize *= 1.06;
+            state.marketSegments.forEach(s => { s.weight *= s.growth; s.iPower *= 1.01; s.iDesign *= 1.01; });
+            state.activeEvent = MACRO_EVENTS[Math.floor(Math.random()*MACRO_EVENTS.length)];
+            runAIBrain();
+            // Auto-save locally every turn
+            saveGameAPI();
+        }
+
+        const rA = (k) => {
+            const f = state[k]; 
+            const rev = f.lastRev || 0; const cogs = f.lastCogs || 0; const profit = f.lastProfit || 0;
+            const gm = rev - cogs; const om = rev > 0 ? (profit / rev * 100).toFixed(1) : 0;
+            return `<div class="space-y-1 text-[11px] font-mono">
+                <div class="flex justify-between border-b border-white/5"><span>Revenue</span><span>$${Math.round(rev).toLocaleString()}</span></div>
+                <div class="flex justify-between border-b border-white/5"><span>COGS</span><span class="text-rose-400">-$${Math.round(cogs).toLocaleString()}</span></div>
+                <div class="flex justify-between border-b border-white/5 font-bold text-blue-400"><span>Margin</span><span>$${Math.round(gm).toLocaleString()}</span></div>
+                <div class="flex justify-between border-b border-white/5 font-black text-emerald-400"><span>Profit</span><span>$${Math.round(profit).toLocaleString()}</span></div>
+                <div class="flex justify-between"><span>Op Margin</span><span class="text-blue-300 font-black">${om}%</span></div>
+            </div>`;
+        };
+
+        function render() {
+            safeSet('display-firm-name', state.fn.toUpperCase() || 'FIRM', false);
+            safeSet('display-period', state.period, false);
+            safeSet('user-spi', state.user.spi.toLocaleString(), false);
+            safeSet('ai-spi', state.ai.spi.toLocaleString(), false);
+            safeSet('ai2-spi', state.ai2.spi.toLocaleString(), false);
+            safeSet('user-budget', `$${Math.round(state.user.budget).toLocaleString()}`, false);
+            safeSet('ad-limit-val', `$${Math.round(state.user.budget * 0.08).toLocaleString()}`, false);
+            safeSet('user-launches', state.user.brands.length - 1, false);
+            safeSet('ai-launches', state.ai.brands.length - 1, false);
+            safeSet('ai2-launches', state.ai2.brands.length - 1, false);
+            
+            const ev = state.activeEvent;
+            if (ev) {
+                safeSet('event-icon', ev.icon, false); safeSet('event-title', ev.title, false); safeSet('event-desc', ev.desc, false);
+                const box = document.getElementById('event-box'); if (box) box.className = `mb-4 rounded-xl p-3 border flex items-center gap-6 shadow-xl ${ev.color}`; box.classList.remove('hidden');
+            }
+
+            const totalSize = state.marketSize * (ev?.demandMod || 1.0);
+            safeSet('demand-card-container', state.marketSegments.map(s => {
+                let w = s.weight; if(ev?.id==='RECESSION'){ if(s.id===1) w*=ev.saverShift; if(s.id===2) w*=ev.innovatorShift; }
+                return `<div class="p-2 bg-slate-900 border border-slate-800 rounded-lg text-center"><p class="text-[8px] text-slate-500 uppercase font-black truncate">${s.name}</p><p class="text-xs font-black text-blue-400 font-mono">${Math.round(totalSize*w).toLocaleString()}</p></div>`;
+            }).join(''));
+            
+            safeSet('user-brand-list', state.user.brands.map((b, i) => `
+                <div class="glass-card user-glow !py-3">
+                    <div class="flex justify-between border-b border-blue-500/10 pb-2 mb-3">
+                        <h4 class="font-black text-white text-sm uppercase">${b.name}</h4>
+                        <span class="text-[10px] text-slate-500">Base Unit Cost: $${Math.round(b.cost * (ev?.costMod || 1))}</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div><label class="metric-label block mb-1">Price</label><input type="number" onchange="upd(${i},'price',this.value)" value="${b.price||''}" placeholder="$1500"></div>
+                        <div><label class="metric-label block mb-1">Ad Spend</label><input type="number" onchange="upd(${i},'adv',this.value)" value="${b.adv||''}" placeholder="Max 8%"></div>
+                        <div><label class="metric-label block mb-1">Production</label><input type="number" onchange="upd(${i},'prod',this.value)" value="${b.prod||''}" placeholder="30% Cap"></div>
+                    </div>
+                </div>`).join(''));
+
+            safeSet('user-pl', rA('user') + rA('user') + rA('user') + rA('user')); 
+            safeSet('ai-pl', rA('ai')); safeSet('ai2-pl', rA('ai2'));
+            safeSet('ai-decision-feed', [...state.ai.brands, ...state.ai2.brands].map(b => `<div>${b.name}: $${Math.round(b.price)} | ${Math.round(b.prod).toLocaleString()}u</div>`).join(''));
+            safeSet('live-history-body', state.decisionHistory.map(h => `<tr><td>${h.p}</td><td>${h.ev}</td><td>${h.n}</td><td>$${h.pr}</td><td>$${h.ad}</td><td>${h.prd}</td><td class="${h.profit >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold">$${Math.round(h.profit).toLocaleString()}</td></tr>`).join(''));
+            safeSet('research-table-body', state.marketSegments.map(s => `<tr class="border-b border-slate-800 text-[12px] font-mono"><td>${s.name}</td><td class="text-blue-400 font-bold">${Math.round(s.iPower)}</td><td class="text-blue-400 font-bold">${Math.round(s.iDesign)}</td><td class="text-emerald-500 font-bold">$${s.iPrice}</td><td class="text-rose-400 font-black">+${((s.growth-1)*100).toFixed(0)}%</td></tr>`).join(''));
+            
+            updateCharts();
+        }
+
+        function launchRD() {
+            const n = document.getElementById('rd-name').value.trim().toUpperCase();
+            if (!n) return notify("Missing Brand ID", "error");
+            if (state.user.budget < 5000) return notify("Liquidity Deficit", "error");
+            state.user.budget -= 5000;
+            const p = Number(document.getElementById('rd-power').value), d = Number(document.getElementById('rd-design').value);
+            state.user.brands.push({ name:n, power:p, design:d, price:null, adv:null, prod:null, cost:Math.round(p*1.8+d*1.6), inv:0, sold:0, rev:0, awareness:0.1 });
+            state.lastRndPeriod = state.period; state.rndLaunchedThisPeriod = true;
+            render(); switchTab('marketing'); notify(`R&D Project ${n} Authorized.`, "success");
+        }
+
+        function updateCharts() {
+            const ctxS = document.getElementById('chart-spi'); const ctxM = document.getElementById('chart-share');
+            if (!ctxS || !ctxM) return;
+            if (charts.spi) charts.spi.destroy(); if (charts.share) charts.share.destroy();
+            charts.spi = new Chart(ctxS.getContext('2d'), { type: 'line', data: { labels: state.user.spiHistory.map((_,i)=>`P${i}`), datasets: [
+                { label: 'User', data: state.user.spiHistory, borderColor: '#3b82f6', tension: 0.1, pointRadius: 3, borderWidth: 3 },
+                { label: 'Beta', data: state.ai.spiHistory, borderColor: '#f43f5e', borderDash: [4,4], pointRadius: 0, borderWidth: 1 },
+                { label: 'Gamma', data: state.ai2.spiHistory, borderColor: '#f59e0b', borderDash: [2,2], pointRadius: 0, borderWidth: 1 }
+            ]}, options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } }, scales:{ y:{ ticks:{ font:{ size:10 } } } } }});
+            charts.share = new Chart(ctxM.getContext('2d'), { type: 'doughnut', data: { labels: ['U', 'B', 'G'], datasets: [{ data: [state.user.lastRev||1, state.ai.lastRev||1, state.ai2.lastRev||1], backgroundColor: ['#3b82f6', '#f43f5e', '#f59e0b'], borderWidth: 0 }]}, options: { responsive:true, maintainAspectRatio:false, cutout:'75%', plugins:{ legend:{ position:'bottom', labels:{ boxWidth:5, font:{ size:9 } } } } }});
+        }
+
+        function handleTermination(reason) {
+            document.getElementById('app').classList.add('hidden');
+            document.getElementById('sim-persistent-header').classList.add('hidden');
+            document.getElementById('screen-terminated').classList.remove('hidden');
+            safeSet('term-reason', `"${reason}"`, false);
+            safeSet('term-loss-val', `$${Math.round(state.user.lastProfit).toLocaleString()}`, false);
+        }
+
+        function handleGraduation() {
+            document.getElementById('app').classList.add('hidden');
+            document.getElementById('screen-graduation').classList.remove('hidden');
+            safeSet('grad-user-name', state.un.toUpperCase(), false);
+            safeSet('grad-spi', state.user.spi.toLocaleString(), false);
+            safeSet('grad-profit', `$${Math.round(state.user.cumulative.profit).toLocaleString()}`, false);
+            const win = state.user.spi > state.ai.spi && state.user.spi > state.ai2.spi;
+            safeSet('grad-rank', win ? "APEX VICTOR" : "QUALIFIED", false);
+        }
+
+        function downloadCertificate() {
+            const canvas = document.getElementById('certificate-canvas'); const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, 1200, 800);
+            ctx.strokeStyle = '#0f172a'; ctx.lineWidth = 40; ctx.strokeRect(0, 0, 1200, 800);
+            ctx.fillStyle = '#0f172a'; ctx.font = '900 50px Inter'; ctx.textAlign = 'center'; ctx.fillText('TAXILA BUSINESS SCHOOL', 600, 200);
+            ctx.font = 'italic 30px Playfair Display'; ctx.fillText('Certificate of Strategic Excellence', 600, 260);
+            ctx.font = 'bold 55px Inter'; ctx.fillStyle = '#3b82f6'; ctx.fillText(state.un.toUpperCase(), 600, 420);
+            ctx.fillStyle = '#0f172a'; ctx.font = '22px Inter'; ctx.fillText(`Simulation Final SPI: ${state.user.spi.toLocaleString()}`, 600, 480);
+            const link = document.createElement('a'); link.download = `TBS-Graduation-${state.un}.png`; link.href = canvas.toDataURL('image/png'); link.click();
+        }
+
+        function upd(i, f, v) { state.user.brands[i][f] = v===""?null:Number(v); const uAd=state.user.brands.reduce((s,b)=>s+Number(b.adv||0),0); safeSet('total-ad-cost', `$${uAd.toLocaleString()}`, false); }
+        function switchTab(t) { document.querySelectorAll('section').forEach(s => s.classList.add('hidden')); document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active', 'text-blue-500')); const view = document.getElementById(`view-${t}`); if(view) view.classList.remove('hidden'); const btn = document.getElementById(`btn-${t}`); if(btn) btn.classList.add('tab-active'); }
+        function notify(m, t) { const n = document.createElement('div'); n.className = `p-4 rounded-xl shadow-2xl text-white font-bold text-[11px] uppercase whitespace-pre-wrap ${t==='error'?'bg-rose-500':'bg-emerald-500'}`; n.innerText = m; document.getElementById('toast-container').appendChild(n); setTimeout(() => n.remove(), 4000); }
+        
+        window.onload = () => { 
+            if(typeof Chart !== 'undefined') render(); 
+            checkResumeStatus(); 
+        };
+    </script>
+</body>
+</html> 

@@ -1,0 +1,1505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>THE DUE DILIGENCE DISASTER | Expert MBA Escape Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;800&family=Cinzel:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #e2e8f0;
+            /* Prevent pull-to-refresh on mobile */
+            overscroll-behavior-y: none;
+        }
+
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .font-serif-title {
+            font-family: 'Cinzel', serif;
+        }
+
+        /* CRT/Terminal Effect */
+        .terminal-text {
+            text-shadow: 0 0 5px rgba(168, 85, 247, 0.5);
+        }
+
+        .shake {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+
+        .tab-active {
+            border-bottom: 2px solid #a855f7; /* Purple-500 */
+            color: #a855f7;
+        }
+        
+        /* Drag and Drop / Touch Styling */
+        .draggable-card {
+            cursor: grab;
+            touch-action: manipulation; /* Improve touch handling */
+        }
+        .draggable-card:active {
+            cursor: grabbing;
+        }
+        .drop-zone-active {
+            background-color: rgba(168, 85, 247, 0.1);
+            border-color: #a855f7 !important;
+        }
+        .card-selected {
+            ring: 4px solid #a855f7;
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.6);
+            transform: scale(1.02);
+        }
+
+        /* Mobile Sidebar Transition */
+        .sidebar-mobile {
+            transform: translateX(-100%);
+            transition: transform 0.3s ease-in-out;
+        }
+        .sidebar-mobile.open {
+            transform: translateX(0);
+        }
+    </style>
+</head>
+<body class="h-screen overflow-hidden flex flex-col text-slate-200 bg-slate-950">
+
+    <!-- Top Bar -->
+    <header class="bg-slate-900 border-b border-slate-800 p-2 md:p-4 flex justify-between items-center shadow-lg z-30 shrink-0">
+        <div class="flex items-center gap-2 md:gap-3">
+            <!-- Mobile Menu Button -->
+            <button onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-white p-2 border border-slate-700 rounded">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <div class="w-8 h-8 md:w-10 md:h-10 bg-purple-600 rounded flex items-center justify-center font-bold text-lg md:text-xl shadow-[0_0_10px_rgba(147,51,234,0.5)] shrink-0">D</div>
+            <div class="overflow-hidden">
+                <h1 class="font-bold text-xs md:text-lg tracking-wide whitespace-nowrap">DUE DILIGENCE <span class="hidden sm:inline">DISASTER</span></h1>
+                <p class="text-[10px] md:text-xs text-purple-400 truncate max-w-[100px] md:max-w-none">
+                    <span id="player-name-display">AGENT</span> | <span id="scenario-id-display">...</span>
+                </p>
+            </div>
+        </div>
+        
+        <div class="flex items-center gap-2 md:gap-4">
+            <!-- Score Indicator (Updated for Mobile) -->
+            <div class="flex items-center gap-1 md:gap-2 bg-slate-800 border border-slate-700 px-2 py-1 md:px-3 md:py-2 rounded text-[10px] md:text-xs">
+                <span class="text-slate-400 uppercase hidden sm:inline">Score</span>
+                <span id="current-score-display" class="font-mono font-bold text-green-400">100</span>
+            </div>
+
+            <!-- HINT BUTTON CONTAINER -->
+            <div class="relative">
+                <button id="hint-btn" class="bg-slate-800 hover:bg-slate-700 text-red-400 border border-slate-600 px-2 py-1 md:px-3 md:py-2 rounded text-[10px] md:text-xs font-bold transition uppercase tracking-wider flex items-center gap-1 md:gap-2 shadow-sm hover:shadow-red-900/20" title="-5 min | -25 pts">
+                    <i class="fas fa-fire"></i> <span class="hidden sm:inline">Hint</span>
+                </button>
+                
+                <!-- Hint Popover -->
+                <div id="hint-popover" class="hidden absolute top-full right-0 mt-3 w-64 md:w-72 bg-slate-900 border-l-4 border-l-red-500 border-t border-r border-b border-slate-700 p-4 rounded shadow-2xl z-50">
+                    <div class="flex justify-between items-center mb-2 border-b border-slate-800 pb-2">
+                        <span class="text-xs font-bold text-red-400 uppercase tracking-widest"><i class="fas fa-lock-open mr-1"></i> Intel Decrypted</span>
+                        <button onclick="document.getElementById('hint-popover').classList.add('hidden')" class="text-slate-500 hover:text-white text-xs">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <p id="hint-content" class="text-xs md:text-sm text-slate-300 font-mono leading-relaxed"></p>
+                    <div class="mt-2 text-[10px] text-slate-600 text-right">Auto-archive in 15s</div>
+                </div>
+            </div>
+
+            <!-- HELP BUTTON -->
+            <button onclick="toggleHelp()" class="bg-slate-800 hover:bg-slate-700 text-purple-400 border border-slate-600 px-2 py-1 md:px-3 md:py-2 rounded text-[10px] md:text-xs font-bold transition uppercase tracking-wider flex items-center gap-1 md:gap-2 shadow-sm hover:shadow-purple-900/20">
+                <i class="fas fa-question-circle"></i> <span class="hidden sm:inline">Help</span>
+            </button>
+
+            <div class="bg-slate-800 px-2 py-1 md:px-6 md:py-2 rounded-lg border border-slate-700 flex items-center gap-2 md:gap-4 relative overflow-hidden">
+                <div class="absolute bottom-0 left-0 h-1 bg-purple-600 transition-all duration-1000" id="time-bar" style="width: 100%"></div>
+                <div id="timer" class="font-mono text-lg md:text-3xl font-bold text-purple-400 terminal-text">60:00</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="flex-1 flex overflow-hidden relative">
+        
+        <!-- Mobile Overlay -->
+        <div id="mobile-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/80 z-20 hidden md:hidden backdrop-blur-sm"></div>
+
+        <!-- Sidebar (Nav & Chat) -->
+        <aside id="sidebar" class="sidebar-mobile absolute md:relative z-30 w-72 md:w-64 h-full bg-slate-900 border-r border-slate-800 flex flex-col md:transform-none md:flex">
+            <div class="p-4 border-b border-slate-800 flex justify-between items-center">
+                <h3 class="text-xs font-bold text-slate-500 uppercase">Protocol Sequence</h3>
+                <button onclick="toggleSidebar()" class="md:hidden text-slate-500"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div class="p-2">
+                <nav class="space-y-2" id="stage-nav">
+                    <!-- Populated by JS -->
+                </nav>
+            </div>
+            
+            <div class="flex-1 p-4 flex flex-col bg-slate-950/50 relative border-t border-slate-800">
+                <h3 class="text-xs font-bold text-green-500 uppercase mb-2 flex items-center gap-2">
+                    <i class="fas fa-terminal"></i> ENCRYPTED_LINK
+                </h3>
+                <div id="chat-box" class="flex-1 overflow-y-auto space-y-3 text-sm font-mono text-green-400 p-2 mb-2 border border-slate-800 rounded bg-black/60 h-full shadow-inner max-h-[200px] md:max-h-none">
+                    <div class="opacity-70 text-xs italic">> Waiting for authentication...</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Center: Game Area -->
+        <section class="flex-1 bg-slate-800 relative overflow-y-auto overflow-x-hidden p-3 md:p-8" id="game-container">
+            <!-- Screens rendered here by JS -->
+        </section>
+
+    </main>
+
+    <!-- Help Modal -->
+    <div id="help-modal" class="fixed inset-0 bg-black/95 z-[70] hidden flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
+        <div class="bg-slate-900 border border-slate-600 w-full max-w-3xl max-h-[90vh] rounded-xl flex flex-col shadow-2xl relative">
+            <!-- Header -->
+            <div class="p-4 border-b border-slate-700 flex justify-between items-center bg-slate-950 rounded-t-xl shrink-0">
+                <h2 class="text-purple-400 font-bold tracking-wider uppercase flex items-center gap-2 text-sm md:text-base">
+                    <i class="fas fa-book"></i> Field Manual
+                </h2>
+                <button onclick="toggleHelp()" class="text-slate-400 hover:text-white transition w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-800">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- Content -->
+            <div class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 font-mono text-xs md:text-sm text-slate-300">
+                
+                <!-- NEW SECTION: Protocol Sequence -->
+                <section>
+                    <h3 class="text-white font-bold text-sm md:text-lg border-b border-slate-700 pb-2 mb-3">0. Mission Protocols</h3>
+                    <div class="bg-slate-800 p-3 md:p-4 rounded border border-slate-700">
+                        <ul class="space-y-2">
+                            <li class="flex flex-col md:flex-row gap-1 md:gap-2">
+                                <span class="text-purple-400 font-bold min-w-[60px]">Lvl 1:</span> 
+                                <span><strong>Finance (QofE)</strong> = Quality of Earnings</span>
+                            </li>
+                            <li class="flex flex-col md:flex-row gap-1 md:gap-2">
+                                <span class="text-purple-400 font-bold min-w-[60px]">Lvl 2:</span> 
+                                <span><strong>Ops</strong> = Project Crashing (CPM)</span>
+                            </li>
+                            <li class="flex flex-col md:flex-row gap-1 md:gap-2">
+                                <span class="text-purple-400 font-bold min-w-[60px]">Lvl 3:</span> 
+                                <span><strong>Strategy</strong> = Porter's Five Forces</span>
+                            </li>
+                            <li class="flex flex-col md:flex-row gap-1 md:gap-2">
+                                <span class="text-purple-400 font-bold min-w-[60px]">Lvl 4:</span> 
+                                <span><strong>Marketing</strong> = Unit Economics (LTV)</span>
+                            </li>
+                            <li class="flex flex-col md:flex-row gap-1 md:gap-2">
+                                <span class="text-purple-400 font-bold min-w-[60px]">Lvl 5:</span> 
+                                <span><strong>Analytics</strong> = Forensic Data Auditing</span>
+                            </li>
+                            <li class="flex flex-col md:flex-row gap-1 md:gap-2">
+                                <span class="text-purple-400 font-bold min-w-[60px]">Lvl 6:</span> 
+                                <span><strong>Ethics</strong> = Crisis Negotiation</span>
+                            </li>
+                        </ul>
+                    </div>
+                </section>
+
+                <section>
+                    <h3 class="text-white font-bold text-sm md:text-lg border-b border-slate-700 pb-2 mb-3">1. Finance</h3>
+                    <div class="grid gap-3 md:grid-cols-2">
+                        <div class="bg-slate-800 p-3 rounded">
+                            <strong class="text-purple-400 block mb-1">Normalized EBITDA</strong>
+                            <p>Earnings before Interest, Taxes, Dep, and Amort, <em>adjusted</em> for one-time events.</p>
+                        </div>
+                        <div class="bg-slate-800 p-3 rounded">
+                            <strong class="text-purple-400 block mb-1">Net Working Capital</strong>
+                            <p><code>Current Assets - Current Liabilities</code>.</p>
+                        </div>
+                        <div class="bg-slate-800 p-3 rounded">
+                            <strong class="text-purple-400 block mb-1">Free Cash Flow (FCF)</strong>
+                            <p><code>Net Income + Dep - ΔWorking Capital - CapEx</code>.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <h3 class="text-white font-bold text-sm md:text-lg border-b border-slate-700 pb-2 mb-3">2. Operations</h3>
+                    <div class="bg-slate-800 p-3 rounded">
+                        <strong class="text-purple-400 block mb-1">Project Crashing</strong>
+                        <p>Only "crash" (speed up) tasks on the <strong>Critical Path</strong> that have the lowest cost.</p>
+                    </div>
+                </section>
+
+                <section>
+                    <h3 class="text-white font-bold text-sm md:text-lg border-b border-slate-700 pb-2 mb-3">4. Marketing</h3>
+                    <div class="bg-slate-800 p-3 rounded">
+                        <strong class="text-purple-400 block mb-1">LTV Formula</strong>
+                        <p><code>(ARPU × Gross Margin %) / Churn Rate</code>.</p>
+                    </div>
+                </section>
+
+            </div>
+            <div class="p-4 border-t border-slate-700 bg-slate-950 rounded-b-xl text-center shrink-0">
+                <button onclick="toggleHelp()" class="bg-purple-600 hover:bg-purple-500 text-white px-6 py-2 rounded font-bold uppercase text-xs tracking-widest transition">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transition Screen -->
+    <div id="transition-screen" class="fixed inset-0 bg-slate-950 z-[80] hidden flex flex-col items-center justify-center animate-fade-in px-4">
+        <h2 class="text-3xl md:text-5xl font-bold text-white mb-6 animate-bounce tracking-widest uppercase shadow-purple-500 drop-shadow-lg text-center">
+            Level Complete
+        </h2>
+        <div class="w-full max-w-xs h-3 bg-slate-800 rounded-full overflow-hidden border border-slate-600">
+            <div id="transition-bar" class="h-full bg-green-500 w-0 shadow-[0_0_10px_rgba(34,197,94,0.8)]"></div>
+        </div>
+        <p class="text-slate-400 mt-4 font-mono text-sm animate-pulse">Loading next protocol...</p>
+    </div>
+
+    <!-- Certificate Preview Modal -->
+    <div id="cert-preview-modal" class="fixed inset-0 bg-black/95 z-[65] hidden flex flex-col items-center justify-center p-4 animate-fade-in">
+        <h2 class="text-xl md:text-2xl text-purple-400 font-bold mb-4 tracking-widest uppercase animate-pulse text-center">Target Clearance Authorization</h2>
+        <div class="w-full max-w-4xl border-4 border-purple-900 rounded-lg overflow-hidden shadow-[0_0_50px_rgba(147,51,234,0.3)]">
+            <img id="cert-preview-img" src="" alt="Clearance" class="w-full h-auto">
+        </div>
+        <p class="text-slate-500 mt-4 font-mono text-sm">Verifying Credentials...</p>
+    </div>
+
+    <!-- Welcome Screen -->
+    <div id="welcome-screen" class="fixed inset-0 bg-slate-950 z-[60] flex flex-col items-center justify-center p-4 animate-fade-in">
+        <div class="max-w-md w-full bg-slate-900 border border-slate-700 p-6 md:p-8 rounded-2xl shadow-2xl relative overflow-hidden text-center">
+             <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-600 to-blue-600"></div>
+             
+             <div class="w-16 h-16 bg-purple-600 rounded-lg mx-auto flex items-center justify-center text-3xl font-bold text-white mb-6 shadow-[0_0_20px_rgba(147,51,234,0.5)]">D</div>
+             
+             <h1 class="text-2xl md:text-3xl font-bold text-white mb-2 tracking-tight">THE DUE DILIGENCE DISASTER</h1>
+             <p class="text-slate-400 text-xs md:text-sm uppercase tracking-widest mb-8">Special Ops Recruitment</p>
+             
+             <div class="space-y-4 mb-8">
+                 <div class="text-left">
+                     <label class="text-xs font-bold text-purple-400 uppercase ml-1 mb-1 block">Identify Yourself</label>
+                     <input type="text" id="player-name-input" class="w-full bg-slate-950 border border-slate-700 text-white p-3 md:p-4 rounded-lg focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none transition font-mono text-center text-base md:text-lg placeholder-slate-700" placeholder="ENTER CODENAME">
+                 </div>
+                 <button onclick="authenticatePlayer()" class="w-full bg-white text-slate-900 font-bold py-3 md:py-4 rounded-lg hover:bg-slate-200 transition shadow-lg uppercase tracking-widest text-sm md:text-base">
+                     Initialize Mission
+                 </button>
+             </div>
+             
+             <div class="border-t border-slate-800 pt-4 mt-4">
+                 <p class="text-slate-500 text-xs">Simulation Environment v3.1</p>
+                 <p class="text-slate-300 text-xs font-semibold mt-1">Created at Taxila Business School</p>
+             </div>
+        </div>
+    </div>
+
+    <!-- Intro Modal -->
+    <div id="intro-modal" class="fixed inset-0 bg-black/90 z-50 flex items-center justify-center backdrop-blur-sm p-4 hidden">
+        <div class="bg-slate-800 border-2 border-purple-500 p-6 md:p-8 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-[0_0_50px_rgba(147,51,234,0.2)] relative">
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-600 via-purple-600 to-red-600"></div>
+            <h2 class="text-xl md:text-4xl font-bold text-white mb-2 tracking-tight">THE DUE DILIGENCE DISASTER <span class="text-purple-500 block md:inline md:ml-2 text-lg md:text-3xl">EXPERT MODE</span></h2>
+            <div class="h-1 w-24 bg-purple-600 mb-6"></div>
+            
+            <!-- Mission Briefing -->
+            <div class="mb-6 bg-slate-900/50 p-4 rounded border-l-4 border-purple-500 text-sm md:text-base text-slate-300 leading-relaxed">
+                <strong class="text-white uppercase block mb-2 text-xs tracking-widest">Mission Objective:</strong>
+                <p>You have <strong>60 minutes</strong> to audit APEX Global. Uncover financial fraud, optimize ops, analyze threats, verify marketing, spot anomalies, and negotiate ethics.</p>
+            </div>
+
+            <button onclick="startGame()" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 md:py-4 rounded-lg shadow-lg transition transform hover:scale-[1.02] uppercase tracking-widest text-sm md:text-base">
+                Start New Simulation
+            </button>
+            <button id="resume-btn" onclick="resumeGame()" class="hidden w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 md:py-4 rounded-lg shadow-lg transition transform hover:scale-[1.02] uppercase tracking-widest text-sm md:text-base mt-3">
+                <i class="fas fa-redo mr-2"></i> Resume Previous Mission
+            </button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // --- API & Persistence Functions ---
+        
+        // ** UPDATED API ENDPOINT **
+        const API_BASE_URL = "https://erp.taxila.in/api/game/diligance"; 
+          // --- API-based Database Functions (Copied/Adapted from project.html logic) ---
+        function getUserId() {
+            // Get userId from URL parameters or fallback to a default
+            const params = new URLSearchParams(window.location.search);
+            return params.get("userId") || "guest";
+        }
+        /**
+         * Saves the game state to the backend API.
+         * Note: Since this is a self-contained environment, the fetch calls below are commented 
+         * out to prevent CORS errors or failure to reach a local server, and they currently 
+         * rely on the success of the API call or a fallback (if implemented by the user).
+         * @param {object} gameState - The current state object.
+         * @returns {Promise<void>}
+         */
+        async function saveGameState(gameState) {
+            const userId = getUserId();
+            try {
+                // In a production environment, uncomment the following fetch call:
+               
+                const response = await fetch(`${API_BASE_URL}`, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: userId, gameState: gameState }) 
+                });
+                if (!response.ok) {
+                    throw new Error(`Server responded with status: ${response.status}`);
+                }
+                const result = await response.json();
+                console.log("[API SUCCESS] Save successful:", result);
+               
+
+                // // MOCK: Using localStorage as a fallback/mock for persistence. REMOVE this line 
+                // // when deploying with a functional API backend.
+
+            } catch (error) {
+                console.error("[API ERROR] Save failed:", error);
+            }
+        }
+
+        /**
+         * Loads the game state from the backend API.
+         * @param {string} playerId - The unique identifier for the player (PlayerName).
+         * @returns {Promise<object | null>} The loaded game state or null if none exists.
+         */
+        async function loadGameState() {
+           const playerId = getUserId();
+            try {
+                // In a production environment, uncomment the following fetch call:
+              
+                const response = await fetch(`${API_BASE_URL}?player=${playerId}`);
+                if (response.status === 404) return null; // No state found
+                if (!response.ok) {
+                    throw new Error(`Server responded with status: ${response.status}`);
+                }
+                const loadedState = await response.json();
+                return loadedState.gameState;
+            
+                
+            } catch (error) {
+                console.error("[API ERROR] Load failed:", error);
+                return null;
+            }
+        }
+
+        // --- Audio Functions (Web Audio API) ---
+        const getAudioCtx = () => {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            return new AudioContext();
+        };
+
+        function playSuccessSound() {
+            try {
+                const ctx = getAudioCtx();
+                const t = ctx.currentTime;
+                for (let i = 0; i < 15; i++) {
+                    const start = t + Math.random() * 0.6;
+                    const dur = 0.1 + Math.random() * 0.1;
+                    const bufferSize = ctx.sampleRate * dur;
+                    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+                    const data = buffer.getChannelData(0);
+                    for (let j = 0; j < bufferSize; j++) { data[j] = Math.random() * 2 - 1; }
+                    const noise = ctx.createBufferSource();
+                    noise.buffer = buffer;
+                    const filter = ctx.createBiquadFilter();
+                    filter.type = "lowpass";
+                    filter.frequency.value = 1000 + Math.random() * 500;
+                    const gain = ctx.createGain();
+                    gain.gain.setValueAtTime(0.5, start);
+                    gain.gain.exponentialRampToValueAtTime(0.01, start + dur);
+                    noise.connect(filter);
+                    filter.connect(gain);
+                    gain.connect(ctx.destination);
+                    noise.start(start);
+                }
+            } catch (e) { console.log("Audio blocked"); }
+        }
+
+        function playErrorSound() {
+            try {
+                const ctx = getAudioCtx();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(100, ctx.currentTime);
+                osc.frequency.linearRampToValueAtTime(50, ctx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.3);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.3);
+            } catch (e) { console.log("Audio blocked"); }
+        }
+
+        // --- Data Generators (Same Logic, Unchanged) ---
+        // (Function implementations omitted for brevity, they remain identical to original)
+        const generateFinanceData = (seed) => {
+            const rev = 10000 + Math.floor(Math.random() * 5000);
+            const cogs = Math.floor(rev * (0.4 + Math.random() * 0.2));
+            const grossProfit = rev - cogs;
+            const sga = Math.floor(rev * (0.2 + Math.random() * 0.1));
+            const rd = Math.floor(Math.random() * 800);
+            const dep = Math.floor(rev * 0.08);
+            const adjAmount = 200 + Math.floor(Math.random() * 800);
+            const adjType = ["Legal Settlement", "Restructuring Charge", "Inventory Write-down", "Patent Impairment"][Math.floor(Math.random()*4)];
+            const ebit = grossProfit - sga - rd - dep - adjAmount;
+            const interest = 200 + Math.floor(Math.random() * 300);
+            const taxRate = 0.25;
+            const taxes = Math.floor((ebit - interest) * taxRate);
+            const netIncome = ebit - interest - taxes;
+            
+            const deltaAR = (Math.random() > 0.5 ? 1 : -1) * Math.floor(Math.random() * 1000);
+            const deltaInv = (Math.random() > 0.5 ? 1 : -1) * Math.floor(Math.random() * 800);
+            const deltaAP = (Math.random() > 0.5 ? 1 : -1) * Math.floor(Math.random() * 600);
+            const capex = 1000 + Math.floor(Math.random() * 1000);
+
+            const cashBal = 500 + Math.floor(Math.random() * 1500);
+            const arBal = Math.floor(rev * (0.10 + Math.random() * 0.05));
+            const invBal = Math.floor(cogs * (0.15 + Math.random() * 0.1));
+            const prepaidBal = Math.floor(Math.random() * 300);
+            const apBal = Math.floor(cogs * (0.08 + Math.random() * 0.05));
+            const accruedBal = Math.floor(Math.random() * 600);
+            const stDebtBal = Math.floor(Math.random() * 1000);
+
+            const currentAssets = cashBal + arBal + invBal + prepaidBal;
+            const currentLiabilities = apBal + accruedBal + stDebtBal;
+            
+            const ansEbitda = ebit + dep + adjAmount;
+            const ansFcf = netIncome + dep - deltaAR - deltaInv + deltaAP - capex;
+            const ansNwc = currentAssets - currentLiabilities;
+
+            return { rev, cogs, grossProfit, sga, rd, dep, ebit, interest, taxes, netIncome, adjAmount, adjType, deltaAR, deltaInv, deltaAP, capex, cashBal, arBal, invBal, prepaidBal, apBal, accruedBal, stDebtBal, ansEbitda, ansFcf, ansNwc };
+        };
+
+        const generateOpsData = () => {
+            const dur = { A: 4 + Math.floor(Math.random() * 6), B: 4 + Math.floor(Math.random() * 6), C: 8 + Math.floor(Math.random() * 8), D: 8 + Math.floor(Math.random() * 8), E: 3 + Math.floor(Math.random() * 4) };
+            const path1 = dur.A + dur.C + dur.E;
+            const path2 = dur.B + dur.D + dur.E;
+            const criticalPath = Math.max(path1, path2);
+            const target = criticalPath - (2 + Math.floor(Math.random() * 2));
+            const crashCosts = { A: 1000 + Math.floor(Math.random() * 1000), B: 500 + Math.floor(Math.random() * 1000), C: 1500 + Math.floor(Math.random() * 1000), D: 800 + Math.floor(Math.random() * 1000) };
+            let currentP1 = path1;
+            let currentP2 = path2;
+            let cost = 0;
+            let daysToCrash = criticalPath - target;
+            const limits = { A: 1, B: 2, C: 2, D: 2 };
+            const crashed = { A: 0, B: 0, C: 0, D: 0 };
+
+            for (let i = 0; i < daysToCrash; i++) {
+                const isP1Crit = currentP1 >= currentP2;
+                const isP2Crit = currentP2 >= currentP1;
+                let options = [];
+                if (isP1Crit && !isP2Crit) {
+                    if (crashed.A < limits.A) options.push({id: 'A', cost: crashCosts.A});
+                    if (crashed.C < limits.C) options.push({id: 'C', cost: crashCosts.C});
+                } else if (!isP1Crit && isP2Crit) {
+                    if (crashed.B < limits.B) options.push({id: 'B', cost: crashCosts.B});
+                    if (crashed.D < limits.D) options.push({id: 'D', cost: crashCosts.D});
+                }
+                options.sort((a,b) => a.cost - b.cost);
+                if (options.length > 0) {
+                    const best = options[0];
+                    cost += best.cost;
+                    crashed[best.id]++;
+                    if (['A','C'].includes(best.id)) currentP1--;
+                    if (['B','D'].includes(best.id)) currentP2--;
+                }
+            }
+            return { dur, crashCosts, target, criticalPath, ansCost: cost, limits };
+        };
+
+        const strategyPool = {
+            'Buyer Power': ["Big retailers demanding 25% discounts.", "Customers forming purchasing co-ops.", "Switching costs near zero.", "Product is a commodity."],
+            'Supplier Power': ["Rare earth metal supply controlled by one firm.", "Union strike at key factory.", "Supplier threatening to forward integrate."],
+            'Threat of Substitutes': ["Video conferencing replacing travel.", "Streaming replacing cable.", "Cloud replacing physical drives."],
+            'Competitive Rivalry': ["Price war with main competitor.", "High fixed costs forcing dumping.", "Market growth stalled."],
+            'Threat of Entry': ["Patents expiring in 6 months.", "License requirements removed.", "Low capital needed to start."]
+        };
+        
+        const generateStrategyData = () => {
+            const cards = [];
+            const forces = Object.keys(strategyPool);
+            forces.forEach(force => {
+                const options = strategyPool[force];
+                const text = options[Math.floor(Math.random() * options.length)];
+                cards.push({ id: Math.random().toString(36).substr(2, 5), text, force });
+            });
+            return cards.sort(() => Math.random() - 0.5);
+        };
+
+        const generateMarketingData = () => {
+            const arpu = 50 + Math.floor(Math.random() * 100);
+            const margin = 0.4 + (Math.random() * 0.4);
+            const churn = 0.02 + (Math.random() * 0.08);
+            const ansLtv = Math.round((arpu * margin) / churn);
+            return { arpu, margin, churn, ansLtv };
+        };
+
+        const generateAnalyticsData = () => {
+            const rows = [];
+            const rowCount = 12;
+            const anomalyIndex = Math.floor(Math.random() * rowCount);
+            let correctId = "";
+            for (let i = 0; i < rowCount; i++) {
+                const id = "TX-" + (1000 + Math.floor(Math.random() * 9000));
+                const revenue = (1000 + Math.floor(Math.random() * 9000));
+                const marginPct = [0.10, 0.15, 0.20, 0.25, 0.30][Math.floor(Math.random() * 5)];
+                let profit = Math.round(revenue * marginPct);
+                if (i === anomalyIndex) {
+                    profit = Math.round(revenue * (marginPct + 0.35));
+                    correctId = id;
+                }
+                rows.push({ id, revenue, marginPct, profit });
+            }
+            return { rows, correctId };
+        };
+
+        const scenarios = [];
+        for (let i = 0; i < 15; i++) {
+            scenarios.push({
+                id: i + 1,
+                finance: generateFinanceData(i),
+                ops: generateOpsData(),
+                strategy: generateStrategyData(),
+                marketing: generateMarketingData(),
+                analytics: generateAnalyticsData()
+            });
+        }
+
+        // --- Game State ---
+        const INITIAL_STATE = {
+            playerName: "AGENT",
+            currentStage: 0,
+            timer: 3600, 
+            maxTime: 3600,
+            interval: null,
+            hintsUsed: 0,
+            activeScenario: null, // This stores the scenario data (finance, ops, etc.)
+            scenarioIndex: -1, // Stores the index in the scenarios array for persistence
+            stageResults: [], // Stores results for completed stages
+            currentStageScore: 100,
+            stageStartTime: 0,
+            stages: [
+                { id: 'finance', name: 'QofE Analysis', icon: 'fa-balance-scale' },
+                { id: 'ops', name: 'Project Crashing', icon: 'fa-project-diagram' },
+                { id: 'strategy', name: 'Five Forces', icon: 'fa-chess-rook' },
+                { id: 'marketing', name: 'Market Viability', icon: 'fa-users' },
+                { id: 'analytics', name: 'Forensic Analytics', icon: 'fa-chart-line' },
+                { id: 'ethics', name: 'Crisis Negotiation', icon: 'fa-comments-dollar' }
+            ]
+        };
+        let state = JSON.parse(JSON.stringify(INITIAL_STATE));
+
+        // --- Mobile/UI Functions ---
+        function toggleSidebar() {
+            const sb = document.getElementById('sidebar');
+            const ov = document.getElementById('mobile-overlay');
+            sb.classList.toggle('open');
+            ov.classList.toggle('hidden');
+        }
+
+        function toggleHelp() {
+            const modal = document.getElementById('help-modal');
+            if (modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+
+        // --- Core Functions ---
+        
+        async function authenticatePlayer() {
+            const input = document.getElementById('player-name-input');
+            const name = input.value.trim().toUpperCase();
+            
+            if (name) {
+                state.playerName = name;
+                document.getElementById('player-name-display').innerText = state.playerName;
+                document.getElementById('welcome-screen').classList.add('hidden');
+                
+                // 1. Show Certificate Preview
+                const certData = generateCertificate();
+                document.getElementById('cert-preview-img').src = certData;
+                const certModal = document.getElementById('cert-preview-modal');
+                certModal.classList.remove('hidden');
+
+                // 2. Attempt to load previous state
+                const loadedState = await loadGameState(name);
+
+                setTimeout(() => {
+                    certModal.classList.add('hidden');
+                    document.getElementById('intro-modal').classList.remove('hidden');
+                    addChatMessage(`> AUTHENTICATION SUCCESS. Welcome, ${state.playerName}.`);
+                    
+                    if (loadedState && loadedState.scenarioIndex !== -1 && loadedState.currentStage < loadedState.stages.length) {
+                        // 3. If state exists and game is not over, show RESUME button
+                        document.getElementById('resume-btn').classList.remove('hidden');
+                        state = { ...state, ...loadedState };
+                        state.activeScenario = scenarios[state.scenarioIndex];
+                        addChatMessage(`> RESUME: Found active mission (Stage ${state.currentStage + 1} of ${state.stages.length}).`);
+                    } else {
+                        // 4. If no state or game is finished, only show Start New Simulation
+                        document.getElementById('resume-btn').classList.add('hidden');
+                    }
+                }, 3000);
+
+            } else {
+                input.classList.add('shake', 'border-red-500');
+                setTimeout(() => {
+                    input.classList.remove('shake', 'border-red-500');
+                }, 500);
+            }
+        }
+
+        function resumeGame() {
+            document.getElementById('intro-modal').classList.add('hidden');
+            
+            // Re-initialize timer and UI based on loaded state
+            document.getElementById('scenario-id-display').innerText = `ID: ${100 + state.activeScenario.id}`;
+            
+            // Recalculate time since last save if possible, or just start from saved timer
+            // For simplicity, we restart the timer from the saved value.
+            state.stageStartTime = Date.now(); 
+            startTimer();
+
+            // Set up initial chat messages (can be improved)
+            addChatMessage(`SYSTEM: Resuming Mission ${state.activeScenario.id} at Protocol ${state.currentStage + 1}.`);
+            
+            // Load the current stage
+            loadStage(state.currentStage);
+        }
+
+
+        function startGame() {
+            // Reset state to initial before generating new scenario
+            state = JSON.parse(JSON.stringify(INITIAL_STATE));
+            state.playerName = document.getElementById('player-name-display').innerText;
+
+            const scenarioIndex = Math.floor(Math.random() * 15);
+            state.activeScenario = scenarios[scenarioIndex];
+            state.scenarioIndex = scenarioIndex; // Save the index for persistence
+            
+            document.getElementById('intro-modal').classList.add('hidden');
+            document.getElementById('scenario-id-display').innerText = `ID: ${100 + state.activeScenario.id}`;
+            startTimer();
+            
+            addChatMessage(`SYSTEM: Loaded Dataset #${state.activeScenario.id}.`);
+            addChatMessage("TASK: Identify the one-time adjustment in the notes.");
+            loadStage(0);
+            saveGameState(state); // Initial save
+        }
+
+        function startTimer() {
+            if (state.interval) clearInterval(state.interval);
+            
+            // Initial UI update
+            const minutes = Math.floor(state.timer / 60);
+            const seconds = state.timer % 60;
+            document.getElementById('timer').innerText = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            const pct = (state.timer / state.maxTime) * 100;
+            document.getElementById('time-bar').style.width = `${pct}%`;
+
+            state.interval = setInterval(() => {
+                state.timer--;
+                const minutes = Math.floor(state.timer / 60);
+                const seconds = state.timer % 60;
+                document.getElementById('timer').innerText = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                const pct = (state.timer / state.maxTime) * 100;
+                document.getElementById('time-bar').style.width = `${pct}%`;
+                if (state.timer < 300) {
+                    document.getElementById('timer').classList.add('animate-pulse', 'text-red-600');
+                    document.getElementById('time-bar').classList.add('bg-red-500');
+                }
+                if (state.timer <= 0) {
+                    clearInterval(state.interval);
+                    endGame(false, "Time Expired. Your mission status has been terminated.");
+                }
+            }, 1000);
+        }
+
+        function penalize(seconds, scorePenalty = 0) {
+            state.timer -= seconds;
+            state.currentStageScore = Math.max(0, state.currentStageScore - scorePenalty);
+            document.getElementById('current-score-display').innerText = state.currentStageScore;
+            const timerEl = document.getElementById('timer');
+            timerEl.classList.add('text-red-400', 'scale-110');
+            addChatMessage(`ALERT: Penalty -${seconds/60}m | -${scorePenalty} Pts.`);
+            setTimeout(() => timerEl.classList.remove('text-red-400', 'scale-110'), 500);
+            saveGameState(state); // Save after penalty
+        }
+
+        function renderSidebar() {
+            const nav = document.getElementById('stage-nav');
+            nav.innerHTML = '';
+            state.stages.forEach((stage, index) => {
+                const isActive = index === state.currentStage;
+                const isLocked = index > state.currentStage;
+                const isDone = index < state.currentStage;
+                let statusColor = isDone ? 'text-green-400' : (isActive ? 'text-purple-400' : 'text-slate-600');
+                let icon = isDone ? 'fa-check-circle' : (isLocked ? 'fa-lock' : stage.icon);
+                let bg = isActive ? 'bg-slate-800 border-l-2 border-purple-500' : '';
+                nav.innerHTML += `
+                    <div class="flex items-center gap-3 p-3 rounded ${bg} ${isLocked ? 'opacity-50' : ''}">
+                        <i class="fas ${icon} ${statusColor} w-5"></i>
+                        <div class="text-sm font-medium ${isActive ? 'text-white' : 'text-slate-400'}">${stage.name}</div>
+                    </div>
+                `;
+            });
+        }
+
+        function addChatMessage(msg) {
+            const chat = document.getElementById('chat-box');
+            const div = document.createElement('div');
+            div.className = "mb-2 border-l-2 border-green-600 pl-2 animate-fade-in";
+            div.innerHTML = `<span class="font-bold opacity-50">></span> ${msg}`;
+            chat.appendChild(div);
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        // Hint Button Logic
+        document.getElementById('hint-btn').addEventListener('click', () => {
+            const hints = [
+                ["EBITDA = EBIT + Dep + Adjustments.", "FCF = Net Income + Dep - Inc. in AR - Inc. in Inv + Inc. in AP - CapEx."],
+                ["Crash CRITICAL PATH tasks only. Cheapest first.", "Target: " + state.activeScenario?.ops.target + " days."],
+                ["Buyers wanting discounts = Buyer Power.", "Rivalry is strictly about EXISTING competitors."],
+                ["LTV = (ARPU x Margin) / Churn. Pay attention to decimals (5% = 0.05)."],
+                ["Audit the margins. Profit must equal Revenue * Margin %. Find the anomaly."],
+                ["Appeal to logic. Do not threaten."]
+            ];
+            const stageHints = hints[state.currentStage];
+            const hintText = stageHints[state.hintsUsed % stageHints.length];
+            addChatMessage(`HINT: ${hintText}`);
+            const popover = document.getElementById('hint-popover');
+            document.getElementById('hint-content').innerText = hintText;
+            popover.classList.remove('hidden');
+            setTimeout(() => popover.classList.add('hidden'), 15000);
+            state.hintsUsed++;
+            penalize(300, 25);
+        });
+
+        function loadStage(index) {
+            state.currentStage = index;
+            state.currentStageScore = 100;
+            state.stageStartTime = Date.now();
+            document.getElementById('current-score-display').innerText = "100";
+            renderSidebar();
+            const container = document.getElementById('game-container');
+            container.innerHTML = ''; 
+            container.classList.add('opacity-0');
+            setTimeout(() => container.classList.remove('opacity-0'), 50);
+            container.classList.add('transition-opacity', 'duration-500');
+
+            switch(index) {
+                case 0: renderFinanceStage(container); break;
+                case 1: renderOpsStage(container); break;
+                case 2: renderStrategyStage(container); break;
+                case 3: renderMarketingStage(container); break;
+                case 4: renderAnalyticsStage(container); break;
+                case 5: renderEthicsStage(container); break;
+            }
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('mobile-overlay').classList.add('hidden');
+        }
+
+        function nextStage() {
+            const duration = Math.floor((Date.now() - state.stageStartTime) / 1000);
+            state.stageResults.push({ name: state.stages[state.currentStage].name, score: state.currentStageScore, time: duration });
+            playSuccessSound();
+            
+            // Check for game end (Ethics is the last stage)
+            if (state.currentStage === state.stages.length - 1) {
+                endGame(true, "Negotiation successful. APEX Global halted the deal and self-reported the findings.");
+                return;
+            }
+
+            const screen = document.getElementById('transition-screen');
+            const bar = document.getElementById('transition-bar');
+            screen.classList.remove('hidden');
+            bar.style.transition = 'width 3s linear';
+            void bar.offsetWidth; 
+            bar.style.width = '100%';
+            setTimeout(() => {
+                screen.classList.add('hidden');
+                bar.style.width = '0%';
+                bar.style.transition = 'none';
+                addChatMessage(`LEVEL ${state.currentStage + 1} PASSED.`);
+                loadStage(state.currentStage + 1);
+                saveGameState(state); // Save after successfully advancing stage
+            }, 3000);
+        }
+
+        // --- Stage 1: Finance ---
+        let financeTab = 'income';
+        function toggleFinanceTab(tab) {
+            financeTab = tab;
+            ['income', 'balance', 'notes'].forEach(t => {
+                const el = document.getElementById(`tab-${t}`);
+                const content = document.getElementById(`doc-${t}`);
+                if (t === tab) {
+                    el.className = "cursor-pointer pb-2 tab-active font-bold text-purple-400 border-b-2 border-purple-400 whitespace-nowrap";
+                    content.style.display = 'block';
+                } else {
+                    el.className = "cursor-pointer pb-2 text-slate-500 hover:text-slate-300 transition whitespace-nowrap";
+                    content.style.display = 'none';
+                }
+            });
+        }
+
+        function renderFinanceStage(container) {
+            const d = state.activeScenario.finance;
+            const fmt = (n) => n < 0 ? `($${Math.abs(n).toLocaleString()})` : `$${n.toLocaleString()}`;
+            const fmtDelta = (n) => n > 0 ? `Inc. by $${n.toLocaleString()}` : `Dec. by $${Math.abs(n).toLocaleString()}`;
+            const deltaColor = (n, type) => {
+                if (type === 0) return n > 0 ? 'text-red-500' : 'text-green-500';
+                return n > 0 ? 'text-green-500' : 'text-red-500';
+            };
+
+            container.innerHTML = `
+                <div class="max-w-6xl mx-auto pb-12">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-4 md:mb-6 gap-2">
+                        <div>
+                            <h2 class="text-lg md:text-2xl font-bold text-white mb-1">Lvl 1: Quality of Earnings</h2>
+                            <p class="text-slate-400 text-xs md:text-sm">Calculate <strong>Normalized EBITDA</strong>, <strong>FCF</strong>, and <strong>NWC</strong>.</p>
+                        </div>
+                        <div class="bg-slate-900 p-1 px-2 rounded border border-slate-700 text-[10px] font-mono text-slate-400">ID: ${state.activeScenario.id}_FN</div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
+                        <div class="lg:col-span-7 bg-white text-slate-900 p-1 rounded shadow-lg font-mono text-sm relative h-[50vh] md:h-[550px] flex flex-col">
+                            <div class="flex gap-4 px-4 pt-4 border-b border-slate-200 mb-4 bg-slate-50 overflow-x-auto scrollbar-hide">
+                                <div id="tab-income" onclick="toggleFinanceTab('income')" class="cursor-pointer pb-2 tab-active font-bold text-purple-400 border-b-2 border-purple-400 whitespace-nowrap text-xs md:text-sm">Income Stmt</div>
+                                <div id="tab-balance" onclick="toggleFinanceTab('balance')" class="cursor-pointer pb-2 text-slate-500 whitespace-nowrap text-xs md:text-sm">Balance Sheet</div>
+                                <div id="tab-notes" onclick="toggleFinanceTab('notes')" class="cursor-pointer pb-2 text-slate-500 whitespace-nowrap text-xs md:text-sm">Notes</div>
+                            </div>
+
+                            <div class="px-2 md:px-4 pb-6 overflow-y-auto flex-1">
+                                <div id="doc-income">
+                                    <h3 class="font-bold text-sm md:text-base border-b-2 border-slate-900 mb-4 pb-2">Consolidated P&L (M)</h3>
+                                    <div class="space-y-2 text-xs md:text-sm">
+                                        <div class="flex justify-between"><span>Revenue</span> <span>${fmt(d.rev)}</span></div>
+                                        <div class="flex justify-between text-red-700"><span>COGS</span> <span>${fmt(-d.cogs)}</span></div>
+                                        <div class="flex justify-between font-bold bg-slate-100 px-1"><span>Gross Profit</span> <span>${fmt(d.grossProfit)}</span></div>
+                                        <div class="flex justify-between text-red-700"><span>SG&A</span> <span>${fmt(-d.sga)}</span></div>
+                                        <div class="flex justify-between text-red-700"><span>R&D</span> <span>${fmt(-d.rd)}</span></div>
+                                        <div class="flex justify-between text-red-700"><span>Depreciation</span> <span>${fmt(-d.dep)}</span></div>
+                                        <div class="flex justify-between font-bold bg-slate-100 px-1"><span>EBIT</span> <span>${fmt(d.ebit)}</span></div>
+                                        <div class="flex justify-between text-red-700"><span>Interest</span> <span>${fmt(-d.interest)}</span></div>
+                                        <div class="flex justify-between text-red-700"><span>Taxes</span> <span>${fmt(-d.taxes)}</span></div>
+                                        <div class="flex justify-between font-bold border-t-2 border-double border-slate-900 pt-1 text-sm md:text-base"><span>Net Income</span> <span>${fmt(d.netIncome)}</span></div>
+                                    </div>
+                                </div>
+
+                                <div id="doc-balance" style="display:none;">
+                                    <div class="mb-6 overflow-x-auto">
+                                        <h3 class="font-bold text-sm md:text-base border-b-2 border-slate-900 mb-3 pb-1">Year-End Snapshot</h3>
+                                        <div class="grid grid-cols-2 gap-4 text-[10px] md:text-sm min-w-[250px]">
+                                            <div>
+                                                <div class="text-slate-500 uppercase font-bold mb-1">Assets</div>
+                                                <div class="flex justify-between border-b border-slate-200"><span>Cash</span> <span>$${d.cashBal.toLocaleString()}</span></div>
+                                                <div class="flex justify-between border-b border-slate-200"><span>A/R</span> <span>$${d.arBal.toLocaleString()}</span></div>
+                                                <div class="flex justify-between border-b border-slate-200"><span>Inventory</span> <span>$${d.invBal.toLocaleString()}</span></div>
+                                                <div class="flex justify-between border-b border-slate-200"><span>Prepaid</span> <span>$${d.prepaidBal.toLocaleString()}</span></div>
+                                            </div>
+                                            <div>
+                                                <div class="text-slate-500 uppercase font-bold mb-1">Liabilities</div>
+                                                <div class="flex justify-between border-b border-slate-200"><span>A/P</span> <span>$${d.apBal.toLocaleString()}</span></div>
+                                                <div class="flex justify-between border-b border-slate-200"><span>Accrued</span> <span>$${d.accruedBal.toLocaleString()}</span></div>
+                                                <div class="flex justify-between border-b border-slate-200"><span>ST Debt</span> <span>$${d.stDebtBal.toLocaleString()}</span></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <h3 class="font-bold text-sm md:text-base border-b-2 border-slate-900 mb-3 pb-1">Working Capital Changes</h3>
+                                    <div class="space-y-2 text-[10px] md:text-sm mb-4">
+                                        <div class="flex justify-between items-center border-b border-dotted border-slate-400 pb-1">
+                                            <span>A/R</span> <span class="${deltaColor(d.deltaAR, 0)} font-bold">${fmtDelta(d.deltaAR)}</span>
+                                        </div>
+                                        <div class="flex justify-between items-center border-b border-dotted border-slate-400 pb-1">
+                                            <span>Inventory</span> <span class="${deltaColor(d.deltaInv, 0)} font-bold">${fmtDelta(d.deltaInv)}</span>
+                                        </div>
+                                        <div class="flex justify-between items-center border-b border-dotted border-slate-400 pb-1">
+                                            <span>A/P</span> <span class="${deltaColor(d.deltaAP, 1)} font-bold">${fmtDelta(d.deltaAP)}</span>
+                                        </div>
+                                    </div>
+                                    <div class="p-2 bg-blue-50 border border-blue-200 text-[10px]"><strong>Investing:</strong> CapEx was <strong>$${d.capex.toLocaleString()}</strong>.</div>
+                                </div>
+                                
+                                <div id="doc-notes" style="display:none;">
+                                    <h3 class="font-bold text-sm md:text-base border-b-2 border-slate-900 mb-4 pb-2">MD&A</h3>
+                                    <div class="space-y-4 text-xs font-serif leading-relaxed">
+                                        <p><strong>Note 12:</strong> SG&A includes a <strong>$${d.adjAmount.toLocaleString()} million</strong> one-time charge related to a ${d.adjType}.</p>
+                                        <p><strong>Note 14:</strong> Routine severance was $15 million.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="lg:col-span-5 flex flex-col bg-slate-800 p-4 md:p-6 rounded-xl border border-slate-700 shadow-xl">
+                            <h3 class="text-base md:text-lg font-bold text-white mb-4 border-b border-slate-600 pb-2">Analyst Terminal</h3>
+                            <div class="space-y-4 md:space-y-6 flex-1 overflow-y-auto">
+                                <div>
+                                    <label class="text-[10px] md:text-xs text-purple-400 uppercase font-bold block mb-1">1. Normalized EBITDA ($M)</label>
+                                    <input type="number" id="ebitda-input" class="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white font-mono focus:border-purple-500 transition outline-none" placeholder="Enter value...">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] md:text-xs text-purple-400 uppercase font-bold block mb-1">2. Free Cash Flow ($M)</label>
+                                    <input type="number" id="fcf-input" class="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white font-mono focus:border-purple-500 transition outline-none" placeholder="Enter value...">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] md:text-xs text-purple-400 uppercase font-bold block mb-1">3. Net Working Capital ($M)</label>
+                                    <input type="number" id="nwc-input" class="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white font-mono focus:border-purple-500 transition outline-none" placeholder="Assets - Liabs">
+                                </div>
+                            </div>
+                            <button onclick="checkFinance()" class="mt-6 w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 md:py-4 rounded transition shadow-lg uppercase text-xs md:text-sm">Verify</button>
+                            <div id="finance-error" class="mt-4 text-red-400 text-xs hidden bg-red-900/20 p-2 rounded border border-red-900/50 text-center"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            window.toggleFinanceTab = toggleFinanceTab;
+        }
+
+        function checkFinance() {
+            const ebitdaIn = parseInt(document.getElementById('ebitda-input').value);
+            const fcfIn = parseInt(document.getElementById('fcf-input').value);
+            const nwcIn = parseInt(document.getElementById('nwc-input').value);
+            const d = state.activeScenario.finance;
+            if (ebitdaIn === d.ansEbitda && fcfIn === d.ansFcf && nwcIn === d.ansNwc) { nextStage(); } 
+            else { 
+                playErrorSound(); 
+                const err = document.getElementById('finance-error');
+                err.innerHTML = `Computation Mismatch. <br> Verify your formulas for Non-Recurring Items and Working Capital signs.`;
+                err.classList.remove('hidden'); err.classList.add('shake');
+                setTimeout(() => err.classList.remove('shake'), 500);
+                penalize(120, 15); 
+            }
+        }
+
+        // --- Stage 2: Ops ---
+        function renderOpsStage(container) {
+            const d = state.activeScenario.ops;
+            container.innerHTML = `
+                <div class="max-w-6xl mx-auto pb-12">
+                    <div class="mb-4 flex flex-col md:flex-row justify-between items-start gap-2">
+                        <div>
+                            <h2 class="text-lg md:text-2xl font-bold text-white">Lvl 2: Project Crashing</h2>
+                            <p class="text-slate-400 text-xs md:text-sm">Critical Path: <strong>${d.criticalPath} Days</strong>. Target: <strong>${d.target} Days</strong>.</p>
+                        </div>
+                        <div class="text-[10px] md:text-xs text-slate-500 font-mono bg-slate-900 p-2 rounded">GOAL: ${d.target} DAYS</div>
+                    </div>
+
+                    <div class="flex flex-col lg:flex-row gap-4 md:gap-6">
+                        <div class="flex-1 bg-slate-900 p-2 md:p-4 rounded border border-slate-700 shadow-inner min-h-[250px] md:min-h-[300px] relative overflow-hidden">
+                             <svg width="100%" height="100%" viewBox="0 0 600 300" preserveAspectRatio="xMidYMid meet">
+                                <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#64748b" /></marker></defs>
+                                <line x1="50" y1="150" x2="200" y2="80" stroke="#475569" stroke-width="2" marker-end="url(#arrow)" />
+                                <line x1="200" y1="80" x2="400" y2="80" stroke="#475569" stroke-width="2" marker-end="url(#arrow)" />
+                                <line x1="400" y1="80" x2="550" y2="150" stroke="#475569" stroke-width="2" marker-end="url(#arrow)" />
+                                <line x1="50" y1="150" x2="200" y2="220" stroke="#475569" stroke-width="2" marker-end="url(#arrow)" />
+                                <line x1="200" y1="220" x2="400" y2="220" stroke="#475569" stroke-width="2" marker-end="url(#arrow)" />
+                                <line x1="400" y1="220" x2="550" y2="150" stroke="#475569" stroke-width="2" marker-end="url(#arrow)" />
+                                <circle cx="50" cy="150" r="20" fill="#2563eb" /> <text x="50" y="155" text-anchor="middle" fill="white" font-size="10" font-weight="bold">S</text>
+                                <rect x="170" y="50" width="60" height="60" fill="#1e293b" stroke="#64748b" stroke-width="2" rx="4" />
+                                <text x="200" y="75" text-anchor="middle" fill="white" font-weight="bold">A</text>
+                                <text x="200" y="95" text-anchor="middle" fill="#94a3b8" font-size="10">${d.dur.A}d</text>
+                                <rect x="170" y="190" width="60" height="60" fill="#1e293b" stroke="#64748b" stroke-width="2" rx="4" />
+                                <text x="200" y="215" text-anchor="middle" fill="white" font-weight="bold">B</text>
+                                <text x="200" y="235" text-anchor="middle" fill="#94a3b8" font-size="10">${d.dur.B}d</text>
+                                <rect x="370" y="50" width="60" height="60" fill="#1e293b" stroke="#64748b" stroke-width="2" rx="4" />
+                                <text x="400" y="75" text-anchor="middle" fill="white" font-weight="bold">C</text>
+                                <text x="400" y="95" text-anchor="middle" fill="#94a3b8" font-size="10">${d.dur.C}d</text>
+                                <rect x="370" y="190" width="60" height="60" fill="#1e293b" stroke="#64748b" stroke-width="2" rx="4" />
+                                <text x="400" y="215" text-anchor="middle" fill="white" font-weight="bold">D</text>
+                                <text x="400" y="235" text-anchor="middle" fill="#94a3b8" font-size="10">${d.dur.D}d</text>
+                                <circle cx="550" cy="150" r="20" fill="#16a34a" /> <text x="550" y="155" text-anchor="middle" fill="white" font-size="10" font-weight="bold">E</text>
+                            </svg>
+                        </div>
+
+                        <div class="w-full lg:w-96 bg-slate-800 p-4 md:p-6 rounded border border-slate-600 flex flex-col gap-4">
+                            <h3 class="font-bold text-white border-b border-slate-600 pb-2 text-sm md:text-base">Crash Cost Table</h3>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-xs md:text-sm text-left text-slate-400 mb-4">
+                                    <thead class="text-[10px] md:text-xs uppercase bg-slate-900 text-slate-300">
+                                        <tr><th class="p-2">Task</th><th class="p-2">Limit</th><th class="p-2">Cost/Day</th></tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-700">
+                                        <tr><td class="p-2 text-white font-bold">A</td><td class="p-2">1</td><td class="p-2">$${d.crashCosts.A}</td></tr>
+                                        <tr><td class="p-2 text-white font-bold">B</td><td class="p-2">2</td><td class="p-2">$${d.crashCosts.B}</td></tr>
+                                        <tr><td class="p-2 text-white font-bold">C</td><td class="p-2">2</td><td class="p-2">$${d.crashCosts.C}</td></tr>
+                                        <tr><td class="p-2 text-white font-bold">D</td><td class="p-2">2</td><td class="p-2">$${d.crashCosts.D}</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div>
+                                <label class="text-[10px] md:text-xs font-bold text-slate-300 uppercase">Minimum Cost ($)</label>
+                                <input type="number" id="crash-input" class="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white font-mono mt-1 text-sm" placeholder="Enter cost...">
+                            </div>
+                            <button onclick="checkOps()" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 md:py-4 rounded transition mt-2 shadow-lg text-xs md:text-sm">EXECUTE</button>
+                            <p id="ops-error" class="text-red-500 text-xs mt-2 hidden font-mono bg-red-900/20 p-2 rounded text-center"></p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function checkOps() {
+            const val = parseInt(document.getElementById('crash-input').value);
+            const ans = state.activeScenario.ops.ansCost;
+            if (val === ans) { nextStage(); } 
+            else { playErrorSound(); const err = document.getElementById('ops-error'); err.innerText = `FAILED. Optimization not optimal. Re-calculate critical path costs.`; err.classList.remove('hidden'); penalize(120, 15); }
+        }
+
+        // --- Stage 3: Strategy ---
+        let cardLocations = {};
+        let draggedCardId = null;
+        let selectedCardId = null;
+
+        function allowDrop(ev) {
+            ev.preventDefault();
+            const zone = ev.currentTarget;
+            if (zone.classList.contains('drop-zone-container')) { zone.classList.add('drop-zone-active'); }
+        }
+        function dragEnd(ev) { document.querySelectorAll('.drop-zone-active').forEach(el => el.classList.remove('drop-zone-active')); ev.target.style.opacity = "1"; }
+        function drag(ev, id) { draggedCardId = id; ev.dataTransfer.setData("text", id); ev.dataTransfer.effectAllowed = "move"; setTimeout(() => ev.target.style.opacity = "0.5", 0); }
+        function drop(ev, targetZoneType) { ev.preventDefault(); document.querySelectorAll('.drop-zone-active').forEach(el => el.classList.remove('drop-zone-active')); if (!draggedCardId) return; moveCard(draggedCardId, targetZoneType); draggedCardId = null; }
+        
+        function handleCardClick(id) {
+            if (selectedCardId === id) { selectedCardId = null; document.getElementById(`strat-card-${id}`).classList.remove('card-selected'); return; }
+            if (selectedCardId) { const prev = document.getElementById(`strat-card-${selectedCardId}`); if(prev) prev.classList.remove('card-selected'); }
+            selectedCardId = id; document.getElementById(`strat-card-${id}`).classList.add('card-selected');
+        }
+        function handleZoneClick(zoneType) {
+            if (!selectedCardId) return;
+            moveCard(selectedCardId, zoneType);
+            document.getElementById(`strat-card-${selectedCardId}`).classList.remove('card-selected');
+            selectedCardId = null;
+        }
+        function moveCard(cardId, targetZoneType) {
+            cardLocations[cardId] = targetZoneType; 
+            const cardEl = document.getElementById(`strat-card-${cardId}`);
+            let targetContainer = targetZoneType ? document.querySelector(`div[data-type="${targetZoneType}"] .zone-content`) : document.getElementById('card-deck');
+            if (targetContainer && cardEl) {
+                targetContainer.appendChild(cardEl);
+                if (targetZoneType) { cardEl.classList.remove('border-slate-300', 'border-l-4'); cardEl.classList.add('bg-purple-100', 'border-2', 'border-purple-500'); }
+                else { cardEl.classList.remove('bg-purple-100', 'border-2', 'border-purple-500'); cardEl.classList.add('border-slate-300', 'border-l-4'); }
+            }
+            saveGameState(state); // Save state after moving a card
+        }
+
+        function renderStrategyStage(container) {
+            const cards = state.activeScenario.strategy;
+            cardLocations = {};
+            cards.forEach(c => cardLocations[c.id] = null);
+
+            container.innerHTML = `
+                <div class="max-w-7xl mx-auto pb-12">
+                    <h2 class="text-lg md:text-2xl font-bold text-white mb-2">Lvl 3: Porter's Five Forces</h2>
+                    <p class="text-slate-400 mb-4 text-xs md:text-sm"><strong>Drag & Drop</strong> cards, or <strong>Tap Card then Tap Zone</strong>.</p>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-6" id="drop-zones">
+                        ${['Supplier Power', 'Buyer Power', 'Threat of Substitutes', 'Competitive Rivalry', 'Threat of Entry'].map(force => `
+                            <div class="drop-zone-container bg-slate-900 border-2 border-dashed border-slate-600 rounded p-3 min-h-[100px] md:min-h-[150px] flex flex-col items-center transition-colors duration-200" 
+                                 data-type="${force}" onclick="handleZoneClick('${force}')" ondragover="allowDrop(event)" ondrop="drop(event, '${force}')">
+                                <h3 class="font-bold text-slate-400 text-[10px] uppercase tracking-wider mb-2 text-center h-auto min-h-[20px] flex items-center pointer-events-none">${force}</h3>
+                                <div class="zone-content w-full space-y-2 pointer-events-none pb-2"></div>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <div class="bg-slate-700/50 p-3 md:p-6 rounded-lg border border-slate-600">
+                        <div class="flex justify-between items-center mb-2 md:mb-4">
+                            <h4 class="text-xs md:text-sm font-bold text-slate-300">INTEL CARDS</h4>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 min-h-[100px] drop-zone-container transition-all" 
+                             id="card-deck" onclick="handleZoneClick(null)" ondragover="allowDrop(event)" ondrop="drop(event, null)"></div>
+                    </div>
+                     <div class="flex gap-3 mt-6">
+                         <button onclick="checkStrategy()" class="flex-1 bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 md:py-4 rounded transition shadow-lg uppercase text-xs md:text-sm">Submit</button>
+                         <button id="strat-reset-btn" onclick="resetStrategy()" class="hidden w-auto px-6 bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 md:py-4 rounded transition shadow-lg uppercase border border-slate-500 flex items-center justify-center gap-2 text-xs md:text-sm"><i class="fas fa-undo"></i> Reset</button>
+                     </div>
+                     <div id="strat-error" class="mt-2 text-red-400 text-center hidden font-bold bg-red-900/20 p-2 rounded border border-red-900/50 text-xs">Incorrect Analysis. Try Resetting.</div>
+                </div>
+            `;
+            const deck = document.getElementById('card-deck');
+            cards.forEach(c => {
+                const div = document.createElement('div');
+                div.id = `strat-card-${c.id}`;
+                div.className = "draggable-card bg-white text-slate-900 p-2 md:p-3 rounded shadow text-[10px] md:text-[11px] font-bold hover:bg-purple-50 text-left h-auto border-l-4 border-slate-300 transition-all duration-200 flex items-center select-none cursor-pointer";
+                div.innerText = c.text;
+                div.draggable = true;
+                div.setAttribute('ondragstart', `drag(event, '${c.id}')`);
+                div.setAttribute('ondragend', `dragEnd(event)`);
+                div.setAttribute('onclick', `handleCardClick('${c.id}'); event.stopPropagation();`);
+                deck.appendChild(div);
+            });
+            
+            // Re-apply card positions from saved state if necessary (simple implementation)
+            if (state.currentStage === 2 && state.stageResults.length === 2) {
+                state.activeScenario.strategy.forEach(c => {
+                    if (c.force === cardLocations[c.id]) {
+                        moveCard(c.id, c.force); 
+                    }
+                });
+            }
+        }
+
+        function checkStrategy() {
+            let correct = true;
+            state.activeScenario.strategy.forEach(card => { if (cardLocations[card.id] !== card.force) correct = false; });
+            if (correct) { nextStage(); } 
+            else { playErrorSound(); document.getElementById('strat-error').classList.remove('hidden'); document.getElementById('strat-reset-btn').classList.remove('hidden'); penalize(120, 15); }
+        }
+
+        function resetStrategy() {
+             const deck = document.getElementById('card-deck');
+             state.activeScenario.strategy.forEach(c => {
+                 cardLocations[c.id] = null;
+                 const cardEl = document.getElementById(`strat-card-${c.id}`);
+                 if (cardEl) { deck.appendChild(cardEl); cardEl.classList.remove('bg-purple-100', 'border-2', 'border-purple-500', 'card-selected'); cardEl.classList.add('border-slate-300', 'border-l-4'); cardEl.innerText = c.text; }
+             });
+             selectedCardId = null;
+             document.getElementById('strat-error').classList.add('hidden');
+             document.getElementById('strat-reset-btn').classList.add('hidden');
+             saveGameState(state); // Save after resetting
+        }
+
+        // --- Stage 4: Marketing ---
+        function renderMarketingStage(container) {
+            const d = state.activeScenario.marketing;
+            container.innerHTML = `
+                <div class="max-w-4xl mx-auto">
+                    <div class="mb-6 text-center md:text-left">
+                        <h2 class="text-lg md:text-2xl font-bold text-white mb-1">Lvl 4: Market Viability</h2>
+                        <p class="text-slate-400 text-xs md:text-sm">Calculate <strong>Lifetime Value (LTV)</strong>.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
+                        <div class="bg-slate-800 p-4 md:p-6 rounded-xl border border-slate-700 shadow-lg flex flex-col items-center justify-center text-center">
+                            <div class="text-slate-500 text-[10px] md:text-xs font-bold uppercase mb-2">Avg Revenue</div>
+                            <div class="text-2xl md:text-3xl font-mono font-bold text-white">$${d.arpu}</div>
+                        </div>
+                        <div class="bg-slate-800 p-4 md:p-6 rounded-xl border border-slate-700 shadow-lg flex flex-col items-center justify-center text-center">
+                            <div class="text-slate-500 text-[10px] md:text-xs font-bold uppercase mb-2">Gross Margin</div>
+                            <div class="text-2xl md:text-3xl font-mono font-bold text-green-400">${(d.margin * 100).toFixed(0)}%</div>
+                        </div>
+                        <div class="bg-slate-800 p-4 md:p-6 rounded-xl border border-slate-700 shadow-lg flex flex-col items-center justify-center text-center">
+                            <div class="text-slate-500 text-[10px] md:text-xs font-bold uppercase mb-2">Churn Rate</div>
+                            <div class="text-2xl md:text-3xl font-mono font-bold text-red-400">${(d.churn * 100).toFixed(1)}%</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900 p-6 md:p-8 rounded-xl border border-slate-600 shadow-2xl max-w-lg mx-auto">
+                        <label class="text-[10px] md:text-xs font-bold text-purple-400 uppercase mb-2 block text-center">Estimated LTV ($)</label>
+                        <input type="number" id="ltv-input" class="w-full bg-slate-950 border border-slate-700 rounded p-3 md:p-4 text-white font-mono text-xl md:text-2xl text-center focus:border-purple-500 transition outline-none mb-4 md:mb-6 placeholder="???">
+                        <button onclick="checkMarketing()" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 md:py-4 rounded transition shadow-lg uppercase tracking-widest text-xs md:text-sm">Validate Model</button>
+                        <div id="marketing-error" class="mt-4 text-red-400 text-xs hidden bg-red-900/20 p-3 rounded border border-red-900/50 text-center font-mono">Incorrect Model. Check your Margin and Churn calculations.</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function checkMarketing() {
+            const input = parseInt(document.getElementById('ltv-input').value);
+            const correct = state.activeScenario.marketing.ansLtv;
+            if (input >= correct - 5 && input <= correct + 5) { nextStage(); } 
+            else { playErrorSound(); document.getElementById('marketing-error').classList.remove('hidden'); penalize(120, 15); }
+        }
+
+        // --- Stage 5: Analytics ---
+        function renderAnalyticsStage(container) {
+             const d = state.activeScenario.analytics;
+             container.innerHTML = `
+                <div class="max-w-5xl mx-auto">
+                    <div class="mb-4 md:mb-6">
+                        <h2 class="text-lg md:text-2xl font-bold text-white mb-1">Lvl 5: Forensic Analytics</h2>
+                        <p class="text-slate-400 text-xs md:text-sm">Find the fraud. Rule: <strong>Profit = Revenue × Margin %</strong>.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2 bg-slate-950 rounded-lg border border-slate-700 overflow-hidden shadow-2xl flex flex-col h-[300px] md:h-[400px]">
+                            <div class="bg-slate-900 p-2 border-b border-slate-800 flex justify-between items-center"><span class="text-[10px] md:text-xs font-mono text-green-500">root@apex-server:~/logs</span><div class="flex gap-1"><div class="w-2 h-2 md:w-3 md:h-3 rounded-full bg-red-500"></div><div class="w-2 h-2 md:w-3 md:h-3 rounded-full bg-yellow-500"></div><div class="w-2 h-2 md:w-3 md:h-3 rounded-full bg-green-500"></div></div></div>
+                            <div class="overflow-y-auto overflow-x-auto flex-1 p-2 md:p-4 font-mono text-[10px] md:text-sm scrollbar-hide">
+                                <table class="w-full text-left border-collapse min-w-[300px]">
+                                    <thead><tr class="text-slate-500 border-b border-slate-800"><th class="pb-2">ID</th><th class="pb-2 text-right">REV</th><th class="pb-2 text-right">MARGIN</th><th class="pb-2 text-right">PROFIT</th></tr></thead>
+                                    <tbody class="text-slate-300 divide-y divide-slate-900">
+                                        ${d.rows.map(row => `<tr class="hover:bg-slate-900/50 transition-colors"><td class="py-2 text-purple-400">${row.id}</td><td class="py-2 text-right">$${row.revenue.toLocaleString()}</td><td class="py-2 text-right">${(row.marginPct * 100).toFixed(0)}%</td><td class="py-2 text-right font-bold">$${row.profit.toLocaleString()}</td></tr>`).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="bg-slate-800 p-4 md:p-6 rounded-lg border border-slate-700 flex flex-col justify-center">
+                            <label class="text-[10px] md:text-xs font-bold text-slate-400 uppercase mb-2 block">Corrupted ID</label>
+                            <input type="text" id="analytics-input" class="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white font-mono text-center uppercase tracking-wider focus:border-purple-500 transition outline-none mb-4" placeholder="TX-XXXX">
+                            <button onclick="checkAnalytics()" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 md:py-4 rounded transition shadow-lg uppercase tracking-widest text-xs md:text-sm">Verify Integrity</button>
+                            <div id="analytics-error" class="mt-4 text-red-400 text-xs hidden bg-red-900/20 p-2 rounded border border-red-900/50 text-center">Incorrect. That transaction follows the revenue rules.</div>
+                        </div>
+                    </div>
+                </div>
+             `;
+        }
+
+        function checkAnalytics() {
+            const input = document.getElementById('analytics-input').value.trim().toUpperCase();
+            const correct = state.activeScenario.analytics.correctId;
+            if (input === correct) { nextStage(); } 
+            else { playErrorSound(); document.getElementById('analytics-error').classList.remove('hidden'); penalize(120, 15); }
+        }
+
+        // --- Stage 6: Ethics ---
+        const negotiationTree = {
+            start: {
+                npc: "The board will authorize a $2M 'consulting fee' if you delete the file. We sign, stock goes up, everyone wins.",
+                options: [
+                    { text: "I'm deleting the files. Send money.", next: 'fail_bribe' },
+                    { text: "This is fraud. Calling SEC.", next: 'fail_threat' },
+                    { text: "A bribe won't cover prison time. We need a real solution.", next: 'step2' }
+                ]
+            },
+            fail_bribe: { npc: "[SYSTEM]: You accepted the bribe. Flagged by FBI. Game Over.", gameOver: true, win: false },
+            fail_threat: { npc: "You have no leverage. Access wiped. Security is escorting you out.", gameOver: true, win: false },
+            step2: {
+                npc: "If you leak this, the company goes bankrupt and 5,000 people lose their jobs. Is that what you want?",
+                options: [
+                    { text: "I don't care. I care about the law.", next: 'fail_heartless' },
+                    { text: "If we sign, they lose jobs in 6 months anyway. Restructure now.", next: 'step3' }
+                ]
+            },
+            fail_heartless: { npc: "You're a liability. Goodbye.", gameOver: true, win: false },
+            step3: {
+                npc: "Restructure... risky. My stock options will be worthless. Why should I agree?",
+                options: [
+                    { text: "Self-reporting gets leniency. Leaking it gets you 20 years.", next: 'win' },
+                    { text: "It's the right thing to do.", next: 'fail_naive' }
+                ]
+            },
+            fail_naive: { npc: "Integrity doesn't pay bills. You're fired.", gameOver: true, win: false },
+            win: { npc: "...Fine. Prepare the disclosure. We halt the deal.", gameOver: true, win: true }
+        };
+        
+        function renderEthicsStage(container) {
+            container.innerHTML = `
+                <div class="max-w-3xl mx-auto pb-12">
+                     <div class="bg-red-500/10 border border-red-500 text-red-500 p-3 md:p-4 rounded mb-4 md:mb-6 animate-pulse text-center text-xs md:text-base">
+                        <i class="fas fa-exclamation-triangle mr-2"></i> INCOMING ENCRYPTED CALL: CHAIRMAN
+                    </div>
+                    <div id="negotiation-ui" class="bg-slate-900 p-4 md:p-6 rounded-xl border border-slate-700 shadow-2xl min-h-[300px] md:min-h-[400px] flex flex-col">
+                        <div id="npc-text" class="bg-slate-800 p-4 md:p-6 rounded-lg mb-4 md:mb-6 text-green-400 font-mono border-l-4 border-green-500 text-xs md:text-lg leading-relaxed shadow-inner"></div>
+                        <div id="player-options" class="space-y-2 md:space-y-3 mt-auto"></div>
+                    </div>
+                </div>
+            `;
+            runNegotiation('start');
+        }
+
+        function runNegotiation(nodeId) {
+            const node = negotiationTree[nodeId];
+            const textEl = document.getElementById('npc-text');
+            const optsEl = document.getElementById('player-options');
+            textEl.innerHTML = `<span class="text-slate-500 text-xs block mb-2">CHAIRMAN_ID_99:</span> ${node.npc}`;
+            if (node.gameOver) {
+                setTimeout(() => endGame(node.win, node.npc), 2000);
+                optsEl.innerHTML = '';
+                return;
+            }
+            optsEl.innerHTML = '';
+            node.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-3 md:p-4 bg-slate-800 hover:bg-purple-900 border border-slate-600 hover:border-purple-500 rounded transition text-slate-300 hover:text-white font-medium flex items-center gap-3 group text-sm md:text-base";
+                btn.innerHTML = `<i class="fas fa-chevron-right text-slate-500 group-hover:text-purple-400 shrink-0"></i> ${opt.text}`;
+                btn.onclick = () => runNegotiation(opt.next);
+                optsEl.appendChild(btn);
+            });
+            saveGameState(state); // Save state after each negotiation step
+        }
+
+        function endGame(isWin, message) {
+            clearInterval(state.interval);
+            if (isWin) {
+                const duration = Math.floor((Date.now() - state.stageStartTime) / 1000);
+                state.stageResults.push({ name: state.stages[state.currentStage].name, score: state.currentStageScore, time: duration });
+                // Clear the saved game state on successful completion (MOCK/Fallback removal)
+                localStorage.removeItem('dd_game_fallback_' + state.playerName);
+            }
+
+            const modal = document.createElement('div');
+            modal.className = "fixed inset-0 bg-black/95 z-50 flex items-center justify-center text-center p-4 animate-fade-in";
+            const color = isWin ? "text-purple-500" : "text-red-500";
+            const title = isWin ? "LEGEND STATUS" : "TERMINATED";
+            const icon = isWin ? "fa-user-secret" : "fa-ban";
+            
+            let totalScore = 0;
+            let tableRows = "";
+            state.stageResults.forEach(r => {
+                totalScore += r.score;
+                tableRows += `<tr class="border-b border-slate-700 text-sm"><td class="p-2 text-left text-slate-400">${r.name}</td><td class="p-2 text-right text-white font-mono">${r.time}s</td><td class="p-2 text-right font-bold text-purple-400">${r.score}/100</td></tr>`;
+            });
+            const avgScore = state.stageResults.length > 0 ? Math.round(totalScore / state.stageResults.length) : 0;
+
+            let content = "";
+            if (isWin) {
+                playSuccessSound();
+                const certImg = generateCertificate(avgScore);
+                content = `
+                    <div class="max-w-4xl w-full transform transition-all scale-100 border-2 border-purple-500 p-4 md:p-8 rounded-xl bg-slate-900 flex flex-col items-center max-h-[90vh] overflow-y-auto">
+                        <i class="fas ${icon} text-5xl md:text-6xl ${color} mb-4"></i>
+                        <h1 class="text-2xl md:text-4xl font-bold text-white mb-2 tracking-tighter uppercase">${title}</h1>
+                        <p class="text-sm md:text-lg text-slate-300 mb-6 leading-relaxed font-light font-mono border-b border-slate-700 pb-4 w-full">${message}</p>
+                        <div class="w-full max-w-md bg-slate-950 rounded-lg border border-slate-700 mb-6 overflow-hidden"><div class="bg-slate-800 p-2 font-bold text-xs uppercase text-center border-b border-slate-700">Mission Report Card</div><table class="w-full"><thead class="text-xs uppercase text-slate-500 bg-slate-900"><tr><th class="p-2 text-left">Protocol</th><th class="p-2 text-right">Time</th><th class="p-2 text-right">Score</th></tr></thead><tbody>${tableRows}</tbody><tfoot class="bg-slate-900 font-bold text-white"><tr><td class="p-3 text-left" colspan="2">FINAL WEIGHTED SCORE</td><td class="p-3 text-right text-green-400 text-lg">${avgScore}/100</td></tr></tfoot></table></div>
+                        <div class="w-full max-w-2xl mb-6 border-4 border-slate-800 rounded-lg overflow-hidden shadow-2xl"><img src="${certImg}" alt="Certificate" class="w-full h-auto"></div>
+                        <div class="flex flex-col md:flex-row gap-4 w-full max-w-2xl"><button onclick="downloadCertificate('${state.playerName}', ${avgScore})" class="flex-1 bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded-lg transition shadow-lg flex items-center justify-center gap-2"><i class="fas fa-download"></i> Download Certificate</button><button onclick="shareLinkedIn()" class="flex-1 bg-[#0077b5] hover:bg-[#006097] text-white font-bold py-3 rounded-lg transition shadow-lg flex items-center justify-center gap-2"><i class="fab fa-linkedin"></i> Share Achievement</button></div><button onclick="location.reload()" class="mt-6 text-slate-500 hover:text-white text-sm underline">Start New Simulation</button>
+                    </div>
+                `;
+            } else {
+                playErrorSound();
+                content = `
+                    <div class="max-w-2xl transform transition-all scale-100 border-2 border-red-500 p-8 rounded-xl bg-slate-900 w-full">
+                        <i class="fas ${icon} text-6xl md:text-7xl ${color} mb-6 animate-pulse"></i>
+                        <h1 class="text-3xl md:text-5xl font-bold text-white mb-4 tracking-tighter uppercase">${title}</h1>
+                        <p class="text-lg md:text-xl text-slate-300 mb-8 leading-relaxed font-light font-mono border-t border-b border-slate-700 py-4">${message}</p>
+                        <div class="w-full bg-slate-950 rounded-lg border border-slate-700 mb-6 overflow-hidden"><table class="w-full"><thead class="text-xs uppercase text-slate-500 bg-slate-900"><tr><th class="p-2 text-left">Completed Protocols</th><th class="p-2 text-right">Score</th></tr></thead><tbody>${tableRows}</tbody></table></div>
+                        <button onclick="location.reload()" class="bg-white text-slate-900 hover:bg-slate-200 font-bold py-3 md:py-4 px-8 md:px-10 rounded-full transition shadow-xl uppercase tracking-widest text-sm md:text-base">Re-Deploy</button>
+                    </div>
+                `;
+            }
+            modal.innerHTML = content;
+            document.body.appendChild(modal);
+        }
+
+        // --- Certificate Generation ---
+        function generateCertificate(finalScore = null) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1200;
+            canvas.height = 800;
+            const ctx = canvas.getContext('2d');
+
+            // Background
+            ctx.fillStyle = "#f8f9fa";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Decorative Border
+            ctx.lineWidth = 20;
+            ctx.strokeStyle = "#4c1d95"; 
+            ctx.strokeRect(40, 40, canvas.width - 80, canvas.height - 80);
+            ctx.lineWidth = 5;
+            ctx.strokeStyle = "#d8b4fe"; 
+            ctx.strokeRect(65, 65, canvas.width - 130, canvas.height - 130);
+
+            // Watermark (Taxila Logo Placeholder)
+            ctx.save();
+            ctx.globalAlpha = 0.05;
+            ctx.font = "bold 150px Serif";
+            ctx.fillStyle = "#000";
+            ctx.textAlign = "center";
+            ctx.translate(canvas.width/2, canvas.height/2);
+            ctx.rotate(-Math.PI/6);
+            ctx.fillText("TAXILA", 0, 0);
+            ctx.restore();
+
+            // Header
+            ctx.fillStyle = "#1e293b";
+            ctx.font = "bold 60px serif"; 
+            ctx.textAlign = "center";
+            ctx.fillText("CERTIFICATE OF COMPLETION", canvas.width / 2, 200);
+
+            // Body Text
+            ctx.font = "30px sans-serif";
+            ctx.fillText("This is to certify that", canvas.width / 2, 280);
+
+            // Player Name
+            ctx.font = "bold italic 80px serif";
+            ctx.fillStyle = "#4c1d95";
+            ctx.fillText(state.playerName, canvas.width / 2, 380);
+            
+            // Line under name
+            ctx.beginPath();
+            ctx.moveTo(300, 400);
+            ctx.lineTo(900, 400);
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = "#4c1d95";
+            ctx.stroke();
+
+            // Description
+            ctx.fillStyle = "#1e293b";
+            ctx.font = "30px sans-serif";
+            ctx.fillText("Has successfully demonstrated expert proficiency in", canvas.width / 2, 460);
+            ctx.font = "bold 36px sans-serif";
+            ctx.fillText("THE DUE DILIGENCE DISASTER SIMULATION", canvas.width / 2, 520);
+
+            // Footer Area
+            const date = new Date().toLocaleDateString();
+            ctx.font = "20px sans-serif";
+            ctx.fillStyle = "#64748b";
+            
+            // Date (Left)
+            ctx.textAlign = "left";
+            ctx.fillText(`Date: ${date}`, 150, 680);
+            if (finalScore !== null) {
+                ctx.fillStyle = "#16a34a"; // Green for score
+                ctx.font = "bold 24px sans-serif";
+                ctx.fillText(`Score: ${finalScore}/100`, 150, 720);
+            }
+
+            // Signature (Right)
+            ctx.textAlign = "right";
+            ctx.fillStyle = "#1e293b";
+            ctx.font = "bold italic 28px serif"; 
+            ctx.fillText("Prof. Rajat Bohra, IIM A", canvas.width - 150, 670);
+            
+            ctx.beginPath();
+            ctx.moveTo(canvas.width - 450, 680);
+            ctx.lineTo(canvas.width - 150, 680);
+            ctx.strokeStyle = "#1e293b";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            ctx.font = "20px sans-serif";
+            ctx.fillText("Dean, Taxila Business School", canvas.width - 150, 710);
+
+            return canvas.toDataURL('image/png');
+        }
+
+        function downloadCertificate(name, score) {
+            const dataUrl = generateCertificate(score);
+            const link = document.createElement('a');
+            link.download = `Taxila_Certificate_${name}.png`;
+            link.href = dataUrl;
+            link.click();
+        }
+
+        function shareLinkedIn() {
+            const text = `I just successfully completed the expert-level "Due Diligence Disaster" simulation at Taxila Business School! 🎓🕵️‍♂️ #MBA #Finance #Strategy #TaxilaBusinessSchool`;
+            const url = `https://www.linkedin.com/feed/?shareActive=true&text=${encodeURIComponent(text)}`;
+            window.open(url, '_blank');
+        }
+    </script>
+</body>
+</html>

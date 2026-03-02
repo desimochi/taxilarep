@@ -283,17 +283,17 @@ export default function Page () {
       <div className="px-5 py-4">
         {showToast && <Toast message={message}/>}
         <div className="border border-gray-300 rounded-xl mt-4 bg-gradient-to-bl from-gray-700 to-stone-900 text-white p-4">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col sm:flex-row justify-between items-center">
             <h5 className="text-2xl font-bold">Course Manager</h5>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
             <input type="text" placeholder="search..."  className="p-2 rounded-sm text-gray-700"  value={search} onChange={(e) => setSearch(e.target.value)}/>
             <button onClick={toggleModal} className="bg-black py-2 px-4 flex gap-1 items-center rounded-lg">
-              <PlusCircleIcon className="h-5 w-5" /> Add Course
+              <PlusCircleIcon className="h-5 w-5" /> Add
             </button>
             </div>
           </div>
         </div>
-
+<div className="overflow-x-auto shadow-md sm:rounded-lg">
         <table className="w-full text-sm text-left mt-4">
           <thead className="text-xs uppercase bg-black text-white">
             <tr>
@@ -363,6 +363,7 @@ export default function Page () {
 </tbody>
 
         </table>
+        </div>
       </div>
       {isDel && (
         <div

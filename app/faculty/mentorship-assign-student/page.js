@@ -43,7 +43,7 @@ export default function Page(){
     <div className="bg-violet-200 w-full sm:w-80 h-40 rounded-full absolute top-1 opacity-20 max-sm:left-0 sm:right-56 z-0"></div>
     <div className="bg-violet-300 w-full sm:w-40 h-24 absolute top-0 -right-0 opacity-20 z-0"></div>
     <div className="bg-violet-500 w-full sm:w-40 h-24 absolute top-40 -right-0 opacity-20 z-0"></div>
-    <div className="w-full pt-12 px-16 relative z-10 backdrop-blur-3xl min-h-screen">
+    <div className="w-full pt-12 px-2 sm:px-16 relative z-10 backdrop-blur-3xl min-h-screen">
     <h1 className="text-3xl font-bold mb-2 font-sans">Mentorship Assigned Students </h1>
             <p className="text-sm text-gray-500 mb-8">Everyhting you need to know about Your Mentorship Responsbilities</p>
             <hr className=" border  border-spacing-y-0.5 mb-6"/>
@@ -59,7 +59,9 @@ export default function Page(){
         <div className="">
         
 
-            {loading?<FullWidthLoader/> :<table className="overflow-x-auto w-full text-center mt-4">
+            {loading?<FullWidthLoader/> :
+            <div className="overflow-x-auto shadow-md sm:rounded-lg">
+            <table className="overflow-x-auto w-full text-center mt-4">
                 <thead className="min-w-full border border-red-200 rounded-lg">
                     <tr  className="text-red-700 bg-red-50 font-normal text-sm border-b">
                         <th className="px-6 py-3">S.No.</th>
@@ -104,6 +106,7 @@ export default function Page(){
                     )}
                 </tbody>
             </table>
+            </div>
 }
         </div>
         </div>

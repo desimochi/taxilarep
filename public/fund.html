@@ -1,0 +1,2145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <title>Taxila Fund Manager - Career Mode</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        body { 
+            background-color: #0b1121; 
+            color: #e2e8f0; 
+            font-family: 'Barlow', sans-serif; 
+            font-weight: 300; 
+            letter-spacing: -0.01em;
+            -webkit-tap-highlight-color: transparent;
+            height: 100dvh;
+            padding-bottom: env(safe-area-inset-bottom); /* Safety for iPhone Home Bar */
+        }
+        
+        h1, h2, h3, .font-bold { font-weight: 500; } 
+        
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: #1e293b; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        .glass-panel { background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .stock-row { transition: all 0.2s; }
+        .stock-row:active { background-color: rgba(59, 130, 246, 0.1); }
+        .stock-row:hover { background-color: rgba(51, 65, 85, 0.6); }
+        .stock-row.active { background: linear-gradient(90deg, rgba(59, 130, 246, 0.2) 0%, rgba(30, 41, 59, 0) 100%); border-left: 3px solid #3b82f6; }
+        
+        .tab-btn { border-bottom: 2px solid transparent; opacity: 0.6; transition: all 0.2s; white-space: nowrap; }
+        .tab-btn:hover { opacity: 1; color: #fff; }
+        .tab-btn.active { border-color: #3b82f6; opacity: 1; color: #3b82f6; }
+        
+        .ticker-wrap { width: 100%; overflow: hidden; background: #0f172a; border-top: 1px solid #1e293b; border-bottom: 1px solid #1e293b; }
+        .ticker { display: inline-block; white-space: nowrap; padding-right: 100%; animation: ticker 120s linear infinite; }
+        @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+        
+        .pf-table th { font-size: 10px; text-transform: uppercase; color: #64748b; font-weight: 500; padding: 8px; text-align: right; white-space: nowrap; }
+        .pf-table th:first-child { text-align: left; }
+        .pf-table td { padding: 8px; border-bottom: 1px solid #1e293b; font-size: 13px; text-align: right; }
+        .pf-table td:first-child { text-align: left; }
+        
+        /* Mobile Accordion Details/Summary Styling */
+        details > summary { list-style: none; cursor: pointer; outline: none; }
+        details > summary::-webkit-details-marker { display: none; }
+        
+        .modal { transition: opacity 0.2s ease-in-out; pointer-events: none; opacity: 0; }
+        .modal.open { pointer-events: auto; opacity: 1; }
+        .modal-content { transform: scale(0.95); transition: transform 0.2s; max-height: 90dvh; overflow-y: auto; }
+        .modal.open .modal-content { transform: scale(1); }
+
+        .toast { animation: slideIn 0.3s ease-out forwards; pointer-events: auto; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .toast.hide { animation: fadeOut 0.3s ease-in forwards; }
+        @keyframes fadeOut { to { opacity: 0; transform: translateX(100%); } }
+
+        .help-tooltip { pointer-events: none; position: fixed; z-index: 100; background: rgba(15, 23, 42, 0.95); border: 1px solid #3b82f6; color: #fff; padding: 8px 12px; border-radius: 6px; font-size: 12px; max-width: 250px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5); display: none; }
+        body.help-active { cursor: help !important; }
+        body.help-active button, body.help-active input { cursor: help !important; }
+
+        @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+        .urgent-row { animation: pulse-red 2s infinite; border-left: 3px solid #ef4444; }
+        @keyframes progress-stripe { 0% { background-position: 1rem 0; } 100% { background-position: 0 0; } }
+        .progress-striped { background-image: linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent); background-size: 1rem 1rem; animation: progress-stripe 1s linear infinite; }
+    </style>
+</head>
+<body class="h-screen flex flex-col bg-[#0b1121] overflow-hidden">
+
+    <div id="help-tooltip" class="help-tooltip"></div>
+
+    <header class="bg-slate-900 border-b border-slate-800 flex flex-col lg:flex-row lg:items-center justify-between px-3 py-2 lg:px-4 shrink-0 z-10 gap-3 lg:gap-2 pt-[env(safe-area-inset-top)]">
+        <div class="flex items-center justify-between w-full lg:w-auto">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white font-bold shrink-0 shadow-lg shadow-blue-900/50">TF</div>
+                <div>
+                    <div class="flex items-center gap-3">
+                        <h1 class="font-bold text-slate-100 text-sm tracking-wide">TAXILA <span class="text-blue-500">FUND MANAGER</span></h1>
+                        <div class="flex items-center gap-1.5 bg-slate-800 px-2 py-0.5 rounded border border-slate-700 shadow-sm">
+                            <span id="tse-label" class="text-[9px] font-bold text-purple-400 tracking-wider">TSE</span>
+                            <span class="text-xs font-mono font-bold text-white" id="tse-index-display">10,000</span>
+                            <span class="text-[10px] font-mono font-bold text-slate-400" id="tse-pct-display">(0.00%)</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-x-2 text-[10px] uppercase tracking-wider text-slate-400 leading-tight">
+                        <span id="fund-cycle-display" class="text-amber-500 font-bold">Fund I</span>
+                        <span class="text-slate-600 hidden sm:inline">|</span>
+                        <span id="fund-objective-display" class="text-blue-400 font-bold">Large Cap Fund</span>
+                        <span class="text-slate-600 hidden sm:inline">|</span>
+                        <span id="year-display" class="text-emerald-400 font-mono font-bold whitespace-nowrap">Year 1 - Day 0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="w-full lg:w-auto flex flex-col sm:flex-row items-center gap-3 border-t lg:border-t-0 border-slate-800 pt-2 lg:pt-0">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full lg:w-auto lg:flex lg:gap-4 text-right flex-1 justify-end">
+                <div class="bg-slate-800 px-2 py-1.5 rounded border border-slate-700 flex flex-col justify-center items-center lg:items-end">
+                    <p class="text-[9px] text-slate-400 uppercase text-center">Career Capital</p>
+                    <span class="text-sm lg:text-xl font-bold text-blue-400 font-mono" id="career-capital-display">₹0</span>
+                </div>
+                <div class="flex flex-col items-center lg:items-end bg-slate-800/50 lg:bg-transparent rounded border lg:border-0 border-slate-800 p-1 lg:p-0">
+                    <p class="text-[9px] text-slate-400 uppercase">AUM</p>
+                    <div class="flex items-baseline gap-1 lg:gap-2">
+                        <p class="text-sm lg:text-lg font-mono font-bold text-white" id="nav-display">₹0</p>
+                        <div class="bg-blue-900/30 px-1.5 rounded border border-blue-800 flex items-center hidden lg:flex">
+                            <span class="text-[9px] text-blue-300">NAV</span>
+                            <span class="text-xs font-mono font-bold text-blue-400" id="unit-nav-display">10.00</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-slate-800 px-2 py-1.5 rounded border border-slate-700 flex flex-col justify-center items-center lg:items-end">
+                    <p class="text-[9px] text-slate-400 uppercase text-center">Total Fees</p>
+                    <span class="text-sm lg:text-xl font-bold text-amber-400 font-mono" id="commission-display">₹0</span>
+                </div>
+                <div class="bg-slate-800 px-2 py-1.5 rounded border border-slate-700 flex flex-col justify-center items-center lg:items-end">
+                    <p class="text-[9px] text-slate-400 uppercase text-center">Score</p>
+                    <span class="text-sm lg:text-xl font-bold text-white" id="perf-score">50</span>
+                </div>
+            </div>
+            
+            <div class="flex gap-2 w-full sm:w-auto justify-between sm:justify-end overflow-x-auto no-scrollbar pb-1 sm:pb-0">
+                <button onclick="confirmCloseFund()" class="w-10 h-10 rounded-full bg-slate-800 hover:bg-red-900/50 border border-red-900/30 flex items-center justify-center shadow-lg shrink-0 transition-colors" title="Close Fund"><i data-lucide="power" class="text-red-500 w-4 h-4"></i></button>
+                
+                <button onclick="saveGameState()" class="w-10 h-10 rounded-full bg-slate-800 hover:bg-blue-900/50 border border-blue-900/30 flex items-center justify-center shadow-lg shrink-0 transition-colors group" title="Save Game">
+                    <i data-lucide="save" class="text-blue-500 w-4 h-4 group-hover:scale-110 transition-transform"></i>
+                </button>
+                <button id="help-btn" onclick="toggleHelp()" class="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center shadow-lg shrink-0 border border-slate-700 transition-colors" title="Help"><i data-lucide="help-circle" class="text-blue-400 w-4 h-4"></i></button>
+                <button onclick="downloadCertificate()" class="w-10 h-10 rounded-full bg-slate-800 hover:bg-amber-900/50 border border-amber-600/50 flex items-center justify-center shadow-lg shrink-0 transition-colors" title="Certificate"><i data-lucide="award" class="text-amber-500 w-4 h-4"></i></button>
+                <button onclick="downloadReport()" class="w-10 h-10 rounded-full bg-slate-800 hover:bg-emerald-900/50 border border-emerald-600/50 flex items-center justify-center shadow-lg shrink-0 transition-colors" title="Report"><i data-lucide="file-text" class="text-emerald-500 w-4 h-4"></i></button>
+                <button id="play-btn" class="w-10 h-10 rounded-full bg-slate-700 cursor-not-allowed flex items-center justify-center shadow-lg shrink-0" disabled title="Play/Pause"><i data-lucide="play" class="fill-slate-400 text-slate-400 w-3 h-3 ml-0.5"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <div class="ticker-wrap h-6 flex items-center shrink-0 border-b border-slate-800">
+        <div class="ticker text-xs font-mono text-slate-400" id="news-ticker">WELCOME TO TAXILA FUND MANAGER. CAREER MODE ENABLED. SCORE CARRIES OVER TO FUTURE FUNDS.</div>
+    </div>
+
+    <div id="toast-container" class="fixed bottom-4 right-4 z-[60] flex flex-col gap-2 pointer-events-none w-full max-w-xs px-4 sm:px-0"></div>
+
+    <div id="welcome-modal" class="fixed inset-0 bg-black/95 backdrop-blur-md z-[80] flex items-center justify-center open modal p-4">
+        <div class="modal-content bg-slate-900 border border-slate-700 w-full max-w-[500px] rounded-xl shadow-2xl p-6 lg:p-8 text-center">
+            <div class="w-16 h-16 lg:w-20 lg:h-20 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl shadow-lg shadow-blue-500/20">👨‍💼</div>
+            <h1 class="text-2xl lg:text-3xl font-bold text-white mb-2">TAXILA FUND MANAGER</h1>
+            <p class="text-slate-400 mb-6">Career Simulation Mode (10 Years)</p>
+            <div class="bg-slate-800/50 rounded-lg p-4 mb-6 border border-slate-700 text-left">
+                <h3 class="text-xs uppercase text-blue-400 font-bold mb-2">Your Objective</h3>
+                <ul class="text-sm text-slate-300 space-y-2 list-disc pl-4 font-light">
+                    <li>Manage multiple funds over a <strong>10-year career</strong>.</li>
+                    <li>Beat the Benchmark to build your <strong>Reputation</strong>.</li>
+                    <li>Avoid <strong>Liquidity Crisis</strong> and <strong>Compliance Penalties</strong>.</li>
+                    <li>Maximize your personal <strong>Commission Earnings</strong>.</li>
+                </ul>
+            </div>
+            <div class="text-left mb-6">
+                <label class="block text-xs uppercase text-slate-500 font-bold mb-2">Enter Your Name</label>
+                <input type="text" id="player-name-input" class="w-full bg-slate-800 border border-slate-600 rounded p-3 text-white text-base focus:border-blue-500 outline-none font-light" placeholder="e.g. John Doe">
+                <p id="api-url-display" class="text-xs text-amber-500 mt-2 hidden">API Status: Ready</p>
+            </div>
+            
+            <button id="load-game-btn" onclick="loadGameState()" class="w-full bg-amber-600 hover:bg-amber-500 text-white py-3 rounded-lg font-bold text-lg shadow-lg transition-transform hover:scale-[1.02] mb-3 hidden">
+                Load Previous Game
+            </button>
+            <button onclick="setPlayerName()" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-lg font-bold text-lg shadow-lg transition-transform hover:scale-[1.02]">Start Career</button>
+        </div>
+    </div>
+
+    <div id="launch-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center modal p-4">
+        <div class="modal-content bg-slate-900 border border-slate-700 w-full max-w-[800px] rounded-xl shadow-2xl p-4 lg:p-8">
+            <div class="text-center mb-6">
+                <h1 class="text-2xl font-bold text-white mb-2" id="launch-title">Initialize Fund I</h1>
+                <div class="flex flex-col sm:flex-row justify-center gap-2 sm:gap-4 text-sm text-slate-400 mb-2">
+                    <span id="launch-score-display">Current Score: 50</span>
+                    <span id="launch-rep-display" class="text-blue-400">Reputation: Neutral</span>
+                </div>
+                <p class="text-slate-500 text-xs">Investors will commit capital based on your Reputation Score.</p>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                <div onclick="selectObjective('LARGE')" class="obj-card cursor-pointer bg-slate-800/50 hover:bg-blue-900/20 border border-slate-700 hover:border-blue-500 p-4 rounded-lg group">
+                    <div class="flex justify-between items-start mb-2"><h3 class="font-bold text-lg text-white group-hover:text-blue-400">Large Cap Fund</h3><span class="text-[10px] bg-emerald-900 text-emerald-300 px-2 py-1 rounded">Low Risk</span></div>
+                    <p class="text-xs text-slate-400 mb-2">Invests >80% in Top 100 Companies.</p>
+                </div>
+                <div onclick="selectObjective('MID')" class="obj-card cursor-pointer bg-slate-800/50 hover:bg-amber-900/20 border border-slate-700 hover:border-amber-500 p-4 rounded-lg group">
+                    <div class="flex justify-between items-start mb-2"><h3 class="font-bold text-lg text-white group-hover:text-amber-400">Mid Cap Fund</h3><span class="text-[10px] bg-red-900 text-red-300 px-2 py-1 rounded">High Risk</span></div>
+                    <p class="text-xs text-slate-400 mb-2">Invests >65% in Mid Cap Companies.</p>
+                </div>
+                <div onclick="selectObjective('MULTI')" class="obj-card cursor-pointer bg-slate-800/50 hover:bg-purple-900/20 border border-slate-700 hover:border-purple-500 p-4 rounded-lg group">
+                    <div class="flex justify-between items-start mb-2"><h3 class="font-bold text-lg text-white group-hover:text-purple-400">Multi Cap Fund</h3><span class="text-[10px] bg-blue-900 text-blue-300 px-2 py-1 rounded">Mod Risk</span></div>
+                    <p class="text-xs text-slate-400 mb-2">Min 25% Large, 25% Mid, 25% Small.</p>
+                </div>
+                <div onclick="selectObjective('DEBT')" class="obj-card cursor-pointer bg-slate-800/50 hover:bg-emerald-900/20 border border-slate-700 hover:border-emerald-500 p-4 rounded-lg group">
+                    <div class="flex justify-between items-start mb-2"><h3 class="font-bold text-lg text-white group-hover:text-emerald-400">Conservative Hybrid</h3><span class="text-[10px] bg-slate-700 text-slate-300 px-2 py-1 rounded">Very Low Risk</span></div>
+                    <p class="text-xs text-slate-400 mb-2">75-90% in Debt/Bonds.</p>
+                </div>
+            </div>
+            <div id="investor-call-section" class="hidden border-t border-slate-700 pt-6">
+                <h3 class="text-lg font-bold text-white mb-4 text-center">Calling for Subscriptions...</h3>
+                <div class="space-y-2 mb-6 max-h-[150px] overflow-y-auto pr-2" id="initial-investor-list"></div>
+                <div class="flex justify-between items-center bg-slate-800 p-4 rounded-lg mb-6">
+                    <span class="text-slate-400 text-sm">Total Capital Raised</span>
+                    <span class="text-2xl font-mono font-bold text-emerald-400" id="total-raised">₹0</span>
+                </div>
+                <button onclick="launchFund()" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-lg font-bold text-lg shadow-lg">LAUNCH FUND (NAV ₹10.00)</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="closure-modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[75] flex items-center justify-center modal p-4">
+        <div class="modal-content bg-slate-800 border border-slate-600 w-full max-w-[600px] rounded-xl shadow-2xl p-8 relative">
+            <button onclick="document.getElementById('closure-modal').classList.remove('open');" class="absolute top-4 right-4 text-slate-500 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-emerald-600/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-500/50"><i data-lucide="check-circle" class="w-8 h-8 text-emerald-500"></i></div>
+                <h2 class="text-2xl font-bold text-white" id="closure-title">Fund Closed Successfully</h2>
+                <p class="text-slate-400 text-sm">Capital returned to investors.</p>
+            </div>
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div class="bg-slate-900 p-4 rounded border border-slate-700">
+                    <p class="text-xs text-slate-500 uppercase">Ending Score</p>
+                    <p class="text-2xl font-bold text-white" id="closure-score">0</p>
+                    <p class="text-[10px] text-emerald-400">Carries forward</p>
+                </div>
+                <div class="bg-slate-900 p-4 rounded border border-slate-700">
+                    <p class="text-xs text-slate-500 uppercase">Session Earnings</p>
+                    <p class="text-2xl font-bold text-amber-500" id="closure-earnings">₹0</p>
+                </div>
+            </div>
+            <div class="bg-slate-900/50 p-4 rounded mb-8">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-slate-400">Total Career Earnings</span>
+                    <span class="text-amber-400 font-bold font-mono" id="closure-career-total">₹0</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-400">Next Fund Reputation</span>
+                    <span class="text-blue-400 font-bold" id="closure-reputation">Neutral</span>
+                </div>
+            </div>
+            <button id="closure-action-btn" onclick="resetForNewFund()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded-lg font-bold text-lg shadow-lg">Start Next Fund</button>
+        </div>
+    </div>
+
+    <div id="game-over-modal" class="fixed inset-0 bg-red-900/80 backdrop-blur-md z-[70] flex items-center justify-center modal p-4">
+        <div class="modal-content bg-slate-900 border border-red-600 w-full max-w-[500px] rounded-xl shadow-2xl p-8 text-center">
+            <div class="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6"><i data-lucide="alert-octagon" class="w-10 h-10 text-red-500"></i></div>
+            <h1 class="text-3xl font-bold text-white mb-2">FUND FROZEN</h1>
+            <p class="text-red-300 text-lg mb-6" id="game-over-msg">Default Event</p>
+            <div class="flex flex-col gap-3">
+                <button onclick="downloadReport()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-3 rounded-lg font-bold shadow-lg flex items-center justify-center gap-2"><i data-lucide="file-text" class="w-5 h-5"></i> Download Audit Report</button>
+                <button onclick="location.reload()" class="bg-slate-700 hover:bg-slate-600 text-white px-8 py-3 rounded-lg font-bold shadow-lg">Restart Career</button>
+            </div>
+        </div>
+    </div>
+
+    <main class="flex-1 flex flex-col lg:grid lg:grid-cols-12 lg:gap-0 lg:min-h-0 relative opacity-50 pointer-events-none transition-opacity duration-500 overflow-y-auto lg:overflow-hidden" id="main-interface">
+        
+        <section class="order-1 lg:order-2 lg:col-span-6 bg-[#0b1121] flex flex-col min-h-[500px] lg:min-h-0 relative border-b lg:border-b-0 lg:border-r border-slate-800">
+            <div class="h-12 lg:h-10 border-b border-slate-800 flex items-center px-4 gap-4 lg:gap-6 bg-slate-900/50 overflow-x-auto no-scrollbar sticky top-0 backdrop-blur z-20">
+                <button class="tab-btn text-xs font-semibold uppercase tracking-wide py-2.5 shrink-0" onclick="switchTab('ops')"><i data-lucide="users" class="w-3 h-3 inline mr-1 text-amber-400"></i> Fund Ops</button>
+                <button class="tab-btn active text-xs font-semibold uppercase tracking-wide py-2.5 shrink-0" onclick="switchTab('live')">Live Chart</button>
+                <button class="tab-btn text-xs font-semibold uppercase tracking-wide py-2.5 shrink-0" onclick="switchTab('holdings')">Holdings</button>
+                <button class="tab-btn text-xs font-semibold uppercase tracking-wide py-2.5 shrink-0" onclick="switchTab('ledger')"><i data-lucide="book-open" class="w-3 h-3 inline mr-1 text-blue-400"></i> Ledger</button>
+                <button class="tab-btn text-xs font-semibold uppercase tracking-wide py-2.5 shrink-0" onclick="switchTab('research')"><i data-lucide="search" class="w-3 h-3 inline mr-1"></i> Deep Search</button>
+            </div>
+
+            <div class="flex-1 p-2 lg:p-4 min-h-0 relative overflow-y-auto">
+                <div id="view-ops" class="h-full hidden flex flex-col gap-4">
+                    <div class="glass-panel rounded p-4 border-l-4 border-red-500 bg-red-900/10" data-help="Redemption Queue: Investors asking for their money back. You have 3 days to sell stocks and raise CASH.">
+                        <div class="flex justify-between items-center mb-3">
+                            <h3 class="text-sm font-bold text-white flex items-center gap-2"><i data-lucide="arrow-down-circle" class="w-4 h-4 text-red-400"></i> Pending Redemptions</h3>
+                            <span class="text-[10px] text-slate-400">Notice Period: 3 Days</span>
+                        </div>
+                        <div class="space-y-2 max-h-[250px] overflow-y-auto" id="redemption-list"><div class="text-center text-xs text-slate-600 italic">No pending withdrawals.</div></div>
+                    </div>
+                    <div class="glass-panel rounded p-4 border-l-4 border-emerald-500 bg-emerald-900/10 flex-1 flex flex-col min-h-[200px]" data-help="New Applications: People wanting to invest. Use the slider to choose how much to accept.">
+                        <div class="flex justify-between items-center mb-3">
+                            <h3 class="text-sm font-bold text-white flex items-center gap-2"><i data-lucide="arrow-up-circle" class="w-4 h-4 text-emerald-400"></i> New Applications</h3>
+                            <span class="text-[10px] text-slate-400">Action Required</span>
+                        </div>
+                        <div class="space-y-2 overflow-y-auto flex-1" id="application-list"><div class="text-center text-xs text-slate-600 italic mt-4">Waiting for investors...</div></div>
+                    </div>
+                </div>
+
+                <div id="view-live" class="h-full flex flex-col">
+                    <div class="glass-panel rounded p-3 mb-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-slate-900/80 border border-slate-700" data-help="Macro Radar: Forecasts market conditions 2 months in advance. Use this to time your strategy!">
+                        <div class="flex-1 w-full">
+                            <p class="text-[10px] uppercase text-slate-500 font-bold mb-1">Current Regime</p>
+                            <div class="flex items-center gap-2">
+                                <span id="market-current-icon" class="text-xl">📈</span>
+                                <div>
+                                    <p class="text-sm font-bold text-white leading-none" id="market-current-name">Normal Market</p>
+                                    <p class="text-[10px] text-slate-400" id="market-current-desc">Steady Growth</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex-1 w-full border-t sm:border-t-0 sm:border-l border-slate-700 pt-3 sm:pt-0 sm:pl-4">
+                            <div class="flex justify-between items-center mb-1">
+                                <p class="text-[10px] uppercase text-blue-400 font-bold">Forecast (60 Days)</p>
+                                <span class="text-[10px] text-slate-500 font-mono" id="market-countdown">00d</span>
+                            </div>
+                            <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden mb-1">
+                                <div class="h-full bg-blue-600 progress-striped w-full transition-all duration-1000" id="market-progress-bar"></div>
+                            </div>
+                            <p class="text-xs font-bold text-slate-200" id="market-forecast-name">Analyzing...</p>
+                        </div>
+                    </div>
+
+                    <div class="flex-1 relative border border-slate-800 rounded bg-slate-900/30 p-2 min-h-[250px] lg:min-h-[300px]" data-help="Performance Chart: Compares your Fund (Blue) vs The Benchmark (Purple).">
+                        <canvas id="liveChart"></canvas>
+                        <p class="absolute top-2 right-2 text-[10px] text-slate-500 pointer-events-none">Select stock to compare</p>
+                    </div>
+                    <div class="mt-4 grid grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-4">
+                        <div class="glass-panel rounded p-2 text-center" data-help="Cash on Hand: Money available to buy stocks or pay redemptions.">
+                            <p class="text-[10px] text-slate-500">Cash</p>
+                            <p class="font-mono text-emerald-400" id="stat-cash">₹0</p>
+                        </div>
+                        <div class="glass-panel rounded p-2 text-center" data-help="Equity Exposure: % of fund invested in stocks.">
+                            <p class="text-[10px] text-slate-500">Equity</p>
+                            <p class="font-mono text-blue-400" id="stat-equity">0%</p>
+                        </div>
+                        <div class="glass-panel rounded p-2 text-center" data-help="Current NAV: The current price of one unit of your fund.">
+                            <p class="text-[10px] text-slate-500">Current NAV</p>
+                            <p class="font-mono text-slate-300" id="stat-pnl">₹10.0</p>
+                        </div>
+                        <div class="glass-panel rounded p-2 text-center" data-help="Compliance: Checks if you are following the rules of your fund type.">
+                            <p class="text-[10px] text-slate-500">Compliance</p>
+                            <div id="compliance-badge" class="flex justify-center mt-0.5">OK</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-holdings" class="h-full hidden flex flex-col">
+                    <div class="overflow-x-auto">
+                        <table class="w-full pf-table min-w-[500px]" data-help="Holdings: Your current portfolio. Click 'T' to Trade.">
+                            <thead class="bg-slate-900/50 sticky top-0 backdrop-blur-sm z-10"><tr><th>Symbol</th><th>Qty</th><th>Avg Price</th><th>LTP</th><th>Value</th><th>Act</th></tr></thead>
+                            <tbody id="holdings-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="view-ledger" class="h-full hidden flex flex-col">
+                    <div class="flex gap-2 mb-4 bg-slate-900 p-1 rounded-lg w-fit border border-slate-700">
+                        <button onclick="switchLedger('TRADES')" id="btn-ledger-trades" class="px-4 py-1 rounded text-xs font-bold bg-blue-600 text-white transition-all">Trade Log</button>
+                        <button onclick="switchLedger('INVESTORS')" id="btn-ledger-investors" class="px-4 py-1 rounded text-xs font-bold text-slate-400 hover:text-white transition-all">Investor Book</button>
+                    </div>
+                    <div id="ledger-summary" class="hidden grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 mb-4" data-help="Investor Flows: Summary of total money In vs money Out.">
+                        <div class="bg-emerald-900/20 border border-emerald-900/50 p-3 rounded-lg"><p class="text-[10px] text-emerald-400 uppercase font-bold">Total Inflow</p><p class="text-lg font-mono text-white" id="summary-inflow">₹0</p></div>
+                        <div class="bg-red-900/20 border border-red-900/50 p-3 rounded-lg"><p class="text-[10px] text-red-400 uppercase font-bold">Total Outflow</p><p class="text-lg font-mono text-white" id="summary-outflow">₹0</p></div>
+                        <div class="bg-blue-900/20 border border-blue-900/50 p-3 rounded-lg"><p class="text-[10px] text-blue-400 uppercase font-bold">Net Balance</p><p class="text-lg font-mono text-white" id="summary-net">₹0</p></div>
+                    </div>
+                    <div class="glass-panel rounded-lg flex-1 overflow-hidden flex flex-col">
+                        <div class="overflow-y-auto flex-1 overflow-x-auto">
+                            <table class="w-full pf-table min-w-[500px]">
+                                <thead class="bg-slate-900/50 sticky top-0 backdrop-blur-sm z-10 text-xs"><tr id="ledger-header"><th>Time</th><th>Action</th><th>Details</th><th>Value</th></tr></thead>
+                                <tbody id="ledger-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-research" class="h-full flex flex-col hidden">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <h3 class="text-lg font-bold text-white flex items-center gap-2" id="res-name">Select Asset</h3>
+                            <div class="flex gap-2 items-center mt-1"><span class="text-xs px-2 py-0.5 rounded font-bold" id="res-cap-type">---</span><p class="text-xs text-slate-400" id="res-sector">---</p></div>
+                        </div>
+                        <div class="text-right"><p class="text-2xl font-mono text-white" id="res-price">---</p></div>
+                    </div>
+                    <div class="flex-1 relative border border-slate-800 rounded bg-slate-900/30 p-2 mb-4 min-h-[200px]" data-help="Price History: 10 Year historical chart."><canvas id="historyChart"></canvas></div>
+                    <div class="glass-panel rounded p-3 mb-4 border border-slate-700">
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                                <i data-lucide="trending-up" class="w-4 h-4 text-emerald-400"></i> Monthly Movers
+                            </h3>
+                            <div class="flex gap-1">
+                                <button onclick="updateMoversFilter('ALL')" class="text-[10px] px-2 py-1 rounded bg-slate-700 text-white hover:bg-blue-600 transition-colors" id="mov-btn-all">All</button>
+                                <button onclick="updateMoversFilter('LARGE')" class="text-[10px] px-2 py-1 rounded bg-slate-800 text-slate-400 hover:bg-slate-700 transition-colors" id="mov-btn-large">L</button>
+                                <button onclick="updateMoversFilter('MID')" class="text-[10px] px-2 py-1 rounded bg-slate-800 text-slate-400 hover:bg-slate-700 transition-colors" id="mov-btn-mid">M</button>
+                                <button onclick="updateMoversFilter('SMALL')" class="text-[10px] px-2 py-1 rounded bg-slate-800 text-slate-400 hover:bg-slate-700 transition-colors" id="mov-btn-small">S</button>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="bg-slate-900/50 p-2 rounded">
+                                <p class="text-[10px] uppercase text-emerald-500 font-bold mb-1 border-b border-slate-700 pb-1">Top Gainers</p>
+                                <div id="movers-gainers" class="space-y-1"></div>
+                            </div>
+                            <div class="bg-slate-900/50 p-2 rounded">
+                                <p class="text-[10px] uppercase text-red-500 font-bold mb-1 border-b border-slate-700 pb-1">Top Losers</p>
+                                <div id="movers-losers" class="space-y-1"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                        <div class="bg-slate-800/50 p-2 rounded border border-slate-700"><p class="text-[10px] text-slate-500 uppercase">10Y Return</p><p class="text-lg font-bold text-slate-200" id="metric-return">---</p><div class="w-full bg-slate-700 h-1 mt-1"><div class="bg-blue-500 h-1" id="metric-bar" style="width: 0%"></div></div></div>
+                        <div class="bg-slate-800/50 p-2 rounded border border-slate-700"><p class="text-[10px] text-slate-500 uppercase">Volatility</p><p class="text-lg font-bold text-amber-400" id="metric-vol">---</p></div>
+                        <div class="bg-slate-800/50 p-2 rounded border border-slate-700"><p class="text-[10px] text-slate-500 uppercase">Max Drawdown</p><p class="text-lg font-bold text-red-400" id="metric-dd">---</p></div>
+                        <div class="bg-slate-800/50 p-2 rounded border border-slate-700"><p class="text-[10px] text-slate-500 uppercase">Beta</p><p class="text-lg font-bold text-purple-400" id="metric-beta">---</p></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <aside class="order-2 lg:order-1 lg:col-span-3 bg-slate-900 border-b lg:border-b-0 lg:border-r border-slate-800 flex flex-col min-h-0">
+            <details class="group lg:open" open>
+                <summary class="p-3 border-b border-slate-800 flex justify-between items-center lg:cursor-default cursor-pointer list-none bg-slate-900 z-10 sticky top-0">
+                    <div class="flex justify-between items-center w-full">
+                        <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">Asset Universe <i data-lucide="chevron-down" class="w-3 h-3 lg:hidden transition-transform group-open:rotate-180"></i></h2>
+                        <span class="text-[10px] bg-slate-800 px-1.5 py-0.5 rounded text-slate-500" id="asset-count">144</span>
+                    </div>
+                </summary>
+                <div class="p-3 pt-0 space-y-2">
+                    <input type="text" id="search-input" placeholder="Search..." class="w-full bg-slate-950 border border-slate-700 rounded py-2 px-3 text-xs text-slate-200 focus:border-blue-500 outline-none mt-2" data-help="Search: Filter the stock list by Name or Ticker Symbol.">
+                    <div class="flex gap-1 text-[10px]">
+                        <button onclick="filterAssets('ALL')" class="flex-1 bg-slate-800 hover:bg-slate-700 py-2 rounded text-slate-300 transition-colors">All</button>
+                        <button onclick="filterAssets('LARGE')" class="flex-1 bg-slate-800 hover:bg-slate-700 py-2 rounded text-slate-300 transition-colors">Large</button>
+                        <button onclick="filterAssets('MID')" class="flex-1 bg-slate-800 hover:bg-slate-700 py-2 rounded text-slate-300 transition-colors">Mid</button>
+                        <button onclick="filterAssets('SMALL')" class="flex-1 bg-slate-800 hover:bg-slate-700 py-2 rounded text-slate-300 transition-colors">Small</button>
+                    </div>
+                    <div class="flex-1 overflow-y-auto max-h-[400px] lg:max-h-[calc(100vh-140px)]" id="stock-list" data-help="Stock List: Click a row to research it. Click 'T' to Trade."></div>
+                </div>
+            </details>
+        </aside>
+
+        <aside class="order-3 lg:order-3 lg:col-span-3 bg-slate-900 border-l border-slate-800 flex flex-col min-h-0">
+            <details class="group lg:open">
+                <summary class="p-3 border-b border-slate-800 flex justify-between items-center lg:cursor-default cursor-pointer list-none bg-slate-900 z-10 sticky top-0">
+                     <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">Active Investors <i data-lucide="chevron-down" class="w-3 h-3 lg:hidden transition-transform group-open:rotate-180"></i></h2>
+                </summary>
+                <div class="p-3 pt-0 flex flex-col gap-4">
+                    <div class="overflow-y-auto flex-1 space-y-1 pr-1 max-h-[300px] lg:max-h-[calc(100vh-180px)]" id="active-investor-list" data-help="Investors: Green (+) = happy. Red (-) = might redeem."></div>
+                    <div class="mt-4 bg-blue-900/10 border border-blue-900/30 p-3 rounded">
+                        <p class="text-[10px] text-blue-400 font-bold uppercase mb-1"><i data-lucide="info" class="w-3 h-3 inline"></i> Ops Guide</p>
+                        <p class="text-[10px] text-blue-200/70"><strong>Redemptions:</strong> Processed automatically after 3 days. Ensure you have CASH.<br><strong>Closure:</strong> You can close the fund anytime to take profits and start a new cycle.</p>
+                    </div>
+                </div>
+            </details>
+        </aside>
+    </main>
+
+    <div id="trade-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center modal p-4">
+        <div class="modal-content bg-slate-900 border border-slate-700 w-full max-w-[400px] rounded-xl shadow-2xl p-6 relative">
+            <button onclick="closeTradeModal()" class="absolute top-4 right-4 text-slate-500 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            <div class="mb-4"><h2 class="text-xl font-bold text-white" id="modal-name">Stock</h2><p class="text-xs text-emerald-400" id="modal-ltp">LTP: 0</p></div>
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="text-[10px] text-slate-400 uppercase font-bold ml-1">Quantity</label><input type="number" id="modal-qty" class="w-full bg-slate-800 border border-slate-600 rounded p-2 text-white text-base focus:border-blue-500 outline-none" placeholder="Qty"></div>
+                    <div><label class="text-[10px] text-slate-400 uppercase font-bold ml-1">Price (Fixed)</label><input type="number" id="modal-price" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-slate-400 text-base cursor-not-allowed" placeholder="Price" readonly></div>
+                </div>
+                <div class="p-3 bg-slate-800/50 rounded flex flex-col gap-1 text-xs">
+                    <div class="flex justify-between items-center text-slate-400"><span>Available Cash</span><span class="text-emerald-400 font-mono" id="modal-cash">₹0.00</span></div>
+                    <div class="flex justify-between items-center border-t border-slate-700 pt-1 mt-1"><span class="text-white">Est. Cost</span><span class="text-white font-bold font-mono" id="modal-total">₹0.00</span></div>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="submitOrder('BUY')" class="bg-emerald-600 text-white p-2 rounded hover:bg-emerald-500 font-bold shadow-lg transition-colors">Buy</button>
+                    <button onclick="submitOrder('SELL')" class="bg-red-600 text-white p-2 rounded hover:bg-red-500 font-bold shadow-lg transition-colors">Sell</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- API CONFIGURATION (Integrated from fund.html) ---
+        let API_URL = localStorage.getItem('taxila_api_url') || 'https://erp.taxila.in/api/game/fund'; // Default or stored URL
+
+function getUserId() {
+            // Get userId from URL parameters or fallback to a default
+            const params = new URLSearchParams(window.location.search);
+            return params.get("state") || "guest";
+        }
+        
+        // Keys to exclude from saving (transient UI/runtime properties)
+        const EXCLUDE_KEYS = [
+            'selectedModalStock', 'selectedStockId', 'interval', 
+            'isPlaying', 'activeTab', 'activeLedgerTab', 
+            'isHelpMode', 'liveChart', 'historyChart', 
+            // Also exclude generated history data, relying on recalculation or full save
+            // 'history', 'liveHistory', 'priceHistory' // Assuming 'stockData' save is deep enough
+        ];
+
+        // --- DATASET & CONFIG ---
+        const MARKET_REGIMES = {
+            'BULL': { name: 'Bull Run', drift: 1.5, vol: 0.8, color: 'text-emerald-400', icon: '🚀', desc: 'High Growth, Low Risk' },
+            'BEAR': { name: 'Bear Market', drift: -1.2, vol: 1.5, color: 'text-red-400', icon: '📉', desc: 'Negative Growth, High Risk' },
+            'STAGNANT': { name: 'Stagnation', drift: 0.2, vol: 0.5, color: 'text-slate-400', icon: '🐢', desc: 'Low Growth, Low Volatility' },
+            'VOLATILE': { name: 'High Volatility', drift: 0.0, vol: 2.5, color: 'text-amber-400', icon: '⚡', desc: 'Erratic Swings' },
+            'CRASH': { name: 'Market Crash', drift: -3.0, vol: 3.0, color: 'text-red-600', icon: '💥', desc: 'Severe Drop! Safe Havens recommended.' },
+            'RECOVERY': { name: 'Recovery', drift: 2.0, vol: 1.2, color: 'text-blue-400', icon: '🌱', desc: 'Rapid Rebound' },
+            'NORMAL': { name: 'Normal', drift: 1.0, vol: 1.0, color: 'text-slate-200', icon: '📈', desc: 'Steady Growth' }
+        };
+
+        const RAW_DATA = [
+            ["RELIANCE", "Reliance Ind.", "Oil & Gas", 2500, 0.25, 1.05, 0.12, "LARGE"],
+            ["TCS", "Tata Consultancy", "IT", 3400, 0.22, 0.95, 0.10, "LARGE"],
+            ["HDFCBANK", "HDFC Bank", "Banking", 1600, 0.20, 1.10, 0.14, "LARGE"],
+            ["INFY", "Infosys", "IT", 1450, 0.24, 1.00, 0.11, "LARGE"],
+            ["ICICIBANK", "ICICI Bank", "Banking", 950, 0.26, 1.20, 0.15, "LARGE"],
+            ["HINDUNILVR", "Hindustan Unilever", "FMCG", 2500, 0.18, 0.70, 0.09, "LARGE"],
+            ["ITC", "ITC Ltd", "FMCG", 440, 0.20, 0.80, 0.08, "LARGE"],
+            ["SBIN", "State Bank of India", "Banking", 580, 0.30, 1.30, 0.16, "LARGE"],
+            ["BHARTIARTL", "Bharti Airtel", "Telecom", 850, 0.24, 0.90, 0.12, "LARGE"],
+            ["LICI", "LIC India", "Insurance", 600, 0.22, 0.85, 0.08, "LARGE"],
+            ["LT", "Larsen & Toubro", "Construction", 2900, 0.28, 1.15, 0.14, "LARGE"],
+            ["BAJFINANCE", "Bajaj Finance", "Finance", 7200, 0.35, 1.40, 0.20, "LARGE"],
+            ["KOTAKBANK", "Kotak Mahindra", "Banking", 1800, 0.24, 1.05, 0.13, "LARGE"],
+            ["ASIANPAINT", "Asian Paints", "Cons. Durables", 3200, 0.25, 0.90, 0.12, "LARGE"],
+            ["MARUTI", "Maruti Suzuki", "Auto", 10500, 0.28, 1.10, 0.14, "LARGE"],
+            ["HCLTECH", "HCL Technologies", "IT", 1250, 0.23, 0.95, 0.11, "LARGE"],
+            ["TITAN", "Titan Company", "Cons. Durables", 3100, 0.30, 1.20, 0.18, "LARGE"],
+            ["AXISBANK", "Axis Bank", "Banking", 980, 0.32, 1.30, 0.16, "LARGE"],
+            ["SUNPHARMA", "Sun Pharma", "Pharma", 1150, 0.22, 0.75, 0.10, "LARGE"],
+            ["ADANIENT", "Adani Enterprises", "Metals", 2400, 0.55, 1.80, 0.25, "LARGE"],
+            ["ULTRACEMCO", "UltraTech Cement", "Construction", 8400, 0.26, 1.00, 0.12, "LARGE"],
+            ["BAJAJFINSV", "Bajaj Finserv", "Finance", 1500, 0.34, 1.35, 0.19, "LARGE"],
+            ["WIPRO", "Wipro", "IT", 400, 0.25, 1.00, 0.09, "LARGE"],
+            ["ONGC", "ONGC", "Oil & Gas", 180, 0.28, 0.90, 0.10, "LARGE"],
+            ["NTPC", "NTPC", "Power", 240, 0.22, 0.80, 0.09, "LARGE"],
+            ["JSWSTEEL", "JSW Steel", "Metals", 800, 0.35, 1.40, 0.15, "LARGE"],
+            ["POWERGRID", "Power Grid Corp", "Power", 200, 0.20, 0.70, 0.08, "LARGE"],
+            ["M&M", "Mahindra & Mahindra", "Auto", 1500, 0.30, 1.20, 0.16, "LARGE"],
+            ["TATASTEEL", "Tata Steel", "Metals", 120, 0.36, 1.50, 0.16, "LARGE"],
+            ["COALINDIA", "Coal India", "Mining", 280, 0.28, 0.90, 0.11, "LARGE"],
+            ["ADANIGREEN", "Adani Green", "Power", 950, 0.50, 1.60, 0.22, "LARGE"],
+            ["ADANIPORTS", "Adani Ports", "Infra", 800, 0.40, 1.40, 0.18, "LARGE"],
+            ["SIEMENS", "Siemens", "Cap Goods", 3600, 0.30, 1.20, 0.15, "LARGE"],
+            ["PIDILITIND", "Pidilite Ind", "Chemicals", 2500, 0.25, 0.90, 0.13, "LARGE"],
+            ["GRASIM", "Grasim Ind", "Cement", 1900, 0.28, 1.10, 0.12, "LARGE"],
+            ["SBILIFE", "SBI Life Insura", "Insurance", 1300, 0.24, 0.95, 0.14, "LARGE"],
+            ["BEL", "Bharat Electronics", "Defence", 140, 0.32, 1.20, 0.15, "LARGE"],
+            ["LTIM", "LTIMindtree", "IT", 5200, 0.30, 1.15, 0.16, "LARGE"],
+            ["TECHM", "Tech Mahindra", "IT", 1100, 0.28, 1.10, 0.12, "LARGE"],
+            ["HDFCLIFE", "HDFC Life", "Insurance", 630, 0.24, 0.95, 0.13, "LARGE"],
+
+            // MID CAP (More Volatile, Higher Growth)
+            ["TATAELXSI", "Tata Elxsi", "IT", 7500, 0.40, 1.30, 0.22, "MID"],
+            ["POLYCAB", "Polycab India", "Industrial", 5000, 0.35, 1.25, 0.20, "MID"],
+            ["SRF", "SRF Ltd", "Chemicals", 2300, 0.32, 1.15, 0.18, "MID"],
+            ["TRENT", "Trent", "Retail", 2000, 0.38, 1.40, 0.25, "MID"],
+            ["ASTRAL", "Astral", "Industrial", 1900, 0.34, 1.20, 0.19, "MID"],
+            ["KPITTECH", "KPIT Tech", "IT", 1200, 0.45, 1.50, 0.28, "MID"],
+            ["COFORGE", "Coforge", "IT", 5500, 0.40, 1.35, 0.21, "MID"],
+            ["SUPREMEIND", "Supreme Ind", "Industrial", 4400, 0.30, 1.10, 0.16, "MID"],
+            ["CUMMINSIND", "Cummins India", "Industrial", 1800, 0.32, 1.15, 0.15, "MID"],
+            ["ASHOKLEY", "Ashok Leyland", "Auto", 180, 0.36, 1.40, 0.18, "MID"],
+            ["BHARATFORG", "Bharat Forge", "Auto Anc", 1100, 0.35, 1.30, 0.17, "MID"],
+            ["PERSISTENT", "Persistent Sys", "IT", 5800, 0.38, 1.25, 0.20, "MID"],
+            ["IDFCFIRSTB", "IDFC First Bank", "Banking", 90, 0.42, 1.45, 0.22, "MID"],
+            ["FEDERALBNK", "Federal Bank", "Banking", 150, 0.35, 1.20, 0.16, "MID"],
+            ["APOLLOTYRE", "Apollo Tyres", "Auto Anc", 400, 0.34, 1.30, 0.15, "MID"],
+            ["JUBLFOOD", "Jubilant Food", "Consumer", 480, 0.32, 1.15, 0.14, "MID"],
+            ["VOLTAS", "Voltas", "Cons. Durables", 850, 0.30, 1.10, 0.12, "MID"],
+            ["MRF", "MRF Ltd", "Auto Anc", 110000, 0.25, 0.90, 0.10, "MID"],
+            ["PIIND", "PI Industries", "Chemicals", 3500, 0.32, 1.15, 0.16, "MID"],
+            ["DALBHARAT", "Dalmia Bharat", "Cement", 2100, 0.30, 1.10, 0.14, "MID"],
+            ["DEEPAKNTR", "Deepak Nitrite", "Chemicals", 2200, 0.45, 1.40, 0.20, "MID"],
+            ["LTTS", "L&T Tech Serv", "IT", 4600, 0.35, 1.20, 0.18, "MID"],
+            ["NAVINFLUOR", "Navin Fluorine", "Chemicals", 3600, 0.40, 1.30, 0.19, "MID"],
+            ["LALPATHLAB", "Dr. Lal PathLabs", "Healthcare", 2400, 0.32, 0.95, 0.15, "MID"],
+            ["METROPOLIS", "Metropolis Health", "Healthcare", 1500, 0.35, 1.10, 0.16, "MID"],
+            ["CROMPTON", "Crompton Greaves", "Cons. Durables", 300, 0.30, 1.05, 0.12, "MID"],
+            ["WHIRLPOOL", "Whirlpool India", "Cons. Durables", 1300, 0.28, 0.95, 0.10, "MID"],
+            ["ABFRL", "Aditya Birla Fas", "Retail", 220, 0.36, 1.30, 0.17, "MID"],
+            ["BATAINDIA", "Bata India", "Consumer", 1600, 0.26, 1.00, 0.11, "MID"],
+            ["RELAXO", "Relaxo Footwear", "Consumer", 900, 0.28, 0.90, 0.12, "MID"],
+
+            // SMALL CAP (High Risk, High Beta)
+            ["SUZLON", "Suzlon Energy", "Power", 40, 0.65, 1.80, 0.35, "SMALL"],
+            ["CDSL", "CDSL", "Finance", 1800, 0.45, 1.50, 0.28, "SMALL"],
+            ["BSE", "BSE Ltd", "Finance", 2200, 0.50, 1.60, 0.30, "SMALL"],
+            ["ANGELONE", "Angel One", "Finance", 2500, 0.55, 1.70, 0.32, "SMALL"],
+            ["MCX", "MCX India", "Finance", 3100, 0.42, 1.40, 0.25, "SMALL"],
+            ["CAMS", "CAMS", "Finance", 2800, 0.38, 1.20, 0.20, "SMALL"],
+            ["IEX", "Indian Energy Ex", "Power", 160, 0.40, 1.30, 0.18, "SMALL"],
+            ["TANLA", "Tanla Platforms", "IT", 950, 0.60, 1.75, 0.30, "SMALL"],
+            ["BSOFT", "Birlasoft", "IT", 700, 0.45, 1.40, 0.22, "SMALL"],
+            ["CYIENT", "Cyient", "IT", 1900, 0.42, 1.35, 0.20, "SMALL"],
+            ["ZENSARTECH", "Zensar Tech", "IT", 550, 0.48, 1.45, 0.24, "SMALL"],
+            ["INTELLECT", "Intellect Design", "IT", 800, 0.52, 1.55, 0.26, "SMALL"],
+            ["MAPMYINDIA", "MapmyIndia", "Tech", 2000, 0.45, 1.40, 0.25, "SMALL"],
+            ["NAZARA", "Nazara Tech", "Tech", 850, 0.55, 1.60, 0.28, "SMALL"],
+            ["EASEMYTRIP", "Easy Trip", "Travel", 50, 0.50, 1.50, 0.24, "SMALL"],
+            ["RENUKA", "Shree Renuka", "Sugar", 45, 0.60, 1.70, 0.25, "SMALL"],
+            ["TRIDENT", "Trident", "Textiles", 35, 0.50, 1.40, 0.20, "SMALL"],
+            ["HFCL", "HFCL", "Telecom", 85, 0.48, 1.50, 0.22, "SMALL"],
+            ["RVNL", "RVNL", "Railways", 180, 0.55, 1.65, 0.30, "SMALL"],
+            ["IRFC", "IRFC", "Finance", 100, 0.40, 1.20, 0.18, "SMALL"],
+            ["IRCON", "Ircon Intl", "Construction", 220, 0.45, 1.40, 0.22, "SMALL"],
+            ["NBCC", "NBCC", "Construction", 80, 0.50, 1.50, 0.25, "SMALL"],
+            ["HUDCO", "HUDCO", "Finance", 120, 0.45, 1.30, 0.20, "SMALL"],
+            ["UCOBANK", "UCO Bank", "Banking", 40, 0.48, 1.40, 0.22, "SMALL"],
+            ["CENTRALBK", "Central Bank", "Banking", 50, 0.46, 1.35, 0.21, "SMALL"],
+            ["MAHABANK", "Bank of Maha", "Banking", 45, 0.44, 1.30, 0.20, "SMALL"],
+            ["IOB", "Indian Overseas", "Banking", 45, 0.42, 1.25, 0.18, "SMALL"],
+            ["UJJIVANSFB", "Ujjivan SFB", "Banking", 55, 0.40, 1.20, 0.18, "SMALL"],
+            ["EQUITASBNK", "Equitas SFB", "Banking", 100, 0.38, 1.15, 0.16, "SMALL"],
+            ["SJVN", "SJVN", "Power", 90, 0.45, 1.35, 0.20, "SMALL"],
+            ["NHPC", "NHPC", "Power", 85, 0.35, 1.10, 0.15, "SMALL"],
+            
+            // DEBT/BONDS (Safe Havens)
+            ["GSEC-10Y", "GOI Bond 2034", "Debt", 100, 0.05, 0.10, 0.07, "BOND"],
+            ["GSEC-5Y", "GOI Bond 2029", "Debt", 100, 0.04, 0.08, 0.06, "BOND"],
+            ["CORP-AAA", "HDFC AAA Bond", "Debt", 1000, 0.06, 0.15, 0.08, "BOND"],
+            ["LIQUID-BEES", "Liquid BeES", "Debt", 1000, 0.02, 0.05, 0.06, "BOND"],
+            ["GOLD-BEES", "Gold BeES", "Commodity", 55, 0.15, 0.30, 0.10, "BOND"] // Treated as safe haven
+        ];
+
+        const SECTORS = ["Banking", "IT", "Pharma", "Auto", "FMCG", "Metal", "Power", "Realty", "Energy", "Services"];
+        const CAP_TYPES = ["LARGE", "MID", "SMALL"];
+        
+        function generateMoreAssets() {
+            // RAW_DATA is now large enough, no need to auto-generate ticks.
+            // Keeping function structure just in case we want to add randoms later.
+        }
+        // generateMoreAssets(); // Removed auto-generation
+
+        const INVESTOR_NAMES = ["Rakesh J", "Radhakishan D", "Nikhil K", "Vijay K", "Retail Pool A", "Retail Pool B", "LIC India", "SBI Pension", "HDFC Life", "Premji Invest", "Akash B", "Mukesh A", "Gautam A", "Azim P", "Shiv N"];
+
+        // --- STATE ---
+        // Define initial state structure
+        function getInitialState() {
+            return {
+                cash: 0, holdings: {}, stockData: [], investors: [], redemptions: [], applications: [],
+                benchmarkValue: 10000, initialBenchmark: 10000, lastBenchmarkValue: 10000, // Added lastBenchmarkValue
+                day: 0, isPlaying: false, activeTab: 'live',
+                selectedModalStock: null, selectedStockId: null, interval: null, fundObjective: null, activeFilter: 'ALL',
+                ledger: { trades: [], investors: [] }, activeLedgerTab: 'TRADES',
+                totalUnits: 0, currentNAV: 10.00, score: 50, initialNav: 0,
+                commission: 0, 
+                isHelpMode: false,
+                complianceViolationDays: 0,
+                auditLog: [],
+                playerName: "",
+                fundCycle: 1,
+                careerCommission: 0,
+                lastCycleScore: 50,
+                fundStartDay: 0,
+                careerCapitalRaised: 0, 
+                // NEW MARKET STATE
+                market: {
+                    current: 'NORMAL',
+                    forecast: 'BULL',
+                    daysToShift: 60,
+                    totalDuration: 60 
+                },
+                moversFilter: 'ALL' 
+            };
+        }
+        
+        let state;
+        let liveChart, historyChart;
+        let audioCtx = null;
+        
+        // --- API & PERSISTENCE FUNCTIONS (Integrated from fund.html) ---
+        async function exponentialBackoffFetch(url, options, maxRetries = 5) {
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response;
+                } catch (error) {
+                    console.error(`Fetch attempt ${i + 1} failed:`, error);
+                    if (i === maxRetries - 1) throw error; 
+                    const delay = Math.pow(2, i) * 1000;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+            }
+        }
+
+        function cleanState(currentState) {
+            const cleaned = {};
+            for (const key in currentState) {
+                if (currentState.hasOwnProperty(key) && !EXCLUDE_KEYS.includes(key)) {
+                    // Deep clone arrays/objects within state for saving
+                    if (Array.isArray(currentState[key])) {
+                        cleaned[key] = JSON.parse(JSON.stringify(currentState[key]));
+                    } else if (typeof currentState[key] === 'object' && currentState[key] !== null) {
+                        cleaned[key] = JSON.parse(JSON.stringify(currentState[key]));
+                    } else {
+                        cleaned[key] = currentState[key];
+                    }
+                }
+            }
+            return cleaned;
+        }
+
+        window.saveGameState = async function() {
+            const userId = getUserId();
+            if (userId === "guest" && !state.playerName) return showToast("Enter your name to save the game.", "error");
+            if (!API_URL) return showToast("API URL not configured. Cannot save.", "error");
+            pauseGame();
+            showToast("Saving game state...", "info");
+            
+            const stateToSave = cleanState(state);
+
+            try {
+                const response = await exponentialBackoffFetch(`${API_URL}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({userId:userId, gameState:stateToSave})
+                });
+
+                const result = await response.json();
+                console.log("Save successful:", result);
+                showToast("Game Saved Successfully!", "info");
+            } catch (error) {
+                console.error("Failed to save game state:", error);
+                showToast(`Save failed. Check console: ${error.message}`, "error");
+            }
+        };
+
+        window.loadGameState = async function() {
+            const userId = getUserId();
+            if (!API_URL) return showToast("API URL not configured. Cannot load.", "error");
+            
+            const loadBtn = document.getElementById('load-game-btn');
+            loadBtn.disabled = true;
+            loadBtn.innerText = "Loading...";
+
+            try {
+                const response = await exponentialBackoffFetch(`${API_URL}?player=${userId}`, { method: 'GET' });
+                const stateData = await response.json();
+                const loadedState = stateData.gameState;
+                
+                if (loadedState && loadedState.playerName) {
+                    // 1. Initialize state and then deeply merge loaded state
+                    state = getInitialState();
+                    Object.assign(state, loadedState);
+                    
+                    // 2. Derive Initial NAV for P&L calculation
+                    // Calculate AUM based on loaded holdings and cash
+                    let totalAUM = state.cash;
+                    Object.keys(state.holdings).forEach(k => {
+                        const s = state.stockData.find(x => x.id === k);
+                        if(s) totalAUM += state.holdings[k].qty * s.currentPrice;
+                    });
+                    // This initialNav should represent the value of the fund when it was last started/launched.
+                    // If totalUnits > 0, we can back-calculate. Otherwise, rely on the saved initialNav.
+                    if (state.totalUnits > 0) {
+                        state.currentNAV = totalAUM / state.totalUnits;
+                        // Assuming saved initialNav correctly tracks the fund's starting point per cycle
+                        // state.initialNav = loadedState.initialNav; 
+                        // If it's a running fund, initialNav must be the historical starting cash/AUM.
+                        // We will rely on the saved initialNav from the backend.
+                    }
+                    
+                    // 3. Re-initialize dynamic properties that were stripped
+                    state.isPlaying = false;
+                    state.interval = null;
+                    state.day = loadedState.day || 0;
+                    state.fundStartDay = loadedState.fundStartDay || 0;
+                    
+                    // 4. Re-calculate generated data (history arrays)
+                    state.stockData.forEach(s => {
+                        // Regenerate history path but ensure currentPrice is used for continuity
+                        s.history = generateHistoryPath(s.currentPrice, s.vol, s.beta, s.growth);
+                        // Ensure live history is initialized or loaded (backend should save/load this array)
+                        s.liveHistory = s.liveHistory || []; 
+                        s.priceHistory = s.priceHistory || [];
+                        // Since we are loading, we assume the backend saved the stock data properly.
+                    });
+
+                    // 5. Update initial UI elements based on loaded state
+                    document.getElementById('player-name-input').value = state.playerName;
+                    document.getElementById('welcome-modal').classList.remove('open');
+                    document.getElementById('main-interface').classList.remove('opacity-50', 'pointer-events-none');
+                    document.getElementById('play-btn').disabled = false;
+                    document.getElementById('play-btn').classList.remove('bg-slate-700', 'cursor-not-allowed');
+                    document.getElementById('play-btn').classList.add('bg-blue-600');
+                    
+                    // 6. Re-render all elements and update dashboard stats
+                    initCharts(); 
+                    updateDashboard(); // CRITICAL: Updates all header stats and compliance badge
+                    updateMarketUI();
+                    renderStockList();
+                    renderHoldings(); // CRITICAL: Renders the holdings table
+                    renderInvestors(); // CRITICAL: Renders the active investor list
+                    renderApplications();
+                    renderRedemptions();
+                    switchTab(state.activeTab); // Restore last active tab and render active view
+                    
+                    // Set Objective Display
+                    const map = { 'LARGE': 'Large Cap Fund', 'MID': 'Mid Cap Fund', 'MULTI': 'Multi Cap Fund', 'DEBT': 'Conservative Hybrid' };
+                    setText('fund-objective-display', map[state.fundObjective]);
+                    setText('fund-cycle-display', `Fund ${toRoman(state.fundCycle)}`);
+                    
+                    // CRITICAL FIX: Update the time display using the loaded 'state.day'
+                    updateTimeDisplay(); 
+                    
+                    // CRITICAL: Update the live chart after all other stats are set
+                    updateLiveChart();
+                    
+                    showToast(`Game Loaded! Welcome back, ${state.playerName}.`, "info");
+
+                } else {
+                    showToast("No saved game found on the API.", "error");
+                }
+            } catch (error) {
+                console.error("Failed to load game state:", error);
+                showToast(`Load failed. Check console: ${error.message}. Is your API running?`, "error");
+            } finally {
+                loadBtn.disabled = false;
+                loadBtn.innerText = "Load Previous Game";
+            }
+        };
+
+        function setupLocalhostApi() {
+            if (API_URL && API_URL !== 'https://erp.taxila.in/api/game/fund') {
+                localStorage.setItem('taxila_api_url', API_URL);
+            }
+            if (API_URL) {
+                // Show API status
+                document.getElementById('api-url-display').innerText = `API: ${API_URL}`;
+                document.getElementById('api-url-display').classList.remove('hidden');
+                
+                // Show Load button if an API URL is configured
+                document.getElementById('load-game-btn').classList.remove('hidden');
+
+            } else {
+                // Prompt user for API URL
+                const input = prompt("Please enter the full URL for your localhost API (e.g., https://erp.taxila.in/api/game/fund):");
+                if (input) {
+                    API_URL = input.trim().replace(/\/+$/, ''); // Remove trailing slash
+                    localStorage.setItem('taxila_api_url', API_URL);
+                    setupLocalhostApi(); // Recurse to update UI and show load button
+                } else {
+                    showToast("API URL not provided. Save/Load functionality disabled.", "error");
+                }
+            }
+        }
+        // --- END API & PERSISTENCE FUNCTIONS ---
+
+        // --- SOUND SYSTEM ---
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playTickSound() {
+            if (!audioCtx) return;
+            // Simple tick sound (High-pitch short blip)
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.05);
+            
+            gain.gain.setValueAtTime(0.05, audioCtx.currentTime); // Very low volume
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
+            
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.05);
+        }
+
+        function playWarningSound() {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(300, audioCtx.currentTime); 
+            osc.frequency.linearRampToValueAtTime(250, audioCtx.currentTime + 0.15); 
+            gain.gain.setValueAtTime(0.08, audioCtx.currentTime); 
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.15);
+        }
+
+        function playRedemptionWarningSound() {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.type = 'triangle'; 
+            osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+            osc.frequency.linearRampToValueAtTime(400, audioCtx.currentTime + 0.25);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.25);
+        }
+
+        function playPenaltySound() {
+            if (!audioCtx) return;
+            const osc1 = audioCtx.createOscillator();
+            const gain1 = audioCtx.createGain();
+            osc1.type = 'sawtooth';
+            osc1.frequency.setValueAtTime(150, audioCtx.currentTime);
+            osc1.frequency.linearRampToValueAtTime(100, audioCtx.currentTime + 0.8); 
+            const osc2 = audioCtx.createOscillator();
+            const gain2 = audioCtx.createGain();
+            osc2.type = 'square';
+            osc2.frequency.setValueAtTime(187, audioCtx.currentTime); 
+            osc2.frequency.linearRampToValueAtTime(140, audioCtx.currentTime + 0.8);
+            osc1.connect(gain1);
+            osc2.connect(gain2);
+            gain1.connect(audioCtx.destination);
+            gain2.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+            gain1.gain.setValueAtTime(0.3, now);
+            gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
+            gain2.gain.setValueAtTime(0.2, now);
+            gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
+            osc1.start(now);
+            osc2.start(now);
+            osc1.stop(now + 0.8);
+            osc2.stop(now + 0.8);
+        }
+
+        function playClapSound() {
+            if (!audioCtx) return;
+            const duration = 2.0;
+            const bufferSize = audioCtx.sampleRate * duration; 
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = (Math.random() * 2 - 1);
+            }
+            const noise = audioCtx.createBufferSource();
+            noise.buffer = buffer;
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'bandpass';
+            filter.frequency.value = 1000; 
+            filter.Q.value = 0.5; 
+            const gain = audioCtx.createGain();
+            noise.connect(filter);
+            filter.connect(gain);
+            gain.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+            gain.gain.setValueAtTime(0, now);
+            gain.gain.linearRampToValueAtTime(0.3, now + 0.1); 
+            gain.gain.exponentialRampToValueAtTime(0.001, now + duration); 
+            noise.start(now);
+            noise.stop(now + duration);
+        }
+
+        // --- HELP SYSTEM ---
+        window.toggleHelp = function() {
+            state.isHelpMode = !state.isHelpMode;
+            const btn = document.getElementById('help-btn');
+            const tooltip = document.getElementById('help-tooltip');
+            
+            if(state.isHelpMode) {
+                btn.classList.add('bg-blue-600', 'text-white');
+                btn.classList.remove('bg-slate-800');
+                document.body.classList.add('help-active');
+                showToast("Help Mode Active: Hover over elements", "info");
+            } else {
+                btn.classList.remove('bg-blue-600', 'text-white');
+                btn.classList.add('bg-slate-800');
+                document.body.classList.remove('help-active');
+                tooltip.style.display = 'none';
+            }
+        };
+
+        document.addEventListener('mousemove', (e) => {
+            if(!state.isHelpMode) return;
+            const tooltip = document.getElementById('help-tooltip');
+            tooltip.style.left = (e.clientX + 15) + 'px';
+            tooltip.style.top = (e.clientY + 15) + 'px';
+            if(e.clientX + 265 > window.innerWidth) tooltip.style.left = (e.clientX - 265) + 'px';
+            if(e.clientY + 100 > window.innerHeight) tooltip.style.top = (e.clientY - 50) + 'px';
+        });
+
+        document.addEventListener('mouseover', (e) => {
+            if(!state.isHelpMode) return;
+            const target = e.target.closest('[data-help]');
+            const tooltip = document.getElementById('help-tooltip');
+            if(target) {
+                tooltip.innerHTML = target.getAttribute('data-help');
+                tooltip.style.display = 'block';
+            } else {
+                tooltip.style.display = 'none';
+            }
+        });
+
+        // --- HELPERS ---
+        function setText(id, val) { const el = document.getElementById(id); if(el) el.innerText = val; }
+        function fmtMoney(n) { return `₹${(n/100000).toFixed(1)}L`; }
+        function fmtCr(n) { return `₹${(n/10000000).toFixed(2)}Cr`; }
+        function getTimestamp() { return `Cycle ${state.fundCycle} - Day ${state.day}`; }
+        
+        function showToast(msg, type='info') {
+            const container = document.getElementById('toast-container');
+            const el = document.createElement('div');
+            const colors = type === 'error' ? 'bg-red-600' : 'bg-slate-700';
+            el.className = `toast ${colors} text-white px-4 py-2 rounded shadow-lg border border-slate-600 text-xs font-bold flex items-center gap-2`;
+            el.innerHTML = `<span>${msg}</span>`;
+            container.appendChild(el);
+            setTimeout(() => { el.classList.add('hide'); setTimeout(() => el.remove(), 300); }, 3000);
+        }
+
+        // --- LEDGER SYSTEM ---
+        function logTransaction(category, type, details, value, rawAmount = 0, status = "COMPLETED") {
+            const entry = { id: Date.now(), time: getTimestamp(), type: type, details: details, value: value, rawAmount: rawAmount, status: status };
+            if (category === 'TRADE') state.ledger.trades.unshift(entry); else state.ledger.investors.unshift(entry);
+            if (state.activeTab === 'ledger') renderLedger();
+        }
+
+        function switchLedger(type) {
+            state.activeLedgerTab = type;
+            const btnT = document.getElementById('btn-ledger-trades'); const btnI = document.getElementById('btn-ledger-investors');
+            const summaryDiv = document.getElementById('ledger-summary');
+            if (type === 'TRADES') { 
+                btnT.className = "px-4 py-1 rounded text-xs font-bold bg-blue-600 text-white transition-all"; 
+                btnI.className = "px-4 py-1 rounded text-xs font-bold text-slate-400 hover:text-white transition-all";
+                summaryDiv.classList.add('hidden'); summaryDiv.classList.remove('grid');
+            } else { 
+                btnI.className = "px-4 py-1 rounded text-xs font-bold bg-emerald-600 text-white transition-all"; 
+                btnT.className = "px-4 py-1 rounded text-xs font-bold text-slate-400 hover:text-white transition-all"; 
+                summaryDiv.classList.remove('hidden'); summaryDiv.classList.add('grid');
+            }
+            renderLedger();
+        }
+
+        function renderLedger() {
+            const body = document.getElementById('ledger-body'); body.innerHTML = '';
+            const data = state.activeLedgerTab === 'TRADES' ? state.ledger.trades : state.ledger.investors;
+            if (state.activeLedgerTab === 'INVESTORS') {
+                let inflow = 0; let outflow = 0;
+                data.forEach(d => { if(d.type === 'INFLOW') inflow += d.rawAmount; if(d.type === 'OUTFLOW') outflow += d.rawAmount; });
+                setText('summary-inflow', fmtCr(inflow)); setText('summary-outflow', fmtCr(outflow)); setText('summary-net', fmtCr(inflow - outflow));
+            }
+            if (data.length === 0) { body.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-slate-500 italic">No records found</td></tr>'; return; }
+            data.forEach(row => {
+                const tr = document.createElement('tr'); tr.className = "ledger-row border-b border-slate-800 text-xs";
+                let typeColor = "text-slate-300"; if (row.type === 'BUY' || row.type === 'INFLOW') typeColor = "text-emerald-400 font-bold"; if (row.type === 'SELL' || row.type === 'OUTFLOW') typeColor = "text-red-400 font-bold";
+                tr.innerHTML = `<td class="text-slate-400 font-mono">${row.time}</td><td class="${typeColor}">${row.type}</td><td class="text-white">${row.details}</td><td class="font-mono text-slate-300">${row.value}</td>`; body.appendChild(tr);
+            });
+        }
+
+        // --- OPS LOGIC & NAV UPDATE ---
+        function generateApplication() {
+            if (state.score < 30) {
+                if(Math.random() < 0.1) showToast("Inflows Halted: Score < 30", "error");
+                return;
+            }
+            const id = Date.now() + Math.random();
+            const name = INVESTOR_NAMES[Math.floor(Math.random() * INVESTOR_NAMES.length)] + " " + Math.floor(Math.random()*100);
+            const type = Math.random() > 0.7 ? "HNI" : "Retail";
+            const reputationBonus = state.score / 50; 
+            const base = (type === "HNI" ? 5000000 : 500000) * reputationBonus;
+            const maxAmount = Math.floor(base + Math.random() * base * 2);
+            state.applications.push({ id, name, type, maxAmount });
+            renderApplications();
+            document.getElementById('news-ticker').innerText = `NEW APPLICATION: ${name} wants to invest up to ${fmtMoney(maxAmount)}`;
+        }
+
+        function acceptApplication(id) {
+            const app = state.applications.find(a => a.id === id);
+            const input = document.getElementById(`app-input-${id}`);
+            const amount = parseInt(input.value);
+            if(amount < 100000) return showToast("Min investment is ₹1 Lakh", 'error');
+            
+            // CAREER CAPITAL UPDATE
+            state.careerCapitalRaised += amount;
+
+            const unitsIssued = amount / state.currentNAV;
+            state.totalUnits += unitsIssued; state.cash += amount;
+            state.investors.push({ id, name: app.name, type: app.type, units: unitsIssued, costBasis: amount, joinedDay: state.day });
+            state.applications = state.applications.filter(a => a.id !== id);
+            logTransaction('INVESTOR', 'INFLOW', `New Sub: ${app.name} (${app.type})`, `+${fmtMoney(amount)}`, amount);
+            renderApplications(); renderInvestors(); updateDashboard();
+            showToast(`Received ${fmtMoney(amount)} from ${app.name}`);
+        }
+
+        function generateRedemption() {
+            if(state.investors.length === 0) return;
+            const idx = Math.floor(Math.random() * state.investors.length);
+            const inv = state.investors[idx];
+            const currentValue = inv.units * state.currentNAV;
+            const withdrawAmount = Math.floor(currentValue * 0.5); 
+            state.redemptions.push({ id: Date.now(), name: inv.name, amount: withdrawAmount, daysLeft: 3, invId: inv.id });
+            renderRedemptions();
+            document.getElementById('news-ticker').innerText = `REDEMPTION ALERT: ${inv.name} requesting withdrawal of ${fmtMoney(withdrawAmount)}`;
+            document.querySelector('button[onclick="switchTab(\'ops\')"]').classList.add('animate-pulse', 'text-red-400');
+        }
+
+        function processRedemptions() {
+            let remainingRedemptions = [];
+            let penaltyTriggered = false; let penaltyInvestor = "";
+            let redemptionWarningTriggered = false; 
+
+            state.redemptions.forEach(r => {
+                r.daysLeft--;
+                if (r.daysLeft < 0 && r.daysLeft >= -3) {
+                    showToast(`Warning ${Math.abs(r.daysLeft)}/3: Pay ${r.name} immediately!`, 'error');
+                    redemptionWarningTriggered = true;
+                }
+                if (r.daysLeft < -3) { penaltyTriggered = true; penaltyInvestor = r.name; r.daysLeft = 0; }
+
+                if(r.daysLeft <= 0) {
+                    if(state.cash >= r.amount) {
+                        state.cash -= r.amount;
+                        const unitsRedeemed = r.amount / state.currentNAV;
+                        state.totalUnits -= unitsRedeemed;
+                        const inv = state.investors.find(i => i.id === r.invId);
+                        if(inv) { 
+                            inv.units -= unitsRedeemed; 
+                            const proportion = unitsRedeemed / (inv.units + unitsRedeemed);
+                            inv.costBasis = inv.costBasis * (1 - proportion);
+                            if(inv.units < 1) state.investors = state.investors.filter(i => i.id !== r.invId); 
+                        }
+                        logTransaction('INVESTOR', 'OUTFLOW', `Redemption: ${r.name}`, `-${fmtMoney(r.amount)}`, r.amount);
+                        showToast(`Processed withdrawal for ${r.name}`);
+                    } else {
+                        remainingRedemptions.push(r);
+                        if (r.daysLeft === 0) {
+                            state.auditLog.push({day: state.day, type: 'WARNING', category: 'Liquidity', msg: `Payment Overdue for ${r.name}. Cash Shortage.`});
+                            redemptionWarningTriggered = true; 
+                        }
+                    }
+                } else { remainingRedemptions.push(r); }
+            });
+
+            if (redemptionWarningTriggered) playRedemptionWarningSound();
+            if (penaltyTriggered) triggerLiquidityPenalty(penaltyInvestor);
+            state.redemptions = remainingRedemptions;
+            renderRedemptions(); renderInvestors();
+        }
+
+        function triggerLiquidityPenalty(investorName) {
+            state.score = Math.max(0, state.score - 5);
+            state.commission -= 5000;
+            state.auditLog.push({ day: state.day, type: 'PENALTY', category: 'Liquidity Crisis', msg: `Failed to pay ${investorName} (Overdue > 3 Days). Penalty: -5 Score, -₹50k Fees.` });
+            pauseGame();
+            showToast("LIQUIDITY PENALTY APPLIED. SELL ASSETS.", "error");
+        }
+
+        // --- NEW: FUND CLOSURE LOGIC ---
+        function confirmCloseFund() {
+            pauseGame();
+            if(confirm("Are you sure you want to CLOSE this fund? All assets will be liquidated and money returned to investors. Your Score and Commission will be carried over.")) {
+                closeFund(false);
+            }
+        }
+
+        function closeFund(isMaturity) {
+            let liquidationValue = 0;
+            Object.keys(state.holdings).forEach(k => {
+                const s = state.stockData.find(x => x.id === k);
+                if(s) liquidationValue += state.holdings[k].qty * s.currentPrice;
+            });
+            state.cash += liquidationValue;
+            state.holdings = {};
+            const finalCash = state.cash;
+            state.investors = []; 
+            state.totalUnits = 0;
+            const closeReason = isMaturity ? "Maturity (10 Years)" : "Manager Decision";
+            state.auditLog.push({ day: state.day, type: 'INFO', category: 'Fund Closure', msg: `Fund closed by ${closeReason}. Final AUM: ${fmtCr(finalCash)}` });
+            logTransaction('TRADE', 'SYSTEM', `CYCLE ${state.fundCycle} ENDED`, `AUM: ${fmtCr(state.cash)}`, 0);
+            logTransaction('INVESTOR', 'SYSTEM', `CYCLE ${state.fundCycle} ENDED`, `Investors Refunded`, 0);
+            state.careerCommission += state.commission;
+            const modal = document.getElementById('closure-modal');
+            const btn = document.getElementById('closure-action-btn');
+            if (state.day >= 3650) {
+                document.getElementById('closure-title').innerText = "Career Completed (10 Years)";
+                btn.innerText = "Download Certificate & Finish";
+                btn.onclick = function() { downloadCertificate(); location.reload(); }; 
+            } else {
+                document.getElementById('closure-title').innerText = isMaturity ? "Fund Matured" : "Fund Closed Successfully";
+                btn.innerText = "Start Next Fund";
+                btn.onclick = resetForNewFund;
+            }
+            setText('closure-score', state.score);
+            setText('closure-earnings', fmtMoney(state.commission));
+            setText('closure-career-total', fmtMoney(state.careerCommission));
+            let repStatus = "Neutral"; let repColor = "text-blue-400";
+            if(state.score > 80) { repStatus = "Legendary"; repColor = "text-amber-400"; }
+            else if(state.score > 60) { repStatus = "High"; repColor = "text-emerald-400"; }
+            else if(state.score < 30) { repStatus = "Toxic"; repColor = "text-red-400"; }
+            const repEl = document.getElementById('closure-reputation');
+            repEl.innerText = repStatus; repEl.className = `${repColor} font-bold`;
+            modal.classList.add('open');
+        }
+
+        function resetForNewFund() {
+            document.getElementById('closure-modal').classList.remove('open');
+            state.lastCycleScore = state.score; 
+            state.fundStartDay = state.day; 
+            state.cash = 0;
+            state.holdings = {};
+            state.investors = [];
+            state.redemptions = [];
+            state.applications = [];
+            state.initialBenchmark = state.benchmarkValue; 
+            state.commission = 0; 
+            state.currentNAV = 10.00;
+            state.initialNav = 0; 
+            state.totalUnits = 0;
+            liveChart.data.datasets[0].data = []; liveChart.data.datasets[1].data = []; liveChart.data.labels = []; liveChart.update();
+            state.fundCycle++;
+            setText('fund-cycle-display', `Fund ${toRoman(state.fundCycle)}`);
+            setText('commission-display', fmtMoney(state.careerCommission)); 
+            document.getElementById('launch-title').innerText = `Initialize Fund ${toRoman(state.fundCycle)}`;
+            document.getElementById('launch-score-display').innerText = `Current Score: ${state.score}`;
+            document.getElementById('launch-modal').classList.add('open');
+            document.getElementById('initial-investor-list').innerHTML = ''; 
+            document.getElementById('investor-call-section').classList.add('hidden');
+            document.querySelectorAll('.obj-card').forEach(el => el.classList.remove('hidden'));
+            updateDashboard();
+        }
+
+        function toRoman(num) {
+            const roman = {M:1000,CM:900,D:500,CD:400,C:100,XC:90,L:50,XL:40,X:10,IX:9,V:5,IV:4,I:1};
+            let str = ''; for(let i of Object.keys(roman)) { let q = Math.floor(num/roman[i]); num -= q*roman[i]; str += i.repeat(q); }
+            return str;
+        }
+
+        // --- RENDERERS ---
+        function renderApplications() {
+            const list = document.getElementById('application-list'); list.innerHTML = '';
+            if(state.applications.length === 0) { list.innerHTML = '<div class="text-center text-xs text-slate-600 italic mt-4">No new applications</div>'; return; }
+            state.applications.forEach(a => {
+                const div = document.createElement('div');
+                div.className = "bg-slate-800 p-3 rounded border border-slate-700 text-xs flex flex-col gap-2";
+                div.innerHTML = `<div class="flex justify-between"><span class="font-bold text-white">${a.name} <span class="text-[9px] bg-slate-700 px-1 rounded font-normal">${a.type}</span></span><span class="text-emerald-400">Max: ${fmtMoney(a.maxAmount)}</span></div><div class="flex gap-2 items-center"><input type="range" min="100000" max="${a.maxAmount}" value="${a.maxAmount}" class="flex-1 h-1 bg-slate-600 appearance-none rounded" oninput="document.getElementById('app-input-${a.id}').value = this.value"><input type="number" id="app-input-${a.id}" value="${a.maxAmount}" class="w-20 bg-slate-900 border border-slate-600 rounded px-1 text-right text-white text-base"><button onclick="acceptApplication(${a.id})" class="bg-emerald-600 text-white px-2 py-1 rounded hover:bg-emerald-500">Accept</button></div>`;
+                list.appendChild(div);
+            });
+        }
+
+        function renderRedemptions() {
+            const list = document.getElementById('redemption-list'); list.innerHTML = '';
+            if(state.redemptions.length === 0) { list.innerHTML = '<div class="text-center text-xs text-slate-600 italic">No pending withdrawals.</div>'; return; }
+            state.redemptions.forEach(r => {
+                const div = document.createElement('div');
+                let urgentClass = r.daysLeft <= 0 ? 'border-red-600 bg-red-900/40 urgent-row' : 'border-slate-700 bg-slate-800';
+                let dueText = r.daysLeft <= 0 ? `<span class="text-red-400 font-bold animate-pulse">OVERDUE</span>` : `${r.daysLeft} <span class="text-[9px] font-normal">Days</span>`;
+                div.className = `${urgentClass} p-2 rounded border text-xs flex justify-between items-center mb-1`;
+                div.innerHTML = `<div><span class="text-white font-bold">${r.name}</span><div class="text-red-400 font-mono">-${fmtMoney(r.amount)}</div></div><div class="text-center"><div class="text-[10px] text-slate-400 uppercase">Due In</div><div class="font-bold text-lg text-white">${dueText}</div></div>`;
+                list.appendChild(div);
+            });
+        }
+
+        function renderInvestors() {
+            const list = document.getElementById('active-investor-list'); list.innerHTML = '';
+            if (state.investors.length === 0) { list.innerHTML = '<div class="text-center text-[10px] text-slate-600 italic p-2">No active investors</div>'; return; }
+            state.investors.forEach(i => {
+                const curVal = i.units * state.currentNAV;
+                const pnl = curVal - i.costBasis;
+                const pnlPct = (pnl / i.costBasis) * 100;
+                const div = document.createElement('div');
+                div.className = "flex flex-col p-2 hover:bg-slate-800 rounded cursor-default border-b border-slate-800 last:border-0";
+                div.innerHTML = `<div class="flex justify-between items-center mb-1"><span class="text-xs text-slate-200 font-bold">${i.name}</span><span class="text-[9px] text-slate-500">${i.type}</span></div><div class="flex justify-between items-center text-[10px]"><span class="text-slate-400">Val: ${fmtMoney(curVal)}</span><span class="font-mono font-bold ${pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}">${pnl >= 0 ? '+' : ''}${fmtMoney(pnl)} (${pnl >= 0 ? '+' : ''}${pnlPct.toFixed(1)}%)</span></div>`;
+                list.appendChild(div);
+            });
+        }
+
+        // --- CORE ---
+        window.setPlayerName = function() {
+            const name = document.getElementById('player-name-input').value.trim();
+            if (!name) { showToast("Please enter your name", "error"); return; }
+            state.playerName = name;
+            
+            // Resume Audio Context on user interaction
+            initAudio();
+            
+            document.getElementById('welcome-modal').classList.remove('open');
+            document.getElementById('launch-modal').classList.add('open');
+        }
+
+        function init() {
+            // Set initial state
+            state = getInitialState();
+            
+            if(!state.careerCommission) state.careerCommission = 0;
+            state.stockData = RAW_DATA.map(d => ({
+                id: d[0], name: d[1], sector: d[2], currentPrice: d[3],
+                vol: d[4], beta: d[5], growth: d[6], capType: d[7],
+                history: generateHistoryPath(d[3], d[4], d[5], d[6]),
+                return3Y: 0, initialSimPrice: d[3], liveHistory: [],
+                priceHistory: [] // For 30-day tracking
+            }));
+            state.stockData.forEach(s => {
+                const start = s.history[83]; const end = s.history[119];
+                s.return3Y = ((end - start)/start)*100;
+                // Pre-fill price history with initial price to avoid empty data
+                for(let i=0; i<30; i++) s.priceHistory.push(s.currentPrice);
+            });
+            state.stockData.sort((a,b) => a.id.localeCompare(b.id));
+            renderStockList(); initCharts();
+            if(window.lucide) lucide.createIcons();
+            
+            document.getElementById('modal-qty').addEventListener('input', updateModalCalc);
+            document.getElementById('search-input').addEventListener('input', (e) => renderStockList(e.target.value.toUpperCase()));
+            document.getElementById('play-btn').addEventListener('click', togglePlay);
+            
+            updateMarketUI();
+            renderMovers(); // Initial render
+
+            // Set up API and check for saved game
+            setupLocalhostApi();
+        }
+
+        function togglePlay() {
+            state.isPlaying = !state.isPlaying;
+            
+            // Resume Audio Context on play if suspended
+            initAudio();
+
+            const btn = document.getElementById('play-btn');
+            if(state.isPlaying) {
+                btn.classList.add('bg-red-600', 'text-white'); btn.classList.remove('bg-blue-600');
+                btn.innerHTML = '<i data-lucide="pause" class="fill-white text-white w-4 h-4 ml-0.5"></i>';
+                lucide.createIcons();
+                state.interval = setInterval(tick, 500);
+            } else {
+                pauseGame();
+            }
+        }
+
+        function pauseGame() {
+            state.isPlaying = false;
+            clearInterval(state.interval);
+            const btn = document.getElementById('play-btn');
+            btn.classList.remove('bg-red-600', 'text-white'); btn.classList.add('bg-blue-600');
+            btn.innerHTML = '<i data-lucide="play" class="fill-white text-white w-4 h-4 ml-0.5"></i>';
+            if(window.lucide) lucide.createIcons();
+        }
+
+        // New function to update the day/year display
+        function updateTimeDisplay() {
+            const year = Math.floor(state.day / 365) + 1;
+            const dayInYear = state.day % 365;
+            setText('year-display', `Year ${year} - Day ${dayInYear}`);
+        }
+
+        function tick() {
+            state.day++;
+            
+            // PLAY SOUND EFFECT
+            playTickSound();
+
+            if (state.day >= 3650) { closeFund(true); return; }
+
+            updateTimeDisplay(); // <--- Call the new function to update the header
+
+            // --- BLACK SWAN EVENT LOGIC (Once every ~3 Years) ---
+            if (state.day === 1000 || state.day === 2100 || state.day === 3200) {
+                triggerBlackSwan();
+            }
+            // ----------------------------------------------------
+
+            // MARKET REGIME LOGIC
+            state.market.daysToShift--;
+            if (state.market.daysToShift <= 0) {
+                const keys = Object.keys(MARKET_REGIMES);
+                state.market.current = state.market.forecast;
+                state.market.forecast = keys[Math.floor(Math.random() * keys.length)];
+                state.market.totalDuration = 60 + Math.floor(Math.random() * 30);
+                state.market.daysToShift = state.market.totalDuration;
+                
+                showToast(`MARKET SHIFT: Entered ${MARKET_REGIMES[state.market.current].name}!`, 'error');
+                logTransaction('TRADE', 'SYSTEM', `MARKET SHIFT: ${state.market.current}`, `Next: ${state.market.forecast}`, 0);
+            }
+            updateMarketUI();
+
+            const regime = MARKET_REGIMES[state.market.current];
+            const driftBase = 0.0004; // Standard Drift
+            
+            // Store previous value before update
+            state.lastBenchmarkValue = state.benchmarkValue;
+
+            // Apply Regime Modifiers to Benchmark
+            const benchmarkMove = driftBase + (regime.drift * 0.0002) + ((Math.random()-0.5) * 0.01 * regime.vol);
+            state.benchmarkValue *= (1+benchmarkMove);
+            
+            let currentEquityVal = 0;
+            state.stockData.forEach(s => {
+                let betaMod = s.beta; 
+                // In Bull runs, high beta stocks soar. In Crashes, they tank harder.
+                if (regime.drift > 1.2 && s.beta > 1.2) betaMod *= 1.2; 
+                
+                // Safe Havens (Debt/Bond) behave differently
+                let move = 0;
+                if(s.capType==='BOND') {
+                    // Bonds are stable or rise during crashes
+                    move = 0.00015; 
+                    if(state.market.current === 'CRASH' || state.market.current === 'BEAR') move = 0.0005; // Flight to safety
+                } else {
+                    // Equity Calculation
+                    const volComponent = ((Math.random()-0.5) * (s.vol/15) * regime.vol);
+                    const trendComponent = (betaMod * driftBase) + (regime.drift * 0.0005 * betaMod);
+                    move = trendComponent + volComponent;
+                }
+
+                s.currentPrice *= (1+move);
+                
+                // --- NEW: INTEGRATE REAL-TIME LTP INTO HISTORY ---
+                s.history.push(s.currentPrice);
+                // --------------------------------------------------
+
+                const normVal = (s.currentPrice / s.initialSimPrice) * 100;
+                s.liveHistory.push(normVal);
+                if(s.liveHistory.length > 50) s.liveHistory.shift();
+                
+                // UPDATE PRICE HISTORY FOR MOVERS
+                s.priceHistory.push(s.currentPrice);
+                if(s.priceHistory.length > 30) s.priceHistory.shift();
+
+                // --- NEW: REAL-TIME SIDEBAR PRICE UPDATE ---
+                // This is the key performance-sensitive update
+                const priceEl = document.getElementById(`price-${s.id}`);
+                if (priceEl) priceEl.innerText = `₹${s.currentPrice.toFixed(0)}`;
+                // -------------------------------------------
+
+                if(state.holdings[s.id]) { currentEquityVal += state.holdings[s.id].qty * s.currentPrice; }
+            });
+
+            const currentAUM = state.cash + currentEquityVal;
+            const dailyFee = currentAUM * 0.00005; 
+            state.commission += dailyFee;
+
+            // --- UPDATE RESEARCH CHART IF VISIBLE ---
+            if (state.activeTab === 'research' && historyChart) {
+                const currentLength = historyChart.data.labels.length;
+                historyChart.data.labels.push(currentLength);
+                historyChart.update('none'); 
+            }
+            // ----------------------------------------
+
+            processRedemptions();
+            if (!state.isPlaying) return; 
+
+            if(Math.random() < 0.05) generateApplication();
+            if(Math.random() < 0.03 && state.day > 10) generateRedemption();
+            
+            updateDashboard(true); 
+            if (!state.isPlaying) return; 
+            
+            if (state.score < 10 && state.totalUnits > 0) { triggerLiquidation(); return; }
+
+            updateLiveChart();
+            if(state.activeTab === 'holdings') renderHoldings();
+            if(state.activeTab === 'research') renderMovers(); // Update Movers in real-time
+            if(state.selectedModalStock) {
+                const s = state.stockData.find(x => x.id === state.selectedModalStock);
+                setText('modal-ltp', `₹${s.currentPrice.toFixed(2)}`);
+            }
+            if(state.selectedStockId && state.activeTab === 'research') updateResearchView();
+            renderInvestors();
+        }
+        
+        function triggerBlackSwan() {
+            // Force enter CRASH regime
+            state.market.current = 'CRASH';
+            state.market.forecast = 'RECOVERY'; // Hint at rebound
+            state.market.daysToShift = 60; // 2 Months of pain
+            state.market.totalDuration = 60;
+            
+            // Visuals & Audio
+            playPenaltySound(); // Use the harsh alarm
+            updateMarketUI();
+            
+            // Notifications
+            showToast("BLACK SWAN ALERT: PANDEMIC DECLARED! MARKETS CRASHING!", "error");
+            const ticker = document.getElementById('news-ticker');
+            ticker.innerText = "⚠ BREAKING: GLOBAL PANDEMIC DECLARED. LOCKDOWNS ENACTED. MARKETS IN FREEFALL. FLIGHT TO SAFETY ADVISED. ⚠";
+            ticker.parentElement.classList.add('bg-red-900/50'); // Red background for ticker
+            setTimeout(() => ticker.parentElement.classList.remove('bg-red-900/50'), 10000); // Remove red bg after 10s
+
+            // Logging
+            logTransaction('TRADE', 'SYSTEM', 'BLACK SWAN EVENT START', 'MARKET CRASH', 0);
+            state.auditLog.push({day: state.day, type: 'CRITICAL', category: 'Market Event', msg: `Black Swan (Pandemic) Event triggered. Regime locked to CRASH for 60 days.`});
+        }
+
+        function updateMarketUI() {
+            const cur = MARKET_REGIMES[state.market.current];
+            const fore = MARKET_REGIMES[state.market.forecast];
+            
+            setText('market-current-name', cur.name);
+            setText('market-current-desc', cur.desc);
+            document.getElementById('market-current-icon').innerText = cur.icon;
+            
+            setText('market-forecast-name', `${fore.icon} ${fore.name}`);
+            setText('market-countdown', `${state.market.daysToShift}d`);
+            
+            const pct = ((state.market.totalDuration - state.market.daysToShift) / state.market.totalDuration) * 100;
+            const bar = document.getElementById('market-progress-bar');
+            bar.style.width = `${pct}%`;
+            
+            // Forecast color
+            if(state.market.forecast === 'CRASH' || state.market.forecast === 'BEAR') {
+                bar.classList.remove('bg-blue-600', 'bg-emerald-500');
+                bar.classList.add('bg-red-600');
+            } else if(state.market.forecast === 'BULL' || state.market.forecast === 'RECOVERY') {
+                bar.classList.remove('bg-red-600', 'bg-blue-600');
+                bar.classList.add('bg-emerald-500');
+            } else {
+                bar.className = 'h-full bg-blue-600 progress-striped w-full transition-all duration-1000';
+            }
+        }
+
+        function updateMoversFilter(filter) {
+            state.moversFilter = filter;
+            // Update buttons style
+            ['ALL','LARGE','MID','SMALL'].forEach(t => {
+                const btn = document.getElementById(`mov-btn-${t.toLowerCase()}`);
+                if(t === filter) {
+                    btn.classList.remove('bg-slate-800', 'text-slate-400');
+                    btn.classList.add('bg-slate-700', 'text-white');
+                } else {
+                    btn.classList.add('bg-slate-800', 'text-slate-400');
+                    btn.classList.remove('bg-slate-700', 'text-white');
+                }
+            });
+            renderMovers();
+        }
+
+        function renderMovers() {
+            // Filter stocks based on Cap Type
+            let filtered = state.stockData;
+            if(state.moversFilter !== 'ALL') {
+                if(state.moversFilter === 'SMALL') filtered = filtered.filter(s => s.capType === 'SMALL' || s.capType === 'BOND');
+                else filtered = filtered.filter(s => s.capType === state.moversFilter);
+            }
+
+            // Calculate returns
+            const withReturns = filtered.map(s => {
+                const startPrice = s.priceHistory[0];
+                const endPrice = s.currentPrice;
+                const ret = ((endPrice - startPrice) / startPrice) * 100;
+                return { ...s, ret };
+            });
+
+            // Sort
+            withReturns.sort((a, b) => b.ret - a.ret);
+
+            const gainers = withReturns.slice(0, 10);
+            const losers = withReturns.slice().reverse().slice(0, 10);
+
+            // Render Helper
+            const renderList = (list, containerId) => {
+                const container = document.getElementById(containerId);
+                container.innerHTML = '';
+                list.forEach(s => {
+                    const div = document.createElement('div');
+                    div.className = "flex justify-between items-center text-[10px] p-1.5 hover:bg-slate-800 rounded cursor-pointer border-b border-slate-800/50 last:border-0";
+                    div.onclick = () => selectStock(s.id);
+                    const color = s.ret >= 0 ? 'text-emerald-400' : 'text-red-400';
+                    div.innerHTML = `
+                        <span class="text-slate-300 font-bold truncate flex-1 mr-2">${s.id}</span> 
+                        <div class="flex items-center gap-2 shrink-0">
+                            <span class="font-mono ${color} w-12 text-right">${s.ret >= 0 ? '+' : ''}${s.ret.toFixed(1)}%</span>
+                            <button onclick="event.stopPropagation(); openTradeModal('${s.id}')" class="bg-blue-600 hover:bg-blue-500 text-white w-6 h-6 flex items-center justify-center rounded font-bold shadow-sm transition-colors" title="Trade ${s.id}">T</button>
+                        </div>`;
+                    container.appendChild(div);
+                });
+            };
+
+            renderList(gainers, 'movers-gainers');
+            renderList(losers, 'movers-losers');
+        }
+
+        function triggerLiquidation() {
+            pauseGame();
+            const btn = document.getElementById('play-btn');
+            btn.innerHTML = '<i data-lucide="alert-octagon" class="fill-white text-white w-4 h-4 ml-0.5"></i>';
+            btn.classList.add('bg-slate-700', 'cursor-not-allowed');
+            btn.disabled = true;
+            let liquidationValue = 0;
+            Object.keys(state.holdings).forEach(k => {
+                const s = state.stockData.find(x => x.id === k);
+                if(s) liquidationValue += state.holdings[k].qty * s.currentPrice;
+            });
+            state.cash += liquidationValue;
+            state.holdings = {};
+            updateDashboard();
+            document.getElementById('game-over-modal').classList.add('open');
+            setText('game-over-msg', "Performance Critical (Score < 10). Regulator forced liquidation. You are fired.");
+        }
+
+        function generateHistoryPath(price, vol, beta, growth) {
+            let prices = new Array(120); prices[119] = price; const dt = 1/12;
+            for(let i=118; i>=0; i--) {
+                const ret = (beta * 0.008) + (growth * dt) + ((Math.random()-0.5)*vol);
+                prices[i] = Math.max(0.1, prices[i+1] / (1 + ret));
+            }
+            return prices;
+        }
+
+        function updateDashboard(isTick = false) {
+            let eqVal = 0; Object.keys(state.holdings).forEach(k => { const s = state.stockData.find(x => x.id === k); if(s) eqVal += state.holdings[k].qty * s.currentPrice; });
+            const nav = state.cash + eqVal;
+            if(state.totalUnits > 0) state.currentNAV = nav / state.totalUnits;
+            else if(state.cash > 0 && state.totalUnits === 0) state.currentNAV = 10.00;
+            setText('unit-nav-display', state.currentNAV.toFixed(2));
+            state.score = calculateScore(nav);
+            setText('perf-score', state.score);
+            setText('nav-display', fmtCr(nav));
+            setText('stat-cash', fmtCr(state.cash));
+            setText('stat-equity', `${nav>0 ? ((eqVal/nav)*100).toFixed(1) : 0}%`);
+            const totalComm = state.careerCommission + state.commission;
+            setText('commission-display', totalComm < 100000 ? `₹${Math.floor(totalComm).toLocaleString()}` : fmtMoney(totalComm));
+            
+            // CAREER CAPITAL UPDATE
+            setText('career-capital-display', fmtCr(state.careerCapitalRaised));
+            
+            // TSE INDEX UPDATE WITH COLOR LOGIC
+            const tseVal = Math.floor(state.benchmarkValue);
+            setText('tse-index-display', tseVal.toLocaleString());
+            
+            const tseLblEl = document.getElementById('tse-label');
+            const tseValEl = document.getElementById('tse-index-display');
+            const tsePctEl = document.getElementById('tse-pct-display');
+            
+            // Calculate Percentage Change from SIMULATION START (Base 10,000)
+            const baseValue = 10000;
+            let pctChange = ((state.benchmarkValue - baseValue) / baseValue) * 100;
+            
+            const sign = pctChange >= 0 ? '+' : '';
+            tsePctEl.innerText = `(${sign}${pctChange.toFixed(2)}%)`;
+            
+            // Color based on Total Gain/Loss since start
+            if(pctChange >= 0) {
+                tseLblEl.className = "text-[9px] font-bold text-emerald-400 tracking-wider";
+                tseValEl.className = "text-xs font-mono font-bold text-emerald-400";
+                tsePctEl.className = "text-[10px] font-mono font-bold text-emerald-400";
+            } else {
+                tseLblEl.className = "text-[9px] font-bold text-red-400 tracking-wider";
+                tseValEl.className = "text-xs font-mono font-bold text-red-400";
+                tsePctEl.className = "text-[10px] font-mono font-bold text-red-400";
+            }
+
+            setText('stat-pnl', `NAV: ${state.currentNAV.toFixed(1)}`);
+            checkCompliance(eqVal, nav, isTick);
+        }
+
+        function calculateScore(currentNav) {
+            if(state.initialNav === 0) return state.score; 
+            const bmRet = ((state.benchmarkValue - state.initialBenchmark) / state.initialBenchmark) * 100;
+            const unitReturn = ((state.currentNAV - 10) / 10) * 100; 
+            const alpha = unitReturn - bmRet;
+            let weightedHist = 0; let totalHold = 0;
+            Object.keys(state.holdings).forEach(k => {
+                const s = state.stockData.find(x => x.id === k);
+                if(s) { const val = state.holdings[k].qty * s.currentPrice; weightedHist += (val * s.return3Y); totalHold += val; }
+            });
+            const avgHist = totalHold > 0 ? weightedHist / totalHold : 0;
+            const histScore = Math.min(5, (avgHist / 50) * 5); 
+            const alphaScore = alpha >= 0 ? (alpha * 1.5) : (alpha * 2.0);
+            
+            let currentFundScore = 50 + alphaScore + histScore;
+
+            // DIFFICULTY MODIFIER: Progressive Difficulty Curve
+            if (currentFundScore > 70) {
+                let excess = currentFundScore - 70;
+                let adjustedExcess = 0;
+
+                // Tier 1 (Score 70-80): 5x difficulty
+                // To gain 10 real points (reaching 80), you need 50 raw points.
+                let tier1 = Math.min(excess, 50);
+                adjustedExcess += tier1 / 5;
+                excess -= tier1;
+
+                if (excess > 0) {
+                    // Tier 2 (Score 80-90): 10x difficulty
+                    // To gain next 10 real points (reaching 90), you need 100 raw points.
+                    let tier2 = Math.min(excess, 100);
+                    adjustedExcess += tier2 / 10;
+                    excess -= tier2;
+                }
+
+                if (excess > 0) {
+                    // Tier 3 (Score 90+): 20x difficulty (Extreme)
+                    // Gaining points here requires massive alpha.
+                    adjustedExcess += excess / 20;
+                }
+
+                currentFundScore = 70 + adjustedExcess;
+            }
+
+            currentFundScore = Math.max(0, Math.min(100, Math.round(currentFundScore)));
+            
+            if (state.fundCycle > 1) {
+                const daysActive = state.day - state.fundStartDay;
+                const transitionPeriod = 60; 
+                const weight = Math.min(1, daysActive / transitionPeriod);
+                const finalScore = Math.round((currentFundScore * weight) + (state.lastCycleScore * (1 - weight)));
+                return finalScore;
+            }
+            return currentFundScore;
+        }
+
+        function checkCompliance(equity, totalNav, isTick = false) {
+            let status = "OK", color = "text-emerald-400 bg-emerald-500/20";
+            let isCompliant = true;
+            if(state.fundObjective === 'LARGE') {
+                let large = 0; Object.keys(state.holdings).forEach(k => { const s=state.stockData.find(x=>x.id===k); if(s && s.capType==='LARGE') large+=state.holdings[k].qty*s.currentPrice; });
+                if((large/totalNav) < 0.8) { status="WARN: <80% Large"; color="text-red-400 bg-red-500/20"; isCompliant = false; }
+            } else if(state.fundObjective === 'MID') {
+                let mid = 0; Object.keys(state.holdings).forEach(k => { const s=state.stockData.find(x=>x.id===k); if(s && s.capType==='MID') mid+=state.holdings[k].qty*s.currentPrice; });
+                if((mid/totalNav) < 0.65) { status="WARN: <65% Mid"; color="text-red-400 bg-red-500/20"; isCompliant = false; }
+            } else if(state.fundObjective === 'DEBT') {
+                let debt = 0; Object.keys(state.holdings).forEach(k => { const s=state.stockData.find(x=>x.id===k); if(s && s.capType==='BOND') debt+=state.holdings[k].qty*s.currentPrice; });
+                if((debt/totalNav) < 0.75) { status="WARN: <75% Debt"; color="text-red-400 bg-red-500/20"; isCompliant = false; }
+            } else if(state.fundObjective === 'MULTI') {
+                let large=0, mid=0, small=0;
+                Object.keys(state.holdings).forEach(k => {
+                    const s=state.stockData.find(x=>x.id===k); const v=state.holdings[k].qty*s.currentPrice;
+                    if(s.capType==='LARGE') large+=v; if(s.capType==='MID') mid+=v; if(s.capType==='SMALL') small+=v;
+                });
+                if((large/totalNav)<0.25 || (mid/totalNav)<0.25 || (small/totalNav)<0.25) { status="WARN: Mix <25%"; color="text-red-400 bg-red-500/20"; isCompliant = false; }
+            }
+
+            if (isTick) {
+                if (!isCompliant) {
+                    state.complianceViolationDays++;
+                    // EXTENDED GRACE PERIOD: 15 DAYS
+                    if (state.complianceViolationDays >= 15) {
+                        // PENALTY TRIGGERED
+                        state.score = Math.max(0, state.score - 5);
+                        state.commission -= 10000;
+                        state.auditLog.push({day: state.day, type: 'PENALTY', category: 'Compliance', msg: `Mandate Violation (15 Days). Penalty: -5 Score, -₹1L Fees.`});
+                        
+                        playPenaltySound(); 
+                        
+                        pauseGame();
+                        showToast("Compliance Penalty! -5 Score, -₹1L Fees. Game Paused.", "error");
+                        state.complianceViolationDays = 0;
+                    } else {
+                        // WARNING PHASE
+                        playWarningSound();
+                    }
+                } else { state.complianceViolationDays = 0; }
+            }
+            const b = document.getElementById('compliance-badge');
+            let badgeContent = status;
+            if (!isCompliant) badgeContent += ` (${state.complianceViolationDays}/15 Days)`;
+            if(b) b.innerHTML = `<span class="${color} text-[10px] px-1.5 rounded animate-pulse">${badgeContent}</span>`;
+        }
+
+        // --- GLOBAL EXPORTS ---
+        window.selectObjective = function(type) {
+            state.fundObjective = type;
+            document.querySelectorAll('.obj-card').forEach(el => el.classList.add('hidden'));
+            document.getElementById('investor-call-section').classList.remove('hidden');
+            const list = document.getElementById('initial-investor-list');
+            const reputationMultiplier = Math.max(0.1, state.score / 50);
+            let total = 0;
+            for(let i=0; i<3; i++) {
+                const baseAmt = 5000000 * reputationMultiplier;
+                const amt = Math.floor(baseAmt + Math.random() * baseAmt);
+                total += amt;
+                const units = amt / 10.0;
+                state.investors.push({ id: i, name: INVESTOR_NAMES[i], type: "HNI", units: units, costBasis: amt, joinedDay: 0 });
+                state.totalUnits += units;
+                list.innerHTML += `<div class="flex justify-between text-xs bg-slate-800 p-2 rounded mb-1"><span class="text-white">${INVESTOR_NAMES[i]}</span><span class="text-emerald-400">${fmtMoney(amt)}</span></div>`;
+            }
+            state.cash = total;
+            document.getElementById('total-raised').innerText = fmtCr(total);
+        };
+
+        window.launchFund = function() {
+            document.getElementById('launch-modal').classList.remove('open');
+            document.getElementById('main-interface').classList.remove('opacity-50', 'pointer-events-none');
+            document.getElementById('play-btn').disabled = false;
+            document.getElementById('play-btn').classList.remove('bg-slate-700', 'cursor-not-allowed');
+            document.getElementById('play-btn').classList.add('bg-blue-600');
+            
+            // Play success sound
+            playClapSound();
+
+            // Set Objective Display
+            const map = { 'LARGE': 'Large Cap Fund', 'MID': 'Mid Cap Fund', 'MULTI': 'Multi Cap Fund', 'DEBT': 'Conservative Hybrid' };
+            setText('fund-objective-display', map[state.fundObjective]);
+
+            state.totalUnits = state.cash / 10.0;
+            state.initialNav = state.cash; 
+            
+            // Log initial investments and update career capital
+            state.careerCapitalRaised += state.cash;
+            
+            state.investors.forEach(inv => {
+                logTransaction('INVESTOR', 'INFLOW', `Initial Sub: ${inv.name} (${inv.type})`, `+${fmtMoney(inv.costBasis)}`, inv.costBasis);
+            });
+            updateDashboard(); renderInvestors();
+            updateTimeDisplay(); // Ensure time is correct when starting new fund
+        };
+
+        window.acceptApplication = acceptApplication;
+        window.switchLedger = switchLedger;
+        window.resetForNewFund = resetForNewFund;
+        window.confirmCloseFund = confirmCloseFund;
+        
+        window.switchTab = function(t) {
+            state.activeTab = t;
+            ['live','holdings','ops','research','ledger'].forEach(v => document.getElementById(`view-${v}`).classList.add('hidden'));
+            document.getElementById(`view-${t}`).classList.remove('hidden');
+            if(t==='holdings') renderHoldings();
+            if(t==='ledger') renderLedger();
+            if(t==='ops') document.querySelector('button[onclick="switchTab(\'ops\')"]').classList.remove('animate-pulse', 'text-red-400');
+            if(t==='research') { updateResearchView(); if(historyChart) historyChart.resize(); }
+            const btns = document.querySelectorAll('.tab-btn');
+            btns.forEach(b => b.classList.remove('active'));
+            const activeBtn = document.querySelector(`.tab-btn[onclick="switchTab('${t}')"]`);
+            if(activeBtn) activeBtn.classList.add('active');
+        };
+
+        window.downloadCertificate = function() {
+            const canvas = document.createElement('canvas'); canvas.width = 900; canvas.height = 600; const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#f8fafc'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = '#0f172a'; ctx.lineWidth = 20; ctx.strokeRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = '#d97706'; ctx.lineWidth = 4; ctx.strokeRect(30, 30, canvas.width - 60, canvas.height - 60);
+            ctx.fillStyle = '#0f172a'; ctx.font = 'bold 42px "Segoe UI"'; ctx.textAlign = 'center'; ctx.fillText('CERTIFICATE OF EXPERIENCE', canvas.width / 2, 110);
+            ctx.font = '20px "Segoe UI"'; ctx.fillStyle = '#475569'; ctx.fillText('This document certifies that', canvas.width / 2, 155);
+            ctx.font = 'bold 28px "Segoe UI"'; ctx.fillStyle = '#0f172a'; ctx.fillText(state.playerName, canvas.width / 2, 190);
+            ctx.font = '20px "Segoe UI"'; ctx.fillStyle = '#475569'; ctx.fillText('has successfully managed assets in', canvas.width / 2, 225);
+            
+            // Title
+            ctx.font = 'bold 32px "Segoe UI"'; ctx.fillStyle = '#1e293b'; ctx.fillText('TAXILA FUND MANAGER', canvas.width / 2, 260);
+            
+            // Objective
+            const map = { 'LARGE': 'Large Cap Fund', 'MID': 'Mid Cap Fund', 'MULTI': 'Multi Cap Fund', 'DEBT': 'Conservative Hybrid' };
+            ctx.font = 'italic 20px "Segoe UI"'; ctx.fillStyle = '#64748b'; 
+            ctx.fillText(map[state.fundObjective] || 'Diversified Fund', canvas.width / 2, 290);
+
+            const boxY = 310; 
+            ctx.fillStyle = '#f1f5f9'; ctx.fillRect(200, boxY, 500, 180); ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 1; ctx.strokeRect(200, boxY, 500, 180);
+            ctx.textAlign = 'left'; ctx.fillStyle = '#334155'; ctx.font = '22px "Segoe UI"';
+            let commText = state.careerCommission < 100000 ? `₹${Math.floor(state.careerCommission + state.commission).toLocaleString()}` : fmtMoney(state.careerCommission + state.commission);
+            ctx.fillText(`Cycle:`, 240, boxY + 50); ctx.font = 'bold 24px "Courier New"'; ctx.fillStyle = '#0f172a'; ctx.fillText(`Fund ${toRoman(state.fundCycle)}`, 550, boxY + 50);
+            ctx.font = '22px "Segoe UI"'; ctx.fillStyle = '#334155'; ctx.fillText(`Total Career Fees:`, 240, boxY + 100); ctx.font = 'bold 24px "Courier New"'; ctx.fillStyle = '#b45309'; ctx.fillText(commText, 550, boxY + 100);
+            ctx.font = '22px "Segoe UI"'; ctx.fillStyle = '#334155'; ctx.fillText(`Current Score:`, 240, boxY + 150); ctx.font = 'bold 24px "Courier New"'; ctx.fillStyle = state.score >= 50 ? '#15803d' : '#b91c1c'; ctx.fillText(state.score.toString() + "/100", 550, boxY + 150);
+            ctx.textAlign = 'center'; const signY = 530; ctx.beginPath(); ctx.moveTo(canvas.width / 2 + 100, signY - 40); ctx.lineTo(canvas.width - 100, signY - 40); ctx.strokeStyle = '#334155'; ctx.lineWidth = 2; ctx.stroke();
+            ctx.fillStyle = '#0f172a'; ctx.font = 'bold 24px "Segoe UI"'; ctx.fillText('Prof. Rajat Bohra', (canvas.width / 2 + 100 + canvas.width - 100) / 2, signY);
+            ctx.font = 'italic 16px "Segoe UI"'; ctx.fillStyle = '#64748b'; ctx.fillText('Dean Taxila Business School', (canvas.width / 2 + 100 + canvas.width - 100) / 2, signY + 25);
+            const link = document.createElement('a'); link.download = `Taxila_Career_Certificate.png`; link.href = canvas.toDataURL(); link.click();
+            showToast("Certificate Generated!");
+        };
+
+        window.downloadReport = function() {
+            // 1. Data Aggregation
+            let totalInflow = 0, totalOutflow = 0;
+            state.ledger.investors.forEach(i => { if(i.type === 'INFLOW') totalInflow += i.rawAmount; if(i.type === 'OUTFLOW') totalOutflow += i.rawAmount; });
+            
+            let currentEquityVal = 0; 
+            const holdingKeys = Object.keys(state.holdings);
+            holdingKeys.forEach(k => { const s = state.stockData.find(x => x.id === k); if(s) currentEquityVal += state.holdings[k].qty * s.currentPrice; });
+            
+            const currentAUM = state.cash + currentEquityVal;
+            const valueCreated = (currentAUM + totalOutflow) - totalInflow;
+            const valueClass = valueCreated >= 0 ? 'text-green-600' : 'text-red-600';
+
+            // 2. Analytical Engine (Generating 5 Hints)
+            let analysis = [];
+
+            // Metric A: Cash Drag vs Liquidity Risk
+            const cashRatio = state.cash / (currentAUM || 1);
+            if(cashRatio > 0.25) {
+                analysis.push({ title: "Reduce Cash Drag", icon: "🛑", color: "text-red-700", bg: "bg-red-50", text: "You held significant cash (>25%) on average. In a rising market, cash is a drag on returns. <br><strong>Improvement:</strong> Deploy capital into high-conviction assets faster to capture Alpha." });
+            } else if (cashRatio < 0.03) {
+                analysis.push({ title: "Increase Liquidity Buffer", icon: "⚠️", color: "text-amber-700", bg: "bg-amber-50", text: "Your cash reserves were critically low (<3%). This exposes you to default risk if a large redemption hits. <br><strong>Improvement:</strong> Always keep 5-10% in cash or liquid bonds." });
+            } else {
+                analysis.push({ title: "Optimal Liquidity", icon: "✅", color: "text-emerald-700", bg: "bg-emerald-50", text: "You maintained a healthy balance of invested capital vs. cash buffer. <br><strong>Strategy:</strong> Continue maintaining this 5-15% liquidity range." });
+            }
+
+            // Metric B: Diversification
+            if(holdingKeys.length < 3) {
+                analysis.push({ title: "Mitigate Concentration Risk", icon: "🎯", color: "text-amber-700", bg: "bg-amber-50", text: "Your portfolio was highly concentrated (<3 stocks). While this can generate huge returns, it risks a blow-up. <br><strong>Improvement:</strong> Diversify across at least 5-8 stocks to smooth out volatility." });
+            } else if (holdingKeys.length > 12) {
+                analysis.push({ title: "Avoid Over-Diversification", icon: "⚖️", color: "text-blue-700", bg: "bg-blue-50", text: "You held a 'Zoo' of stocks (>12). This leads to index-hugging returns. <br><strong>Improvement:</strong> Focus on your best 8-10 ideas. Don't just buy the whole market." });
+            } else {
+                analysis.push({ title: "Balanced Portfolio Structure", icon: "🛡️", color: "text-emerald-700", bg: "bg-emerald-50", text: "Your holding count (3-12 stocks) is mathematically optimal for risk-adjusted returns. <br><strong>Strategy:</strong> Good job avoiding both concentration risk and di-worsification." });
+            }
+
+            // Metric C: Compliance & Operations
+            const complianceIssues = state.auditLog.filter(l => l.category === 'Compliance').length;
+            const liquidityIssues = state.auditLog.filter(l => l.category === 'Liquidity' || l.category === 'Liquidity Crisis').length;
+            
+            if(complianceIssues > 0 || liquidityIssues > 0) {
+                analysis.push({ title: "Tighten Operational Controls", icon: "👮", color: "text-red-700", bg: "bg-red-50", text: `You had ${complianceIssues} mandate violations and ${liquidityIssues} liquidity warnings. <br><strong>Improvement:</strong> Check the 'Compliance' badge daily and pay redemptions within 24 hours.` });
+            } else {
+                analysis.push({ title: "Operational Excellence", icon: "⭐", color: "text-emerald-700", bg: "bg-emerald-50", text: "Perfect record! You adhered to all regulatory mandates and honored all redemptions on time. <br><strong>Result:</strong> This reliability significantly boosts your long-term Reputation Score." });
+            }
+
+            // Metric D: Performance (Alpha)
+            if(state.score < 45) {
+                analysis.push({ title: "Seek Higher Alpha", icon: "📉", color: "text-red-700", bg: "bg-red-50", text: "Your performance lagged the benchmark. You may be holding low-beta stocks in a bull market. <br><strong>Improvement:</strong> Use 'Deep Search' to find stocks with higher Beta (>1.2) during growth phases." });
+            } else {
+                analysis.push({ title: "Strong Alpha Generation", icon: "🚀", color: "text-emerald-700", bg: "bg-emerald-50", text: "You consistently beat the benchmark. <br><strong>Strategy:</strong> Your stock selection framework is working. Ensure you protect these gains by hedging during 'Crash' regimes predicted by the Radar." });
+            }
+
+            // Metric E: Market Timing
+            const crashEvents = state.auditLog.filter(l => l.msg.includes('Crash') || l.msg.includes('Bear')).length;
+            if(crashEvents > 0 && state.cash / currentAUM < 0.2) {
+                 analysis.push({ title: "Respect Market Regimes", icon: "🌧️", color: "text-blue-700", bg: "bg-blue-50", text: "The market experienced turbulence. <br><strong>Improvement:</strong> When the Macro Radar forecasts a 'Crash', proactively sell equity and move to Cash/Debt *before* the countdown hits zero." });
+            } else {
+                 analysis.push({ title: "Consistent Execution", icon: "⚙️", color: "text-slate-700", bg: "bg-slate-50", text: "You navigated the market cycles with steady execution. <br><strong>Improvement:</strong> Continue monitoring the Macro Radar to pre-empt regime shifts." });
+            }
+
+            // 3. Build HTML Report
+            const reportContent = `
+            <html>
+                <head>
+                    <title>Audit Report - ${state.playerName}</title>
+                    <script src="https://cdn.tailwindcss.com"><\/script>
+                    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+                    <style>body { font-family: 'Barlow', sans-serif; }</style>
+                </head>
+                <body class="bg-slate-100 p-8 text-slate-800">
+                    <div class="max-w-5xl mx-auto bg-white p-8 shadow-xl border-t-8 border-blue-800">
+                        <div class="flex justify-between items-end mb-8 border-b pb-6">
+                            <div>
+                                <h1 class="text-4xl font-bold text-slate-900 tracking-tight">Taxila Fund Audit</h1>
+                                <p class="text-slate-500 mt-1 text-lg">Manager: <span class="font-semibold text-slate-900">${state.playerName}</span> | Fund Cycle: ${state.fundCycle}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-xs text-slate-400 uppercase tracking-wide">Generated on</p>
+                                <p class="font-mono text-sm font-bold text-slate-600">${new Date().toLocaleString()}</p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-4 gap-4 mb-10">
+                            <div class="p-5 bg-slate-50 border border-slate-200 rounded-lg">
+                                <p class="text-[10px] uppercase text-slate-500 font-bold tracking-wider">Current Score</p>
+                                <p class="text-3xl font-bold text-slate-900 mt-1">${state.score}</p>
+                            </div>
+                            <div class="p-5 bg-slate-50 border border-slate-200 rounded-lg">
+                                <p class="text-[10px] uppercase text-slate-500 font-bold tracking-wider">Career Earnings</p>
+                                <p class="text-3xl font-bold text-amber-600 mt-1">₹${Math.floor(state.careerCommission + state.commission).toLocaleString()}</p>
+                            </div>
+                            <div class="p-5 bg-slate-50 border border-slate-200 rounded-lg">
+                                <p class="text-[10px] uppercase text-slate-500 font-bold tracking-wider">Value Created</p>
+                                <p class="text-3xl font-bold ${valueClass} mt-1">${valueCreated >= 0 ? '+' : ''}${fmtCr(valueCreated)}</p>
+                            </div>
+                            <div class="p-5 bg-blue-50 border border-blue-200 rounded-lg">
+                                <p class="text-[10px] uppercase text-blue-600 font-bold tracking-wider">Total Capital Managed</p>
+                                <p class="text-3xl font-bold text-blue-800 mt-1">${fmtCr(state.careerCapitalRaised)}</p>
+                                <p class="text-[10px] text-blue-400 mt-1">All Cycles Cumulative</p>
+                            </div>
+                        </div>
+
+                        <div class="mb-10">
+                            <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-600"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                                Strategic Analysis & Improvements
+                            </h2>
+                            <div class="grid gap-3">
+                                ${analysis.map(item => `
+                                    <div class="flex items-start gap-4 p-4 rounded-lg border ${item.bg} border-slate-100">
+                                        <div class="text-2xl mt-1">${item.icon}</div>
+                                        <div>
+                                            <h3 class="text-sm font-bold ${item.color} uppercase tracking-wide mb-1">${item.title}</h3>
+                                            <p class="text-sm text-slate-700 leading-relaxed">${item.text}</p>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <div class="mb-8">
+                            <h2 class="text-lg font-bold text-slate-700 mb-3 border-b pb-2">Event Log</h2>
+                            <div class="bg-white rounded border border-slate-200 p-0 max-h-[300px] overflow-y-auto">
+                                <table class="w-full text-sm text-left">
+                                    <thead class="bg-slate-50 text-slate-500 font-bold text-xs uppercase sticky top-0">
+                                        <tr><th class="p-3">Day</th><th class="p-3">Event Type</th><th class="p-3">Description</th></tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-100">
+                                        ${state.auditLog.length > 0 ? state.auditLog.map(l => `
+                                            <tr>
+                                                <td class="p-3 font-mono text-xs text-slate-500">${l.day}</td>
+                                                <td class="p-3 font-bold ${l.type === 'PENALTY' ? 'text-red-600' : 'text-slate-700'}">${l.type}</td>
+                                                <td class="p-3 text-slate-600">${l.msg}</td>
+                                            </tr>
+                                        `).join('') : '<tr><td colspan="3" class="p-4 text-center italic text-slate-400">No major audit events recorded.</td></tr>'}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-12 text-center text-xs text-slate-400 border-t pt-6">
+                            <p class="font-bold text-slate-500">Taxila Fund Manager Simulation</p>
+                            <p>Designed for Financial Education • Taxila Business School</p>
+                        </div>
+                    </div>
+                </body>
+            </html>`;
+            
+            const blob = new Blob([reportContent], { type: 'text/html' }); const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = `Taxila_Audit_Report_${state.playerName.replace(/\s+/g, '_')}.html`; a.click(); showToast("Report Downloaded");
+        };
+        
+        window.filterAssets = function(type) { state.activeFilter = type; renderStockList(document.getElementById('search-input').value.toUpperCase()); };
+        window.selectStock = function(id) { state.selectedStockId = id; document.querySelectorAll('.stock-row').forEach(el => el.classList.remove('active')); document.getElementById(`row-${id}`).classList.add('active'); switchTab('research'); };
+        function updateResearchView() {
+            if(!state.selectedStockId) return;
+            const s = state.stockData.find(x => x.id === state.selectedStockId);
+            if(!s) return;
+            setText('res-name', s.name); setText('res-sector', `${s.sector} • ${s.id}`); setText('res-price', `₹${s.currentPrice.toFixed(2)}`);
+            let capClass = 'bg-slate-800 text-slate-400';
+            if(s.capType === 'SMALL') capClass = 'bg-red-900 text-red-200'; else if(s.capType === 'MID') capClass = 'bg-amber-900 text-amber-200'; else if(s.capType === 'BOND') capClass = 'bg-emerald-900 text-emerald-200';
+            const badge = document.getElementById('res-cap-type'); if(badge) { badge.className = `text-xs px-2 py-0.5 rounded font-bold ${capClass}`; badge.innerText = s.capType + ' CAP'; }
+            setText('metric-return', `${s.return3Y.toFixed(0)}%`);
+            const bar = document.getElementById('metric-bar'); if(bar) { bar.style.width = `${Math.min(100, Math.abs(s.return3Y/5))}%`; bar.className = `h-1 ${s.return3Y>=0?'bg-blue-500':'bg-red-500'}`; }
+            setText('metric-vol', `${(s.vol*100).toFixed(0)}%`); setText('metric-beta', s.beta.toFixed(2));
+            let peak = -Infinity, maxDD = 0; s.history.forEach(p => { if(p>peak) peak=p; const dd=(peak-p)/peak; if(dd>maxDD) maxDD=dd; }); setText('metric-dd', `-${(maxDD*100).toFixed(1)}%`);
+            if(historyChart && historyChart.data.datasets[0]) { historyChart.data.datasets[0].data = s.history; historyChart.update('none'); }
+        }
+        function renderStockList(filter="") {
+            const list = document.getElementById('stock-list'); list.innerHTML = '';
+            let data = state.stockData.filter(s => s.id.includes(filter) || s.name.toUpperCase().includes(filter));
+            if(state.activeFilter !== 'ALL') data = data.filter(s => s.capType === state.activeFilter);
+            data.forEach(s => {
+                const d = document.createElement('div');
+                d.className = "stock-row p-3 border-b border-slate-800 flex justify-between items-center group cursor-pointer";
+                d.id = `row-${s.id}`;
+                d.onclick = () => selectStock(s.id); 
+                d.innerHTML = `<div><p class="text-xs font-bold text-slate-200">${s.id}</p><p class="text-[10px] text-slate-500">${s.name}</p></div><div class="text-right flex items-center gap-2"><span class="text-sm font-mono text-slate-300" id="price-${s.id}">₹${s.currentPrice.toFixed(0)}</span><button onclick="event.stopPropagation(); openTradeModal('${s.id}')" class="bg-blue-600 text-white text-[10px] px-2 py-1 rounded w-10 h-8 flex items-center justify-center">T</button></div>`;
+                list.appendChild(d);
+            });
+        }
+        function renderHoldings() {
+            const b = document.getElementById('holdings-body'); b.innerHTML = '';
+            Object.keys(state.holdings).forEach(k => {
+                const h = state.holdings[k]; const s = state.stockData.find(x=>x.id===k);
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${s.id}</td><td>${h.qty}</td><td>${h.avg.toFixed(1)}</td><td>${s.currentPrice.toFixed(1)}</td><td>${((s.currentPrice-h.avg)*h.qty).toFixed(0)}</td><td><button onclick="openTradeModal('${k}')" class="text-blue-400">T</button></td>`;
+                b.appendChild(tr);
+            });
+        }
+        function updateLiveChart() {
+            if(!liveChart) return;
+            if(liveChart.data.labels.length>50) { liveChart.data.labels.shift(); liveChart.data.datasets[0].data.shift(); liveChart.data.datasets[1].data.shift(); }
+            liveChart.data.labels.push(state.day);
+            let eq=0; Object.keys(state.holdings).forEach(k=>{ const s=state.stockData.find(x=>x.id===k); if(s) eq+=state.holdings[k].qty*s.currentPrice; });
+            liveChart.data.datasets[0].data.push(((state.cash+eq)/10000000)*100);
+            liveChart.data.datasets[1].data.push((state.benchmarkValue/10000)*100);
+            if(state.selectedStockId) {
+                const s = state.stockData.find(x => x.id === state.selectedStockId);
+                if(s && s.liveHistory.length > 0) { liveChart.data.datasets[2].label = s.id; liveChart.data.datasets[2].data = [...s.liveHistory]; }
+            } else { liveChart.data.datasets[2].label = 'Select Asset'; liveChart.data.datasets[2].data = []; }
+            liveChart.update('none');
+        }
+        window.openTradeModal = function(id) { 
+            state.selectedModalStock = id; const s = state.stockData.find(x=>x.id===id); 
+            document.getElementById('trade-modal').classList.add('open'); 
+            setText('modal-name', s.name); setText('modal-ltp', `LTP: ₹${s.currentPrice.toFixed(2)}`); 
+            setText('modal-cash', state.cash.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })); 
+            document.getElementById('modal-price').value = s.currentPrice.toFixed(2); updateModalCalc(); 
+        };
+        window.closeTradeModal = function() { document.getElementById('trade-modal').classList.remove('open'); state.selectedModalStock = null; };
+        window.updateModalCalc = function() { 
+            const qty = parseInt(document.getElementById('modal-qty').value)||0; 
+            const price = parseFloat(document.getElementById('modal-price').value)||0; 
+            setText('modal-total', (qty * price).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })); 
+        };
+        window.submitOrder = function(type) {
+            const id = state.selectedModalStock; const s = state.stockData.find(x=>x.id===id);
+            const qty = parseInt(document.getElementById('modal-qty').value); const price = parseFloat(document.getElementById('modal-price').value);
+            const total = qty * price;
+            if(type==='BUY') {
+                if(state.cash >= total) { 
+                    state.cash -= total; 
+                    if(!state.holdings[id]) state.holdings[id]={qty:0, avg:0}; 
+                    const h=state.holdings[id]; h.avg=(h.qty*h.avg + total)/(h.qty+qty); h.qty+=qty; 
+                    logTransaction('TRADE', 'BUY', `${s.id} x ${qty} @ ₹${price}`, `-${fmtMoney(total)}`, total);
+                    closeTradeModal(); showToast(`Bought ${qty} ${s.id} @ ₹${price}`);
+                } else showToast("Insufficient Cash", "error");
+            } else {
+                if(state.holdings[id] && state.holdings[id].qty >= qty) { 
+                    state.cash += total; state.holdings[id].qty -= qty; if(state.holdings[id].qty<=0) delete state.holdings[id]; 
+                    logTransaction('TRADE', 'SELL', `${s.id} x ${qty} @ ₹${price}`, `+${fmtMoney(total)}`, total);
+                    closeTradeModal(); showToast(`Sold ${qty} ${s.id} @ ₹${price}`);
+                } else showToast("Insufficient Holdings", "error");
+            }
+            updateDashboard();
+        };
+
+       function initCharts() {
+
+    // Destroy old charts if they exist
+    if (liveChart) {
+        liveChart.destroy();
+    }
+    if (historyChart) {
+        historyChart.destroy();
+    }
+
+    const liveCtx = document.getElementById('liveChart');
+    liveChart = new Chart(liveCtx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [
+                { label: 'My Portfolio', data: [], borderColor: '#3b82f6', borderWidth: 2, pointRadius: 0 },
+                { label: 'Benchmark', data: [], borderColor: '#a855f7', borderWidth: 2, borderDash: [4,4], pointRadius: 0 },
+                { label: 'Selected Asset', data: [], borderColor: '#f97316', borderWidth: 1, pointRadius: 0 }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: true } },
+            scales: {
+                x: { grid: { display: false } },
+                y: { grid: { color: '#1e293b' } }
+            }
+        }
+    });
+
+    const historyCtx = document.getElementById('historyChart');
+    historyChart = new Chart(historyCtx, {
+        type: 'line',
+        data: {
+            labels: Array.from({length: 120}, (_, i) => i),
+            datasets: [{
+                label: 'Price History',
+                data: [],
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16,185,129,0.1)',
+                borderWidth: 2,
+                pointRadius: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false
+        }
+    });
+}
+
+
+        init();
+    </script>
+</body>
+</html>

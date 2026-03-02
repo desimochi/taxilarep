@@ -93,14 +93,14 @@ export default function AnswerAdd({ id,setEditDetails, subcomponent, userID  }) 
           ...prev,
           { url: data.fileUrl, name: file.name, id: data.fileId },
         ]);
-
+console.log(data.fileUrl)
         if (type === "image") {
           editor.commands.insertContent(
             `<img src="${data.fileUrl}" class="h-30 w-30"/>`
           );
         } else {
           editor.commands.insertContent(
-            `<a href={data.fileUrl} target="_blank" rel="noopener noreferrer"> See File ${file.name}</a>`
+            `<a href="${data.fileUrl}" target="_blank" rel="noopener noreferrer"> See File ${file.name}</a>`
           );
         }
       }
@@ -146,13 +146,11 @@ export default function AnswerAdd({ id,setEditDetails, subcomponent, userID  }) 
     const comp = subcomponent ? "sub_component" : "component";
 
 const data = {
-  [comp]: id, // Dynamically set key
-  student: userID,
   answers_file: editor.getHTML()
 };
 
     try {
-      const response = await authFetch(`${url}`, {
+      const response = await authFetch(`${url}/${userID}/${id}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

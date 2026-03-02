@@ -221,12 +221,14 @@ export default function Page(){
                     </div>
                   </div>
                   <div className="flex items-center rounded-md p-1 bg-red-50 gap-px">
-                  <button
-  className="py-2.5 px-5 rounded-lg bg-red-50 text-red-600 text-sm font-medium transition-all duration-300 hover:bg-red-600 hover:text-white"
-  onClick={() => setShowPopup(true)}
->
-  Add New Event
-</button>
+                  {state.role_name !== 'Student' && (
+  <button
+    className="py-2.5 px-5 rounded-lg bg-red-50 text-red-600 text-sm font-medium transition-all duration-300 hover:bg-red-600 hover:text-white"
+    onClick={() => setShowPopup(true)}
+  >
+    Add New Event
+  </button>
+)}
                   </div>
                 </div>
                 <div className="border border-red-200 rounded-xl">
@@ -269,8 +271,9 @@ export default function Page(){
           </div>
         </div>
         
-      <div className="rounded-xl border border-gray-300 mx-12 mt-12 ">
+      <div className="rounded-xl border border-gray-300 mx-2 mb-8 sm:mx-12 mt-12 ">
         <h3 className="text-center mt-3 font-semibold text-2xl">Previous Events</h3>
+        <div className="overflow-x-auto shadow-md sm:rounded-lg">
     <table className="w-full rounded-xl text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 mt-4 mb-2">
         <thead className="text-xs text-white uppercase rounded-xl bg-black dark:bg-gray-700 dark:text-white-400">
             <tr>
@@ -312,6 +315,7 @@ export default function Page(){
 ))}
         </tbody>
     </table>
+    </div>
     </div>
       </section>
       </div>

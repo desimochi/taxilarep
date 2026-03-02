@@ -142,7 +142,7 @@ const handleSubmit = async () => {
       <div className={`border border-gray-300 rounded-xl mt-4 bg-gradient-to-bl from-gray-700 to-stone-900 text-white p-2 hover:shadow-xl transition-shadow  py-8 px-12 ${isShaking ? "shake" : ""}`}>
         <div className="flex justify-between items-center gap-2">
           <div className="w-3/5">
-            <h5 className="text-2xl font-bold flex gap-1">
+            <h5 className="text-md sm:text-2xl font-bold flex gap-1">
               <UsersRound className="w-7 h-7" /> Mentorship - Assign Student
             </h5>
             <span className="text-sm text-gray-400">Taxila Business School</span>
@@ -218,7 +218,7 @@ const handleSubmit = async () => {
             </div>
             
       
-
+<div className="overflow-x-auto shadow-md sm:rounded-lg">
         <table className="w-full rounded-xl text-sm text-left rtl:text-right text-gray-800 dark:text-gray-400 mt-4">
           <thead className="text-xs text-white uppercase bg-black dark:bg-gray-700 dark:text-white-400 w-full">
             <tr>
@@ -243,6 +243,7 @@ const handleSubmit = async () => {
             ))}
           </tbody>
         </table>
+        </div>
         <div className="flex items-center justify-start px-6 mt-6 mb-8 ">
         <button
           type="submit"

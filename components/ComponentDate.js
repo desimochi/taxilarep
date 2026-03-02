@@ -13,11 +13,13 @@ import {
   Image as ImageIcon,
   Underline as UnderlineIcon,
   File as FileIcon,
-  TrashIcon
+  TrashIcon,
+  Send
 } from "lucide-react";
 import { authFetch } from "@/app/lib/fetchWithAuth";
 import Toast from "./Toast";
-export default function ComponentDate({ id, setsetStudents,setEditDetails, subcomponent  }) {
+import { Sniglet } from "next/font/google";
+export default function ComponentDate({ id, setsetStudents,setEditDetails, subcomponent, is_submission }) {
   const [formData, setFormData] = useState({
     start_date: "",
     end_date: "",
@@ -144,17 +146,20 @@ export default function ComponentDate({ id, setsetStudents,setEditDetails, subco
     e.preventDefault();
     const url = subcomponent? "subcomponents-action" : "component-viewset"
     const data = {
-      ...formData,
       description: editor.getHTML()
     };
-
+    const data2 = {
+      ...formData,
+      description: editor.getHTML(),
+    }
+    const send = is_submission ? data2 : data;
     try {
       const response = await authFetch(`${url}/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(send),
       });
       const res = await response.json()
       if (response.ok) {
@@ -165,8 +170,8 @@ export default function ComponentDate({ id, setsetStudents,setEditDetails, subco
         editor.commands.clearContent();
         setUploadedFiles([]);
         setsetStudents(res.data)
-        setEditDetails(false)
-        window.location.reload();
+        // setEditDetails(false)
+        // window.location.reload();
         }, 2000);
         
       } else {
@@ -183,7 +188,7 @@ export default function ComponentDate({ id, setsetStudents,setEditDetails, subco
     <>
     {showToast && <Toast message={message}/>}
       <div className="px-4 py-5">
-        <div className="flex gap-2">
+        {is_submission &&  <div className="flex gap-2">
           {/* Start Date */}
           <div className="w-1/2">
             <label className="font-bold">Start Date</label>
@@ -209,7 +214,8 @@ export default function ComponentDate({ id, setsetStudents,setEditDetails, subco
               required
             />
           </div>
-        </div>
+        </div>}
+       
 
         {/* Toolbar */}
         <div className="flex space-x-4 bg-gray-200 p-2 rounded-lg mt-4">

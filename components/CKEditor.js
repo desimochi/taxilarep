@@ -38,7 +38,7 @@ import {
 import { authFetch } from "@/app/lib/fetchWithAuth";
 import { BoldIcon } from "@heroicons/react/24/outline";
 
-export default function RichTextEditor({id}) {
+export default function RichTextEditor({id, api}) {
     const [editorContent, setEditorContent] = useState("<p>Loading content...</p>");
     const router = useRouter(); 
     const[message, setMessage]= useState("")
@@ -100,7 +100,7 @@ const subID = searchParams.get("subID");
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await authFetch(`subject-mapping-syllabus/${subID}`, {
+                const response = await authFetch(`${api}/${subID}`, {
                     method: "GET",
                     headers: { "Content-Type": "application/json" },
                 });
@@ -123,7 +123,7 @@ const subID = searchParams.get("subID");
         };
 
         fetchData();
-    }, [subID, editor]);
+    }, [subID, editor, api]);
 
     const changeFontSize = (event) => {
         const size = event.target.value;
@@ -238,7 +238,7 @@ const deleteFile = async (fileUrlToDelete) => {
     setIsSaving(true); // ✅ Show loading state
 
     try {
-        const response = await authFetch(`subject-mapping-syllabus/${subID}`, { // ✅ Update your API route
+        const response = await authFetch(`${api}/${subID}`, { // ✅ Update your API route
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -247,7 +247,7 @@ const deleteFile = async (fileUrlToDelete) => {
         });
 
         if (response.ok) {
-            setMessage("Syllabus Updates Successfully")
+            setMessage(`Information Updated Successfully`)
             setShowToast(true)
             setTimeout(()=>{
                 setShowToast(false)
@@ -276,7 +276,7 @@ if (!mounted || !editor) return null;
         <div id="editor-container" className="border border-gray-300 rounded-md p-4">
             {showtoast && <Toast message={message} /> }
             {/* Toolbar */}
-            <div className="flex space-x-2 border py-4 px-6 rounded-lg">
+            <div className="grid grid-cols-4 sm:grid-cols-12 gap-2 border py-4 px-6 rounded-lg">
             <select onChange={changeFontSize} className="rounded-sm bg-red-100 text-red-800  bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-70 border border-red-700 px-2">
             <option value="8px">8px</option>
         <option value="10px">10px</option>

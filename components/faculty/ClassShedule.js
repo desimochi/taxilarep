@@ -40,7 +40,7 @@ export default function ClassSchedule() {
         <FullWidthLoader />
       ) : (
       <div>
-        <h3 className="text-sm rounded text-gray-100 uppercase bg-black dark:bg-gray-700 dark:text-gray-400 text-center p-2.5 font-semibold">
+        <h3 className="text-sm rounded text-red-800 uppercase bg-red-50  dark:bg-gray-700 dark:text-gray-400 text-center p-2.5 font-semibold">
           Upcoming Classes
         </h3>
         <div className="px-6">
@@ -71,7 +71,7 @@ export default function ClassSchedule() {
               ))}
             </ul>
           ) : (
-            <p className="text-gray-500">No upcoming classes.</p>
+            <p className="text-gray-500 p-3 text-center">No upcoming classes.</p>
           )}
         </div>
       </div>

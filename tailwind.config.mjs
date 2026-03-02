@@ -22,9 +22,14 @@ export default {
 			"0%": { opacity: 0, transform: "translateY(20px)" },
 			"100%": { opacity: 1, transform: "translateY(0)" },
 		  },
+		  spinSlow: {
+			"0%": { transform: "rotate(0deg)" },
+			"100%": { transform: "rotate(360deg)" },
+		  },
 		},
 		animation: {
 		  fadeInUp: "fadeInUp 0.5s ease-out",
+		  spinSlow: "spinSlow 2s linear infinite",
 		},
 	  },
 	},

@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sariska Hills Study Simulation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #F5F5F4; /* A soft, earthy gray */
+            --bg-content: #FFFBEB; /* Warm off-white */
+            --header-bg: #111827; /* Dark indigo/gray */
+            --primary-accent: #F97316; /* Vibrant orange */
+            --secondary-accent: #14B8A6; /* Teal */
+            --draggable-bg: #FEF3C7; /* Saffron yellow */
+            --draggable-border: #FBBF24;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-main);
+            color: #1f2937;
+        }
+        h1, h2, h3 {
+            font-family: 'Poppins', sans-serif;
+            color: #111827;
+        }
+        .main-content-panel {
+            background-color: var(--bg-content);
+        }
+        .draggable-data {
+            background-color: var(--draggable-bg);
+            border: 1px dashed var(--draggable-border);
+            padding: 2px 6px;
+            border-radius: 6px;
+            cursor: grab;
+            transition: all 0.2s ease-in-out;
+            font-weight: 500;
+        }
+        .draggable-data:hover {
+            background-color: #FDE68A;
+            transform: scale(1.05);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .drop-zone {
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        .drop-zone.drag-over {
+            background-color: #D1FAE5; /* Soft green */
+            border-style: solid;
+            border-color: #10B981;
+        }
+        .journal-card {
+            cursor: grab;
+            transition: all 0.2s ease-in-out;
+            border-left: 4px solid var(--secondary-accent);
+        }
+        .journal-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .calculator-screen {
+            font-family: monospace;
+            font-size: 1.5rem;
+        }
+        .report-blank {
+            display: inline-block;
+            width: 120px;
+            height: 30px;
+            background-color: #e5e7eb;
+            border: 2px dashed #9ca3af;
+            border-radius: 4px;
+            text-align: center;
+            line-height: 26px;
+            font-weight: bold;
+            color: #4b5563;
+        }
+        .btn-primary {
+            background-color: var(--primary-accent);
+            color: white;
+            font-weight: bold;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+        }
+        .btn-primary:hover {
+            background-color: #EA580C;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+        }
+         .btn-secondary {
+            background-color: var(--secondary-accent);
+        }
+        .btn-secondary:hover {
+            background-color: #0D9488;
+        }
+        .message-box {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            font-weight: bold;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            color: white;
+        }
+        .message-box.show {
+            opacity: 1;
+        }
+        .message-box.success {
+            background-color: #10B981;
+        }
+        .message-box.error {
+            background-color: #EF4444;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+    <div class="bg-gray-900 text-white text-center py-2 text-sm">
+        <p>Created at Taxila Business School, Jaipur</p>
+    </div>
+    <div id="simulation-container" class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+        
+        <!-- Header -->
+        <header id="main-header" class="bg-gradient-to-r from-gray-800 to-gray-900 text-white shadow-lg rounded-lg mb-6 hidden">
+            <div class="flex justify-between items-center p-4">
+                <h1 class="text-2xl font-bold text-white">Sariska Hills Study Simulation</h1>
+                <div class="flex items-center space-x-6">
+                    <button id="save-btn" class="btn-primary text-sm py-2 px-3">Save Game</button>
+                    <div class="text-right">
+                        <div id="score" class="text-xl font-bold bg-white text-gray-900 px-4 py-1 rounded-md">0</div>
+                        <div class="text-sm text-gray-300 mt-1">Score</div>
+                    </div>
+                    <div class="text-right">
+                        <div id="timer" class="text-xl font-bold bg-white text-gray-900 px-4 py-1 rounded-md">35:00</div>
+                        <div class="text-sm text-gray-300 mt-1">Time Remaining</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main id="main-content">
+             <!-- Name Entry, Welcome, etc. Screens -->
+            <div id="name-entry-screen">
+                <div class="main-content-panel p-8 rounded-lg shadow-lg text-center max-w-lg mx-auto mt-16">
+                    <h2 class="text-3xl font-bold mb-4">Welcome to the Sariska Hills Study</h2>
+                    <p class="text-lg text-gray-600 mb-6">Please enter your name to begin.</p>
+                    <div class="mb-6">
+                        <input type="text" id="player-name-input" placeholder="Your Name" class="w-full px-4 py-3 border border-gray-300 rounded-lg text-center text-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
+                    </div>
+                    <button id="continue-btn" class="btn-primary w-full">Continue</button>
+                </div>
+            </div>
+            <div id="welcome-screen" class="hidden">
+                <div class="main-content-panel p-8 rounded-lg shadow-lg text-center">
+                    <h2 class="text-3xl font-bold mb-4">Welcome, <span id="player-name-welcome" class="text-orange-600"></span>!</h2>
+                    <p class="text-lg text-gray-600 mb-6 max-w-2xl mx-auto">This simulation tests your ability to process information, perform quantitative analysis, and synthesize findings under pressure.</p>
+                    <p class="text-gray-600 mb-8">You will have 35 minutes to complete the study. The figures are randomized for each session.</p>
+                    <button id="start-btn" class="btn-primary">Start Study</button>
+                </div>
+            </div>
+
+
+            <!-- Investigation Phase -->
+            <div id="investigation-phase" class="hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Left Side: Case File -->
+                    <div class="lg:col-span-2 main-content-panel p-6 rounded-lg shadow-md">
+                        <h2 class="text-2xl font-bold border-b-2 border-gray-200 pb-2 mb-4">Case File: Sariska Hills Wildlife Project</h2>
+                        
+                        <div class="prose max-w-none">
+                            <h3 class="font-semibold">Project Memo</h3>
+                            <p>To: Lead Analyst<br>From: Dr. Anjali Sharma, Head Ecologist, Rajasthan Forest Dept.<br>Date: September 11, 2025</p>
+                            
+                            <div class="not-prose grid grid-cols-1 sm:grid-cols-2 gap-6 my-6">
+                                <div class="bg-white rounded-lg shadow-lg p-4 text-center">
+                                    <div class="text-6xl">🦌</div>
+                                    <h4 class="font-bold text-lg text-gray-800 mt-2">Key Species: Sambar Deer</h4>
+                                </div>
+                                <div class="bg-white rounded-lg shadow-lg p-4 text-center">
+                                    <div class="text-6xl">🐆</div>
+                                    <h4 class="font-bold text-lg text-gray-800 mt-2">Primary Predator: Indian Leopard</h4>
+                                </div>
+                            </div>
+
+                            <p>We've observed a concerning trend in the Sariska Hills. The population of the native Sambar Deer has been in sharp decline over the past five years. Your objective is to analyze the provided data to identify the primary cause. We have data on the Sambar population, habitat, food sources, and predators like the Indian Leopard. Focus on isolating the key driver to inform our conservation strategy. We need a conclusive report by the end of the day.</p>
+                             <p><strong>Note:</strong> You will need to calculate the total Sambar populations for Year 1 and Year 5 yourself during the analysis phase. Remember to save all component values to your journal.</p>
+                            
+                            <!-- Exhibit A -->
+                            <h3 class="font-semibold mt-6">Exhibit A: Population Data</h3>
+                            <p>Population counts for the Sambar Deer, tracked annually across the four designated zones of the project area.</p>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr class="bg-gray-100">
+                                            <th class="p-2 border">Zone</th><th class="p-2 border">Year 1</th><th class="p-2 border">Year 2</th><th class="p-2 border">Year 3</th><th class="p-2 border">Year 4</th><th class="p-2 border">Year 5</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="p-2 border">Northern Range</td>
+                                            <td class="p-2 border"><span id="sambar_y1_nr" class="draggable-data" draggable="true" data-relevant="true"></span></td>
+                                            <td class="p-2 border">...</td><td class="p-2 border">...</td><td class="p-2 border">...</td>
+                                            <td class="p-2 border"><span id="sambar_y5_nr" class="draggable-data" draggable="true" data-relevant="true"></span></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="p-2 border">Southern Grasslands</td>
+                                            <td class="p-2 border"><span id="sambar_y1_sg" class="draggable-data" draggable="true" data-relevant="true"></span></td>
+                                            <td class="p-2 border">...</td><td class="p-2 border">...</td><td class="p-2 border">...</td>
+                                            <td class="p-2 border"><span id="sambar_y5_sg" class="draggable-data" draggable="true" data-relevant="true"></span></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="p-2 border">Western Slopes</td>
+                                            <td class="p-2 border"><span id="sambar_y1_ws" class="draggable-data" draggable="true" data-relevant="true"></span></td>
+                                            <td class="p-2 border">...</td><td class="p-2 border">...</td><td class="p-2 border">...</td>
+                                            <td class="p-2 border"><span id="sambar_y5_ws" class="draggable-data" draggable="true" data-relevant="true"></span></td>
+                                        </tr>
+                                         <tr>
+                                            <td class="p-2 border">Eastern Valley</td>
+                                            <td class="p-2 border"><span id="sambar_y1_ev" class="draggable-data" draggable="true" data-relevant="true"></span></td>
+                                            <td class="p-2 border">...</td><td class="p-2 border">...</td><td class="p-2 border">...</td>
+                                            <td class="p-2 border"><span id="sambar_y5_ev" class="draggable-data" draggable="true" data-relevant="true"></span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Exhibit B -->
+                            <h3 class="font-semibold mt-6">Exhibit B: Predator Population & Initial Visualization</h3>
+                            <p>The primary predator of the Sambar Deer is the Indian Leopard. Key values: Leopard population in Year 1 was <span id="leopard_y1" class="draggable-data" draggable="true" data-relevant="true"></span>. By Year 5, it had grown to <span id="leopard_y5" class="draggable-data" draggable="true" data-relevant="true"></span>. You can use the tool below to create a preliminary chart.</p>
+                            
+                            <div class="not-prose my-6 p-4 border rounded-lg bg-gray-50">
+                                <div class="space-y-2 mb-4">
+                                    <div class="grid grid-cols-3 items-center gap-2">
+                                        <label for="chart-sambar-y1-investigation" class="text-sm font-medium">Sambar Pop. (Y1):</label>
+                                        <input type="number" id="chart-sambar-y1-investigation" class="chart-input-investigation drop-zone col-span-2 p-1 border rounded" placeholder="Enter or drop value">
+                                    </div>
+                                    <div class="grid grid-cols-3 items-center gap-2">
+                                        <label for="chart-leopard-y1-investigation" class="text-sm font-medium">Leopard Pop. (Y1):</label>
+                                        <input type="number" id="chart-leopard-y1-investigation" class="chart-input-investigation drop-zone col-span-2 p-1 border rounded" placeholder="Enter or drop value">
+                                    </div>
+                                    <div class="grid grid-cols-3 items-center gap-2">
+                                        <label for="chart-sambar-y5-investigation" class="text-sm font-medium">Sambar Pop. (Y5):</label>
+                                        <input type="number" id="chart-sambar-y5-investigation" class="chart-input-investigation drop-zone col-span-2 p-1 border rounded" placeholder="Enter or drop value">
+                                    </div>
+                                    <div class="grid grid-cols-3 items-center gap-2">
+                                        <label for="chart-leopard-y5-investigation" class="text-sm font-medium">Leopard Pop. (Y5):</label>
+                                        <input type="number" id="chart-leopard-y5-investigation" class="chart-input-investigation drop-zone col-span-2 p-1 border rounded" placeholder="Enter or drop value">
+                                    </div>
+                                </div>
+                                <button id="generate-chart-btn-investigation" class="btn-primary btn-secondary w-full text-sm py-2">Generate Line Graph</button>
+                                <div id="chart-container-investigation" class="bg-white p-2 rounded-lg border mt-4 min-h-[300px]">
+                                    <div class="flex justify-center items-center h-full text-gray-400">Chart will be displayed here</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Exhibit C -->
+                            <h3 class="font-semibold mt-6">Exhibit C: Environmental Factors</h3>
+                            <p>Habitat size has remained stable, with the total project area at <span id="land_area" class="draggable-data" draggable="true" data-relevant="false"></span> sq km. The main food source, Ker Berries, saw a slight production decrease. Year 1 production was <span id="berry_y1" class="draggable-data" draggable="true" data-relevant="true"></span> kg, while Year 5 production was <span id="berry_y5" class="draggable-data" draggable="true" data-relevant="true"></span> kg. Annual rainfall, however, has been highly variable and is not considered a primary factor. Last year's monsoon visitor count was <span id="tourist" class="draggable-data" draggable="true" data-relevant="false"></span>.</p>
+                        </div>
+                    </div>
+
+                    <!-- Right Side: Research Journal -->
+                    <div class="lg:col-span-1">
+                         <div class="main-content-panel p-6 rounded-lg shadow-md sticky top-6">
+                            <h2 class="text-2xl font-bold border-b-2 border-gray-200 pb-2 mb-4">Research Journal</h2>
+                            <p class="text-sm text-gray-500 mb-4">Drag and drop key data points here. Only saved data will be available for analysis.</p>
+                            <div id="journal-drop-zone" class="drop-zone border-2 border-dashed border-gray-300 rounded-lg min-h-[400px] p-4 bg-gray-50 space-y-3">
+                                <!-- Dropped cards will appear here -->
+                            </div>
+                             <button id="to-analysis-btn" class="mt-6 w-full btn-primary btn-secondary disabled:bg-gray-400 disabled:shadow-none disabled:transform-none" disabled>Proceed to Analysis</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analysis, Report, Final Screens... (structure unchanged) -->
+            <div id="analysis-phase" class="hidden">
+                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 main-content-panel p-6 rounded-lg shadow">
+                        <h2 class="text-2xl font-bold border-b-2 border-gray-200 pb-2 mb-4">Analysis Questions</h2>
+                        <div id="questions-container"></div>
+                        <div class="mt-8 pt-4 border-t">
+                            <h3 class="font-semibold text-lg mb-2">On-Screen Calculator</h3>
+                            <div class="bg-gray-800 text-white p-4 rounded-lg max-w-sm mx-auto shadow-inner">
+                                <div id="calculator-screen" class="calculator-screen bg-gray-700 rounded p-2 text-right mb-4 h-12 overflow-x-auto"></div>
+                                <div class="grid grid-cols-4 gap-2">
+                                    <button class="calc-btn bg-gray-600 hover:bg-gray-500 rounded p-3 text-lg" data-op="clear">C</button>
+                                    <button class="calc-btn bg-gray-600 hover:bg-gray-500 rounded p-3 text-lg" data-op="del">DEL</button>
+                                    <button class="calc-btn bg-orange-500 hover:bg-orange-400 rounded p-3 text-lg" data-op="%">%</button>
+                                    <button class="calc-btn bg-orange-500 hover:bg-orange-400 rounded p-3 text-lg" data-op="/">/</button>
+                                    <button class="calc-btn bg-gray-400 hover:bg-gray-300 text-gray-900 rounded p-3 text-lg" data-op="7">7</button>
+                                    <button class="calc-btn bg-gray-400 hover:bg-gray-300 text-gray-900 rounded p-3 text-lg" data-op="8">8</button>
+                                    <button class="calc-btn bg-gray-400 hover:bg-gray-300 text-gray-900 rounded p-3 text-lg" data-op="9">9</button>
+                                    <button class="calc-btn bg-orange-500 hover:bg-orange-400 rounded p-3 text-lg" data-op="*">*</button>
+                                    <button class="calc-btn bg-gray-400 hover:bg-gray-300 text-gray-900 rounded p-3 text-lg" data-op="4">4</button>
+                                    <button class="calc-btn bg-gray-400 hover:bg-gray-300 text-gray-900 rounded p-3 text-lg" data-op="5">5</button>
+                                    <button class="calc-btn bg-gray-400 hover:bg-gray-300 text-gray-900 rounded p-3 text-lg" data-op="6">6</button>
+                                    <button class="calc-btn bg-orange-500 hover:bg-orange-400 rounded p-3 text-lg" data-op="-">-</button>
+                                    <button class="calc-btn bg-gray-400 hover:bg-gray-300 text-gray-900 rounded p-3 text-lg" data-op="1">1</button>
+                                    <button class="calc-btn bg-gray-400 hover:bg-gray-300 text-gray-900 rounded p-3 text-lg" data-op="2">2</button>
+                                    <button class="calc-btn bg-gray-400 hover:bg-gray-300 text-gray-900 rounded p-3 text-lg" data-op="3">3</button>
+                                    <button class="calc-btn bg-orange-500 hover:bg-orange-400 rounded p-3 text-lg" data-op="+">+</button>
+                                    <button class="calc-btn col-span-2 bg-gray-400 hover:bg-gray-300 text-gray-900 rounded p-3 text-lg" data-op="0">0</button>
+                                    <button class="calc-btn bg-gray-400 hover:bg-gray-300 text-gray-900 rounded p-3 text-lg" data-op=".">.</button>
+                                    <button class="calc-btn bg-teal-600 hover:bg-teal-500 rounded p-3 text-lg" data-op="=">=</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="lg:col-span-1">
+                         <div class="main-content-panel p-6 rounded-lg shadow sticky top-6">
+                            <h2 class="text-2xl font-bold border-b-2 pb-2 mb-4">Research Journal</h2>
+                            <p class="text-sm text-gray-500 mb-4">Drag data from here to the calculator or an answer field.</p>
+                            <div id="journal-display-analysis" class="min-h-[400px] p-4 bg-gray-50 space-y-3 rounded-lg"></div>
+                             <button id="to-report-btn" class="mt-6 w-full btn-primary btn-secondary disabled:bg-gray-400 disabled:shadow-none disabled:transform-none" disabled>Proceed to Report</button>
+                        </div>
+                    </div>
+                 </div>
+            </div>
+            <div id="report-phase" class="hidden">
+                <div class="main-content-panel p-8 rounded-lg shadow-lg">
+                    <h2 class="text-3xl font-bold mb-4">Final Report</h2>
+                    <p class="text-gray-600 mb-6">Complete the report by dragging your answers into the blanks and creating the requested chart.</p>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div class="lg:col-span-1">
+                            <h3 class="text-xl font-semibold mb-2">Report Summary</h3>
+                            <div id="answers-bank" class="flex flex-wrap gap-2 mb-4 p-4 bg-gray-100 rounded"></div>
+                            <div class="prose max-w-none p-4 border rounded-md">
+                                <p><strong>Subject: Analysis of Sambar Deer Population Decline</strong></p>
+                                <p>The total Sambar Deer population in Year 1 was <span id="report-total-y1" class="font-bold"></span>. By Year 5, this fell to <span id="report-total-y5" class="font-bold"></span>, a decline of <span id="report-blank-1" class="report-blank drop-zone"></span>%.</p>
+                                <p>Simultaneously, the Indian Leopard population increased from <span id="report-leopard-y1"></span> to <span id="report-leopard-y5"></span>, a growth of <span id="report-blank-2" class="report-blank drop-zone"></span>%. In contrast, Ker Berry production only decreased by <span id="report-blank-3" class="report-blank drop-zone"></span>%.</p>
+                                <p><strong>Conclusion:</strong> The data strongly suggests the significant increase in predator numbers is the primary driver of the Sambar population's decline.</p>
+                            </div>
+                        </div>
+                        <div class="lg:col-span-1">
+                            <h3 class="text-xl font-semibold mb-2">Final Data Visualization</h3>
+                             <div class="space-y-2 mb-4 p-4 border rounded-md bg-gray-50">
+                                 <div class="grid grid-cols-3 items-center gap-2">
+                                    <label for="chart-sambar-y1-report" class="text-sm font-medium">Sambar Pop. (Y1):</label>
+                                    <input type="number" id="chart-sambar-y1-report" class="chart-input-report drop-zone col-span-2 p-1 border rounded" placeholder="Enter or drop value">
+                                </div>
+                                <div class="grid grid-cols-3 items-center gap-2">
+                                    <label for="chart-leopard-y1-report" class="text-sm font-medium">Leopard Pop. (Y1):</label>
+                                    <input type="number" id="chart-leopard-y1-report" class="chart-input-report drop-zone col-span-2 p-1 border rounded" placeholder="Enter or drop value">
+                                </div>
+                                <div class="grid grid-cols-3 items-center gap-2">
+                                    <label for="chart-sambar-y5-report" class="text-sm font-medium">Sambar Pop. (Y5):</label>
+                                    <input type="number" id="chart-sambar-y5-report" class="chart-input-report drop-zone col-span-2 p-1 border rounded" placeholder="Enter or drop value">
+                                </div>
+                                <div class="grid grid-cols-3 items-center gap-2">
+                                    <label for="chart-leopard-y5-report" class="text-sm font-medium">Leopard Pop. (Y5):</label>
+                                    <input type="number" id="chart-leopard-y5-report" class="chart-input-report drop-zone col-span-2 p-1 border rounded" placeholder="Enter or drop value">
+                                </div>
+                            </div>
+                            <button id="generate-chart-btn-report" class="btn-primary btn-secondary w-full text-sm py-2">Generate Line Graph</button>
+                            <div id="chart-container-report" class="bg-white p-2 rounded-lg border mt-4 min-h-[300px]"></div>
+                        </div>
+                        <div class="lg:col-span-1">
+                             <div class="main-content-panel p-6 rounded-lg shadow sticky top-6">
+                                <h2 class="text-xl font-bold border-b-2 pb-2 mb-4">Research Journal</h2>
+                                <div id="journal-display-report" class="min-h-[400px] p-4 bg-gray-50 space-y-3 rounded-lg"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <button id="finish-btn" class="mt-8 w-full btn-primary">Finish Study</button>
+                </div>
+            </div>
+            <div id="final-screen" class="hidden">
+                 <div class="main-content-panel p-8 rounded-lg shadow-lg text-center">
+                    <h2 class="text-3xl font-bold mb-4 text-green-600">Study Complete!</h2>
+                    <p class="text-lg text-gray-600 mb-2 max-w-2xl mx-auto">Well done, <span id="player-name-final" class="font-semibold text-orange-600"></span>. Thank you for completing the simulation.</p>
+                    <div class="my-6">
+                        <p class="text-xl text-gray-700">Your Final Score:</p>
+                        <p id="final-score" class="text-5xl font-bold text-teal-600">0 / 100</p>
+                    </div>
+                    <button id="restart-btn" class="btn-primary">Restart</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Message Box -->
+    <div id="message-box" class="message-box"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DATASETS ---
+            const datasets = [
+                {
+                    id: 1,
+                    name: "Baseline Scenario",
+                    sambar: { y1: [820, 1250, 930, 400], y5: [420, 650, 510, 220] },
+                    leopard: { y1: 40, y5: 95 },
+                    berries: { y1: 80000, y5: 75000 },
+                    irrelevant: { area: 500, tourists: 15200 },
+                    correctAnswers: { totalY1: 3400, totalY5: 1800, sambarDecline: '47.1', leopardGrowth: '137.5', berryDecline: '6.3' }
+                },
+                {
+                    id: 2,
+                    name: "Predator Boom Scenario",
+                    sambar: { y1: [1050, 1500, 1100, 350], y5: [500, 700, 550, 150] },
+                    leopard: { y1: 35, y5: 90 },
+                    berries: { y1: 95000, y5: 92000 },
+                    irrelevant: { area: 520, tourists: 18500 },
+                    correctAnswers: { totalY1: 4000, totalY5: 1900, sambarDecline: '52.5', leopardGrowth: '157.1', berryDecline: '3.2' }
+                },
+                {
+                    id: 3,
+                    name: "Habitat Pressure Scenario",
+                    sambar: { y1: [700, 1000, 800, 300], y5: [350, 550, 450, 150] },
+                    leopard: { y1: 50, y5: 105 },
+                    berries: { y1: 60000, y5: 55000 },
+                    irrelevant: { area: 480, tourists: 12300 },
+                    correctAnswers: { totalY1: 2800, totalY5: 1500, sambarDecline: '46.4', leopardGrowth: '110.0', berryDecline: '8.3' }
+                }
+            ];
+            
+            // Randomly select one dataset on load
+            const activeDataset = datasets[Math.floor(Math.random() * datasets.length)];
+
+            // --- STATE MANAGEMENT ---
+            const MAX_TASK_SCORE = 470;
+            const state = {
+                playerName: '', timerId: null, timeRemaining: 35 * 60, currentPhase: 'nameEntry',
+                journalData: new Map(), score: 0,
+                activeDataset: activeDataset,
+                questions: [], // Questions will be populated dynamically
+                calculator: { displayValue: '' }
+            };
+
+            // --- API ENDPOINTS (MOCK) ---
+            const API_SAVE_URL = 'https://erp.taxila.in/api/game/sariska';
+            const API_LOAD_URL = 'https://erp.taxila.in/api/game/sariska';
+
+            // --- UI ELEMENTS ---
+            const mainHeader = document.getElementById('main-header');
+            const scoreEl = document.getElementById('score');
+            const timerEl = document.getElementById('timer');
+            const messageBox = document.getElementById('message-box');
+            const screens = { 
+                nameEntry: document.getElementById('name-entry-screen'), welcome: document.getElementById('welcome-screen'), 
+                investigation: document.getElementById('investigation-phase'), analysis: document.getElementById('analysis-phase'), 
+                report: document.getElementById('report-phase'), final: document.getElementById('final-screen') 
+            };
+            
+            // --- CORE LOGIC (SCORING, TIMER, PHASES, DRAG/DROP) ---
+            function showMessage(text, type = 'success') {
+                messageBox.textContent = text;
+                messageBox.className = `message-box show ${type}`;
+                setTimeout(() => {
+                    messageBox.classList.remove('show');
+                }, 3000);
+            }
+function getUserId() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get("userId") || "guest";
+    }
+            async function saveGame() {
+                const userId = getUserId()
+                clearInterval(state.timerId);
+                const journalDataObj = {};
+                state.journalData.forEach((value, key) => {
+                    journalDataObj[key] = value;
+                });
+
+                const dataToSave = {
+                    playerName: state.playerName,
+                    timeRemaining: state.timeRemaining,
+                    score: state.score,
+                    currentPhase: state.currentPhase,
+                    journalData: journalDataObj,
+                    questions: state.questions,
+                    activeDatasetId: state.activeDataset.id
+                };
+
+                try {
+                    const response = await fetch(API_SAVE_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({userId:userId, name:dataToSave.playerName, gameState:dataToSave}),
+                    });
+
+                    if (response.ok) {
+                        showMessage('Game saved successfully!');
+                    } else {
+                        throw new Error('Failed to save game.');
+                    }
+                } catch (error) {
+                    console.error('Error saving game:', error);
+                    showMessage('Error saving game.', 'error');
+                } finally {
+                    startTimer();
+                }
+            }
+
+            async function loadGame() {
+                const userId = getUserId()
+                try {
+                    const response = await fetch(`${API_LOAD_URL}?userId=${userId}`);
+                    if (!response.ok) {
+                        throw new Error('No saved game found.');
+                    }
+
+                    const gameState = await response.json();
+                    const savedState = gameState.gameState
+                    state.playerName = savedState.playerName;
+                    state.timeRemaining = savedState.timeRemaining;
+                    state.score = savedState.score;
+                    state.currentPhase = savedState.currentPhase;
+                    
+                    state.journalData = new Map(Object.entries(savedState.journalData));
+                    state.questions = savedState.questions;
+
+                    const loadedDataset = datasets.find(d => d.id === savedState.activeDatasetId);
+                    if (loadedDataset) {
+                        state.activeDataset = loadedDataset;
+                        populateDynamicData();
+                    }
+                    
+                    scoreEl.textContent = state.score;
+                    document.getElementById('player-name-welcome').textContent = state.playerName;
+                    
+                    const journalDropZone = document.getElementById('journal-drop-zone');
+                    state.journalData.forEach(data => addCardToJournal(journalDropZone, data, false));
+                    
+                    if (state.currentPhase !== 'nameEntry') {
+                        populateAnalysisPhase();
+                    }
+
+                    showPhase(state.currentPhase);
+                    startTimer();
+                    showMessage('Game loaded successfully!');
+                } catch (error) {
+                    console.error('Error loading game:', error);
+                    showMessage('No saved game found. Starting a new game.', 'error');
+                    // The fix is to ensure the starting point is correct for a new game
+                    // The rest of the new game setup is handled by the start button.
+                    showPhase('nameEntry');
+                }
+            }
+
+
+            function updateScore(points) {
+                state.score += points;
+                scoreEl.textContent = state.score;
+                const scoreBox = scoreEl;
+                scoreBox.classList.add('transform', points > 0 ? 'scale-125' : 'scale-90');
+                scoreBox.style.color = points > 0 ? '#10B981' : '#EF4444';
+                setTimeout(() => {
+                    scoreBox.classList.remove('transform', 'scale-125', 'scale-90');
+                     scoreBox.style.color = '#111827';
+                }, 300);
+            }
+
+            function startTimer() {
+                // Clear any existing timer to prevent multiple timers running
+                if (state.timerId) {
+                    clearInterval(state.timerId);
+                }
+                state.timerId = setInterval(() => {
+                    state.timeRemaining--;
+                    const minutes = Math.floor(state.timeRemaining / 60).toString().padStart(2, '0');
+                    const seconds = (state.timeRemaining % 60).toString().padStart(2, '0');
+                    timerEl.textContent = `${minutes}:${seconds}`;
+                    if (state.timeRemaining <= 0) { clearInterval(state.timerId); document.getElementById('finish-btn').click(); }
+                }, 1000);
+            };
+
+            function populateDynamicData() {
+                const ds = state.activeDataset;
+                document.getElementById('sambar_y1_nr').textContent = ds.sambar.y1[0];
+                document.getElementById('sambar_y5_nr').textContent = ds.sambar.y5[0];
+                document.getElementById('sambar_y1_sg').textContent = ds.sambar.y1[1];
+                document.getElementById('sambar_y5_sg').textContent = ds.sambar.y5[1];
+                document.getElementById('sambar_y1_ws').textContent = ds.sambar.y1[2];
+                document.getElementById('sambar_y5_ws').textContent = ds.sambar.y5[2];
+                document.getElementById('sambar_y1_ev').textContent = ds.sambar.y1[3];
+                document.getElementById('sambar_y5_ev').textContent = ds.sambar.y5[3];
+                document.getElementById('leopard_y1').textContent = ds.leopard.y1;
+                document.getElementById('leopard_y5').textContent = ds.leopard.y5;
+                document.getElementById('land_area').textContent = ds.irrelevant.area;
+                document.getElementById('berry_y1').textContent = ds.berries.y1;
+                document.getElementById('berry_y5').textContent = ds.berries.y5;
+                document.getElementById('tourist').textContent = ds.irrelevant.tourists;
+
+                // Set data-relevant and data-id attributes for draggables
+                document.querySelectorAll('.draggable-data').forEach(el => {
+                    const id = el.id;
+                    const value = el.textContent;
+                    el.dataset.id = id;
+                    el.dataset.value = value;
+                    el.dataset.label = id.replace(/_/g, ' ').toUpperCase();
+                });
+
+                // Dynamically create questions for the analysis phase
+                state.questions = [
+                    { id: 'q1', text: 'Calculate the percentage change in Sambar Deer population.', correctAnswer: ds.correctAnswers.sambarDecline, relevant: true },
+                    { id: 'q2', text: 'Calculate the percentage change in the Leopard population.', correctAnswer: ds.correctAnswers.leopardGrowth, relevant: true },
+                    { id: 'q3', text: 'Calculate the percentage change in Ker Berry production.', correctAnswer: ds.correctAnswers.berryDecline, relevant: true },
+                    { id: 'q4_total_y1', text: 'What was the total Sambar population in Year 1?', correctAnswer: ds.correctAnswers.totalY1, relevant: true },
+                    { id: 'q5_total_y5', text: 'What was the total Sambar population in Year 5?', correctAnswer: ds.correctAnswers.totalY5, relevant: true },
+                ];
+            }
+
+
+            function setupInputDropZone(element) {
+                element.addEventListener('dragover', e => { e.preventDefault(); element.classList.add('drag-over'); });
+                element.addEventListener('dragleave', e => { element.classList.remove('drag-over'); });
+                element.addEventListener('drop', e => {
+                    e.preventDefault();
+                    element.classList.remove('drag-over');
+                    const data = e.dataTransfer.getData('text/plain');
+                    if (element.id === 'calculator-screen') { state.calculator.displayValue += data; updateCalculatorDisplay(); } 
+                    else if (element.tagName === 'INPUT') { element.value = data; } 
+                    else { element.textContent = data; element.classList.remove('border-dashed', 'bg-gray-200'); element.classList.add('bg-green-200', 'text-green-800'); }
+                });
+            };
+            
+            function generateChart(containerId, inputClass) {
+                const chartContainer = document.getElementById(containerId);
+                const inputs = Array.from(document.getElementsByClassName(inputClass));
+                const values = {
+                    sambarY1: parseFloat(inputs.find(i => i.id.includes('sambar-y1')).value) || 0,
+                    leopardY1: parseFloat(inputs.find(i => i.id.includes('leopard-y1')).value) || 0,
+                    sambarY5: parseFloat(inputs.find(i => i.id.includes('sambar-y5')).value) || 0,
+                    leopardY5: parseFloat(inputs.find(i => i.id.includes('leopard-y5')).value) || 0,
+                };
+                const allValues = Object.values(values);
+                if (allValues.every(v => v === 0)) { chartContainer.innerHTML = `<div class="flex justify-center items-center h-full text-gray-400">Enter data to generate chart</div>`; return; }
+                const svgWidth = 500, svgHeight = 300, margin = { top: 30, right: 20, bottom: 40, left: 50 };
+                const width = svgWidth - margin.left - margin.right, height = svgHeight - margin.top - margin.bottom;
+                const maxValue = Math.max(...allValues);
+                const scaleY = (value) => height - (value / maxValue) * height;
+                const sambarPoints = `${margin.left},${margin.top + scaleY(values.sambarY1)} ${margin.left + width},${margin.top + scaleY(values.sambarY5)}`;
+                const leopardPoints = `${margin.left},${margin.top + scaleY(values.leopardY1)} ${margin.left + width},${margin.top + scaleY(values.leopardY5)}`;
+                chartContainer.innerHTML = `<svg width="100%" height="100%" viewBox="0 0 ${svgWidth} ${svgHeight}" style="font-family: sans-serif; font-size: 12px;"><line x1="${margin.left}" y1="${margin.top}" x2="${margin.left}" y2="${margin.top + height}" stroke="#9ca3af"></line><line x1="${margin.left}" y1="${margin.top + height}" x2="${margin.left + width}" y2="${margin.top + height}" stroke="#9ca3af"></line><text x="${margin.left - 8}" y="${margin.top}" text-anchor="end" dy="0.3em" fill="#6b7280">${maxValue}</text><text x="${margin.left - 8}" y="${margin.top + height / 2}" text-anchor="end" dy="0.3em" fill="#6b7280">${Math.round(maxValue / 2)}</text><text x="${margin.left - 8}" y="${margin.top + height}" text-anchor="end" dy="0.3em" fill="#6b7280">0</text><text x="${margin.left}" y="${margin.top + height + 20}" text-anchor="middle" fill="#6b7280">Year 1</text><text x="${margin.left + width}" y="${margin.top + height + 20}" text-anchor="middle" fill="#6b7280">Year 5</text><polyline points="${sambarPoints}" fill="none" stroke="#3b82f6" stroke-width="2.5"></polyline><polyline points="${leopardPoints}" fill="none" stroke="#ef4444" stroke-width="2.5"></polyline><circle cx="${margin.left}" cy="${margin.top + scaleY(values.sambarY1)}" r="4" fill="#3b82f6"></circle><circle cx="${margin.left + width}" cy="${margin.top + scaleY(values.sambarY5)}" r="4" fill="#3b82f6"></circle><circle cx="${margin.left}" cy="${margin.top + scaleY(values.leopardY1)}" r="4" fill="#ef4444"></circle><circle cx="${margin.left + width}" cy="${margin.top + scaleY(values.leopardY5)}" r="4" fill="#ef4444"></circle><rect x="${margin.left + 40}" y="5" width="12" height="12" fill="#3b82f6"></rect><text x="${margin.left + 58}" y="15" fill="#6b7280">Sambar</text><rect x="${margin.left + 120}" y="5" width="12" height="12" fill="#ef4444"></rect><text x="${margin.left + 138}" y="15" fill="#6b7280">Leopard</text></svg>`;
+            };
+
+            function addCardToJournal(container, data, isDraggable = false) {
+                const card = document.createElement('div');
+                card.className = 'journal-card bg-white p-3 rounded-md shadow-sm flex justify-between items-center';
+                card.dataset.value = data.value; card.draggable = isDraggable;
+                card.innerHTML = `<div><input type="text" value="${data.label}" class="font-semibold text-sm w-full bg-transparent focus:outline-none focus:ring-0"><p class="text-gray-700 text-lg font-medium">${data.value}</p></div><button class="remove-btn text-red-500 hover:text-red-700 text-xs p-1">✖</button>`;
+                container.appendChild(card);
+                if (isDraggable) { card.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', data.value); }); }
+                const removeBtn = card.querySelector('.remove-btn');
+                if (container.id === 'journal-drop-zone') { removeBtn.addEventListener('click', () => { 
+                    const dataItem = state.journalData.get(data.id);
+                    if (dataItem) { if (dataItem.relevant === 'true') { updateScore(-10); } else { updateScore(5); } }
+                    state.journalData.delete(data.id); card.remove(); checkJournalStatus(); 
+                }); } 
+                else { removeBtn.style.display = 'none'; }
+                checkJournalStatus();
+            };
+            const calculatorScreen = document.getElementById('calculator-screen');
+            function updateCalculatorDisplay() { 
+                calculatorScreen.textContent = state.calculator.displayValue; 
+                calculatorScreen.draggable = true; 
+                calculatorScreen.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', calculatorScreen.textContent); }); 
+            };
+            function checkAllAnswersSubmitted() { document.getElementById('to-report-btn').disabled = !state.questions.every(q => q.answer !== null); };
+
+            function populateReportPhase() {
+                const answersBank = document.getElementById('answers-bank');
+                answersBank.innerHTML = '<span class="font-semibold mr-2">Your Answers:</span>';
+                state.questions.forEach(q => {
+                    if(['q1', 'q2', 'q3'].includes(q.id)) {
+                        const answerEl = document.createElement('span');
+                        answerEl.className = 'answer-draggable bg-blue-200 text-blue-800 font-mono py-1 px-3 rounded-full cursor-grab';
+                        answerEl.textContent = q.answer; answerEl.draggable = true; answerEl.dataset.answer = q.answer;
+                        answerEl.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', e.target.dataset.answer); });
+                        answersBank.appendChild(answerEl);
+                    }
+                });
+                const journalDisplayReport = document.getElementById('journal-display-report');
+                journalDisplayReport.innerHTML = '';
+                state.journalData.forEach(data => addCardToJournal(journalDisplayReport, data, true));
+                document.querySelectorAll('#report-phase .drop-zone').forEach(dz => setupInputDropZone(dz));
+                document.getElementById('generate-chart-btn-report').addEventListener('click', () => generateChart('chart-container-report', 'chart-input-report'));
+            };
+
+            function showPhase(phase) { 
+                Object.values(screens).forEach(s => s.classList.add('hidden')); 
+                if (screens[phase]) screens[phase].classList.remove('hidden');
+                state.currentPhase = phase; 
+                if (['investigation', 'analysis', 'report'].includes(phase)) {
+                    mainHeader.classList.remove('hidden');
+                } else {
+                    mainHeader.classList.add('hidden');
+                }
+            }
+            
+            document.getElementById('continue-btn').addEventListener('click', () => {
+                const nameInput = document.getElementById('player-name-input');
+                const playerName = nameInput.value.trim();
+                if (playerName) {
+                    state.playerName = playerName;
+                    document.getElementById('player-name-welcome').textContent = state.playerName;
+                    showPhase('welcome');
+                } else {
+                    nameInput.classList.add('border-red-500', 'animate-pulse');
+                    setTimeout(() => nameInput.classList.remove('border-red-500', 'animate-pulse'), 1000);
+                }
+            });
+
+            // The fix to ensure the game starts with a timer and populated data
+            // This button now correctly handles starting a new game
+            document.getElementById('start-btn').addEventListener('click', () => { 
+                populateDynamicData();
+                showPhase('investigation'); 
+                startTimer(); 
+            });
+
+            document.getElementById('to-analysis-btn').addEventListener('click', () => { if (state.journalData.size > 0) { populateAnalysisPhase(); showPhase('analysis'); } });
+            document.getElementById('to-report-btn').addEventListener('click', () => { if (state.questions.every(q => q.answer !== null)) { populateReportPhase(); showPhase('report'); } });
+            document.getElementById('finish-btn').addEventListener('click', () => {
+                evaluateFinalChart();
+                const finalPercentage = Math.min(100, Math.max(0, Math.round((state.score / MAX_TASK_SCORE) * 100)));
+                document.getElementById('player-name-final').textContent = state.playerName;
+                document.getElementById('final-score').textContent = `${finalPercentage} / 100`;
+                clearInterval(state.timerId);
+                showPhase('final');
+            });
+            document.getElementById('restart-btn').addEventListener('click', () => { window.location.reload(); });
+            document.querySelectorAll('.draggable-data').forEach(draggable => {
+                draggable.addEventListener('dragstart', (e) => {
+                     e.dataTransfer.setData('application/json', JSON.stringify({
+                        id: e.target.dataset.id, value: e.target.dataset.value, 
+                        label: e.target.dataset.label, relevant: e.target.dataset.relevant
+                    }));
+                });
+            });
+            const journalDropZone = document.getElementById('journal-drop-zone');
+            journalDropZone.addEventListener('dragover', (e) => { e.preventDefault(); journalDropZone.classList.add('drag-over'); });
+            journalDropZone.addEventListener('dragleave', () => { journalDropZone.classList.remove('drag-over'); });
+            journalDropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                journalDropZone.classList.remove('drag-over');
+                const data = JSON.parse(e.dataTransfer.getData('application/json'));
+                if (!state.journalData.has(data.id)) {
+                    state.journalData.set(data.id, data);
+                    addCardToJournal(journalDropZone, data);
+                    if (data.relevant === 'true') { updateScore(10); } else { updateScore(-5); }
+                }
+            });
+            function checkJournalStatus() { document.getElementById('to-analysis-btn').disabled = state.journalData.size === 0; }
+            document.querySelectorAll('.chart-input-investigation').forEach(input => setupInputDropZone(input));
+            document.getElementById('generate-chart-btn-investigation').addEventListener('click', () => generateChart('chart-container-investigation', 'chart-input-investigation'));
+            function populateAnalysisPhase() {
+                const journalDisplayAnalysis = document.getElementById('journal-display-analysis');
+                journalDisplayAnalysis.innerHTML = '';
+                state.journalData.forEach(data => addCardToJournal(journalDisplayAnalysis, data, true));
+                const questionsContainer = document.getElementById('questions-container');
+                questionsContainer.innerHTML = state.questions.map(q => `<div class="mb-4"><label for="${q.id}" class="block text-gray-700 mb-1">${q.text}</label><div class="flex items-center"><input type="text" id="${q.id}" class="answer-input drop-zone border-gray-300 rounded-md shadow-sm w-full p-2" placeholder="Drag answer from calculator or type"><button class="submit-answer-btn ml-2 btn-primary btn-secondary text-sm py-2 px-3" data-question-id="${q.id}">Submit</button></div></div>`).join('');
+                document.querySelectorAll('.submit-answer-btn').forEach(btn => {
+                    btn.addEventListener('click', e => {
+                        const qId = e.target.dataset.questionId; const input = document.getElementById(qId); if (!input.value) return;
+                        const question = state.questions.find(q => q.id === qId); question.answer = input.value;
+                        if (question.answer == question.correctAnswer) { updateScore(50); } else { updateScore(-10); }
+                        if(qId === 'q4_total_y1' || qId === 'q5_total_y5') {
+                            const newJournalEntry = { id: qId, value: input.value, label: `Total Sambar Pop. ${qId.includes('y1') ? 'Y1' : 'Y5'}`};
+                            if(!state.journalData.has(newJournalEntry.id)){ state.journalData.set(newJournalEntry.id, newJournalEntry); addCardToJournal(journalDisplayAnalysis, newJournalEntry, true); }
+                        }
+                        input.disabled = true; btn.disabled = true; btn.textContent = '✓'; btn.classList.remove('btn-secondary'); btn.style.backgroundColor = '#10B981';
+                        checkAllAnswersSubmitted();
+                    });
+                });
+                document.querySelectorAll('.answer-input').forEach(input => setupInputDropZone(input));
+            }
+            function evaluateFinalChart() {
+                const ds = state.activeDataset.correctAnswers;
+                const correctValues = { 
+                    'chart-sambar-y1-report': ds.totalY1.toString(), 'chart-leopard-y1-report': state.activeDataset.leopard.y1.toString(), 
+                    'chart-sambar-y5-report': ds.totalY5.toString(), 'chart-leopard-y5-report': state.activeDataset.leopard.y5.toString() 
+                };
+                let correctCount = 0;
+                for (const [id, correctValue] of Object.entries(correctValues)) {
+                    const input = document.getElementById(id);
+                    if (input && input.value == correctValue) { correctCount++; }
+                }
+                updateScore(correctCount * 25);
+            }
+            
+            setupInputDropZone(calculatorScreen);
+            document.querySelector('#analysis-phase .grid.grid-cols-4').addEventListener('click', e => {
+                if (!e.target.matches('.calc-btn')) return; const op = e.target.dataset.op;
+                if (!isNaN(parseFloat(op)) || op === '.') state.calculator.displayValue += op;
+                else if (op === 'clear') state.calculator.displayValue = ''; else if (op === 'del') state.calculator.displayValue = state.calculator.displayValue.slice(0, -1);
+                else if (['+', '-', '*', '/'].includes(op)) state.calculator.displayValue += ` ${op} `;
+                else if (op === '=') { try { state.calculator.displayValue = String(eval(state.calculator.displayValue.replace(/[^0-9\.\+\-\*\/ ]/g, ''))); } catch { state.calculator.displayValue = 'Error'; } }
+                updateCalculatorDisplay();
+            });
+            document.getElementById('save-btn').addEventListener('click', saveGame);
+
+            // --- INITIALIZE ---
+            // The `onload` function now correctly calls `loadGame()`.
+            // The `loadGame()` function handles the logic for either loading a saved game
+            // or starting a new one. The `start-btn` click handler
+            // now populates the data and starts the timer for a new game scenario.
+            loadGame();
+        });
+    </script>
+</body>
+</html>

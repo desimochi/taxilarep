@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wordify Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        :root {
+            --bg-color: #f4f4f8;
+            --text-color: #1a1a1b;
+            --key-bg: #d3d6da;
+            --key-text: #1a1a1b;
+            --key-shadow: #a7aab1;
+            --absent-bg: #787c7e;
+            --absent-shadow: #4a4d4e;
+            --present-bg: #c9b458;
+            --present-shadow: #968642;
+            --correct-bg: #6aaa64;
+            --correct-shadow: #4a7c46;
+            --tile-text-color: #ffffff;
+            --cert-border: #a88f5a;
+            --cert-bg: #fdfaf2;
+        }
+        .dark {
+             --bg-color: #121213;
+             --text-color: #f8f8f8;
+             --key-bg: #818384;
+             --key-text: #ffffff;
+             --key-shadow: #505152;
+             --cert-border: #c9b458;
+             --cert-bg: #1a1a1b;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            touch-action: manipulation;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s;
+        }
+
+        .tile {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            border: 2px solid #d3d6da;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: clamp(1.5rem, 5vw, 2.25rem);
+            font-weight: bold;
+            text-transform: uppercase;
+            user-select: none;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            transition: transform 0.6s, background-color 0.6s, border-color 0.6s;
+            transform-style: preserve-3d;
+        }
+        
+        .tile-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .tile.filled {
+            border-color: #878a8c;
+        }
+
+        .tile.pop {
+             animation: pop 0.15s ease-out;
+        }
+
+        .tile .tile-front, .tile .tile-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 4px;
+        }
+        
+        .tile .tile-front {
+            background-color: var(--bg-color);
+            border: 2px solid #d3d6da;
+             color: var(--text-color);
+        }
+
+        .tile .tile-back {
+            color: var(--tile-text-color);
+            transform: rotateX(180deg);
+        }
+
+        .tile.flip .tile-inner {
+            transform: rotateX(180deg);
+        }
+        .tile.absent .tile-back {
+            background-color: var(--absent-bg);
+            border-color: var(--absent-bg);
+        }
+        .tile.present .tile-back {
+            background-color: var(--present-bg);
+            border-color: var(--present-bg);
+        }
+        .tile.correct .tile-back {
+            background-color: var(--correct-bg);
+            border-color: var(--correct-bg);
+        }
+        
+        .key {
+            background-color: var(--key-bg);
+            color: var(--key-text);
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 0 var(--key-shadow);
+            transition: all 0.1s ease-out;
+        }
+        .key:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 0 var(--key-shadow);
+        }
+
+        .key.absent {
+            background-color: var(--absent-bg);
+            color: var(--tile-text-color);
+            box-shadow: 0 4px 0 0 var(--absent-shadow);
+        }
+        .key.present {
+            background-color: var(--present-bg);
+            color: var(--tile-text-color);
+            box-shadow: 0 4px 0 0 var(--present-shadow);
+        }
+        .key.correct {
+            background-color: var(--correct-bg);
+            color: var(--tile-text-color);
+            box-shadow: 0 4px 0 0 var(--correct-shadow);
+        }
+
+        #game-board {
+            perspective: 1000px;
+        }
+        
+        #modal-content {
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3), 0 4px 6px -2px rgba(0,0,0,0.2);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background-color: var(--bg-color);
+        }
+
+        #certificate-container {
+            border: 10px solid var(--cert-border);
+            background-color: var(--cert-bg);
+            padding: 1.5rem;
+            font-family: 'Georgia', serif;
+            color: #333;
+        }
+        .dark #certificate-container {
+            color: #ddd;
+        }
+
+
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+            100% { transform: scale(1); }
+        }
+    </style>
+     <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200">
+
+    <div class="flex flex-col items-center justify-between min-h-screen p-2 sm:p-4">
+        <header class="w-full max-w-md text-center border-b border-gray-300 dark:border-gray-700 pb-4 relative">
+            <h1 id="game-title" class="text-4xl font-bold tracking-wider">WORDIFY</h1>
+            <p id="date-display" class="text-sm text-gray-500 dark:text-gray-400 mt-9 pt-5"></p>
+            <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Created at Taxila Business School</p>
+            <div id="sound-toggle" class="absolute top-1/2 -translate-y-1/2 right-4 text-gray-600 dark:text-gray-300 cursor-pointer">
+                <!-- Sound icon will be injected here -->
+            </div>
+            <div id="score-display" class="absolute top-1/2 -translate-y-1/2 left-4 text-gray-600 dark:text-gray-300 font-bold">Score: 0</div>
+            <div id="timer-display" class="absolute top-1/2 -translate-y-1/2 right-4 mr-16 text-gray-600 dark:text-gray-300 font-bold">Time: 00:00:00</div>
+        </header>
+
+        <div id="message-container" class="absolute top-24 left-1/2 -translate-x-1/2 h-8 z-20"></div>
+
+        <main id="game-board" class="grid grid-rows-6 gap-1.5 my-4 w-full max-w-[340px] mx-auto">
+            <!-- Game grid generated by JS -->
+        </main>
+
+        <div id="keyboard" class="w-full max-w-lg mx-auto">
+             <!-- Keyboard generated by JS -->
+        </div>
+
+        <!-- Main Results/Certificate Modal -->
+        <div id="modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-30">
+            <div id="modal-content" class="bg-white dark:bg-gray-800 p-8 max-w-sm w-full text-center">
+                <!-- Standard message content -->
+                <div id="standard-modal-content">
+                    <h2 id="modal-title" class="text-2xl font-bold mb-4"></h2>
+                    <p id="modal-message" class="mb-4"></p>
+                    <div id="modal-word" class="mb-6 font-bold text-xl uppercase tracking-widest"></div>
+                    <button id="next-word-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg text-lg key">
+                        Next Word
+                    </button>
+                </div>
+                <!-- Certificate content (hidden by default) -->
+                <div id="certificate-content" class="hidden">
+                    <div id="certificate-container">
+                        <h2 class="text-2xl font-bold mb-2" style="font-family: 'Georgia', serif;">Certificate of Participation</h2>
+                        <p class="mb-4">This certificate is awarded to</p>
+                        <p id="cert-player-name" class="text-xl font-bold underline mb-4"></p>
+                        <p class="mb-4">for successfully completing the daily challenge of</p>
+                        <h3 class="text-2xl font-bold mb-2" style="font-family: 'Georgia', serif;">Wordify</h3>
+                        <p id="cert-score" class="mb-4 font-semibold"></p>
+                        <p id="cert-date" class="text-sm"></p>
+                        <p id="cert-time" class="text-sm"></p>
+                        <p class="text-xs mt-4">from Taxila Business School</p>
+                    </div>
+                    <button id="linkedin-share-btn" class="mt-6 w-full flex items-center justify-center gap-2 bg-[#0077b5] hover:bg-[#005e90] text-white font-bold py-3 px-6 rounded-lg text-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                        Share on LinkedIn
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Name Input Modal -->
+        <div id="name-modal" class="hidden fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 z-40">
+            <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-xl max-w-sm w-full">
+                <h2 class="text-2xl font-bold mb-4 text-center">Welcome to Wordify!</h2>
+                <p class="text-center mb-6">Please enter your name to begin.</p>
+                <input type="text" id="player-name-input" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 mb-4" placeholder="Your Name">
+                <button id="start-game-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-lg">Start Game</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        document.addEventListener('DOMContentLoaded', () => {
+            const gameBoard = document.getElementById('game-board');
+            const keyboardContainer = document.getElementById('keyboard');
+            const messageContainer = document.getElementById('message-container');
+            const modal = document.getElementById('modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalMessage = document.getElementById('modal-message');
+            const modalWord = document.getElementById('modal-word');
+            const nextWordBtn = document.getElementById('next-word-btn');
+            const titleElement = document.getElementById('game-title');
+            const dateDisplay = document.getElementById('date-display');
+            const soundToggleBtn = document.getElementById('sound-toggle');
+            const scoreDisplay = document.getElementById('score-display');
+            const timerDisplay = document.getElementById('timer-display');
+
+            // Name Modal elements
+            const nameModal = document.getElementById('name-modal');
+            const playerNameInput = document.getElementById('player-name-input');
+            const startGameBtn = document.getElementById('start-game-btn');
+            
+            // Certificate elements
+            const standardModalContent = document.getElementById('standard-modal-content');
+            const certificateContent = document.getElementById('certificate-content');
+            const certPlayerName = document.getElementById('cert-player-name');
+            const certScore = document.getElementById('cert-score');
+            const certDate = document.getElementById('cert-date');
+            const certTime = document.getElementById('cert-time');
+            const linkedinShareBtn = document.getElementById('linkedin-share-btn');
+
+            let playerName = '';
+
+            // --- Sound State & Setup ---
+            let isMuted = false;
+            let audioReady = false;
+            let audioCtx; // Use native AudioContext
+
+            const soundOnIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>`;
+            const soundOffIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>`;
+            soundToggleBtn.innerHTML = soundOnIcon;
+            
+            function setupAudio() {
+                if (audioReady || isMuted) return;
+                try {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    audioCtx = new AudioContext();
+                    audioReady = true;
+                    console.log("Native Audio context started.");
+                } catch(e) {
+                    console.error("Could not initialize native AudioContext.", e);
+                    isMuted = true;
+                    soundToggleBtn.innerHTML = soundOffIcon;
+                    soundToggleBtn.style.pointerEvents = 'none';
+                    soundToggleBtn.style.opacity = '0.5';
+                }
+            }
+
+            const playSound = (type, options = {}) => {
+                if (isMuted || !audioReady || !audioCtx) return;
+                try {
+                    const oscillator = audioCtx.createOscillator();
+                    const gainNode = audioCtx.createGain();
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioCtx.destination);
+                    const now = audioCtx.currentTime;
+
+                    switch (type) {
+                        case 'click':
+                            oscillator.type = 'sine';
+                            oscillator.frequency.setValueAtTime(100, now);
+                            gainNode.gain.setValueAtTime(0.5, now);
+                            gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+                            oscillator.start(now);
+                            oscillator.stop(now + 0.1);
+                            break;
+                        case 'flip':
+                            const flipNotes = [392.00, 440.00, 493.88, 523.25, 587.33]; // G4, A4, B4, C5, D5
+                            oscillator.type = 'sine';
+                            oscillator.frequency.setValueAtTime(flipNotes[options.index] || 440, now);
+                            gainNode.gain.setValueAtTime(0.3, now);
+                            gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+                            oscillator.start(now);
+                            oscillator.stop(now + 0.15);
+                            break;
+                        case 'win':
+                            const winNotes = [523.25, 659.25, 783.99]; // C5, E5, G5
+                            winNotes.forEach((note, index) => {
+                                const osc = audioCtx.createOscillator();
+                                const g = audioCtx.createGain();
+                                osc.connect(g);
+                                g.connect(audioCtx.destination);
+                                osc.frequency.setValueAtTime(note, now + index * 0.1);
+                                g.gain.setValueAtTime(0.4, now + index * 0.1)
+                                g.gain.exponentialRampToValueAtTime(0.001, now + index * 0.1 + 0.2)
+                                osc.start(now + index * 0.1);
+                                osc.stop(now + index * 0.1 + 0.2);
+                            });
+                            break;
+                        case 'lose':
+                            oscillator.type = 'sawtooth';
+                            oscillator.frequency.setValueAtTime(200, now);
+                            oscillator.frequency.exponentialRampToValueAtTime(100, now + 0.5);
+                            gainNode.gain.setValueAtTime(0.4, now);
+                            gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+                            oscillator.start(now);
+                            oscillator.stop(now + 0.5);
+                            break;
+                        case 'error':
+                            oscillator.type = 'square';
+                            oscillator.frequency.setValueAtTime(150, now);
+                            gainNode.gain.setValueAtTime(0.3, now);
+                            gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+                            oscillator.start(now);
+                            oscillator.stop(now + 0.2);
+                            break;
+                    }
+                } catch (e) { console.error("Native sound playback error:", e); }
+            };
+            
+            soundToggleBtn.addEventListener('click', () => {
+                isMuted = !isMuted;
+                soundToggleBtn.innerHTML = isMuted ? soundOffIcon : soundOnIcon;
+                if (!isMuted && !audioReady) setupAudio();
+            });
+
+            // --- Game Constants & State ---
+            const WORD_LENGTH = 5, MAX_TRIES = 6, WORDS_PER_SESSION = 10;
+            let currentRow = 0, currentCol = 0, secretWord = '', isGameOver = false, isProcessing = false;
+            let dailyWords = [], currentWordIndex = 0, wordsGuessedCorrectly = 0, totalAttempts = 0, score = 0;
+            let boardState = []; // Array to store the state of the game board
+            let totalTimePlayed = 0, timerInterval;
+
+            const wordList = ["aback","abase","abate","abbey","abbot","abhor","abide","abled","abode","abort","about","above","abuse","abyss","acorn","acrid","actor","acute","adage","adapt","adept","admin","admit","adobe","adopt","adore","adorn","adult","affix","afire","afoot","afoul","after","again","agape","agate","agent","agile","aging","aglow","agony","agree","ahead","aider","aisle","alarm","album","alert","algae","alibi","alien","align","alike","alive","allay","alley","allot","allow","alloy","aloft","alone","along","aloof","aloud","alpha","altar","alter","amass","amaze","amber","amble","amend","amiss","amity","among","ample","amply","amuse","angel","anger","angle","angry","angst","anime","ankle","annex","annoy","annul","anode","antic","anvil","aorta","apart","aphid","aping","apnea","apple","apply","apron","aptly","arbor","ardor","arena","argue","arise","armor","aroma","arose","array","arrow","arson","artsy","ascot","ashen","aside","askew","assay","asset","atoll","atone","attic","audio","audit","augur","aunty","avail","avert","avian","avoid","await","awake","award","aware","awash","awful","awoke","axial","axiom","axion","azure","bacon","badge","badly","bagel","baggy","baker","baler","balmy","banal","banjo","barge","baron","basal","basic","basil","basin","basis","baste","batch","bathe","baton","batty","bawdy","bayou","beach","beady","beard","beast","beech","beefy","befit","began","begat","beget","begin","begun","being","belch","belie","belle","belly","below","bench","beret","berry","berth","beset","betel","bevel","bezel","bible","bicep","biddy","bigot","bilge","billy","binge","bingo","biome","birch","birth","bison","bitty","black","blade","blame","bland","blank","blare","blast","blaze","bleak","bleat","bleed","bleep","blend","bless","blimp","blind","blink","bliss","blitz","bloat","block","bloke","blond","blood","bloom","blown","bluer","bluff","blunt","blurb","blurt","blush","board","boast","bobby","boney","bongo","bonus","booby","boost","booth","booty","booze","boozy","borax","borne","bosom","bossy","botch","bough","boule","bound","bowel","boxer","brace","braid","brain","brake","brand","brash","brass","brave","bravo","brawl","brawn","bread","break","breed","briar","bribe","brick","bride","brief","brine","bring","brink","briny","brisk","broad","broil","broke","brood","brook","broom","broth","brown","brunt","brush","brute","buddy","budge","buggy","bugle","build","built","bulge","bulky","bully","bunch","bunny","burly","burnt","burst","bused","bushy","butch","butte","buxom","buyer","bylaw","cabal","cabby","cabin","cable","cacao","cache","cacti","caddy","cadet","cagey","cairn","camel","cameo","canal","candy","canny","canoe","canon","caper","caput","carat","cargo","carol","carry","carve","caste","catch","cater","catty","caulk","cause","cavil","cease","cedar","cello","chafe","chaff","chain","chair","chalk","champ","chant","chaos","chard","charm","chart","chase","chasm","cheap","cheat","check","cheek","cheer","chess","chest","chick","chide","chief","child","chili","chill","chime","china","chirp","chock","choir","choke","chord","chore","chose","chuck","chump","chunk","churn","chute","cider","cigar","cinch","circa","civic","civil","clack","claim","clamp","clang","clank","clash","clasp","class","clean","clear","cleat","cleft","clerk","click","cliff","climb","cling","clink","cloak","clock","clone","close","cloth","cloud","clout","clove","clown","cluck","clued","clump","clung","coach","coast","cobra","cocoa","colon","color","comet","comfy","comic","comma","conch","condo","conic","copse","coral","corer","corny","couch","cough","could","count","coupe","court","coven","cover","covet","covey","cower","coyly","crack","craft","cramp","crane","crank","crash","crass","crate","crave","crawl","craze","crazy","creak","cream","credo","creed","creek","creep","creme","crepe","crept","cress","crest","crick","cried","crier","crime","crimp","crisp","croak","crock","crone","crony","crook","cross","croup","crowd","crown","crude","cruel","crumb","crump","crush","crust","crypt","cubic","cumin","curio","curly","curry","curse","curve","curvy","cutie","cyber","cycle","cynic","daddy","daily","dairy","daisy","dally","dance","dandy","datum","daunt","dealt","death","debar","debit","debug","debut","decal","decay","decor","decoy","decry","defer","deign","deity","delay","delta","delve","demon","demur","denim","dense","depot","depth","derby","deter","detox","deuce","devil","diary","dicey","digit","dilly","dimly","diner","dingo","dingy","diode","dirge","dirty","disco","ditch","ditto","ditty","diver","dizzy","dodge","dodgy","dogma","doing","dolly","donor","donut","dopey","doubt","dough","dowel","downy","dowry","dozen","draft","drain","drake","drama","drank","drape","drawl","drawn","dread","dream","dress","dried","drier","drift","drill","drink","drive","droit","droll","drone","drool","droop","dross","drove","drown","druid","drunk","dryer","dryly","duchy","dully","dummy","dumpy","dunce","duvet","dwarf","dwell","dwelt","dying","eager","eagle","early","earth","easel","eaten","eater","ebony","eclat","edict","edify","eerie","egret","eight","eject","eking","elate","elbow","elder","elect","elegy","elfin","elide","elite","elope","elude","email","embed","ember","emcee","empty","enact","endow","enema","enemy","enjoy","ennui","ensue","enter","entry","envoy","epoch","epoxy","equal","equip","erase","erect","erode","error","erupt","essay","ester","ether","ethic","ethos","etude","evade","event","every","evict","evoke","exact","exalt","excel","exert","exile","exist","expel","extol","extra","exult","eying","fable","facet","faint","fairy","faith","false","fancy","fanny","farce","fatal","fatty","fault","fauna","favor","feast","fecal","feign","fella","felon","femme","femur","fence","feral","ferry","fetal","fetch","fever","fewer","fiber","ficus","field","fiend","fiery","fifth","fifty","fight","filer","filet","filly","filmy","filth","final","finch","finer","first","fishy","fixer","fizzy","fjord","flack","flail","flair","flake","flaky","flame","flank","flare","flash","flask","fleck","fleet","flesh","flick","flier","fling","flint","flirt","float","flock","flood","floor","flora","floss","flour","flout","flown","fluff","fluid","fluke","flume","flung","flunk","flush","flute","flyer","foamy","focal","focus","foggy","foist","folio","folly","foray","force","forge","forgo","forte","forth","forty","forum","found","foyer","frail","frame","frank","fraud","freak","freed","freer","fresh","friar","fried","frill","frisk","fritz","frock","frond","front","frost","froth","frown","froze","fruit","fudge","fugue","fully","fungi","funky","funny","furor","furry","fussy","fuzzy","gaffe","gaily","gamer","gamma","gamut","gassy","gaudy","gauge","gaunt","gauze","gavel","gawky","gayer","gayly","gazer","gecko","geeky","geese","genie","genre","ghost","ghoul","giant","giddy","gipsy","girly","girth","given","giver","glade","gland","glare","glass","glaze","gleam","glean","glide","glint","gloat","globe","gloom","glory","gloss","glove","glyph","gnash","gnome","godly","going","golem","golly","gonad","goner","goody","gooey","goofy","goose","gorge","gouge","gourd","grace","grade","graft","grail","grain","grand","grant","grape","graph","grasp","grass","grate","grave","gravy","graze","great","greed","green","greet","grief","grill","grime","grimy","grind","gripe","groan","groin","groom","grope","gross","group","grout","grove","growl","grown","gruel","gruff","grunt","guard","guava","guess","guest","guide","guild","guile","guilt","guise","gulch","gully","gumbo","gummy","guppy","gusto","gusty","gypsy","habit","hairy","halve","handy","happy","hardy","harem","harpy","harry","harsh","haste","hasty","hatch","hater","haunt","haute","haven","havoc","hazel","heady","heard","heart","heath","heave","heavy","hedge","hefty","heist","helix","hello","hence","heron","hilly","hinge","hippo","hippy","hitch","hoard","hobby","hoist","holly","homer","honey","honor","horde","horny","horse","hotel","hotly","hound","house","hovel","hover","howdy","human","humid","humor","humph","humus","hunch","hunky","hurry","husky","hussy","hutch","hydro","hyena","hymen","hyper","icily","icing","ideal","idiom","idiot","idler","idyll","igloo","iliac","image","imbue","impel","imply","inane","inbox","incur","index","inept","inert","infer","ingot","inlay","inlet","inner","input","inter","intro","ionic","irate","irony","islet","issue","ivory","jaded","jaunt","jelly","jerky","jetty","jewel","jiffy","joint","joist","joker","jolly","joust","judge","juice","juicy","jumbo","jumpy","junta","junto","juror","kappa","karma","kayak","kebab","khaki","kinky","kiosk","kitty","knack","knave","knead","kneed","kneel","knelt","knife","knock","knoll","known","koala","krill","label","labor","laden","ladle","lager","lance","lanky","lapel","lapse","large","larva","lasso","latch","later","lathe","latte","laugh","layer","leach","leafy","leaky","leant","leapt","learn","lease","leash","least","leave","ledge","leech","leery","lefty","legal","leggy","lemon","lemur","leper","level","lever","libel","liege","light","liken","lilac","limbo","limit","linen","liner","lingo","lipid","lithe","liver","livid","llama","loamy","loath","lobby","local","locus","lodge","lofty","logic","login","loopy","loose","lorry","loser","louse","lousy","lover","lower","lowly","loyal","lucid","lucky","lumen","lumpy","lunar","lunch","lunge","lupus","lurch","lurid","lusty","lying","lymph","lyric","macaw","macho","macro","madam","madly","mafia","magic","magma","maize","major","maker","mambo","mamma","mammy","manga","mange","mango","mangy","mania","manic","manly","manor","maple","march","marry","marsh","mason","masse","match","matey","mauve","maxim","maybe","mayor","mealy","meant","meaty","mecca","medal","media","medic","melee","melon","mercy","merge","merit","merry","metal","meter","metro","micro","midge","midst","might","milky","mimic","mince","miner","minim","minor","minty","minus","mirth","miser","missy","mocha","modal","model","modem","mogul","moist","molar","moldy","money","month","moody","moose","moral","moron","morph","mossy","motel","motif","motor","motto","moult","mound","mount","mourn","mouse","mouth","mover","movie","mower","mucky","mucus","muddy","mulch","mummy","munch","mural","murky","mushy","music","musky","musty","myrrh","nadir","naive","nanny","nasal","nasty","natal","naval","needy","neigh","nerdy","nerve","never","newer","newly","nicer","niche","niece","night","ninja","ninny","ninth","noble","nobly","noise","noisy","nomad","noose","north","nosey","notch","novel","nudge","nurse","nutty","nylon","nymph","oaken","obese","occur","ocean","octal","octet","odder","oddly","offal","offer","often","olden","older","olive","ombre","omega","onion","onset","opera","opine","opium","optic","orbit","order","organ","other","otter","ought","ounce","outdo","outer","outgo","ovary","ovate","overt","ovine","ovoid","owing","owner","oxide","ozone","paddy","pagan","paint","paler","palsy","panel","panic","pansy","papal","paper","parer","parka","parry","parse","party","pasta","paste","pasty","patch","patio","patsy","patty","pause","payee","payer","peace","peach","pearl","pecan","pedal","penal","pence","penne","penny","perch","peril","perky","pesky","pesto","petal","petty","phase","phone","phony","photo","piano","picky","piece","piety","piggy","pilot","pinch","piney","pinky","pinto","piper","pique","pitch","pithy","pivot","pixel","pixie","pizza","place","plaid","plain","plait","plane","plank","plant","plate","plaza","plead","pleat","plied","plier","pluck","plumb","plume","plump","plunk","plush","poesy","point","poise","poker","polar","polka","polyp","pooch","poppy","porch","poser","posit","posse","pouch","pound","pouty","power","prank","prawn","preen","press","price","prick","pride","pried","prime","primo","print","prior","prism","privy","prize","probe","prone","prong","proof","prose","proud","prove","prowl","proxy","prude","prune","psalm","pubic","pudgy","puffy","pulpy","pulse","punch","pupal","pupil","puppy","puree","purer","purge","purse","pushy","putty","pygmy","quack","quail","quake","qualm","quark","quart","quash","quasi","queen","queer","quell","query","quest","queue","quick","quiet","quill","quilt","quirk","quite","quota","quote","quoth","rabbi","rabid","racer","radar","radii","radio","rainy","raise","rajah","rally","ralph","ramen","ranch","randy","range","rapid","rarer","raspy","ratio","ratty","raven","rayon","razor","reach","react","ready","realm","rearm","rebar","rebel","rebus","rebut","recap","recur","recut","redly","redux","refer","refit","regal","rehab","reign","relax","relay","relic","remit","renal","renew","repay","repel","reply","rerun","reset","resin","retch","retro","retry","reuse","revel","revue","rhino","rhyme","rider","ridge","rifle","right","rigid","rigor","rinse","ripen","riper","risen","riser","risky","rival","river","rivet","roach","roast","robin","robot","rocky","rodeo","roger","rogue","roomy","roost","rotor","rouge","rough","round","rouse","route","rover","rowdy","rower","royal","ruddy","ruder","rugby","ruler","rumba","rumor","rupee","rural","rusty","sadly","safer","saint","salad","sally","salon","salsa","salty","salve","salvo","sandy","saner","sappy","sassy","satin","satyr","sauce","saucy","sauna","saute","savor","savoy","savvy","scald","scale","scalp","scaly","scamp","scant","scape","scare","scarf","scary","scene","scent","scion","scoff","scold","scone","scoop","scope","score","scorn","scour","scout","scowl","scram","scrap","scree","screw","scrub","scrum","scuba","sedan","seedy","segue","seize","semen","sense","sepia","serif","serum","serve","setup","seven","sever","sewer","shack","shade","shady","shaft","shake","shaky","shale","shall","shalt","shame","shank","shape","shard","share","shark","sharp","shave","shawl","shear","sheen","sheep","sheer","sheet","sheik","shelf","shell","shied","shift","shine","shiny","shire","shirk","shirt","shoal","shock","shone","shook","shoot","shore","shorn","short","shout","shove","shown","showy","shrew","shrub","shrug","shuck","shunt","shush","shyly","siege","sieve","sight","sigma","silky","silly","since","sinew","singe","siren","sissy","sixth","sixty","skate","skier","skiff","skill","skimp","skirt","skulk","skull","skunk","slack","slain","slang","slant","slash","slate","sleek","sleep","sleet","slept","slice","slick","slide","slime","slimy","sling","slink","sloop","slope","slosh","sloth","slump","slung","slunk","slurp","slush","slyly","smack","small","smart","smash","smear","smell","smelt","smile","smirk","smite","smith","smock","smoke","smoky","smote","snack","snail","snake","snaky","snare","snarl","sneak","sneer","snide","sniff","snipe","snoop","snore","snort","snout","snowy","snuck","snuff","soapy","sober","soggy","solar","solid","solve","sonar","sonic","sooth","sooty","sorry","sound","south","sower","space","spade","spank","spare","spark","spasm","spawn","speak","spear","speck","speed","spell","spelt","spend","spent","sperm","spice","spicy","spied","spiel","spike","spiky","spill","spilt","spine","spiny","spire","spite","splat","split","spoil","spoke","spoof","spook","spool","spoon","spore","sport","spout","spray","spree","sprig","spunk","spurn","spurt","squad","squat","squib","stack","staff","stage","staid","stain","stair","stake","stale","stalk","stall","stamp","stand","stank","stare","stark","start","stash","state","stave","stead","steak","steal","steam","steed","steel","steep","steer","stein","stern","stick","stiff","still","stilt","sting","stink","stint","stock","stoic","stoke","stole","stomp","stone","stony","stood","stool","stoop","store","stork","storm","story","stout","stove","strap","straw","stray","strip","strut","stuck","study","stuff","stump","stung","stunk","stunt","style","suave","sugar","suing","suite","sulky","sully","sumac","sunny","super","surer","surge","surly","sushi","swami","swamp","swarm","swash","swath","swear","sweat","sweep","sweet","swell","swept","swift","swill","swine","swing","swirl","swish","swoon","swoop","sword","swore","sworn","swung","synod","syrup","tabby","table","taboo","tacit","tacky","taffy","taint","taken","taker","tally","talon","tamer","tango","tangy","taper","tapir","tardy","tarot","taste","tasty","tatty","taunt","tawny","teach","teary","tease","teddy","teeth","tempo","tenet","tenor","tense","tenth","tepee","tepid","terra","terse","testy","thank","theft","their","theme","there","these","theta","thick","thief","thigh","thing","think","third","thong","thorn","those","three","threw","throb","throw","thrum","thumb","thump","thyme","tiara","tibia","tidal","tiger","tight","tilde","timer","timid","tinge","tipsy","titan","tithe","title","toast","today","toddy","token","tonal","tonga","tonic","tooth","topaz","topic","torch","torso","torus","total","totem","touch","tough","towel","tower","toxic","toxin","trace","track","tract","trade","trail","train","trait","tramp","trash","trawl","tread","treat","trend","triad","trial","tribe","trice","trick","tried","tripe","trite","troll","troop","trope","trout","trove","truce","truck","truer","truly","trump","trunk","truss","trust","truth","tryst","tubal","tuber","tulip","tulle","tumor","tunic","turbo","tutor","twang","tweak","tweed","tweet","twice","twine","twirl","twist","twixt","tying","udder","ulcer","ultra","umbra","uncle","uncut","under","undid","undue","unfed","unfit","unify","union","unite","unity","unlit","unmet","unset","untie","until","unwed","unzip","upper","upset","urban","urine","usage","usher","using","usual","usurp","utile","utter","vague","valet","valid","valor","value","valve","vapid","vapor","vault","vaunt","vegan","venom","venue","verge","verse","verso","verve","vicar","video","vigil","vigor","villa","vinyl","viola","viper","viral","virus","visit","visor","vista","vital","vivid","vixen","vocal","vodka","vogue","voice","voila","vomit","voter","vouch","vowel","vying","wacky","wader","wafer","wager","wagon","waist","waive","waltz","warty","waste","watch","water","waver","waxy","weary","weave","wedge","weedy","weigh","weird","welch","welsh","whack","whale","wharf","wheat","wheel","whelp","where","which","whiff","while","whine","whiny","whirl","whisk","white","whole","whoop","whose","widen","wider","widow","width","wield","wight","willy","wimpy","wince","winch","windy","wiser","wispy","witch","witty","woken","woman","women","woody","wooer","wooly","woozy","wordy","world","worry","worse","worst","worth","would","wound","woven","wrack","wrath","wreak","wreck","wrest","wring","wrist","write","wrong","wrote","wrung","wryly","yacht","yearn","yeast","yield","young","youth","zebra","zesty","zonal"];
+
+            // --- Date and Word Generation ---
+            function getISTDateString() {
+                const now = new Date();
+                return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
+            }
+
+            function generateDailyWords() {
+                const dateString = getISTDateString();
+                const seed = dateString.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+                const startIndex = seed % (wordList.length - WORDS_PER_SESSION);
+                dailyWords = wordList.slice(startIndex, startIndex + WORDS_PER_SESSION);
+            }
+            
+            // --- Scoring System ---
+            function calculateScore(attempts) {
+                switch (attempts) {
+                    case 1: return 100;
+                    case 2: return 80;
+                    case 3: return 60;
+                    case 4: return 40;
+                    case 5: return 20;
+                    case 6: return 10;
+                    default: return 0;
+                }
+            }
+            
+            // --- Timer Functions ---
+            function updateTimerDisplay() {
+                const hours = Math.floor(totalTimePlayed / 3600);
+                const minutes = Math.floor((totalTimePlayed % 3600) / 60);
+                const seconds = totalTimePlayed % 60;
+                const formattedTime = [hours, minutes, seconds]
+                    .map(v => v < 10 ? "0" + v : v)
+                    .join(":");
+                timerDisplay.textContent = `Time: ${formattedTime}`;
+            }
+
+            function startTimer() {
+                if (timerInterval) return;
+                timerInterval = setInterval(() => {
+                    totalTimePlayed++;
+                    updateTimerDisplay();
+                }, 1000);
+            }
+
+            function stopTimer() {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+
+            // --- Game State Persistence ---
+             function getUserId() {
+                const params = new URLSearchParams(window.location.search);
+                return params.get("userId") || "guest";
+            }
+           async function saveGameState() {
+               const userId = getUserId();
+               const gameState = {
+                    date: getISTDateString(),
+                    currentRow,
+                    currentCol,
+                    wordsGuessedCorrectly,
+                    totalAttempts,
+                    currentWordIndex,
+                    score,
+                    totalTimePlayed,
+                    boardState: getBoardState(),
+                };
+               const nameParam = new URLSearchParams(window.location.search).get("name");
+               const name = nameParam ? JSON.parse(decodeURIComponent(nameParam)) : 'Player';
+
+               if (!userId) return; // only exit if no userId found
+
+                try {
+                    const res = await fetch("https://erp.taxila.in/api/game/wordify", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ userId, name, gameState }),
+                    });
+
+                    if (!res.ok) {
+                        console.error("Failed to save game state:", await res.text());
+                    } else {
+                        console.log("Game state saved for", userId);
+                    }
+                } catch (err) {
+                    console.error("Error saving game state:", err);
+                }
+            }
+
+            async function loadGameState() {
+                 const userId = getUserId();
+                 if (!userId) return null;
+
+                try {
+                     const res = await fetch(`https://erp.taxila.in/api/game/wordify?userId=${userId}`);
+                     if (!res.ok) {
+                        console.log("No previous game state found or failed to load.");
+                        return null;
+                     }
+                     const savedData = await res.json();
+                     if (savedData && Object.keys(savedData).length > 0) {
+                         const gameState = savedData;
+                         if (gameState.date === getISTDateString()) {
+                             console.log('Game state loaded for today.');
+                             return gameState;
+                         } else {
+                             console.log('Previous game state is from a different day. Starting new game.');
+                             return null;
+                         }
+                     }
+                } catch (err) {
+                    console.error("Error loading game state:", err);
+                    return null;
+                }
+                return null;
+            }
+            
+            function getBoardState() {
+                const board = [];
+                const rows = gameBoard.children;
+                for (let i = 0; i < rows.length; i++) {
+                    const row = [];
+                    const tiles = rows[i].children;
+                    for (let j = 0; j < tiles.length; j++) {
+                        const tile = tiles[j];
+                        row.push({
+                            letter: tile.querySelector('.tile-front').textContent,
+                            status: tile.classList.contains('correct') ? 'correct' : tile.classList.contains('present') ? 'present' : tile.classList.contains('absent') ? 'absent' : ''
+                        });
+                    }
+                    board.push(row);
+                }
+                return board;
+            }
+
+            function renderBoardState(state) {
+                const rows = gameBoard.children;
+                for (let i = 0; i < state.length; i++) {
+                    const tiles = rows[i].children;
+                    for (let j = 0; j < state[i].length; j++) {
+                        const tileState = state[i][j];
+                        const tile = tiles[j];
+                        const front = tile.querySelector('.tile-front');
+                        const back = tile.querySelector('.tile-back');
+                        front.textContent = tileState.letter;
+                        back.textContent = tileState.letter;
+                        if (tileState.letter) {
+                             tile.classList.add('filled');
+                        }
+                        if (tileState.status) {
+                             tile.classList.add(tileState.status);
+                        }
+                        // Also update keyboard keys
+                        if(tileState.status) {
+                             const keyEl = keyboardContainer.querySelector(`[data-key="${tileState.letter.toLowerCase()}"]`);
+                             if (keyEl) {
+                                const isCorrect = keyEl.classList.contains('correct'), isPresent = keyEl.classList.contains('present');
+                                if (tileState.status === 'correct') { keyEl.classList.remove('present', 'absent'); keyEl.classList.add('correct'); }
+                                else if (tileState.status === 'present' && !isCorrect) { keyEl.classList.remove('absent'); keyEl.classList.add('present'); }
+                                else if (tileState.status === 'absent' && !isCorrect && !isPresent) keyEl.classList.add('absent');
+                             }
+                        }
+                    }
+                }
+            }
+
+            // --- Game Setup and Flow ---
+            async function main() {
+                const dateString = getISTDateString();
+                dateDisplay.textContent = new Date().toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', year: 'numeric', month: 'long', day: 'numeric' });
+                generateDailyWords();
+                const loadedState = await loadGameState();
+
+                if (loadedState && loadedState.completed) {
+                    showCompletedScreen(loadedState);
+                } else {
+                    currentWordIndex = loadedState ? loadedState.currentWordIndex : 0; 
+                    wordsGuessedCorrectly = loadedState ? loadedState.wordsGuessedCorrectly : 0; 
+                    totalAttempts = loadedState ? loadedState.totalAttempts : 0;
+                    currentRow = loadedState ? loadedState.currentRow : 0;
+                    currentCol = loadedState ? loadedState.currentCol : 0;
+                    score = loadedState ? loadedState.score : 0;
+                    totalTimePlayed = loadedState ? loadedState.totalTimePlayed : 0;
+
+                    setupWordGame(loadedState);
+                }
+            }
+           
+            function setupWordGame(loadedState) {
+                isGameOver = false; isProcessing = false;
+                secretWord = dailyWords[currentWordIndex];
+                titleElement.textContent = `WORDIFY (${currentWordIndex + 1}/${WORDS_PER_SESSION})`;
+                scoreDisplay.textContent = `Score: ${score}`;
+                updateTimerDisplay(); // Set initial time display
+                gameBoard.innerHTML = '';
+                for (let i = 0; i < MAX_TRIES; i++) {
+                    const row = document.createElement('div');
+                    row.className = 'grid grid-cols-5 gap-1.5';
+                    for (let j = 0; j < WORD_LENGTH; j++) {
+                        const tile = document.createElement('div');
+                        tile.className = 'tile';
+                        tile.innerHTML = `<div class="tile-inner"><div class="tile-front"></div><div class="tile-back"></div></div>`;
+                        row.appendChild(tile);
+                    }
+                    gameBoard.appendChild(row);
+                }
+                createKeyboard();
+                modal.classList.add('hidden');
+                if (loadedState) {
+                    renderBoardState(loadedState.boardState);
+                }
+                startTimer();
+            }
+
+            function createKeyboard() {
+                keyboardContainer.innerHTML = '';
+                const keys = ['q w e r t y u i o p', 'a s d f g h j k l', 'enter z x c v b n m backspace'];
+                keys.forEach(row => {
+                    const rowDiv = document.createElement('div');
+                    rowDiv.className = 'flex justify-center gap-1 sm:gap-1.5 my-1 sm:my-1.5';
+                    row.split(' ').forEach(key => {
+                        const keyButton = document.createElement('button');
+                        keyButton.className = 'key h-14 rounded font-bold uppercase flex items-center justify-center';
+                        keyButton.dataset.key = key;
+                        if (key === 'enter') {
+                            keyButton.textContent = 'Enter'; keyButton.style.flex = '1.5'; keyButton.style.fontSize = '0.75rem';
+                        } else if (key === 'backspace') {
+                            keyButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path fill="currentColor" d="M22 3H7c-.69 0-1.23.35-1.59.88L0 12l5.41 8.12c.36.53.9.88 1.59.88h15c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-3 12.59L17.59 17 14 13.41 10.41 17 9 15.59 12.59 12 9 8.41 10.41 7 14 10.59 17.59 7 19 8.41 15.41 12 19 15.59z"></path></svg>`;
+                            keyButton.style.flex = '1.5';
+                        } else {
+                            keyButton.textContent = key; keyButton.style.flex = '1';
+                        }
+                        rowDiv.appendChild(keyButton);
+                    });
+                    keyboardContainer.appendChild(rowDiv);
+                });
+            }
+
+            function handleInput(key) {
+                if (!audioReady && !isMuted) setupAudio(); // Try to start audio on first interaction
+                if (isGameOver || isProcessing) return;
+                if (key === 'enter') submitGuess();
+                else if (key === 'backspace') { removeLetter(); playSound('click'); } 
+                else if (key.match(/^[a-z]$/)) { addLetter(key); playSound('click'); }
+            }
+            document.addEventListener('keydown', (e) => {
+                if (typeof e.key === 'string') {
+                    handleInput(e.key.toLowerCase());
+                }
+            });
+            keyboardContainer.addEventListener('click', (e) => {
+                const key = e.target.closest('[data-key]')?.dataset.key;
+                if (key) handleInput(key);
+            });
+
+            function addLetter(letter) {
+                if (currentCol < WORD_LENGTH) {
+                    const tile = gameBoard.children[currentRow].children[currentCol];
+                    const front = tile.querySelector('.tile-front');
+                    const back = tile.querySelector('.tile-back');
+                    front.textContent = letter; back.textContent = letter;
+                    tile.classList.add('filled', 'pop');
+                    tile.addEventListener('animationend', () => tile.classList.remove('pop'), { once: true });
+                    currentCol++;
+                    saveGameState();
+                }
+            }
+
+            function removeLetter() {
+                if (currentCol > 0) {
+                    currentCol--;
+                    const tile = gameBoard.children[currentRow].children[currentCol];
+                    const front = tile.querySelector('.tile-front');
+                    const back = tile.querySelector('.tile-back');
+                    front.textContent = ''; back.textContent = '';
+                    tile.classList.remove('filled');
+                    saveGameState();
+                }
+            }
+
+            function submitGuess() {
+                if (isProcessing) return;
+                const guess = getCurrentGuess();
+                if (currentCol !== WORD_LENGTH) { showMessage("Not enough letters"); playSound('error'); return; }
+                if (!wordList.includes(guess)) { showMessage("Not in word list"); playSound('error'); return; }
+                
+                isProcessing = true; // Block input while processing
+                totalAttempts++;
+                checkGuess(guess);
+            }
+           
+            function getCurrentGuess() {
+                 return Array.from(gameBoard.children[currentRow].children).map(tile => tile.querySelector('.tile-front').textContent).join('');
+            }
+
+            function checkGuess(guess) {
+                const row = gameBoard.children[currentRow];
+                const letterCount = {};
+                for(const letter of secretWord) letterCount[letter] = (letterCount[letter] || 0) + 1;
+                for (let i = 0; i < WORD_LENGTH; i++) if (guess[i] === secretWord[i]) letterCount[guess[i]]--;
+                
+                let flipDelay = 0;
+                for (let i = 0; i < WORD_LENGTH; i++) {
+                    const tile = row.children[i], key = keyboardContainer.querySelector(`[data-key="${guess[i]}"]`);
+                    let status = 'absent';
+                    if (guess[i] === secretWord[i]) status = 'correct';
+                    else if (secretWord.includes(guess[i]) && letterCount[guess[i]] > 0) { status = 'present'; letterCount[guess[i]]--; }
+                   
+                    setTimeout(() => {
+                        tile.classList.add('flip');
+                        if (status) tile.classList.add(status);
+                        playSound('flip', { index: i });
+                        const keyEl = key;
+                        if (!keyEl) return;
+                        const isCorrect = keyEl.classList.contains('correct'), isPresent = keyEl.classList.contains('present');
+                        if (status === 'correct') { keyEl.classList.remove('present', 'absent'); keyEl.classList.add('correct'); }
+                        else if (status === 'present' && !isCorrect) { keyEl.classList.remove('absent'); keyEl.classList.add('present'); }
+                        else if (status === 'absent' && !isCorrect && !isPresent) keyEl.classList.add('absent');
+                    }, i * 350);
+                    flipDelay = i * 350;
+                }
+               
+                setTimeout(() => {
+                    if (guess === secretWord) {
+                        wordsGuessedCorrectly++; 
+                        score += calculateScore(currentRow + 1);
+                        scoreDisplay.textContent = `Score: ${score}`;
+                        playSound('win');
+                        showModal("You Won!", ["Genius!", "Magnificent!", "Impressive!", "Splendid!", "Great!", "Phew!"][currentRow]);
+                        isGameOver = true; 
+                    } else if (currentRow === MAX_TRIES - 1) {
+                        playSound('lose'); 
+                        showModal("Game Over", "The word was...");
+                        isGameOver = true; 
+                    }
+                    
+                    saveGameState(); // Save state after checking guess
+                    
+                    if (isGameOver) {
+                      stopTimer();
+                    } else {
+                      currentRow++; currentCol = 0;
+                    }
+                    isProcessing = false; // Re-enable input after all animations and state changes are done
+                }, flipDelay + 150);
+            }
+
+            function showMessage(msg) {
+                const el = document.createElement('div');
+                el.textContent = msg;
+                el.className = 'bg-gray-800 text-white text-sm font-bold py-2 px-4 rounded-md shadow-lg';
+                messageContainer.innerHTML = ''; messageContainer.appendChild(el);
+                setTimeout(() => {
+                    el.style.transition = 'opacity 0.5s'; el.style.opacity = '0';
+                    setTimeout(() => messageContainer.innerHTML = '', 500);
+                }, 1000);
+            }
+           
+            function showModal(title, message) {
+                standardModalContent.classList.remove('hidden');
+                certificateContent.classList.add('hidden');
+                modalTitle.textContent = title;
+                modalMessage.textContent = message;
+                modalWord.textContent = secretWord;
+                nextWordBtn.textContent = currentWordIndex < WORDS_PER_SESSION - 1 ? "Next Word" : "Show Final Score";
+                modal.classList.remove('hidden');
+            }
+           
+            function generateCertificate() {
+                stopTimer();
+                const dateString = new Date().toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', year: 'numeric', month: 'long', day: 'numeric' });
+                standardModalContent.classList.add('hidden');
+                certificateContent.classList.remove('hidden');
+                certPlayerName.textContent = playerName;
+                certScore.textContent = `Final Score: ${wordsGuessedCorrectly} / ${WORDS_PER_SESSION}`;
+                certDate.textContent = `Date: ${dateString}`;
+                certTime.textContent = `Time: ${Math.floor(totalTimePlayed / 3600).toString().padStart(2, '0')}:${Math.floor((totalTimePlayed % 3600) / 60).toString().padStart(2, '0')}:${(totalTimePlayed % 60).toString().padStart(2, '0')}`;
+                modal.classList.remove('hidden');
+
+                // Mark the game as completed for today to prevent starting a new one
+                const finalStats = { date: getISTDateString(), wordsGuessedCorrectly, totalAttempts, completed: true, playerName, score, totalTimePlayed, boardState: getBoardState() };
+                localStorage.setItem('wordifyGameState', JSON.stringify(finalStats));
+            }
+           
+            function showCompletedScreen(stats) {
+                stopTimer();
+                const formattedTime = `${Math.floor(stats.totalTimePlayed / 3600).toString().padStart(2, '0')}:${Math.floor((stats.totalTimePlayed % 3600) / 60).toString().padStart(2, '0')}:${(stats.totalTimePlayed % 60).toString().padStart(2, '0')}`;
+                gameBoard.innerHTML = `<div class="col-span-5 row-span-6 flex flex-col items-center justify-center text-center p-4"><h2 class="text-2xl font-bold mb-4">Today's puzzle completed!</h2><p>Come back tomorrow for a new challenge.</p><div class="mt-6 text-lg"><h3 class="font-bold text-xl mb-2">Your Score:</h3><p>Correct Words: <span class="font-bold">${stats.wordsGuessedCorrectly} / ${WORDS_PER_SESSION}</span></p><p>Total Attempts: <span class="font-bold">${stats.totalAttempts}</span></p><p>Total Score: <span class="font-bold">${stats.score}</span></p><p>Time Taken: <span class="font-bold">${formattedTime}</span></p></div></div>`;
+                keyboardContainer.innerHTML = '';
+            }
+
+            function handleNextWord() {
+                if (currentWordIndex < WORDS_PER_SESSION - 1) {
+                    currentWordIndex++;
+                    currentRow = 0;
+                    currentCol = 0;
+                    saveGameState(); // Save state for the new word
+                    setupWordGame(loadGameState());
+                } else {
+                    generateCertificate();
+                }
+            }
+           
+            nextWordBtn.addEventListener('click', handleNextWord);
+            
+            // --- Startup & Name Handling ---
+            startGameBtn.addEventListener('click', () => {
+                setupAudio(); // Initialize audio on first user gesture
+                const name = playerNameInput.value.trim();
+                if (name) {
+                    playerName = name;
+                    localStorage.setItem('wordifyPlayerName', name);
+                    nameModal.classList.add('hidden');
+                    main();
+                } else {
+                    playerNameInput.placeholder = "Please enter a name!";
+                }
+            });
+
+            linkedinShareBtn.addEventListener('click', () => {
+                const formattedTime = `${Math.floor(totalTimePlayed / 3600).toString().padStart(2, '0')}:${Math.floor((totalTimePlayed % 3600) / 60).toString().padStart(2, '0')}:${(totalTimePlayed % 60).toString().padStart(2, '0')}`;
+                const scoreText = `I scored ${wordsGuessedCorrectly}/${WORDS_PER_SESSION} on today's Wordify challenge with a total score of ${score} in ${formattedTime}!`;
+                const postTitle = `I completed the Wordify challenge!`;
+                const summary = `${scoreText} Wordify is a great brain game from Taxila Business School. #Wordify #TaxilaBusinessSchool #BrainGames`;
+                const url = `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent('https://taxila.in/')}&title=${encodeURIComponent(postTitle)}&summary=${encodeURIComponent(summary)}`;
+                window.open(url, '_blank');
+            });
+            
+            // --- App Initializer ---
+            function initializeApp() {
+                const savedName = localStorage.getItem('wordifyPlayerName');
+                if (savedName) {
+                    playerName = savedName;
+                    nameModal.classList.add('hidden');
+                    main();
+                } else {
+                    nameModal.classList.remove('hidden');
+                }
+            }
+            
+            initializeApp();
+            window.addEventListener('beforeunload', saveGameState);
+        });
+    </script>
+</body>
+</html>

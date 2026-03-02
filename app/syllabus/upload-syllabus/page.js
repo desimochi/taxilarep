@@ -160,7 +160,7 @@ export default function Page() {
 
                     {/* Display Subject Details if found */}
                     {selectedSubject && (
-                    <RichTextEditor  id={selectedSubject.id} />
+                    <RichTextEditor  id={selectedSubject.id} api="subject-mapping-syllabus" />
                     )}
 
                     {/* Submit Button */}

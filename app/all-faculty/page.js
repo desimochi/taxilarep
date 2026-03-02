@@ -15,7 +15,13 @@ export default function Page() {
     const [newLock, setNewLock] = useState();
     const [showPopup, setShowPopup] = useState(false);
     const [showPopups, setShowPopups] = useState(false);
-
+    const [searchQuery, setSearchQuery] = useState("");
+    const filteredExams = exams.filter((exam) => {
+        const name = `${exam.first_name} ${exam.last_name}`.toLowerCase();
+        const email = exam.user?.email?.toLowerCase() || "";
+        const query = searchQuery.toLowerCase();
+        return name.includes(query) || email.includes(query);
+      });
     useEffect(() => {
         const fetchExams = async () => {
             try {
@@ -101,24 +107,30 @@ export default function Page() {
         }
     };
     return<>
-    <div className="px-6 py-4">
+    <div className="sm:px-6 py-4">
     {showtoast && <Toast message={message}/>}
-    <div className="p-6 min-h-screen">
+    <div className="sm:p-6 min-h-screen">
             <div className="bg-white p-6 rounded-lg">
                 <h1 className="text-3xl font-bold mb-2 font-sans">Faculty </h1>
                 <p className="text-sm text-gray-500 mb-8">Everyhting you need to know about faculty</p>
                 <hr className=" border  border-spacing-y-0.5 mb-6"/>
-                <div className="mb-4 flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                    <input type="text" placeholder="Search Faculty..." className="border p-2 rounded-md w-[240px]" />
-                    <button className="border border-gray-200 hover:bg-gray-100 text-gray-700 px-8 py-2 rounded flex items-center gap-2"> <PlusCircleIcon className="h-4 w-4"/>Faculties</button>
+                <div className="mb-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+                    <div className="flex flex-col sm:flex-row items-center gap-2">
+                    <input
+  type="text"
+  placeholder="Search Faculty..."
+  className="border p-2 rounded-md w-[240px]"
+  value={searchQuery}
+  onChange={(e) => setSearchQuery(e.target.value)}
+/>
+                    <Link href={`/add-faculty`} className="border border-gray-200 hover:bg-gray-100 text-gray-700 px-8 py-2 rounded flex items-center gap-2"> <PlusCircleIcon className="h-4 w-4"/>Faculties</Link>
                     </div>
                     <button className="border border-gray-200 font-bold hover:bg-gray-100 text-gray-900 px-8 py-2 rounded flex items-center gap-2">
                        <Settings2Icon className="h-4 w-4"/> View
                     </button>
                    
                 </div>
-                <div className="overflow-x-auto">
+               <div className="overflow-x-auto shadow-md sm:rounded-lg">
                     <table className="min-w-full bg-white border border-gray-200 rounded-lg">
                         <thead>
                             <tr className="text-gray-400 font-normal text-sm border-b">
@@ -131,7 +143,7 @@ export default function Page() {
                             </tr>
                         </thead>
                         <tbody>
-                        {exams.map((exam, index) => (
+                        {filteredExams.map((exam, index) => (
                                     <tr key={index} className="border-b text-sm">
                                         <td className="p-3">{index+1}</td>
                                         <td className="p-3">{`${exam.first_name} ${exam.last_name}`}</td>
@@ -140,7 +152,7 @@ export default function Page() {
                                             <span className={`px-2 py-1 rounded ${exam.user?.is_active ? "bg-green-100 text-green-800" : "bg-red-200 text-red-800"}`}>{exam.user?.is_active ? "Active" : "Inactive"}</span>
                                         </td>
                                         <td className="p-3"><span className={`px-2 py-1 rounded ${exam.user?.is_lock ? "bg-green-100 text-green-800" : "bg-red-200 text-red-800"}`}>{exam.user?.is_lock ? "Locked" : "Unlock"}</span></td>
-                                        <td className="p-3 flex gap-4"><PenSquareIcon className="h-4 w-4 cursor-pointer" onClick={() => handleEditClick(exam)} /> <Link href ={``} className="text-red-500 text-xs cursor-pointer"><EyeIcon className="h-4 w-4 cursor-pointer"/></Link> <LockIcon className="h-4 w-4" onClick={() => handleLockClick(exam)}/></td>
+                                        <td className="p-3 flex gap-4"><PenSquareIcon className="h-4 w-4 cursor-pointer" onClick={() => handleEditClick(exam)} /> <Link href ={`/all-faculty/details/${exam.id}`} className="text-red-500 text-xs cursor-pointer"><EyeIcon className="h-4 w-4 cursor-pointer"/></Link> <LockIcon className="h-4 w-4" onClick={() => handleLockClick(exam)}/></td>
                                         
                                     </tr>
                                 ))}

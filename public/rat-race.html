@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rat Race & Fast Track - 3D Financial Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.157.0/examples/jsm/"
+        }
+      }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/tone@14.7.77/build/Tone.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            touch-action: manipulation;
+            background-color: #1a110a; /* Darker brown */
+            background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.03) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.03) 50%, rgba(255, 255, 255, 0.03) 75%, transparent 75%, transparent),
+                              linear-gradient(-45deg, rgba(0, 0, 0, 0.05) 25%, transparent 25%, transparent 50%, rgba(0, 0, 0, 0.05) 50%, rgba(0, 0, 0, 0.05) 75%, transparent 75%, transparent);
+            background-size: 60px 60px;
+        }
+        #game-container {
+            position: relative;
+            width: 100%;
+            height: 0;
+            padding-bottom: 71.4%; /* Aspect ratio 7:5 */
+        }
+        #board-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 15px;
+            cursor: grab;
+        }
+        #board-canvas:active {
+            cursor: grabbing;
+        }
+        
+        /* Modal styles */
+        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); align-items: center; justify-content: center; }
+        .modal-content { background-color: #1F2937; color: white; margin: auto; padding: 20px; border: 2px solid #FBBF24; width: 90%; max-width: 500px; border-radius: 12px; text-align: center; }
+        .modal-buttons { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+        .btn-modal { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; }
+        .btn-primary { background-color: #3B82F6; color: white; }
+        .btn-secondary { background-color: #6B7280; color: white; }
+        .btn-danger { background-color: #EF4444; color: white; }
+        .btn-success { background-color: #10B981; color: white; }
+        
+        #profession-modal .modal-content, #player-setup-modal .modal-content { max-width: 800px; }
+        .profession-card { border: 2px solid #4B5563; border-radius: 8px; padding: 1rem; text-align: left; cursor: pointer; transition: all 0.2s ease-in-out; background-color: #374151; }
+        .profession-card:hover { border-color: #F59E0B; transform: translateY(-5px); }
+        
+        #market-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 2px black;
+        }
+        .market-boom { background-color: #16A34A; }
+        .market-normal { background-color: #64748B; }
+        .market-recession { background-color: #DC2626; }
+    </style>
+</head>
+<body class="p-4 lg:p-8 flex flex-col items-center justify-center min-h-screen">
+
+    <div class="w-full max-w-screen-2xl mx-auto">
+        <p class="text-center text-gray-400 mb-2">Designed at Taxila Business School</p>
+        <h1 class="text-3xl lg:text-5xl font-bold text-center mb-4 text-amber-300" style="text-shadow: 2px 2px 4px #000;">Rat Race & Fast Track 3D</h1>
+        <p class="text-center text-gray-200 mb-6">Escape the Rat Race, then conquer the Fast Track to win!</p>
+       
+        <div class="flex flex-col lg:flex-row gap-6">
+
+            <!-- Left Panel: Financial Statement -->
+            <div id="financial-statement" class="w-full lg:w-1/4 bg-gray-900 text-gray-200 p-4 rounded-xl shadow-lg transition-all duration-500">
+                <h2 class="text-2xl font-bold mb-2 text-center border-b-2 pb-2" id="player-turn-title">Your Game</h2>
+                <p class="text-center font-semibold text-lg" id="profession-name"></p>
+                
+                <div class="mt-4"><h3 class="text-lg font-semibold text-green-400">Income</h3><div class="text-sm space-y-1 mt-2"><p>Salary: <span class="float-right font-mono" id="salary">₹0</span></p><p>Passive Income: <span class="float-right font-mono" id="passive-income">₹0</span></p><hr class="border-gray-600 my-1"><p class="font-bold">Total Income: <span class="float-right font-mono" id="total-income">₹0</span></p></div></div>
+                <div class="mt-4"><h3 class="text-lg font-semibold text-red-400">Expenses</h3><div class="text-sm space-y-1 mt-2" id="expenses-list"></div></div>
+                <hr class="border-gray-600 my-4">
+                <div class="text-center"><p class="text-lg font-bold">Monthly Cash Flow:</p><p class="text-2xl font-mono" id="cash-flow">₹0</p></div>
+                <div class="mt-4"><h3 class="text-lg font-semibold text-blue-400">Assets</h3><div id="assets-list" class="text-sm space-y-1 mt-2"></div></div>
+                <div class="mt-4"><h3 class="text-lg font-semibold text-orange-400">Liabilities</h3><div class="text-sm space-y-1 mt-2" id="liabilities-list"></div></div>
+            </div>
+
+            <!-- Center Panel: Game Board -->
+            <div class="w-full lg:w-1/2 flex flex-col items-center">
+                <div id="game-container">
+                    <canvas id="board-canvas"></canvas>
+                </div>
+            </div>
+
+            <!-- Right Panel: Controls & Log -->
+            <div class="w-full lg:w-1/4 bg-gray-900 p-4 rounded-xl shadow-lg flex flex-col gap-4">
+                <div class="text-center bg-gray-800 p-4 rounded-lg">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 id="board-title" class="text-2xl font-bold text-amber-300">The Rat Race</h2>
+                        <div id="market-status">Market: Normal</div>
+                    </div>
+                    <p class="mb-2">Cash on Hand:</p>
+                    <p class="text-6xl font-bold font-mono mb-4 text-green-400" id="cash" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">₹0</p>
+                    <div id="dice-container" class="flex justify-center items-center h-16 w-16 bg-gray-700 rounded-lg mx-auto mb-4 text-3xl font-bold">?</div>
+                    <div class="flex gap-2 justify-center">
+                        <button id="roll-dice-btn" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg" disabled>Roll Dice</button>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 mt-4">
+                        <button id="take-loan-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg" disabled>Take Loan</button>
+                        <button id="repay-loan-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg" disabled>Repay Loan</button>
+                    </div>
+                    <button id="pay-off-debts-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg mt-2 w-full">Pay Off Other Debts</button>
+                </div>
+                <div class="flex-grow flex flex-col">
+                    <h2 class="text-2xl font-bold mb-2 text-center border-b-2 border-amber-400 pb-2">Game Log</h2>
+                    <div id="game-log" class="flex-grow overflow-y-auto bg-gray-800 rounded-lg p-2 text-sm space-y-2 mt-2"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="modal" class="modal"><div class="modal-content"><h2 id="modal-title" class="text-2xl font-bold mb-4"></h2><p id="modal-text" class="mb-6"></p><div id="modal-buttons" class="modal-buttons"></div></div></div>
+    <div id="player-setup-modal" class="modal" style="display: flex;"><div class="modal-content"><h2 class="text-3xl font-bold mb-4">Welcome! What's your name?</h2><input type="text" id="player-name-input" class="w-full p-3 rounded bg-gray-700 text-white text-center text-xl" placeholder="Enter your name"><div class="modal-buttons"><button id="submit-name-btn" class="btn-modal btn-primary text-xl">Let's Play!</button></div></div></div>
+    <div id="profession-modal" class="modal"><div class="modal-content"><h2 id="profession-modal-title" class="text-3xl font-bold mb-4">Choose Your Profession</h2><p class="mb-6 text-gray-300">Your profession determines your starting finances. Choose wisely!</p><div id="profession-options" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div></div></div>
+    
+    <!-- Hidden canvas for certificate generation -->
+    <div style="position: absolute; left: -9999px;">
+        <canvas id="certificate-canvas" width="1000" height="707"></canvas>
+    </div>
+
+<script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+
+    // --- GAME STATE ---
+    let gameState = {
+        player: null,
+        gamePhase: 'setup',
+        opportunityCardIndex: 0,
+        marketCardIndex: 0,
+        audioReady: false,
+        marketCycle: 'Normal',
+        turnsUntilCycleChange: 7,
+    };
+
+    // --- SOUND SETUP ---
+    const sounds = {
+        click: null,
+  deal: null,
+  failure: null,
+        synth: null,
+        dice: null,
+        eventSynth: null,
+        successSynth: null,
+        failureSynth: null,
+        async init() {
+            if (gameState.audioReady || typeof Tone === 'undefined') return;
+            await Tone.start();
+            console.log("Audio context started");
+            this.synth = new Tone.PolySynth(Tone.Synth, { oscillator: { type: "sine" }, envelope: { attack: 0.005, decay: 0.1, sustain: 0.3, release: 1 }, }).toDestination();
+            this.dice = new Tone.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: 0.005, decay: 0.1, sustain: 0 } }).toDestination();
+            this.eventSynth = new Tone.PluckSynth().toDestination();
+            this.successSynth = new Tone.Synth({ oscillator: { type: 'triangle' }, envelope: { attack: 0.005, decay: 0.2, sustain: 0.1, release: 0.2 } }).toDestination();
+            this.failureSynth = new Tone.Synth({ oscillator: { type: 'square' }, envelope: { attack: 0.01, decay: 0.4, sustain: 0, release: 0.1 } }).toDestination();
+            gameState.audioReady = true;
+        },
+     playDiceRoll() { 
+  if (!gameState.audioReady || !this.dice) return;
+  const now = Tone.now(); 
+  this.dice.triggerAttackRelease("8n", now); 
+  this.dice.triggerAttackRelease("16n", now + 0.1); 
+  this.dice.triggerAttackRelease("16n", now + 0.2); 
+},
+
+playDeal() { 
+  if (!gameState.audioReady || !this.synth) return; 
+  this.synth.triggerAttackRelease(["C4", "E4", "G4"], "8n"); 
+},
+
+playDoodad() { 
+  if (!gameState.audioReady || !this.synth) return; 
+  this.synth.triggerAttackRelease(["C3", "D#3", "F#3"], "8n"); 
+},
+
+playPayday() { 
+  if (!gameState.audioReady || !this.synth) return; 
+  this.synth.triggerAttackRelease("C5", "8n"); 
+},
+
+playEvent() { 
+  if (!gameState.audioReady || !this.eventSynth) return; 
+  this.eventSynth.triggerAttack("C4", Tone.now()); 
+},
+
+playSuccess() { 
+  if (!gameState.audioReady || !this.successSynth) return; 
+  this.successSynth.triggerAttackRelease("G5", "8n"); 
+},
+
+playFailure() { 
+  if (!gameState.audioReady || !this.failureSynth) return; 
+  this.failureSynth.triggerAttackRelease("C3", "4n"); 
+},
+
+playWin() { 
+  if (!gameState.audioReady || !this.synth) return; 
+  this.synth.triggerAttackRelease(["C4", "E4", "G4", "C5"], "2n"); 
+},
+
+playClick() { 
+  if (!gameState.audioReady || !this.synth) return; 
+  this.synth.triggerAttackRelease("C5", "32n"); 
+}
+    };
+
+    // --- DOM ELEMENTS ---
+    const cashEl = document.getElementById('cash');
+    const salaryEl = document.getElementById('salary');
+    const passiveIncomeEl = document.getElementById('passive-income');
+    const totalIncomeEl = document.getElementById('total-income');
+    const cashFlowEl = document.getElementById('cash-flow');
+    const assetsListEl = document.getElementById('assets-list');
+    const expensesListEl = document.getElementById('expenses-list');
+    const liabilitiesListEl = document.getElementById('liabilities-list');
+    const gameLogEl = document.getElementById('game-log');
+    const rollDiceBtn = document.getElementById('roll-dice-btn');
+    const payOffDebtsBtn = document.getElementById('pay-off-debts-btn');
+    const takeLoanBtn = document.getElementById('take-loan-btn');
+    const repayLoanBtn = document.getElementById('repay-loan-btn');
+    const diceContainer = document.getElementById('dice-container');
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalText = document.getElementById('modal-text');
+    const modalButtons = document.getElementById('modal-buttons');
+    const playerSetupModal = document.getElementById('player-setup-modal');
+    const professionModal = document.getElementById('profession-modal');
+    const professionOptions = document.getElementById('profession-options');
+    const professionModalTitle = document.getElementById('profession-modal-title');
+    const playerTurnTitle = document.getElementById('player-turn-title');
+    const professionNameEl = document.getElementById('profession-name');
+    const marketStatusEl = document.getElementById('market-status');
+    const canvas = document.getElementById('board-canvas');
+    const boardTitleEl = document.getElementById('board-title');
+    const playerNameInput = document.getElementById('player-name-input');
+    const submitNameBtn = document.getElementById('submit-name-btn');
+
+    // --- 3D SETUP ---
+    let scene, camera, renderer, controls;
+    let ratRaceGroup = new THREE.Group();
+    let playerToken3D;
+    const spaceSize = 3;
+    const spaceGap = 0.3;
+    const spacePositions = [];
+
+    // --- DATA ---
+    let opportunityCards, marketCards;
+    const professions = {
+        engineer: { name: "Engineer", financials: { cash: 32000, salary: 200000, passiveIncome: 0, expenses: { taxes: 40000, mortgage: 32000, carLoan: 8000, creditCard: 4000, other: 48000 }, liabilities: { mortgage: 4000000, carLoan: 400000, creditCard: 160000 }, assets: [] }},
+        doctor: { name: "Doctor", financials: { cash: 20000, salary: 400000, passiveIncome: 0, expenses: { taxes: 100000, mortgage: 60000, carLoan: 12000, creditCard: 8000, other: 80000, studentLoan: 20000 }, liabilities: { mortgage: 6000000, carLoan: 800000, creditCard: 400000, studentLoan: 1500000 }, assets: [] }},
+        teacher: { name: "Teacher", financials: { cash: 40000, salary: 80000, passiveIncome: 0, expenses: { taxes: 12000, mortgage: 10000, carLoan: 2000, creditCard: 1000, other: 20000 }, liabilities: { mortgage: 1200000, carLoan: 150000, creditCard: 50000 }, assets: [] }},
+        pilot: { name: "Pilot", financials: { cash: 25000, salary: 350000, passiveIncome: 0, expenses: { taxes: 80000, mortgage: 50000, carLoan: 10000, creditCard: 10000, other: 60000 }, liabilities: { mortgage: 5000000, carLoan: 700000, creditCard: 500000 }, assets: [] }}
+    };
+    const ratRaceLayout = [
+        { type: 'payday', text: 'Pay Day' }, { type: 'opportunity', text: 'Opportunity' }, { type: 'doodad', text: 'New Phone', cost: 50000 },
+        { type: 'market', text: 'Market' }, { type: 'opportunity', text: 'Opportunity' }, { type: 'charity', text: 'Charity' }, { type: 'payday', text: 'Pay Day' },
+        { type: 'baby', text: 'Baby!' }, { type: 'opportunity', text: 'Opportunity' },
+        { type: 'doodad', text: 'Dinner Out', cost: 8000 }, { type: 'market', text: 'Market' }, { type: 'opportunity', text: 'Opportunity' },
+        { type: 'downsized', text: 'Downsized!' }, { type: 'payday', text: 'Pay Day' },
+        { type: 'opportunity', text: 'Opportunity' }, { type: 'doodad', text: 'Vacation', cost: 100000 }, { type: 'market', text: 'Market' },
+        { type: 'opportunity', text: 'Opportunity' }, { type: 'charity', text: 'Charity' }, { type: 'payday', text: 'Pay Day' }
+    ];
+    const fastTrackLayout = [
+        { type: 'ft-business', text: 'E-Commerce Store', cost: 2000000, income: 40000 },
+        { type: 'ft-dream', text: 'World Tour', cost: 5000000 },
+        { type: 'ft-cashflowday', text: 'Cash Flow Day' },
+        { type: 'ft-business', text: 'Apartment Complex', cost: 8000000, income: 100000 },
+        { type: 'ft-charity', text: 'Charity Ball' },
+        { type: 'ft-dream', text: 'Dream Car', cost: 8000000 },
+        { type: 'ft-cashflowday', text: 'Cash Flow Day' },
+        { type: 'ft-business', text: 'Software Company', cost: 15000000, income: 250000 },
+        { type: 'ft-divorce', text: 'Divorce' },
+        { type: 'ft-dream', text: 'Yacht', cost: 10000000 },
+        { type: 'ft-cashflowday', text: 'Cash Flow Day' },
+        { type: 'ft-lawsuit', text: 'Lawsuit' }
+    ];
+
+    // --- DATABASE FUNCTIONS ---
+async function saveGameState() {
+    const userId = localStorage.getItem("userId")
+  if (!gameState.player || !userId) return;
+  try {
+    await fetch(`https://erp.taxila.in/api/game/rat-race?userId=${userId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId, gameState })
+    });
+    console.log("Game saved to MongoDB.");
+  } catch (error) {
+    console.error("Error saving game:", error);
+  }
+}
+
+async function loadGameState() {
+ const userId =    localStorage.getItem("userId")
+  if (!userId) return null;
+  try {
+    const res = await fetch(`https://erp.taxila.in/api/game/rat-race?userId=${userId}`);
+    const data = await res.json();
+    console.log(data)
+    return data || null;
+  } catch (error) {
+    console.error("Error loading game:", error);
+    return null;
+  }
+}
+
+
+
+    // --- UTILITY & MODAL FUNCTIONS ---
+    const formatCurrency = (amount) => `₹${Math.round(amount).toLocaleString('en-IN')}`;
+    const shuffle = (array) => array.sort(() => Math.random() - 0.5);
+
+    function logMessage(message, type = 'info') {
+        const logEntry = document.createElement('p');
+        logEntry.innerHTML = message;
+        if (type === 'success') logEntry.className = 'text-green-400';
+        if (type === 'danger') logEntry.className = 'text-red-400';
+        if (type === 'event') logEntry.className = 'text-amber-400 font-semibold';
+        gameLogEl.insertBefore(logEntry, gameLogEl.firstChild);
+    }
+
+    function getPlayerSpan() {
+        const player = gameState.player;
+        return `<span class="font-bold" style="color: ${player.color};">${player.name}</span>`;
+    }
+    
+    function showModal(title, text, buttons) {
+        modalTitle.textContent = title;
+        modalText.innerHTML = text;
+        modalButtons.innerHTML = '';
+        buttons.forEach(btnInfo => {
+            const button = document.createElement('button');
+            button.textContent = btnInfo.text;
+            button.className = `btn-modal ${btnInfo.className}`;
+            button.onclick = () => {
+                sounds.playClick();
+                if (!btnInfo.keepOpen) {
+                   modal.style.display = 'none';
+                }
+                if (btnInfo.action) btnInfo.action();
+            };
+            modalButtons.appendChild(button);
+        });
+        modal.style.display = 'flex';
+    }
+
+    // --- 3D FUNCTIONS ---
+    function init3D() {
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x1a110a);
+        
+        const container = document.getElementById('game-container');
+        renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.shadowMap.enabled = true;
+
+        camera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.1, 1000);
+        camera.position.set(0, 33, 27);
+        
+        controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.target.set(0, 0, 0);
+        controls.maxPolarAngle = Math.PI / 2.1;
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
+        scene.add(ambientLight);
+
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1.8);
+        dirLight.position.set(15, 25, 10);
+        dirLight.castShadow = true;
+        scene.add(dirLight);
+
+        scene.add(ratRaceGroup);
+        
+        window.addEventListener('resize', () => {
+            const newWidth = container.clientWidth;
+            const newHeight = container.clientHeight;
+            camera.aspect = newWidth / newHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(newWidth, newHeight);
+        });
+        
+        animate();
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+        controls.update();
+        renderer.render(scene, camera);
+    }
+    
+    function createBoardTexture() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 512;
+        canvas.height = 512;
+        const context = canvas.getContext('2d');
+        context.fillStyle = '#f5deb3'; // Wheat color for the board
+        context.fillRect(0, 0, 512, 512);
+        context.strokeStyle = 'rgba(0,0,0,0.1)';
+        context.lineWidth = 2;
+        for(let i = 0; i < 16; i++) {
+            context.beginPath();
+            context.moveTo(i * 32, 0);
+            context.lineTo(i * 32, 512);
+            context.stroke();
+            context.beginPath();
+            context.moveTo(0, i * 32);
+            context.lineTo(512, i * 32);
+            context.stroke();
+        }
+        return new THREE.CanvasTexture(canvas);
+    }
+
+    function createPawnMesh(color) {
+        const pawnGroup = new THREE.Group();
+        const material = new THREE.MeshStandardMaterial({ color: color, roughness: 0.4, metalness: 0.2 });
+        const base = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.7, 0.3, 24), material);
+        base.castShadow = true;
+        const body = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.5, 0.8, 24), material);
+        body.position.y = 0.55;
+        body.castShadow = true;
+        const head = new THREE.Mesh(new THREE.SphereGeometry(0.35, 32, 16), material);
+        head.position.y = 1.1;
+        head.castShadow = true;
+        pawnGroup.add(base, body, head);
+        return pawnGroup;
+    }
+
+    function createTextTexture(text) {
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.width = 256;
+        canvas.height = 128;
+        context.font = 'bold 32px Inter, sans-serif';
+        context.fillStyle = 'black';
+        context.textAlign = 'center';
+        context.textBaseline = 'middle';
+        
+        const words = text.split(' ');
+        let line = '';
+        let y = canvas.height / 2 - (words.length > 2 ? 20 : 0);
+
+        for(let n = 0; n < words.length; n++) {
+            const testLine = line + words[n] + ' ';
+            const metrics = context.measureText(testLine);
+            const testWidth = metrics.width;
+            if (testWidth > canvas.width && n > 0) {
+                context.fillText(line, canvas.width/2, y);
+                line = words[n] + ' ';
+                y += 40;
+            }
+            else {
+                line = testLine;
+            }
+        }
+        context.fillText(line, canvas.width/2, y);
+
+        return new THREE.CanvasTexture(canvas);
+    }
+
+    function createBoards3D() {
+        const boardMaterial = new THREE.MeshStandardMaterial({ map: createBoardTexture() });
+        const boardGeom = new THREE.BoxGeometry(30, 1, 21);
+        const mainBoard = new THREE.Mesh(boardGeom, boardMaterial);
+        mainBoard.receiveShadow = true;
+        ratRaceGroup.add(mainBoard);
+
+        const path = [ [0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[0,6], [1,6],[2,6],[3,6],[4,6], [4,5],[4,4],[4,3],[4,2],[4,1],[4,0], [3,0],[2,0],[1,0] ];
+        
+        path.forEach((p, index) => {
+            const spaceData = ratRaceLayout[index];
+            const colorMap = { payday: 0x10B981, opportunity: 0x3B82F6, market: 0xF59E0B, doodad: 0xEF4444, charity: 0x8B5CF6, downsized: 0x4B5563, baby: 0xEC4899 };
+            const material = new THREE.MeshStandardMaterial({ color: colorMap[spaceData.type] || 0xffffff });
+            const geom = new THREE.BoxGeometry(spaceSize, 0.2, spaceSize);
+            const spaceMesh = new THREE.Mesh(geom, material);
+            
+            const x = (p[1] - 3) * (spaceSize + spaceGap);
+            const z = (p[0] - 2) * (spaceSize + spaceGap);
+            spaceMesh.position.set(x, 0.6, z);
+            spaceMesh.castShadow = true;
+            spaceMesh.receiveShadow = true;
+            ratRaceGroup.add(spaceMesh);
+            spacePositions.push(spaceMesh.position);
+
+            const edges = new THREE.EdgesGeometry(geom);
+            const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 2 }));
+            line.position.copy(spaceMesh.position);
+            ratRaceGroup.add(line);
+
+            const textTexture = createTextTexture(spaceData.text);
+            const textMaterial = new THREE.MeshBasicMaterial({ map: textTexture, transparent: true });
+            const textGeom = new THREE.PlaneGeometry(spaceSize * 0.9, spaceSize * 0.45);
+            const textMesh = new THREE.Mesh(textGeom, textMaterial);
+            textMesh.position.copy(spaceMesh.position);
+            textMesh.position.y += 0.11; 
+            textMesh.rotation.x = -Math.PI / 2;
+            ratRaceGroup.add(textMesh);
+        });
+    }
+
+    // --- CERTIFICATE FUNCTIONS ---
+    function generateCertificate(playerName) {
+        const canvas = document.getElementById('certificate-canvas');
+        const ctx = canvas.getContext('2d');
+        const W = canvas.width;
+        const H = canvas.height;
+
+        // Background
+        ctx.fillStyle = '#f7f2e9'; // Parchment
+        ctx.fillRect(0, 0, W, H);
+
+        // Border
+        ctx.strokeStyle = '#c9a46a'; // Gold
+        ctx.lineWidth = 15;
+        ctx.strokeRect(10, 10, W - 20, H - 20);
+        ctx.strokeStyle = '#a07d4a'; // Darker Gold
+        ctx.lineWidth = 5;
+        ctx.strokeRect(25, 25, W - 50, H - 50);
+
+        // Title
+        ctx.fillStyle = '#5c4033'; // Dark Brown
+        ctx.font = 'bold 70px "Playfair Display", serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Certificate of Achievement', W / 2, 120);
+
+        // Subtitle
+        ctx.font = '30px "Inter", sans-serif';
+        ctx.fillText('This is to certify that', W / 2, 200);
+
+        // Player Name
+        ctx.fillStyle = '#a07d4a';
+        ctx.font = 'italic bold 60px "Playfair Display", serif';
+        ctx.fillText(playerName, W / 2, 300);
+
+        // Main Text
+        ctx.fillStyle = '#5c4033';
+        ctx.font = '30px "Inter", sans-serif';
+        ctx.fillText('has successfully escaped the Rat Race', W / 2, 380);
+        ctx.fillText('and entered The Fast Track.', W / 2, 430);
+
+        // Date
+        const today = new Date();
+        const dateString = today.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+        ctx.font = '24px "Inter", sans-serif';
+        ctx.fillText(`Awarded on: ${dateString}`, W / 2, 520);
+
+        // School Name
+        ctx.font = 'bold 32px "Inter", sans-serif';
+        ctx.fillText('Taxila Business School', W / 2, 620);
+        
+        // Simple Seal
+        ctx.beginPath();
+        ctx.arc(W / 2, 620, 50, 0, 2 * Math.PI);
+        ctx.strokeStyle = '#a07d4a';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+    }
+
+    function downloadCertificate(playerName) {
+        generateCertificate(playerName);
+        const canvas = document.getElementById('certificate-canvas');
+        const dataURL = canvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        link.href = dataURL;
+        link.download = `Fast_Track_Certificate_${playerName.replace(/\s/g, '_')}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+
+    // --- UI UPDATE & GAME SETUP ---
+    function updateFinancials() {
+        const player = gameState.player;
+        if (!player) return;
+
+        const totalExpenses = Object.values(player.expenses).reduce((a, b) => a + b, 0);
+        const totalIncome = player.salary + player.passiveIncome;
+        const cashFlow = totalIncome - totalExpenses;
+        player.cashFlow = cashFlow;
+
+        playerTurnTitle.textContent = `${player.name}'s Game`;
+        playerTurnTitle.style.borderBottomColor = player.color;
+        professionNameEl.textContent = player.professionName;
+
+        cashEl.textContent = formatCurrency(player.cash);
+        salaryEl.textContent = formatCurrency(player.salary);
+        passiveIncomeEl.textContent = formatCurrency(player.passiveIncome);
+        totalIncomeEl.textContent = formatCurrency(totalIncome);
+        cashFlowEl.textContent = formatCurrency(cashFlow);
+
+        expensesListEl.innerHTML = '';
+        for (const [key, value] of Object.entries(player.expenses)) {
+            if (key === 'children' && player.childrenCount === 0) continue;
+            if (value === 0) continue;
+            const name = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+            expensesListEl.innerHTML += `<p>${name}: <span class="float-right font-mono">${formatCurrency(value)}</span></p>`;
+        }
+        expensesListEl.innerHTML += `<hr class="border-gray-600 my-1"><p class="font-bold">Total Expenses: <span class="float-right font-mono">${formatCurrency(totalExpenses)}</span></p>`;
+
+        liabilitiesListEl.innerHTML = '';
+        for (const [key, value] of Object.entries(player.liabilities)) {
+            if (value === 0) continue;
+            const name = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+            liabilitiesListEl.innerHTML += `<p>${name}: <span class="float-right font-mono">${formatCurrency(value)}</span></p>`;
+        }
+
+        assetsListEl.innerHTML = '';
+        player.assets.forEach(asset => {
+            assetsListEl.innerHTML += `<p>${asset.name}: <span class="float-right font-mono">${formatCurrency(asset.income)}/mo</span></p>`;
+        });
+        
+        if (!player.onFastTrack && player.passiveIncome > totalExpenses && totalExpenses > 0) {
+            player.onFastTrack = true;
+            boardTitleEl.textContent = "The Fast Track";
+            logMessage(`${getPlayerSpan()} has escaped the Rat Race!`, 'success');
+            showModal("Congratulations! You've Escaped!", 
+                `${player.name}, you have escaped the Rat Race and are now on the Fast Track!`, 
+                [
+                    { text: "Download Certificate", className: "btn-primary", action: () => downloadCertificate(player.name), keepOpen: true },
+                    { text: "Continue to Fast Track", className: "btn-success", action: endTurn }
+                ]
+            );
+        }
+
+        // Update button states
+        const maxLoanLimit = player.salary * 20;
+        takeLoanBtn.disabled = player.liabilities.bankLoan >= maxLoanLimit;
+        repayLoanBtn.disabled = player.liabilities.bankLoan <= 0 || player.cash <= 0;
+        const otherDebts = player.liabilities.mortgage > 0 || player.liabilities.carLoan > 0 || player.liabilities.creditCard > 0 || (player.liabilities.studentLoan && player.liabilities.studentLoan > 0);
+        payOffDebtsBtn.disabled = !otherDebts || player.cash <= 0;
+    }
+
+    async function handleNameSubmission() {
+        const name = playerNameInput.value.trim();
+        if (name) {
+            const savedData = await loadGameState();
+            if (savedData && savedData.player && savedData.player.name.toLowerCase() === name.toLowerCase()) {
+                showModal(`Welcome back, ${name}!`, "Do you want to continue your previous game or start a new one?", [
+                    { text: "Continue Game", className: "btn-primary", action: () => {
+                        Object.assign(gameState, savedData);
+                        startGame();
+                    }},
+                    { text: "New Game", className: "btn-secondary", action: () => showProfessionSelection(name) }
+                ]);
+            } else {
+                showProfessionSelection(name);
+            }
+            playerSetupModal.style.display = 'none';
+        }
+    }
+
+    function showProfessionSelection(playerName) {
+        professionModalTitle.textContent = `${playerName}, Choose Profession`;
+        professionOptions.innerHTML = '';
+
+        for (const key in professions) {
+            const prof = professions[key];
+            const card = document.createElement('div');
+            card.className = 'profession-card';
+            card.innerHTML = `<h3 class="text-xl font-bold text-amber-400">${prof.name}</h3><p class="text-sm text-gray-300 mt-2"><strong>Salary:</strong> ${formatCurrency(prof.financials.salary)}</p><p class="text-sm text-gray-300"><strong>Cash Flow:</strong> ${formatCurrency(prof.financials.salary - Object.values(prof.financials.expenses).reduce((a,b)=>a+b,0))}</p>`;
+            card.onclick = () => selectProfession(key, playerName);
+            professionOptions.appendChild(card);
+        }
+        professionModal.style.display = 'flex';
+    }
+
+    function selectProfession(key, playerName) {
+        sounds.playClick();
+        const newPlayer = {
+            ...JSON.parse(JSON.stringify(professions[key].financials)),
+            name: playerName,
+            professionName: professions[key].name,
+            color: `#3B82F6`,
+            position: 0, 
+            ftPosition: 0, 
+            childrenCount: 0, 
+            skipTurns: 0, 
+            charityUsed: false, 
+            onFastTrack: false, 
+            isOut: false, 
+            missedEMIs: 0, 
+            cashFlow: 0,
+        };
+        newPlayer.liabilities.bankLoan = 0;
+        newPlayer.expenses.bankLoanEMI = 0;
+        gameState.player = newPlayer;
+
+        professionModal.style.display = 'none';
+        startGame();
+    }
+    
+    // --- CORE GAME FLOW ---
+    function startGame() {
+        gameState.gamePhase = 'rat_race';
+        rollDiceBtn.disabled = false;
+        
+        if (playerToken3D) {
+            ratRaceGroup.remove(playerToken3D);
+        }
+        playerToken3D = createPawnMesh(gameState.player.color);
+        const startPos = spacePositions[gameState.player.position];
+        playerToken3D.position.set(startPos.x, 0.6, startPos.z);
+        ratRaceGroup.add(playerToken3D);
+
+        logMessage(`Welcome, ${getPlayerSpan()}! Roll the dice to begin.`, 'event');
+        updateFinancials();
+        saveGameState();
+    }
+    
+    function endTurn() {
+        if (gameState.player.isOut) {
+            showModal("Game Over", "You have been eliminated!", [{ text: "Play Again", className: "btn-primary", action: () => location.reload() }]);
+            rollDiceBtn.disabled = true;
+            takeLoanBtn.disabled = true;
+            return;
+        }
+
+        if (gameState.player && gameState.player.cash >= 0 && gameState.player.liabilities.bankLoan > 0) {
+            gameState.player.missedEMIs = 0;
+        }
+
+        gameState.turnsUntilCycleChange--;
+        if (gameState.turnsUntilCycleChange <= 0) {
+            changeMarketCycle();
+        }
+        
+        logMessage(`It's your turn, ${getPlayerSpan()}.`, 'event');
+        updateFinancials();
+
+        if (gameState.player.skipTurns > 0) {
+            gameState.player.skipTurns--;
+            logMessage(`${getPlayerSpan()} is downsized and skips this turn. ${gameState.player.skipTurns} turn(s) left to skip.`, 'danger');
+            setTimeout(endTurn, 1500);
+        } else {
+            rollDiceBtn.disabled = false;
+        }
+        saveGameState();
+    }
+    
+    function rollDice() {
+        sounds.playDiceRoll();
+        const player = gameState.player;
+        rollDiceBtn.disabled = true;
+
+        const rollAnimation = setInterval(() => {
+            diceContainer.textContent = Math.ceil(Math.random() * 6);
+        }, 80);
+
+        setTimeout(() => {
+            clearInterval(rollAnimation);
+
+            let roll = Math.ceil(Math.random() * 6);
+            if (player.charityUsed && !player.onFastTrack) {
+                roll += Math.ceil(Math.random() * 6);
+                logMessage(`${getPlayerSpan()} used Charity for a 2-dice roll!`, 'event');
+                player.charityUsed = false;
+            }
+            diceContainer.textContent = roll;
+            
+            if (player.onFastTrack) {
+                player.ftPosition = (player.ftPosition + roll) % fastTrackLayout.length;
+                logMessage(`${getPlayerSpan()} rolled a ${roll} on the Fast Track.`);
+                setTimeout(() => handleFastTrackSpaceAction(fastTrackLayout[player.ftPosition]), 600);
+            } else {
+                movePlayer3D(roll);
+            }
+        }, 1000);
+    }
+
+    function movePlayer3D(steps) {
+        const player = gameState.player;
+        
+        let previousPosition = player.position;
+        player.position = (player.position + steps) % spacePositions.length;
+        
+        const targetPos = spacePositions[player.position];
+        
+        const start = { x: playerToken3D.position.x, z: playerToken3D.position.z };
+        const end = { x: targetPos.x, z: targetPos.z };
+        let progress = 0;
+        
+        function animateMove() {
+            progress += 0.05;
+            if (progress < 1) {
+                playerToken3D.position.x = THREE.MathUtils.lerp(start.x, end.x, progress);
+                playerToken3D.position.z = THREE.MathUtils.lerp(start.z, end.z, progress);
+                requestAnimationFrame(animateMove);
+            } else {
+                playerToken3D.position.x = end.x;
+                playerToken3D.position.z = end.z;
+                logMessage(`${getPlayerSpan()} rolled a ${steps}.`);
+                if (player.position < previousPosition) {
+                    handlePayDay(true);
+                }
+                setTimeout(() => handleRatRaceSpaceAction(ratRaceLayout[player.position]), 600);
+            }
+        }
+        animateMove();
+    }
+
+    // --- ACTION HANDLERS ---
+    function handleRatRaceSpaceAction(spaceData) {
+        let actionTaken = false;
+        switch (spaceData.type) {
+            case 'payday': handlePayDay(); break;
+            case 'opportunity': handleOpportunity(); actionTaken = true; break;
+            case 'market': handleMarket(); actionTaken = true; break;
+            case 'doodad': handleDoodad(spaceData); break;
+            case 'charity': handleCharity(); actionTaken = true; break;
+            case 'baby': handleBaby(); break;
+            case 'downsized': handleDownsized(); break;
+        }
+        if (!actionTaken) {
+            setTimeout(endTurn, 1000);
+        }
+    }
+    
+    function handlePayDay(passed = false) {
+        sounds.playPayday();
+        const player = gameState.player;
+        const cashFlow = player.cashFlow;
+        player.cash += cashFlow;
+        logMessage(`${getPlayerSpan()} received cash flow of ${formatCurrency(cashFlow)}.`, 'success');
+        updateFinancials(); 
+        
+        if (player.cash < 0) {
+            handleBankruptcy();
+            return; 
+        }
+        
+        if (player.liabilities.bankLoan > 0) {
+            player.missedEMIs = 0;
+        }
+    }
+    
+    function handleOpportunity() {
+        sounds.playEvent();
+        const card = opportunityCards[gameState.opportunityCardIndex];
+        gameState.opportunityCardIndex = (gameState.opportunityCardIndex + 1) % opportunityCards.length;
+        const player = gameState.player;
+        
+        let cost = card.cost;
+        if (gameState.marketCycle === 'Boom') cost *= 1.5;
+        if (gameState.marketCycle === 'Recession') cost *= 0.7;
+        cost = Math.round(cost);
+
+        let description = card.description.replace(formatCurrency(card.cost), `<strong>${formatCurrency(cost)}</strong>`);
+
+        const buyAction = () => {
+            if (player.cash >= cost) {
+                sounds.playDeal();
+                player.cash -= cost;
+                player.assets.push({ name: card.name, income: card.income, type: card.type, cost: cost });
+                player.passiveIncome += card.income;
+                logMessage(`${getPlayerSpan()} bought ${card.name}!`, 'success');
+                updateFinancials();
+                endTurn();
+            } else {
+                const shortfall = cost - player.cash;
+                showModal(
+                    "Insufficient Funds",
+                    `You need ${formatCurrency(cost)} but only have ${formatCurrency(player.cash)}. Take a loan for at least ${formatCurrency(shortfall)} to buy this asset?`,
+                    [
+                        { text: "Take Loan & Buy", className: "btn-success", action: () => {
+                            const loanAmount = Math.ceil(shortfall / 1000) * 1000;
+                            const emi = calculateEMI(loanAmount);
+                            player.cash += loanAmount;
+                            player.liabilities.bankLoan += loanAmount;
+                            player.expenses.bankLoanEMI += emi;
+                            logMessage(`${getPlayerSpan()} took an emergency loan of ${formatCurrency(loanAmount)}.`, 'event');
+                            buyAction(); 
+                        }},
+                        { text: "Pass", className: "btn-secondary", action: endTurn }
+                    ]
+                );
+            }
+        };
+
+        showModal("Opportunity!", description, [
+            { text: `Buy (${formatCurrency(cost)})`, className: 'btn-primary', action: buyAction },
+            { text: "Pass", className: "btn-secondary", action: endTurn }
+        ]);
+    }
+
+    function handleMarket() {
+        sounds.playEvent();
+        const event = marketCards[gameState.marketCardIndex];
+        gameState.marketCardIndex = (gameState.marketCardIndex + 1) % marketCards.length;
+        showModal("Market Event", event.text, [{ text: "OK", className: "btn-primary", action: () => { event.action(gameState.player); updateFinancials(); endTurn(); } }]);
+    }
+
+    function handleDoodad(card) {
+        sounds.playDoodad();
+        const player = gameState.player;
+        player.cash -= card.cost;
+        logMessage(`${getPlayerSpan()} spent ${formatCurrency(card.cost)} on a ${card.text}.`, 'danger');
+        updateFinancials();
+    }
+
+    function handleCharity() {
+        sounds.playEvent();
+        const player = gameState.player;
+        showModal("Charity", "Donate 10% of your total income to use 2 dice next turn?", [
+            { text: "Donate", className: "btn-success", action: () => {
+                const donation = (player.salary + player.passiveIncome) * 0.1;
+                if (player.cash >= donation) {
+                    player.cash -= donation;
+                    player.charityUsed = true;
+                    logMessage(`${getPlayerSpan()} donated ${formatCurrency(donation)}.`, 'success');
+                    updateFinancials();
+                } else { logMessage("Not enough cash to donate.", 'danger'); }
+                endTurn();
+            }},
+            { text: "No Thanks", className: "btn-secondary", action: endTurn }
+        ]);
+    }
+
+    function handleBaby() {
+        sounds.playEvent();
+        const player = gameState.player;
+        player.childrenCount++;
+        const childCost = (player.salary / 10) * player.childrenCount;
+        player.expenses.children = childCost;
+        logMessage(`${getPlayerSpan()} had a baby! Expenses increase.`, 'event');
+        updateFinancials();
+    }
+
+    function handleDownsized() {
+        sounds.playFailure();
+        const player = gameState.player;
+        player.skipTurns = 2;
+        const cashLost = Object.values(player.expenses).reduce((a, b) => a + b, 0);
+        player.cash -= cashLost;
+        logMessage(`${getPlayerSpan()} was downsized! Lose 1 month's expenses and 2 turns.`, 'danger');
+        updateFinancials();
+    }
+
+    function handlePayOffDebts() {
+        sounds.playClick();
+        const player = gameState.player;
+        const options = [];
+        const payAmount = player.cash;
+
+        for (const [key, value] of Object.entries(player.liabilities)) {
+            if (value > 0 && key !== 'bankLoan') {
+                const name = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                options.push({ text: `${name} (${formatCurrency(value)})`, action: () => payOffDebt(key, payAmount) });
+            }
+        }
+
+        if (options.length === 0) {
+            showModal("No Other Debts!", "You have no other liabilities to pay off.", [{ text: "OK", className: "btn-primary" }]);
+            return;
+        }
+
+        options.push({ text: "Cancel", className: "btn-secondary" });
+        showModal( `Pay Off Debt`, `You have ${formatCurrency(player.cash)}. Which debt would you like to pay down?`, options );
+    }
+
+    function payOffDebt(type, amount) {
+        sounds.playSuccess();
+        const player = gameState.player;
+        const paidAmount = Math.min(amount, player.liabilities[type]);
+        player.cash -= paidAmount;
+        player.liabilities[type] -= paidAmount;
+        logMessage(`Paid ${formatCurrency(paidAmount)} towards ${type} debt.`, 'success');
+
+        if (player.liabilities[type] <= 0) {
+            player.liabilities[type] = 0;
+            const expenseKey = type === 'bankLoan' ? 'bankLoanEMI' : type;
+            if (player.expenses[expenseKey]) {
+                player.expenses[expenseKey] = 0;
+                logMessage(`You paid off your ${type} loan! Your monthly expenses are reduced.`, 'event');
+            }
+        }
+        updateFinancials();
+        saveGameState();
+    }
+
+    function handleRepayLoan() {
+        sounds.playClick();
+        const player = gameState.player;
+        const maxRepay = Math.min(player.cash, player.liabilities.bankLoan);
+
+        const modalHTML = `
+            <p class="mb-4">Your current bank loan is <strong>${formatCurrency(player.liabilities.bankLoan)}</strong>.</p>
+            <p class="mb-2">How much would you like to repay? (Max: ${formatCurrency(maxRepay)})</p>
+            <input type="number" id="repay-amount-input" class="w-full p-2 rounded bg-gray-700 text-white text-center" max="${maxRepay}" value="${maxRepay}">
+        `;
+
+        showModal("Repay Bank Loan", modalHTML, [
+            { text: "Repay", className: "btn-success", action: () => {
+                const repayAmountInput = document.getElementById('repay-amount-input');
+                const repayAmount = parseInt(repayAmountInput.value);
+
+                if (isNaN(repayAmount) || repayAmount <= 0 || repayAmount > maxRepay) {
+                    logMessage("Invalid repayment amount.", "danger");
+                    return;
+                }
+                sounds.playSuccess();
+                player.cash -= repayAmount;
+                player.liabilities.bankLoan -= repayAmount;
+                logMessage(`${getPlayerSpan()} repaid ${formatCurrency(repayAmount)} of their bank loan.`, 'success');
+
+                if (player.liabilities.bankLoan <= 0) {
+                    player.liabilities.bankLoan = 0;
+                    player.expenses.bankLoanEMI = 0;
+                    logMessage(`${getPlayerSpan()} has completely paid off their bank loan!`, 'event');
+                }
+                updateFinancials();
+                saveGameState();
+            }},
+            { text: "Cancel", className: "btn-secondary" }
+        ]);
+    }
+
+    function handleTakeLoan() {
+        sounds.playClick();
+        const player = gameState.player;
+        const maxLoanLimit = player.salary * 20;
+        const availableLoan = maxLoanLimit - player.liabilities.bankLoan;
+
+        if (availableLoan <= 0) {
+            showModal("Loan Denied", "You have reached your maximum loan limit based on your salary.", [{ text: "OK", className: "btn-secondary" }]);
+            return;
+        }
+
+        const modalHTML = `
+            <p class="mb-2 text-sm text-gray-400">Interest Rate: 12% per annum (1% monthly)</p>
+            <p class="mb-4">You can borrow up to <strong>${formatCurrency(availableLoan)}</strong>.</p>
+            <p class="mb-2">How much would you like to borrow?</p>
+            <input type="number" id="loan-amount-input" class="w-full p-2 rounded bg-gray-700 text-white text-center" max="${availableLoan}" value="${availableLoan}">
+            <p class="mt-4">Estimated Monthly Installment (EMI): <strong id="emi-preview"></strong></p>
+        `;
+
+        showModal("Take a Bank Loan", modalHTML, [
+            { text: "Confirm Loan", className: "btn-success", action: () => {
+                const loanAmountInput = document.getElementById('loan-amount-input');
+                const loanAmount = parseInt(loanAmountInput.value);
+
+                if (isNaN(loanAmount) || loanAmount <= 0 || loanAmount > availableLoan) {
+                    logMessage("Invalid loan amount entered.", "danger");
+                    return;
+                }
+                
+                sounds.playSuccess();
+                const emi = calculateEMI(loanAmount);
+
+                player.cash += loanAmount;
+                player.liabilities.bankLoan += loanAmount;
+                player.expenses.bankLoanEMI += emi;
+                
+                logMessage(`${getPlayerSpan()} took a loan of ${formatCurrency(loanAmount)} with an EMI of ${formatCurrency(emi)}.`, 'event');
+                updateFinancials();
+                saveGameState();
+            }},
+            { text: "Cancel", className: "btn-secondary" }
+        ]);
+
+        const loanAmountInput = document.getElementById('loan-amount-input');
+        loanAmountInput.addEventListener('input', updateEmiPreview);
+        updateEmiPreview();
+    }
+    
+    function calculateEMI(principal) {
+        if (principal <= 0) return 0;
+        const r = 0.12 / 12; // 1% monthly interest
+        const n = 60; // 5 years
+        return Math.round((principal * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1));
+    }
+
+    function updateEmiPreview() {
+        const loanAmountInput = document.getElementById('loan-amount-input');
+        const emiPreview = document.getElementById('emi-preview');
+        if (loanAmountInput && emiPreview) {
+            const loanAmount = parseInt(loanAmountInput.value) || 0;
+            emiPreview.textContent = formatCurrency(calculateEMI(loanAmount));
+        }
+    }
+
+    function handleBankruptcy() {
+        sounds.playFailure();
+        const player = gameState.player;
+        logMessage(`${getPlayerSpan()} is bankrupt!`, 'danger');
+
+        if (player.assets.length === 0) {
+            player.isOut = true;
+            playerToken3D.visible = false;
+            showModal("Game Over!", `${player.name}, you are bankrupt with no assets to sell.`, [{ text: "OK", className: "btn-danger", action: endTurn }]);
+        } else {
+            promptToSellAssets();
+        }
+    }
+
+    function promptToSellAssets() {
+        const player = gameState.player;
+        const debt = Math.abs(player.cash);
+        let modalText = `<p class="mb-4">You are ${formatCurrency(debt)} in debt. You must sell assets to become solvent.</p>`;
+        
+        const buttons = player.assets.map((asset, index) => {
+            const salePrice = Math.round(asset.cost * 0.8);
+            return {
+                text: `Sell ${asset.name} (${formatCurrency(salePrice)})`,
+                className: 'btn-primary',
+                action: () => sellAsset(index, salePrice)
+            };
+        });
+
+        showModal("You Are Bankrupt!", modalText, buttons);
+    }
+
+    function sellAsset(assetIndex, salePrice) {
+        sounds.playSuccess();
+        const player = gameState.player;
+        const asset = player.assets[assetIndex];
+
+        player.cash += salePrice;
+        player.passiveIncome -= asset.income;
+        player.assets.splice(assetIndex, 1);
+        logMessage(`${getPlayerSpan()} sold ${asset.name} for ${formatCurrency(salePrice)}.`, 'event');
+        updateFinancials();
+
+        if (player.cash >= 0) {
+            showModal("Solvent Again!", "You sold enough assets to get out of debt.", [{ text: "Continue", className: 'btn-success', action: endTurn }]);
+        } else {
+            if (player.assets.length > 0) {
+                promptToSellAssets();
+            } else {
+                player.isOut = true;
+                playerToken3D.visible = false;
+                showModal("Game Over!", `${player.name}, you sold all your assets but are still in debt.`, [{ text: "OK", className: "btn-danger", action: endTurn }]);
+            }
+        }
+    }
+
+    function handleFastTrackSpaceAction(spaceData) {
+        const player = gameState.player;
+        let actionTaken = false;
+        switch(spaceData.type) {
+            case 'ft-cashflowday':
+                sounds.playPayday();
+                const cashFlowDayAmount = player.passiveIncome * 10;
+                player.cash += cashFlowDayAmount;
+                logMessage(`${getPlayerSpan()} hit a Cash Flow Day and collects ${formatCurrency(cashFlowDayAmount)}!`, 'success');
+                updateFinancials();
+                break;
+            case 'ft-business':
+                actionTaken = true;
+                showModal("Major Business Deal!", `Invest in ${spaceData.text}? <br>Cost: ${formatCurrency(spaceData.cost)} <br>New Monthly Income: ${formatCurrency(spaceData.income)}`, [
+                    {text: `Invest`, className: 'btn-success', action: () => {
+                        if (player.cash >= spaceData.cost) {
+                            sounds.playDeal();
+                            player.cash -= spaceData.cost;
+                            player.passiveIncome += spaceData.income;
+                            logMessage(`${getPlayerSpan()} invested in ${spaceData.text}!`, 'success');
+                            updateFinancials();
+                        } else { logMessage("Not enough cash for this deal.", 'danger'); }
+                        endTurn();
+                    }},
+                    {text: "Pass", className: 'btn-secondary', action: endTurn}
+                ]);
+                break;
+            case 'ft-dream':
+                actionTaken = true;
+                showModal("Your Dream!", `This is it! ${spaceData.text}. <br>Cost: ${formatCurrency(spaceData.cost)}`, [
+                    {text: "Buy Dream & Win!", className: 'btn-success', action: () => {
+                        if (player.cash >= spaceData.cost) {
+                            sounds.playWin();
+                            showModal("YOU WON!", `${player.name} has achieved their dream and won the game!`, [{text: "Play Again", className: 'btn-primary', action: () => location.reload()}]);
+                            gameState.gamePhase = 'finished';
+                            rollDiceBtn.disabled = true;
+                        } else {
+                            logMessage("You can't afford your dream yet!", 'danger');
+                            endTurn();
+                        }
+                    }},
+                    {text: "Not yet...", className: 'btn-secondary', action: endTurn}
+                ]);
+                break;
+            case 'ft-charity':
+                actionTaken = true;
+                showModal("Charity Ball", "Donate half your cash to a good cause?", [
+                    { text: "Donate", className: "btn-success", action: () => { player.cash /= 2; updateFinancials(); endTurn(); }},
+                    { text: "Decline", className: "btn-secondary", action: endTurn }
+                ]);
+                break;
+            case 'ft-divorce':
+                sounds.playDoodad();
+                logMessage(`${getPlayerSpan()} got divorced and loses all their cash!`, 'danger');
+                player.cash = 0;
+                updateFinancials();
+                break;
+            case 'ft-lawsuit':
+                sounds.playDoodad();
+                logMessage(`${getPlayerSpan()} is in a lawsuit and loses half their cash!`, 'danger');
+                player.cash /= 2;
+                updateFinancials();
+                break;
+        }
+        if (!actionTaken) {
+            setTimeout(endTurn, 1000);
+        }
+    }
+    
+    function changeMarketCycle() {
+        sounds.playEvent();
+        const cycles = ['Boom', 'Normal', 'Recession'];
+        let currentCycleIndex = cycles.indexOf(gameState.marketCycle);
+        let nextCycleIndex = (currentCycleIndex + 1) % cycles.length;
+        gameState.marketCycle = cycles[nextCycleIndex];
+        gameState.turnsUntilCycleChange = Math.floor(Math.random() * 5) + 5; // 5 to 9 turns
+        
+        logMessage(`The economy has shifted! The market is now in a ${gameState.marketCycle} period.`, 'event');
+        
+        marketStatusEl.textContent = `Market: ${gameState.marketCycle}`;
+        marketStatusEl.className = `market-${gameState.marketCycle.toLowerCase()}`;
+    }
+
+    // --- INITIALIZATION ---
+    function initializeAudioOnFirstInteraction() {
+        if (!gameState.audioReady) {
+            sounds.init().then(() => {
+                console.log("Audio ready on user interaction.");
+                document.removeEventListener('click', initializeAudioOnFirstInteraction);
+                document.removeEventListener('touchstart', initializeAudioOnFirstInteraction);
+            });
+        }
+    }
+
+    async function init() {
+        document.addEventListener('click', initializeAudioOnFirstInteraction);
+        document.addEventListener('touchstart', initializeAudioOnFirstInteraction);
+
+        // Initialize Firebase
+       // --- DATABASE INIT (MongoDB via API) ---
+// --- DATABASE INIT (MongoDB via API) ---
+try {
+    // Get userId from query params
+    const params = new URLSearchParams(window.location.search);
+    const userId = JSON.parse(decodeURIComponent(params.get("userId")));
+    localStorage.setItem('userId', userId)
+    if (!userId) {
+        throw new Error("No userId in URL params. Example: game.html?userId=12345");
+    }
+
+    console.log("Game userId:", userId);
+
+    // Try to load existing save
+    const savedData = await loadGameState();
+    if (savedData) {
+        console.log("Loaded saved game from MongoDB:", savedData);
+        Object.assign(gameState, savedData);
+    }
+
+} catch (error) {
+    console.error("MongoDB init failed:", error);
+    playerSetupModal.innerHTML = `
+        <div class="modal-content">
+            <h2 class="text-2xl font-bold mb-4 text-red-500">Connection Error</h2>
+            <p>Could not connect to the database. Your game progress will not be saved.</p>
+        </div>
+    `;
+}
+
+
+
+        opportunityCards = shuffle([
+            { name: 'Penny Stocks', cost: 40000, income: 800, type: 'paper', description: `Buy volatile penny stocks for ${formatCurrency(40000)}, generating ${formatCurrency(800)}/mo passive income.` },
+            { name: 'Blue Chip Stock', cost: 200000, income: 1500, type: 'paper', description: `Buy a stable blue-chip stock for ${formatCurrency(200000)}. Generates ${formatCurrency(1500)}/mo in dividends.` },
+            { name: 'Small Rental Flat', cost: 400000, income: 8000, type: 'real_estate', description: `Down payment on a small rental flat for ${formatCurrency(400000)}. Generates ${formatCurrency(8000)}/mo cash flow.` },
+            { name: 'Commercial Property', cost: 1000000, income: 25000, type: 'real_estate', description: `Invest in a commercial property for ${formatCurrency(1000000)}. It brings in ${formatCurrency(25000)}/mo.` },
+            { name: 'Start a Website', cost: 80000, income: 4000, type: 'business', description: `Start an online business for ${formatCurrency(80000)}. It brings in ${formatCurrency(4000)}/mo.` },
+            { name: 'Buy a Franchise', cost: 2000000, income: 50000, type: 'business', description: `Buy a local food franchise for ${formatCurrency(2000000)}. It earns ${formatCurrency(50000)}/mo.` }
+        ]);
+        marketCards = shuffle([
+            { text: `Stock market booms! You gain ${formatCurrency(80000)} if you have stock assets.`, action: (p) => { if(p.assets.some(a => a.type === 'paper')) { sounds.playDeal(); p.cash += 80000; logMessage(`${getPlayerSpan()}'s stocks paid off!`, 'success'); } }},
+            { text: `A real estate buyer wants one of your properties! Sell for a ${formatCurrency(400000)} profit.`, action: (p) => { const prop = p.assets.find(a => a.type === 'real_estate'); if(prop) { sounds.playDeal(); p.cash += 400000; p.passiveIncome -= prop.income; p.assets = p.assets.filter(a => a !== prop); logMessage(`Sold ${prop.name} for a profit!`, 'success'); } else { logMessage("No property to sell.", 'info'); } }},
+            { text: `Interest rates rise. Your credit card payments increase by ${formatCurrency(1600)}.`, action: (p) => { if (p.liabilities.creditCard > 0) { sounds.playDoodad(); p.expenses.creditCard += 1600; logMessage("Your credit card expenses increased.", 'danger'); } }},
+            { text: `New tenant needed for a rental. Pay ${formatCurrency(10000)} in repairs.`, action: (p) => { if(p.assets.some(a => a.type === 'real_estate')) { sounds.playDoodad(); p.cash -= 10000; logMessage(`Paid for rental repairs.`, 'danger'); } else { logMessage("No property to repair.", 'info'); } }},
+            { text: `Your business has a breakthrough! Passive income from it doubles.`, action: (p) => { const biz = p.assets.find(a => a.type === 'business'); if(biz) { sounds.playDeal(); p.passiveIncome += biz.income; biz.income *= 2; logMessage(`${biz.name} is booming!`, 'success'); } else { logMessage("No business to improve.", 'info'); } }},
+            { text: `Recession hits! If you have less than ${formatCurrency(50000)} cash, you are downsized.`, action: (p) => { if (gameState.marketCycle === 'Recession') { if(p.cash < 50000) { sounds.playFailure(); p.skipTurns = 2; logMessage(`${getPlayerSpan()} was downsized due to the recession!`, 'danger'); } } else { logMessage("Recession fears were overblown... for now.", 'info'); } }}
+        ]);
+        
+        init3D();
+        createBoards3D();
+        submitNameBtn.addEventListener('click', handleNameSubmission);
+        playerNameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleNameSubmission();
+        });
+        rollDiceBtn.addEventListener('click', rollDice);
+        payOffDebtsBtn.addEventListener('click', handlePayOffDebts);
+        takeLoanBtn.addEventListener('click', handleTakeLoan);
+        repayLoanBtn.addEventListener('click', handleRepayLoan);
+    }
+
+    init();
+</script>
+</body>
+</html>

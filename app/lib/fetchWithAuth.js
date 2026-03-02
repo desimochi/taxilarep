@@ -1,14 +1,15 @@
 import { getAccessToken, clearTokens } from "./auth";
+import { getCookie } from "./getCSRF";
 import { refreshAccessToken } from "./refreshToken";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export async function authFetch(endpoint, options = {}) {
   let token = getAccessToken();
-
-  const headers = {
-    "Content-Type": "application/json",
+const isFormData = options.body instanceof FormData;
+   const headers = {
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(isFormData ? {} : { "Content-Type": "application/json" }),
     ...options.headers,
   };
 

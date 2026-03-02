@@ -117,6 +117,7 @@ export default function AnswerDetails() {
         </div>
       </div>
       <div className="px-6 py-6">
+        <div className="overflow-x-auto shadow-md sm:rounded-lg">
         <table className="table-auto w-full border-collapse border border-gray-300 rounded-sm mt-4">
           <thead>
             <tr className="bg-black text-white">
@@ -173,6 +174,7 @@ export default function AnswerDetails() {
             )}
           </tbody>
         </table>
+        </div>
         <button
           className="bg-red-600 text-white py-2 px-8 rounded-sm mt-4 shadow-sm hover:shadow-xl transition-shadow"
           onClick={handleSubmit}

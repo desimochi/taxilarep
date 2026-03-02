@@ -2,62 +2,39 @@
 
 import { authFetch } from "@/app/lib/fetchWithAuth";
 import { useParams } from "next/navigation"
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { GlobalContext } from "@/components/GlobalContext";
-import { useContext } from "react";
 import FullWidthLoader from "@/components/Loaader";
 import Link from "next/link";
-export default function Page(){
-    const [loading, setLoading] = useState(false);
-    const{state} = useContext(GlobalContext)
-    const id  = state.user_id
-      const [error, setError] = useState(false);
-        const [sclass, setsclass] = useState([]);
-        const [atten, setatten] = useState([])
-        const [terms, setTerms] = useState([]);
-    const [subjectas, setSubjectas] = useState([]);
-    const [selectedTerm, setSelectedTerm] = useState('');
-    const [filteredSubjects, setFilteredSubjects] = useState([]);
-    const [selectedSubject, setSelectedSubject] = useState('');
-const [s_date, setStartDate] = useState('');
-const [e_date, setEndDate] = useState('');
+import { SearchIcon } from "lucide-react";
+import { set } from "date-fns";
+import { useStundentData } from "@/hooks/useStudentData";
+import StudentFilter from "@/components/student/Filter";
 
-    useEffect(() => {
-        
-    const fetchclassData = async () => {
+export default function Page() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+  const [attendanceData, setAttendanceData] = useState([]);
+  
+  
+  
+  const { state } = useContext(GlobalContext);
+  const id = state.user_id;
+
+  useEffect(() => {
+    const fetchClassData = async () => {
       try {
         setLoading(true);
-        const [response, response1] = await Promise.all([
-            await authFetch(`subject-student-wise/${id}`),
-            await authFetch(`attendance-summary-filter/${id}`)
+        const [response] = await Promise.all([
+          authFetch(`attendance-summary-filter/${id}`),
+        ]);
 
-        ])
-        if (!response.ok && !response1.ok) throw new Error("Failed to fethc the data");
+        if (!response.ok ) throw new Error("Failed to fetch the data");
 
         const data = await response.json();
-        const data2 = await response1.json()
-
-        setsclass(data.data);
-        setatten(data2.data)
-        const uniqueTerms = Array.from(
-            new Map(
-                data.data
-                    .filter(item => item.term)
-                    .map(item => [item.term.id, item.term])
-            ).values()
-        );
-        setTerms(uniqueTerms);
-        
-        // Get subjects
-        const mappedSubjects = data.data
-            .filter(item => item.term && item.subject)
-            .map(item => ({
-                termId: item.term.id,
-                subjectMappingId: item.id, // id is the subject_mapping id
-                subjectName: item.subject.name
-            }));
-        setSubjectas(mappedSubjects);
-        
+        setAttendanceData(data.data);
+        // Extract unique terms
+       
       } catch (err) {
         setError(err.message);
       } finally {
@@ -65,124 +42,93 @@ const [e_date, setEndDate] = useState('');
       }
     };
 
-    fetchclassData();
+    fetchClassData();
   }, [id]);
-  const handleTermChange = (e) => {
-    const termId = e.target.value;
-    setSelectedTerm(termId);
-    const filtered = subjectas.filter(sub => sub.termId.toString() === termId);
-    setFilteredSubjects(filtered);
-};
-const handleSubmit = async () => {
-    try {
-        setLoading(true);
 
-        // Build dynamic query
-        const params = new URLSearchParams();
-        if (selectedTerm) params.append('term', selectedTerm);
-        if (selectedSubject) params.append('mapping', selectedSubject);
-        if (s_date) params.append('s_date', s_date);
-        if (e_date) params.append('e_date', e_date);
+  const normalizedAtten = Array.isArray(attendanceData)
+    ? attendanceData
+    : attendanceData
+      ? [attendanceData]
+      : [];
 
-        const url = `attendance-summary-filter/${id}?${params.toString()}`;
+      const uniqueDates = [
+        ...new Set(
+          normalizedAtten.flatMap((item) =>
+            Array.isArray(item.attendance) ? item.attendance.map((att) => att.date) : []
+          )
+        )
+      ];
+      
 
-        const response = await authFetch(url);
-        if (!response.ok) throw new Error("Failed to fetch filtered data");
+      const subjects = normalizedAtten.map((item) => ({
+        name: item.subject_mapping?.subject?.name || "N/A",
+        type: item.subject_mapping?.type || "N/A",
+      }));
 
-        const data = await response.json();
-        setatten(data.data);
-    } catch (error) {
-        setError(error.message);
-    } finally {
-        setLoading(false);
-    }
-}
+  const percntage = normalizedAtten.map((item) => item.attended_percentage);
 
-
-
-    const uniqueDates = [...new Set(atten.flatMap((item) => item.attendance.map((att) => att.date)))];
-  const subjects = atten.map((item) => item.subject_mapping.subject.name);
-    return(
-        <div className="py-4 px-5">
-         
-            <div>
-            <div className="w-full">
-            <div className="border border-gray-300 rounded-xl mt-4 bg-gradient-to-bl from-gray-700 to-stone-900 text-white p-2 hover:shadow-xl transition-shadow  py-8 px-12">
-                <div className="flex justify-between items-center gap-2">
-                    <div className="w-2/6">
-                <h5 className="text-2xl font-bold">Student Attendance</h5>
-                <span className="text-sm text-gray-400">Taxila Business School</span>
-                </div>
-                <div className="w-1/5 ">
-            <select value={selectedTerm} onChange={handleTermChange} className=" w-full border border-gray-300 rounded-sm p-2 text-black">
-                <option value="">Select Term</option>
-                {terms.map(term => (
-                    <option key={term.id} value={term.id}>{term.name}</option>
-                ))}
-            </select>
+  return (
+    <div className="py-4 sm:px-5">
+      <div className="w-full">
+        <div className="mt-4 p-2 py-8 px-2 sm:px-12">
+          <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+            <div className="sm:w-2/6">
+              <h5 className="text-2xl font-bold">Student Attendance</h5>
+              <span className="text-sm text-gray-400">Taxila Business School</span>
             </div>
-            <div className="w-1/5 ">
-            <select onChange={(e) => setSelectedSubject(e.target.value)} disabled={!selectedTerm} className="w-full  border border-gray-300 rounded-sm p-2 text-black">
-                <option value="">Select Subject</option>
-                {filteredSubjects.map(sub => (
-                    <option key={sub.subjectMappingId} value={sub.subjectMappingId}>
-                        {sub.subjectName}
-                    </option>
-                ))}
-            </select>
+          </div>
+          <hr className="border border-b-2 mt-4" />
         </div>
-        <div className="w-1/5 ">
-            <input type="date" className="w-full  border border-gray-300 rounded-sm p-1 text-black" onChange={(e) => setStartDate(e.target.value)} />
-        </div>
-        <div className="w-1/5 ">
-            <input type="date" className="w-full  border border-gray-300 rounded-sm p-1 text-black" onChange={(e) => setEndDate(e.target.value)} />
-        </div>
-        <button className=" bg-green-600 text-white p-1.5 px-12 rounded-sm w-1/5" onClick={handleSubmit}>Submit</button>
-                </div>
-                </div>
-                
-            <div>
-            {loading? <FullWidthLoader/> :     <table className="w-full text-sm text-left text-gray-800 dark:text-gray-400 mt-4">
-                            <thead className="text-xs text-gray-100 uppercase bg-black dark:bg-gray-700 dark:text-gray-400">
-              <tr>
-                <th scope="col" className="px-6 py-3">Date</th>
-            {subjects.map((subject, index) => (
-              <th key={index} scope="col" className="px-6 py-3">{subject}</th>
-            ))}
-              </tr>
-            </thead>
-            <tbody>
-            {uniqueDates.map((date, index) => (
-            <tr key={index} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200">
-              <td className="px-6 py-4">{date}</td>
-              {atten.map((item, subIndex) => {
-                const attendanceRecord = item.attendance.find((att) => att.date === date);
-                const status = attendanceRecord ? attendanceRecord.status : "No Data";
-                
-                return (
-                  <td
-                    key={subIndex}
-                    className={`border border-gray-300 px-4 py-2 ${
-                      status === "Present"
-                        ? "bg-green-200"
-                        : status === "Class Not Scheduled"
-                        ? "bg-gray-100"
-                        : "bg-red-200"
-                    }`}
-                  >
-                    {status}
-                  </td>
-                );
-              })}
-            </tr>
-          ))}
-    
-            </tbody>
-                            </table>}
+
+        <StudentFilter id={id} searchapi="attendance-summary-filter" updateData ={setAttendanceData} />
+
+        <div className="px-2 sm:px-12">
+          {loading ? (
+            <FullWidthLoader />
+          ) : normalizedAtten.length === 0 ? (
+            <p className="text-center text-gray-500 mt-8">No attendance data found.</p>
+          ) : (
+            <div className="overflow-x-auto shadow-md sm:rounded-lg">
+            <table className="w-full text-sm text-left text-gray-800 dark:text-gray-400 mt-4">
+              <thead className="text-xs text-red-800 uppercase bg-red-50 dark:bg-gray-700 dark:text-gray-400">
+                <tr>
+                  <th scope="col" className="px-6 py-3">Date</th>
+                  {subjects.map((subject, index) => (
+                    <th key={index} scope="col" className="px-6 py-3">
+                      {subject.name} ({subject.type}) - {percntage[index]}%
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {uniqueDates.length>0 ? uniqueDates.map((date, index) => (
+                  <tr key={index} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200">
+                    <td className="px-6 py-4">{date}</td>
+                    {normalizedAtten.map((item, subIndex) => {
+                      const attendanceRecord = item.attendance.find((att) => att.date === date);
+                      const status = attendanceRecord ? attendanceRecord.status : "No Data";
+                      return (
+                        <td key={subIndex}>
+                          <span className={`border text-sm px-2 py-1 border-l-2 rounded-sm ${
+                            status === "Present"
+                              ? "bg-green-50 text-green-800"
+                              : status === "Class Not Scheduled"
+                              ? "bg-gray-50 text-gray-800"
+                              : "bg-red-50 text-red-800"
+                          }`}>
+                            {status}
+                          </span>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                )) :<tr><td colSpan={2} className="text-center py-3">No Data Available for Selected Filter Kindly Select Valid Values</td></tr>}
+              </tbody>
+            </table>
             </div>
+          )}
         </div>
-            </div>
-            </div>
-    
-    )
+      </div>
+    </div>
+  );
 }

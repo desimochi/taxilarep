@@ -4,58 +4,95 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import { authFetch } from "@/app/lib/fetchWithAuth";
+import { hasPermission } from "@/app/lib/checkPermission";
 import Toast from "@/components/Toast";
+import BackButton from "@/components/ui/Backbutton";
 
 export default function Page() {
     const { id } = useParams()
     const router = useRouter()
     const [students, setStudents] = useState([])
     const [loading, setLoading] = useState(false)
+    const [subName, setSubName] = useState("")
+    const [date, setDate] = useState("")
     const [message, setMessage] = useState('')
+    const [type, setType] = useState('')
     const [showToast, setShowToast] = useState(false)
     const [error, setError] = useState(false)
     const [search, setSearch] = useState("")
     const [presentStudents, setPresentStudents] = useState([])
-
+    const [studentData, setStudentData] = useState([]);
+    const [value, setValue] = useState('');
+    const [compfe, setcomfe]= useState(1)
+    const [isCEPresent, setIsCEPresent] = useState(false);
     useEffect(() => {
-        const fetchClassData = async () => {
+      
+        const fetchAllData = async () => {
             try {
-                setLoading(true)
-                const response = await authFetch(`mark-attendance/${id}`)
-                if (!response.ok) throw new Error("Failed to fetch student data")
-
-                const data = await response.json()
-                if(data.data)
-                setStudents(data.data)
-
-                // ✅ Set presentStudents state based on is_persent value
-                const initiallyPresent = data.data
-                    .filter(student => student.is_persent)
-                    .map(student => student.id)
-
-                setPresentStudents(initiallyPresent)
+                setLoading(true);
+    
+                // 1️⃣ Fetch class data
+                const response = await authFetch(`mark-attendance/${id}`);
+                if (!response.ok) throw new Error("Failed to fetch student data");
+    
+                const data = await response.json();
+    
+                setStudents(data.data?.students);
+                setSubName(data.data?.class_schedule?.mapping?.subject?.name);
+                setDate(data.data?.class_schedule?.date);
+                setType(data.data?.class_schedule?.mapping?.type);
+                const compfeId = data.data?.class_schedule?.mapping?.id;
+                setcomfe(compfeId);
+    
+                const initialData = data.data.students.map(student => ({
+                    id: student.id,
+                    is_persent: student.is_persent,
+                    ce_marks: student.ce_marks
+                }));
+                setStudentData(initialData);
+    
+                // 2️⃣ Fetch component data using compfeId
+                if (compfeId) {
+                    const compResponse = await authFetch(`component-subject-wise/${compfeId}`);
+                    if (!compResponse.ok) throw new Error("Failed to fetch CE data");
+    
+                    const compData = await compResponse.json();
+                    const ceExists = compData.data.some(item => item.name === 'Performance Score');
+                    setIsCEPresent(ceExists);
+                }
+    
             } catch (err) {
-                setError(err.message)
+                setError(err.message);
             } finally {
-                setLoading(false)
+                setLoading(false);
             }
-        }
+        };
+        const hasper = hasPermission(("66ce8b2aed943a2198a02e9bb3bd012df9c06b595593225e360cd15c55e67c55"))
+        if(!hasper){
 
-        fetchClassData()
-    }, [id])
+            
+         router.replace("/unauthorized")
+        } else{
+         fetchAllData();
+        }
+        
+    }, [id, router]);
+    
 
     const handleAttendanceChange = (studentId, isPresent) => {
-        if (isPresent) {
-            setPresentStudents(prev =>
-                prev.includes(studentId) ? prev : [...prev, studentId]
+        setStudentData(prev =>
+            prev.map(s =>
+                s.id === studentId ? { ...s, is_persent: isPresent } : s
             )
-        } else {
-            setPresentStudents(prev =>
-                prev.filter(id => id !== studentId)
+        );
+    };
+    const handleCeMarksChange = (studentId, marks) => {
+        setStudentData(prev =>
+            prev.map(s =>
+                s.id === studentId ? { ...s, ce_marks: marks } : s
             )
-        }
-    }
-
+        );
+    };
     const handleSubmit = async () => {
         try {
             const response = await authFetch(`mark-attendance/${id}`, {
@@ -64,7 +101,7 @@ export default function Page() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    present_students: presentStudents
+                    student_class_info: studentData
                 }),
             })
 
@@ -73,7 +110,8 @@ export default function Page() {
             setMessage("Attendance Marked Successfully")
             setShowToast(true)
         } catch (err) {
-            alert(err.message)
+            setMessage(err.message)
+            setShowToast(false)
         }
     }
     const filteredStudents = students.filter((student) => {
@@ -88,24 +126,33 @@ export default function Page() {
             lastName.includes(query)
         );
     });
+    
     return (
+        <>
         <section className="relative ">
             {showToast && <Toast message={message} />}
+            <div className="block sm:hidden">
+             <button
+  onClick={handleSubmit}
+  className="fixed bottom-0 z-50 w-full py-2 bg-red-600 text-white  shadow-lg hover:bg-red-700"
+>
+  Submit Attendance
+</button>
+</div>
         <div className="bg-violet-200 w-full sm:w-80 h-40 rounded-full absolute top-1 opacity-20 max-sm:left-0 sm:right-56 z-0"></div>
         <div className="bg-violet-300 w-full sm:w-40 h-24 absolute top-0 -right-0 opacity-20 z-0"></div>
         <div className="bg-violet-500 w-full sm:w-40 h-24 absolute top-40 -right-0 opacity-20 z-0"></div>
         <div className="w-full pt-4 relative z-10 backdrop-blur-3xl">
-        <div className="px-12 py-6">
-            <button 
-                onClick={() => router.back()} 
-                className="px-6 py-1 flex align-middle items-center gap-1 text-gray-600 text-sm rounded"
-            >
-                <ArrowLeft className='h-4 w-4' /> Back to List
-            </button>
-            <h1 className="text-3xl font-bold mb-2 font-sans px-6 mt-6">Class Attendance </h1>
+        <div className="sm:px-12 py-6">
+           <BackButton/>
+            <h1 className="text-2xl font-bold mb-2 font-sans px-6 mt-6">{subName} Class Attendance  - {date} -({type})</h1>
             <p className="text-sm text-gray-500 mb-8 px-6">Everyhting you need to know about Your Class Schedule</p>
             <hr className=" border  border-spacing-y-0.5 mb-6 px-6"/>
-            <input type="text" placeholder="search..."  className="p-2 mx-6 mb-6 border border-gray-300 rounded-sm text-gray-700"  value={search} onChange={(e) => setSearch(e.target.value)}/>
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-6 px-3">
+            <input type="text" placeholder="search..."  className="p-2 mx-6 border border-gray-300 rounded-sm text-gray-700"  value={search} onChange={(e) => setSearch(e.target.value)}/>
+           <button onClick={handleSubmit} className="hidden sm:block px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 mt-3 sm:mt-0" > Submit Attendance </button>
+            </div>
+           
             
             {/* Loading & Error Handling */}
             {loading && <p>Loading...</p>}
@@ -122,6 +169,9 @@ export default function Page() {
                                 <th scope="col" className="px-6 py-3">Enrollment No.</th>
                                 <th scope="col" className="px-6 py-3">Present</th>
                                 <th scope="col" className="px-6 py-3">Absent</th>
+                                
+                                {isCEPresent && <th scope="col" className="px-6 py-3">CE Marks</th>}
+                                <th scope="col" className="px-6 py-3">Leave Reason</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -141,9 +191,11 @@ export default function Page() {
                                                     type="radio"
                                                     name={`attendance-${student.id}`}
                                                     value="present"
-                                                    checked={presentStudents.includes(student.id)}
-                                                    onChange={() => handleAttendanceChange(student.id, true)}
-                                                    className="accent-green-800"
+                                                    checked={
+                                                        studentData.find((s) => s.id === student.id)?.is_persent === true
+                                                      }
+                                                      onChange={() => handleAttendanceChange(student.id, true)}
+                                                    className="accent-green-800 "
                                                 />
                                                 Present
                                             </label>
@@ -156,13 +208,39 @@ export default function Page() {
                                                     type="radio"
                                                     name={`attendance-${student.id}`}
                                                     value="absent"
-                                                    checked={!presentStudents.includes(student.id)}
-                                                    onChange={() => handleAttendanceChange(student.id, false)}
+                                                    checked={
+                                                        studentData.find((s) => s.id === student.id)?.is_persent === false
+                                                      }
+                                                      onChange={() => handleAttendanceChange(student.id, false)}
                                                     className="accent-red-800"
                                                 />
                                                 Absent
                                             </label>
                                         </div>
+                                    </td>
+                                    {isCEPresent && <td className="px-6 py-4">
+                                    <input
+      type="number"
+      step="0.5"
+      min="0"
+      max="5"
+      value={
+        studentData.find(s => s.id === student.id)?.ce_marks ?? ''
+    }
+    onChange={(e) => {
+        const marks = e.target.value;
+        if (marks === '' || (parseFloat(marks) <= 5 && (parseFloat(marks) * 10) % 5 === 0)) {
+            handleCeMarksChange(student.id, marks === '' ? '' : parseFloat(marks));
+        }
+    }}
+      className="border border-gray-500 px-3 py-2 rounded"
+      disabled ={
+        studentData.find((s) => s.id === student.id)?.is_persent === false
+      }
+    />
+                                    </td>}
+                                      <td className="px-6 py-4">
+                                        {`${student.leave_reason}`}
                                     </td>
                                 </tr>
                             ))}
@@ -172,16 +250,12 @@ export default function Page() {
             )}
 
             {/* Submit Button */}
-            <div className="flex mx-6">
-            <button
-                onClick={handleSubmit}
-                className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-            >
-                Submit Attendance
-            </button>
-            </div>
+            
         </div>
         </div>
+        
         </section>
+        
+        </>
     )
 }

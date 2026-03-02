@@ -78,7 +78,7 @@ export default function AddSubject() {
       <div className="w-full rounded-sm py-12">
         <div className="border border-gray-300 shadow-sm hover:shadow-md rounded-md">
           <h4 className="px-6 py-4 bg-gradient-to-bl font-bold from-gray-700 to-stone-900 text-white">
-            Add Main Exam Schedule
+            Add Subject
           </h4>
           <form className="py-5 px-5" onSubmit={handleSubmit}>
             <label className="font-bold flex justify-between"><p>Subject Name</p>{errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}</label>
@@ -91,8 +91,8 @@ export default function AddSubject() {
               className="bg-white border border-gray-300 text-gray-700 text-sm rounded-sm p-2.5 block w-full"
             />
 
-            <div className="flex gap-2 justify-between mb-4 mt-2">
-              <div className="w-1/3">
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 justify-between mb-4 mt-2">
+              <div className="">
               {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
                 <label className="font-bold">Subject Details</label>
                 <input
@@ -105,7 +105,7 @@ export default function AddSubject() {
                 />
               </div>
 
-              <div className="w-1/4">
+              <div className="">
               {errors.code && <p className="text-red-500 text-sm">{errors.code}</p>}
                 <label className="font-bold">Subject Code</label>
                 <input
@@ -118,7 +118,7 @@ export default function AddSubject() {
                 />
               </div>
 
-              <div className="w-1/4">
+              <div className="">
               {errors.type && <p className="text-red-500 text-sm">{errors.type}</p>}
                 <label className="font-bold">Subject Type</label>
                 <select
@@ -129,10 +129,11 @@ export default function AddSubject() {
                   <option value="">Select Subject Type</option>
                   <option value="Theory">Theory</option>
                   <option value="Practical">Practical</option>
+                  <option value="Internship">Internship</option>
                   </select>
               </div>
 
-              <div className="w-1/3">
+              <div className="">
               {errors.credit && <p className="text-red-500 text-sm">{errors.credit}</p>}
                 <label className="font-bold">Subject Credit</label>
                 <input

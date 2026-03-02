@@ -10,17 +10,17 @@ export async function refreshAccessToken() {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}refresh`, {
+    const response = await fetch(`${API_BASE_URL}token/refresh`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ refresh_token: refreshToken }),
+      body: JSON.stringify({ refresh : refreshToken }),
     });
 
     const data = await response.json();
 
-    if (response.ok && data.data?.access_token) {
-      saveTokens(data.data.access_token, refreshToken);
-      return data.data.access_token;
+    if (response.ok && data.access) {
+      saveTokens(data.access, refreshToken);
+      return data.access;
     } else {
       console.error("Failed to refresh token", data);
       clearTokens();
