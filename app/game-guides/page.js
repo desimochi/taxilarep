@@ -106,6 +106,11 @@ const PDFViewer = () => {
       name: 'STRATSIM Faculty guide',
       url: '/STRATSIM.docx', // File should be at public/manual.pdf
       description: 'Faculty Guide for STRATSIM '
+    },
+    {
+      name: 'Mirco Eco Faculty guide',
+      url: '/mircoECo.docx', // File should be at public/manual.pdf
+      description: 'Faculty Guide for MircoEco '
     }
   ];
 

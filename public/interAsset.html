@@ -1,0 +1,2850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INTER-ASSET CORRELATION</title>
+    <!-- Include Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --rbi-blue: #0A2540;
+            --rbi-gold: #C6A664;
+            --rbi-accent: #0077B6;
+            --bg-color: #F0F4F8;
+            --text-main: #2D3748;
+            --text-muted: #718096;
+            --card-bg: #FFFFFF;
+        }
+        
+        body {
+            /* Updated to compact fonts for analytical density */
+            font-family: 'Roboto Condensed', 'Arial Narrow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.5;
+            font-size: 15px;
+        }
+
+        /* View Management */
+        .view-section {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .view-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Welcome & Instruction Screens */
+        .center-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .auth-card, .instructions-card {
+            background: var(--card-bg);
+            padding: 50px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            border-top: 6px solid var(--rbi-gold);
+        }
+
+        .instructions-card {
+            max-width: 800px;
+            text-align: left;
+            padding: 40px;
+        }
+
+        .auth-card h1 {
+            color: var(--rbi-blue);
+            font-size: 2.2rem;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+        }
+
+        .tbs-branding {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 40px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .auth-card input {
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+            border: 2px solid #CBD5E0;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        .auth-card input:focus {
+            outline: none;
+            border-color: var(--rbi-blue);
+        }
+
+        /* Instruction Typography */
+        .instructions-card h2 {
+            color: var(--rbi-blue);
+            border-bottom: 2px solid var(--rbi-gold);
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        .instructions-card h3 {
+            color: var(--rbi-accent);
+            margin-top: 25px;
+            margin-bottom: 10px;
+        }
+        
+        .term-list {
+            background: #F7FAFC;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid var(--rbi-blue);
+        }
+
+        .term-list dt {
+            font-weight: bold;
+            color: var(--rbi-blue);
+            margin-top: 10px;
+        }
+        
+        .term-list dd {
+            margin-left: 0;
+            margin-bottom: 15px;
+            color: var(--text-muted);
+        }
+
+        /* Simulator Dashboard Styles */
+        .header {
+            background-color: var(--rbi-blue);
+            color: white;
+            padding: 30px 40px;
+            border-bottom: 5px solid var(--rbi-gold);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            margin: 0 0 5px 0;
+            font-size: 1.8rem;
+            letter-spacing: 0.5px;
+        }
+
+        .header p {
+            margin: 0;
+            color: #E2E8F0;
+            font-size: 1rem;
+            max-width: 800px;
+        }
+
+        .user-greeting {
+            background: rgba(255,255,255,0.1);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        /* Dashboard Tabs */
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            background: rgba(0,0,0,0.2);
+            padding: 5px;
+            border-radius: 8px;
+            display: inline-flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .nav-tab {
+            background: transparent;
+            color: #CBD5E0;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: auto;
+            box-shadow: none;
+        }
+
+        .nav-tab:hover {
+            background: rgba(255,255,255,0.1);
+            transform: none;
+            box-shadow: none;
+        }
+
+        .nav-tab.active {
+            background: var(--rbi-gold);
+            color: var(--rbi-blue);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            padding: 30px 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        @media (min-width: 900px) {
+            .container {
+                flex-direction: row;
+            }
+        }
+
+        .panel {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.1);
+            flex: 1;
+        }
+
+        .input-panel {
+            flex: 0 0 350px;
+        }
+
+        h2 {
+            color: var(--rbi-blue);
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-size: 1.4rem;
+            border-bottom: 2px solid var(--bg-color);
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--rbi-blue);
+        }
+
+        select, input[type="number"], input[type="date"], input[type="text"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #CBD5E0;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px;
+            background-color: #F7FAFC;
+            transition: border-color 0.2s;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--rbi-accent);
+            background-color: #FFF;
+        }
+
+        button.primary-btn {
+            background-color: var(--rbi-blue);
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(10, 37, 64, 0.2);
+        }
+
+        button.primary-btn:hover {
+            background-color: #0d3256;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 8px rgba(10, 37, 64, 0.3);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: var(--rbi-blue);
+            border: 2px solid var(--rbi-blue);
+            margin-top: 15px;
+            padding: 12px 20px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-outline:hover {
+            background-color: #F0F4F8;
+            color: #0d3256;
+        }
+
+        .disclaimer {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 25px;
+            padding: 15px;
+            background-color: #F7FAFC;
+            border-radius: 6px;
+            border-left: 3px solid var(--rbi-gold);
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            padding: 20px;
+            border-radius: 8px;
+            background: #F8FAFC;
+            border-left: 6px solid gray;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            transition: transform 0.2s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+        .card-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+
+        .positive { border-left-color: #38A169; }
+        .negative { border-left-color: #E53E3E; }
+        .neutral { border-left-color: #A0AEC0; }
+        
+        .pos-text { color: #38A169; }
+        .neg-text { color: #E53E3E; }
+        .neu-text { color: #4A5568; }
+
+        .value-display {
+            font-weight: 700;
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        .parity-note {
+            font-size: 0.85rem;
+            color: #4A5568;
+            background: #EDF2F7;
+            padding: 6px 10px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-top: 8px;
+            border: 1px dashed #CBD5E0;
+        }
+
+        .rationale-box {
+            background-color: #ebf8ff;
+            border: 1px solid #bee3f8;
+            padding: 20px;
+            border-radius: 8px;
+            color: #2b6cb0;
+        }
+
+        .rationale-box h3 {
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.1rem;
+        }
+        
+        .rationale-box p {
+            margin-bottom: 0;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* Chart Controls */
+        .chart-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            background: #F7FAFC;
+            padding: 15px;
+            border-radius: 8px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+        
+        .chart-controls .form-group {
+            margin-bottom: 0;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 500px;
+            width: 100%;
+        }
+
+        /* Sub-views for Dashboard */
+        .dash-section {
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        .dash-section.active {
+            display: flex;
+        }
+
+        /* Trading Terminal Styles */
+        .ticker-wrap {
+            width: 100%;
+            background-color: #1A202C;
+            padding: 10px 0;
+            overflow-x: auto;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .ticker-item {
+            display: inline-block;
+            padding: 0 20px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            font-family: 'Courier New', Courier, monospace;
+            border-right: 1px solid #4A5568;
+            transition: color 0.3s ease;
+        }
+
+        .tick-up { color: #48BB78; }
+        .tick-down { color: #F56565; }
+        .tick-neutral { color: #E2E8F0; }
+
+        .portfolio-metric {
+            background: #F7FAFC;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #E2E8F0;
+        }
+
+        .portfolio-metric .label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: bold;
+        }
+
+        .portfolio-metric .value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--rbi-blue);
+            margin-top: 5px;
+        }
+
+        .pnl-positive { color: #38A169 !important; }
+        .pnl-negative { color: #E53E3E !important; }
+
+        .btn-sell {
+            background-color: #E53E3E;
+        }
+        .btn-sell:hover {
+            background-color: #C53030;
+        }
+        .btn-buy {
+            background-color: #38A169;
+        }
+        .btn-buy:hover {
+            background-color: #2F855A;
+        }
+
+        /* Event & Evaluation Styles */
+        .event-toast {
+            background-color: #C53030;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(229, 62, 62, 0.3);
+            display: none;
+            animation: slideDown 0.4s ease-out;
+            border-left: 6px solid #742A2A;
+        }
+
+        .event-toast h3 { margin: 0 0 5px 0; display: flex; align-items: center; gap: 8px; font-size: 1.1rem; }
+        .event-toast p { margin: 0; font-size: 0.95rem; opacity: 0.9; }
+
+        .eval-modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(10, 37, 64, 0.95);
+            display: none;
+            justify-content: center;
+            align-items: flex-start;
+            z-index: 1000;
+            backdrop-filter: blur(8px);
+            overflow-y: auto;
+            padding: 40px 20px;
+            box-sizing: border-box;
+        }
+
+        .eval-content {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            max-width: 850px;
+            width: 100%;
+            text-align: left;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            border-top: 8px solid var(--rbi-gold);
+            margin-bottom: 40px;
+        }
+
+        .eval-header {
+            text-align: center;
+            border-bottom: 2px solid #E2E8F0;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+
+        .eval-score {
+            font-size: 4.5rem;
+            font-weight: bold;
+            color: var(--rbi-blue);
+            margin: 10px 0;
+            line-height: 1;
+        }
+
+        .eval-stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+            background: #F7FAFC;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #E2E8F0;
+        }
+
+        .analysis-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .analysis-box {
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #E2E8F0;
+        }
+        
+        .analysis-box h4 { margin-top: 0; display: flex; align-items: center; gap: 8px; }
+        .analysis-box ul { padding-left: 20px; margin-bottom: 0; color: var(--text-main); }
+        .analysis-box li { margin-bottom: 8px; }
+
+        .suggestions-box {
+            background: #ebf8ff;
+            border: 1px solid #bee3f8;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            color: #2b6cb0;
+        }
+
+        .cert-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .cert-btn {
+            background-color: #D69E2E;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+        .cert-btn:hover { background-color: #B7791F; }
+
+        .linkedin-btn {
+            background-color: #0077B5;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+        .linkedin-btn:hover { background-color: #005E93; }
+
+        .top-bar-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #E2E8F0;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            color: var(--rbi-blue);
+        }
+
+        /* History Table Styles */
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+            min-width: 800px;
+        }
+        
+        .history-table th {
+            padding: 12px 10px;
+            border-bottom: 2px solid #CBD5E0;
+            color: var(--rbi-blue);
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .history-table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #E2E8F0;
+            color: var(--text-main);
+        }
+        
+        .history-table tr:hover td {
+            background-color: #F7FAFC;
+        }
+
+        /* Processing Overlay Styles */
+        .processing-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(10, 37, 64, 0.9);
+            z-index: 9999;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            backdrop-filter: blur(8px);
+        }
+        
+        .processing-box {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 12px;
+            text-align: center;
+            width: 400px;
+            max-width: 90%;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            border-top: 6px solid var(--rbi-gold);
+        }
+        
+        .processing-text {
+            color: var(--rbi-blue);
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            letter-spacing: 0.5px;
+        }
+        
+        .progress-bar-container {
+            width: 100%;
+            background: #E2E8F0;
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+        }
+        
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--rbi-accent);
+            width: 0%;
+            /* Transition is handled via JS dynamically */
+        }
+
+        /* --- MOBILE & RESPONSIVE OVERRIDES --- */
+        @media (max-width: 768px) {
+            .header { padding: 20px; }
+            .header h1 { font-size: 1.4rem; }
+            .header-top { flex-direction: column; align-items: flex-start; gap: 15px; }
+            .header-top > div[style*="display: flex"] { width: 100%; justify-content: space-between; flex-wrap: wrap; }
+            .container { padding: 15px; gap: 15px; }
+            .panel { padding: 20px 15px; }
+            .input-panel { flex: 1 1 100%; width: 100%; }
+            
+            /* Chart controls responsive */
+            .chart-controls { flex-direction: column; align-items: stretch; gap: 15px; }
+            .chart-controls > .form-group { width: 100%; min-width: 100%; flex-direction: column !important; }
+            .chart-controls > div[style*="flex: 1.5"] { padding-left: 0 !important; border-left: none !important; margin-top: 10px; padding-top: 15px; border-top: 1px solid #CBD5E0; }
+            .chart-controls [style*="display: flex"] { flex-direction: column; gap: 10px; }
+            
+            /* Terminal layout */
+            .top-bar-info { flex-direction: column; align-items: stretch; gap: 12px; }
+            .top-bar-info button { width: 100%; padding: 12px; }
+            #dash-trading > div[style*="display: flex; flex-wrap: wrap"] { flex-direction: column; }
+            
+            /* Modals & Forms */
+            .eval-modal { padding: 20px 15px; }
+            .eval-content { padding: 25px 20px; margin-top: 10px; margin-bottom: 20px; }
+            .eval-score { font-size: 3.5rem; }
+            .analysis-section { grid-template-columns: 1fr; }
+            .cert-actions { flex-direction: column; gap: 10px; }
+            .cert-btn, .linkedin-btn { width: 100%; justify-content: center; font-size: 1rem; }
+            
+            .auth-card { padding: 30px 20px; }
+            .instructions-card { padding: 30px 20px; }
+            .processing-box { width: 90%; padding: 25px 20px; }
+            
+            /* Order terminal stack */
+            #orderFormBuy > .form-group[style*="display: flex"] { flex-direction: column; gap: 10px; }
+        }
+
+        @media (max-width: 480px) {
+            .eval-stat-grid { grid-template-columns: 1fr; gap: 10px; }
+            .result-grid { grid-template-columns: 1fr; }
+            #baseValuesForm { grid-template-columns: 1fr !important; }
+            .nav-tab { width: 100%; border-radius: 4px; padding: 12px 10px; }
+            .chart-container { height: 350px; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Processing Overlay -->
+    <div id="processingOverlay" class="processing-overlay">
+        <div class="processing-box">
+            <div id="processingText" class="processing-text">Processing...</div>
+            <div class="progress-bar-container">
+                <div id="progressBarFill" class="progress-bar-fill"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCREEN 1: Welcome Page -->
+    <div id="view-welcome" class="view-section active">
+        <div class="center-container">
+            <div class="auth-card">
+                <h1>INTER-ASSET CORRELATION</h1>
+                <div class="tbs-branding">Created at Taxila Business School</div>
+                
+                <p style="color: var(--text-muted); margin-bottom: 20px;">Enter your name to begin the macro simulation module.</p>
+                <input type="text" id="playerNameInput" placeholder="Officer / Student Name" onkeypress="handleKeyPress(event)">
+                
+                <div style="display: flex; flex-direction: column; gap: 15px;">
+                    <button class="primary-btn" onclick="validateAndProceed()">New Simulation</button>
+                    
+                    <!-- Appears automatically if cloud save is found -->
+                    <div id="resumeContainer" style="display: none; border-top: 1px solid #CBD5E0; padding-top: 15px; animation: fadeIn 0.5s ease-in-out;">
+                        <p style="font-size: 0.85rem; color: #38A169; font-weight: bold; margin-top: 0; margin-bottom: 10px;">Cloud Save Located.</p>
+                        <button class="btn-outline" style="margin-top: 0;" onclick="resumeSession()">Resume Previous Session</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCREEN 2: Instructions Page -->
+    <div id="view-instructions" class="view-section">
+        <div class="center-container" style="align-items: flex-start; padding-top: 50px;">
+            <div class="instructions-card">
+                <h2>Simulation Briefing</h2>
+                
+                <h3>Objective</h3>
+                <p>
+                    The modern global economy is deeply intertwined. The objective of this simulation is to help policymakers and analysts predict the cascading effects of a localized economic "shock." By observing how changes in one primary asset impact others, you will develop a rigorous understanding of macroeconomic elasticities, import inflation, and currency dynamics.
+                </p>
+
+                <h3>How to Play</h3>
+                <ol>
+                    <li><strong>Shock Simulator:</strong> Select an asset, apply a % shock, and observe the deterministic impact on India's economy based on historical betas.</li>
+                    <li><strong>Historical Analysis:</strong> Navigate to the Historical Data tab to cross-reference actual macro data from the last 3 years to visually prove these correlations.</li>
+                    <li><strong>Live Exchange:</strong> Trade the Live MCX simulator. Understand Margin limits (MIS vs NRML), set Stop Losses, and manage your portfolio through surprise geopolitical events.</li>
+                </ol>
+
+                <h3>Glossary of Terms</h3>
+                <dl class="term-list">
+                    <dt>US Dollar Index (DXY)</dt>
+                    <dd>A measure of the value of the U.S. dollar relative to a basket of foreign currencies. A strong DXY often pulls capital out of emerging markets.</dd>
+                    
+                    <dt>Crude Oil (Brent)</dt>
+                    <dd>The global benchmark for oil prices. Highly critical for India, as it imports ~85% of its crude, directly impacting the Current Account Deficit (CAD).</dd>
+                    
+                    <dt>USD/INR Exchange Rate</dt>
+                    <dd>The amount of Indian Rupees required to buy one US Dollar. When this rate goes up, the Rupee is depreciating (weakening).</dd>
+                    
+                    <dt>Intraday (MIS) vs Normal (NRML)</dt>
+                    <dd>MIS provides 5x leverage but the order is automatically squared off at 11:30 PM real-world time. NRML requires full capital but can be held overnight.</dd>
+                </dl>
+
+                <div style="display: flex; gap: 15px; margin-top: 30px;">
+                    <button class="btn-outline" onclick="goToWelcome()">Back</button>
+                    <button class="primary-btn" onclick="withProcessingDelay(goToSimulator, 'Loading Terminal Modules...')">Initialize Dashboard</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCREEN 3: Dashboard -->
+    <div id="view-dashboard" class="view-section">
+        <div class="header">
+            <div class="header-top">
+                <div>
+                    <h1>Department of Economic and Policy Research (DEPR)</h1>
+                    <p style="display: flex; align-items: center;">
+                        INTER-ASSET CORRELATION & HISTORICAL ANALYSIS 
+                        <span id="scenarioDisplay" style="background: var(--rbi-gold); color: var(--rbi-blue); font-size: 0.75rem; font-weight: bold; padding: 2px 8px; border-radius: 12px; margin-left: 15px;">Scenario #--</span>
+                    </p>
+                </div>
+                <div style="display: flex; gap: 15px; align-items: center;">
+                    <div class="user-greeting" id="displayPlayerName">Welcome, Analyst</div>
+                    <button onclick="openHelpModal()" class="btn-outline" style="margin: 0; padding: 6px 12px; font-size: 0.9rem; color: white; border-color: rgba(255,255,255,0.5); background: transparent;">❓ Help & Strategy</button>
+                </div>
+            </div>
+            
+            <div class="nav-tabs">
+                <button class="nav-tab active" id="tab-simulator" onclick="switchDashTab('simulator')">Deterministic Shock Simulator</button>
+                <button class="nav-tab" id="tab-historical" onclick="switchDashTab('historical')">Real Historical Data (3Y)</button>
+                <button class="nav-tab" id="tab-trading" onclick="switchDashTab('trading')">Live Exchange (MCX)</button>
+            </div>
+        </div>
+
+        <!-- DASHBOARD SUB-VIEW A: Shock Simulator -->
+        <div class="container dash-section active" id="dash-simulator">
+            <!-- Input Panel -->
+            <div class="panel input-panel">
+                <h2>Shock Parameters</h2>
+                <div class="form-group">
+                    <label for="primaryAsset">Select Primary Vector:</label>
+                    <select id="primaryAsset">
+                        <option value="usd">US Dollar Index (DXY)</option>
+                        <option value="oil">Crude Oil (Brent)</option>
+                        <option value="inr">USD/INR Exchange Rate</option>
+                        <option value="gold">Gold (₹/10g)</option>
+                        <option value="silver">Silver (₹/Kg)</option>
+                        <option value="nifty">Indian Equities (Nifty 50)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="shockValue">Magnitude (% Delta):</label>
+                    <input type="number" id="shockValue" value="5" step="0.1">
+                </div>
+                <button class="primary-btn" onclick="withProcessingDelay(runSimulation, 'Computing Deterministic Matrix...')">Execute Simulation</button>
+                
+                <div class="disclaimer">
+                    <b>Methodology Note:</b><br>
+                    Coefficients represent empirical betas relative to a 1% shift in the primary vector. Domestic commodity values compound the USD/INR depreciation logic (Import Parity).
+                </div>
+                
+                <button class="btn-outline" onclick="goToInstructions()" style="margin-top: 20px; font-size: 0.9rem; padding: 10px;">Review Briefing</button>
+                
+                <hr style="border: 0; border-top: 1px solid #CBD5E0; margin: 25px 0;">
+                
+                <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                    <h3 style="color: var(--rbi-blue); margin-top: 0; margin-bottom: 5px; font-size: 1.1rem;">Base Market Values</h3>
+                    <span id="liveDataStatus" style="font-size: 0.75rem; color: #D69E2E; font-weight: bold;">Synchronizing...</span>
+                </div>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0;">Anchored to Yesterday's Close.</p>
+                <div id="baseValuesForm" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <!-- inputs injected by JS -->
+                </div>
+            </div>
+
+            <!-- Output Panel -->
+            <div class="panel">
+                <h2>Systemic Impact Projection</h2>
+                <div class="result-grid" id="results">
+                    <!-- Results populated via JS -->
+                </div>
+                
+                <div class="rationale-box" id="rationaleBox">
+                    <h3>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                        Macroeconomic Rationale
+                    </h3>
+                    <p id="rationaleText">Select a vector and run the simulation to view the economic mechanisms driving these projections.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- DASHBOARD SUB-VIEW B: Historical Charts -->
+        <div class="container dash-section" id="dash-historical" style="flex-direction: column;">
+            <div class="panel">
+                <h2>Historical Correlation Analysis (2023 - 2026)</h2>
+                <p style="color: var(--text-muted); margin-top: -15px; margin-bottom: 20px;">
+                    Analyze synthesized macro datasets structurally representative of the last 36 months to verify real-world elasticities.
+                </p>
+                
+                <div class="chart-controls">
+                    <div class="form-group" style="flex: 0 0 100%; display: flex; gap: 15px; margin-bottom: 10px; background: #EDF2F7; padding: 10px; border-radius: 6px; border: 1px solid #CBD5E0; align-items: center;">
+                        <div style="flex: 1;">
+                            <label style="font-size: 0.85rem;">Date From:</label>
+                            <input type="date" id="startDate" value="2023-01-01" min="2023-01-01" max="2028-12-31" style="padding: 8px;" onchange="document.getElementById('chartTimeframe').value='daily'; updateChart()">
+                        </div>
+                        <div style="flex: 1;">
+                            <label style="font-size: 0.85rem;">Date To:</label>
+                            <input type="date" id="endDate" value="2028-12-31" min="2023-01-01" max="2028-12-31" style="padding: 8px;" onchange="document.getElementById('chartTimeframe').value='daily'; updateChart()">
+                        </div>
+                        <div style="flex: 1.5; padding-left: 15px; border-left: 2px solid #CBD5E0;">
+                            <label style="font-size: 0.85rem; color: var(--rbi-blue);">Forward Projection:</label>
+                            <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; cursor: pointer; margin-top: 5px;">
+                                <input type="checkbox" id="enableProjection" onchange="toggleProjection()" style="width: auto; margin: 0; transform: scale(1.2);">
+                                Include 3-Yr Forecast (7% GDP)
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Timeframe:</label>
+                        <select id="chartTimeframe" onchange="updateChart()">
+                            <option value="daily">Day-wise</option>
+                            <option value="weekly">Week-wise</option>
+                            <option value="monthly" selected>Month-wise</option>
+                            <option value="yearly">Year-wise</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Axis 1 (Left Y-Axis):</label>
+                        <select id="chartAsset1" onchange="updateChart()">
+                            <option value="usd">US Dollar Index (DXY)</option>
+                            <option value="oil">Crude Oil (Brent)</option>
+                            <option value="inr" selected>USD/INR Exchange Rate</option>
+                            <option value="gold">Gold (₹/10g)</option>
+                            <option value="silver">Silver (₹/Kg)</option>
+                            <option value="nifty">Indian Equities (Nifty 50)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Axis 2 (Right Y-Axis):</label>
+                        <select id="chartAsset2" onchange="updateChart()">
+                            <option value="usd" selected>US Dollar Index (DXY)</option>
+                            <option value="oil">Crude Oil (Brent)</option>
+                            <option value="inr">USD/INR Exchange Rate</option>
+                            <option value="gold">Gold (₹/10g)</option>
+                            <option value="silver">Silver (₹/Kg)</option>
+                            <option value="nifty">Indian Equities (Nifty 50)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="correlationChart"></canvas>
+                </div>
+                
+                <div class="disclaimer" style="margin-top: 20px; border-left-color: var(--rbi-blue);">
+                    <b>Analyst Insight:</b> Use the dropdowns to test theories. For example, plot <b>Crude Oil</b> against <b>USD/INR</b> to observe how global oil price spikes lead to Rupee depreciation due to expanding current account deficits.
+                </div>
+            </div>
+        </div>
+
+        <!-- DASHBOARD SUB-VIEW C: Trading Terminal -->
+        <div class="container dash-section" id="dash-trading" style="flex-direction: column;">
+            
+            <div class="top-bar-info">
+                <div>📅 Simulated Date: <span id="simDateDisplay" style="color: #2D3748;">Syncing...</span></div>
+                <div>⏳ Days Elapsed: <span id="daysElapsedDisplay" style="color: #2D3748;">0</span></div>
+                <div style="display: flex; align-items: center;">
+                    🎯 Live Score: <span id="liveScoreDisplay" style="color: #2D3748; font-weight: bold; margin-left: 5px;">0 <span style="font-size: 0.8em; color: var(--text-muted);">(Proj: 50)</span></span>
+                    <span id="dbStatus" style="font-size: 0.75rem; color: #A0AEC0; font-weight: normal; margin-left: 15px; min-width: 80px; text-align: right;"></span>
+                </div>
+                <button onclick="withProcessingDelay(evaluatePlayer, 'Compiling Audit Report...')" style="background: #E53E3E; width: auto; padding: 6px 15px; font-size: 0.9rem; box-shadow: none; color: white; border: none; border-radius: 4px; cursor: pointer;">End & Evaluate</button>
+            </div>
+
+            <!-- Market Research News Panel -->
+            <div class="panel" style="width: 100%; margin-bottom: 20px; border-left: 6px solid var(--rbi-accent); padding: 20px 30px;">
+                <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px;">
+                    <h2 style="margin-bottom: 0; font-size: 1.2rem;">DEPR Market Intelligence Desk</h2>
+                    <span style="background: var(--rbi-blue); color: white; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: bold;" id="newsTimeframe">Next 7 Days</span>
+                </div>
+                <h3 id="newsHeadline" style="color: #C53030; margin-top: 0; margin-bottom: 8px; font-size: 1.1rem;">Loading Daily Intelligence...</h3>
+                <p id="newsExplanation" style="font-size: 0.95rem; color: var(--text-muted); margin-bottom: 15px;"></p>
+                
+                <div style="background: #F7FAFC; padding: 15px; border-radius: 8px; border: 1px solid #E2E8F0;">
+                    <div style="font-weight: 600; margin-bottom: 10px; font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase;">Deterministic Simulator Projections (Net India Impact)</div>
+                    <div id="newsImpactGrid" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <!-- Projected impacts injected here via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <div id="eventNotification" class="event-toast">
+                <h3>⚠️ BREAKING MACRO EVENT</h3>
+                <p id="eventText">Event description goes here.</p>
+            </div>
+
+            <div class="ticker-wrap" id="liveTicker">
+                <!-- Ticker items injected via JS -->
+            </div>
+
+            <div style="display: flex; flex-wrap: wrap; gap: 25px; width: 100%;">
+                
+                <!-- Portfolio Panel -->
+                <div class="panel" style="flex: 1; min-width: 300px;">
+                    <h2>Trading Account</h2>
+                    <div class="portfolio-metric">
+                        <div class="label">Total Net Worth</div>
+                        <div class="value" id="portTotal">₹ 1,00,000.00</div>
+                    </div>
+                    <div class="portfolio-metric">
+                        <div class="label">Available Cash</div>
+                        <div class="value" id="portCash" style="font-size: 1.4rem;">₹ 1,00,000.00</div>
+                    </div>
+                    
+                    <h3 style="margin-top: 30px; font-size: 1.1rem; color: var(--rbi-blue); border-bottom: 2px solid #E2E8F0; padding-bottom: 5px;">Active Position</h3>
+                    <div id="activePositionView">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Order Execution Panel -->
+                <div class="panel" style="flex: 1; min-width: 300px;">
+                    <h2>Order Terminal</h2>
+                    <div class="disclaimer" style="margin-top: 0; margin-bottom: 20px;">
+                        <b>Rule:</b> Only one active position permitted at a time. Intraday (MIS) auto-squares off at 11:30 PM real-world time.
+                    </div>
+
+                    <div id="orderFormBuy">
+                        <div class="form-group" style="display: flex; gap: 10px; margin-top: 10px;">
+                            <div style="flex: 1;">
+                                <label>Order Type:</label>
+                                <select id="tradeType" onchange="updateTradeEst()">
+                                    <option value="NRML">Normal (1x Margin)</option>
+                                    <option value="MIS">Intraday MIS (5x Margin)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Select Asset to Buy:</label>
+                            <select id="tradeAsset" onchange="updateTradeEst()">
+                                <option value="gold">Gold (₹/10g)</option>
+                                <option value="silver">Silver (₹/Kg)</option>
+                                <option value="oil">Crude Oil (Brent)</option>
+                                <option value="usd">US Dollar Index (DXY)</option>
+                                <option value="inr">USD/INR Exchange Rate</option>
+                                <option value="nifty">Indian Equities (Nifty 50)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" style="display: flex; gap: 10px; margin-top: 10px;">
+                            <div style="flex: 1;">
+                                <label>Target (Take Profit):</label>
+                                <input type="number" id="tradeTP" placeholder="Optional" step="any" style="font-size: 0.9rem;">
+                            </div>
+                            <div style="flex: 1;">
+                                <label>Stop Loss (SL):</label>
+                                <input type="number" id="tradeSL" placeholder="Optional" step="any" style="font-size: 0.9rem;">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Total Trade Value / Exposure (₹):</label>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="number" id="tradeAmount" value="100000" step="100" oninput="updateTradeEst()" style="flex: 1;">
+                                <button onclick="setMaxCash()" class="btn-outline" style="margin-top: 0; width: auto; padding: 0 15px;">Max</button>
+                            </div>
+                            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 8px; line-height: 1.4;" id="tradeEst">
+                                Est. Quantity: 0.00
+                            </div>
+                        </div>
+                        <button class="primary-btn btn-buy" onclick="withProcessingDelay(executeBuy, 'Routing Order to Exchange...')">EXECUTE BUY ORDER</button>
+                    </div>
+
+                    <div id="orderFormSell" style="display: none; background: #FFF5F5; border: 1px solid #FEB2B2; padding: 20px; border-radius: 8px;">
+                        <h3 style="color: #C53030; margin-top: 0;">Close Open Position</h3>
+                        <p style="font-size: 0.95rem; color: #4A5568;">You must sell your current active position to unlock funds for new trades.</p>
+                        
+                        <div id="activePositionTargets" style="font-size: 0.85rem; color: #742A2A; margin-bottom: 15px; background: #FED7D7; padding: 10px; border-radius: 6px; display: none;">
+                            <!-- Populated if SL/TP exist -->
+                        </div>
+
+                        <button class="primary-btn btn-sell" onclick="withProcessingDelay(() => executeSell('Manual Order'), 'Executing Market Sell...')">SELL AT MARKET PRICE</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Transaction History Panel -->
+            <div class="panel" style="width: 100%; box-sizing: border-box; overflow-x: auto;">
+                <h2 style="margin-bottom: 15px;">Transaction History & Portfolio Log</h2>
+                <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">
+                    * All transactions are subject to a standard 0.002% MCX exchange fee on total exposure.
+                </div>
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Action & Note</th>
+                            <th>Asset</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                            <th>Fee (0.002%)</th>
+                            <th>Net Flow</th>
+                            <th>Realized P&L</th>
+                            <th>Cumulative Net P/L</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody">
+                        <tr><td colspan="9" style="text-align: center; padding: 30px; color: var(--text-muted); font-style: italic;">No transactions recorded yet.</td></tr>
+                    </tbody>
+                    <tfoot id="historyTableFoot">
+                        <!-- Populated by JS -->
+                    </tfoot>
+                </table>
+            </div>
+            
+        </div>
+
+    </div>
+
+    <!-- Evaluation Modal -->
+    <div id="evaluationModal" class="eval-modal">
+        <div class="eval-content">
+            <div class="eval-header">
+                <div style="color: var(--text-muted); font-size: 1.2rem; font-weight: bold; text-transform: uppercase; letter-spacing: 2px;">Taxila Business School</div>
+                <div style="color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px;">Department of Economic and Policy Research</div>
+                <h2 style="margin: 15px 0 10px 0; color: var(--text-main); font-size: 2rem;">Comprehensive Analytical Report</h2>
+                <div style="color: var(--text-muted); font-size: 1.1rem;">Candidate: <span id="evalPlayerName" style="font-weight: bold; color: var(--rbi-blue);"></span></div>
+                <div style="color: var(--text-muted); font-size: 0.9rem; margin-top: 5px;">Generated on: <span id="evalDateTime" style="font-weight: 500;"></span></div>
+                <div class="eval-score" id="evalScore">0 / 100</div>
+                <div style="font-weight: bold; color: var(--rbi-accent);" id="evalTier">EVALUATION TIER</div>
+            </div>
+            
+            <div class="eval-stat-grid">
+                <div>
+                    <div style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; font-weight: bold;">Initial Capital</div>
+                    <div style="font-weight: bold; font-size: 1.2rem; color: var(--text-main);">₹ 1,00,000.00</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; font-weight: bold;">Final Net Worth</div>
+                    <div style="font-weight: bold; font-size: 1.2rem; color: var(--rbi-blue);" id="evalNetWorth">₹ 0.00</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; font-weight: bold;">Net ROI</div>
+                    <div style="font-weight: bold; font-size: 1.2rem;" id="evalROI">0.00%</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; font-weight: bold;">Days Survived</div>
+                    <div style="font-weight: bold; font-size: 1.2rem; color: var(--text-main);" id="evalDays">0</div>
+                </div>
+            </div>
+
+            <div class="analysis-section">
+                <div class="analysis-box" style="background: #F0FFF4; border-color: #C6F6D5;">
+                    <h4 style="color: #2F855A;">🟢 Areas of Excellence</h4>
+                    <ul id="evalWell">
+                        <li>Processing data...</li>
+                    </ul>
+                </div>
+                <div class="analysis-box" style="background: #FFF5F5; border-color: #FED7D7;">
+                    <h4 style="color: #C53030;">🔴 Critical Misses</h4>
+                    <ul id="evalMissed">
+                        <li>Processing data...</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="suggestions-box">
+                <h4 style="margin-top: 0; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                    Strategic Recommendations
+                </h4>
+                <div id="evalRemarks" style="line-height: 1.6;">
+                    Remarks here.
+                </div>
+            </div>
+
+            <div class="cert-actions">
+                <button class="cert-btn" onclick="withProcessingDelay(downloadCertificate, 'Rendering Encrypted Certificate...')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    Download Official Certificate
+                </button>
+                <button class="linkedin-btn" onclick="shareOnLinkedIn()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+                    Share on LinkedIn
+                </button>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn-outline" style="width: auto;" onclick="location.reload()">Restart Terminal Configuration</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help & Strategy Modal -->
+    <div id="helpModal" class="eval-modal">
+        <div class="eval-content" style="max-height: 90vh; overflow-y: auto; position: relative;">
+            <button onclick="closeHelpModal()" style="position: absolute; top: 20px; right: 20px; background: #F7FAFC; border: 1px solid #CBD5E0; border-radius: 50%; width: 35px; height: 35px; font-size: 1rem; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; justify-content: center;">✖</button>
+            
+            <h2 style="color: var(--rbi-blue); margin-top: 0; border-bottom: 2px solid var(--rbi-gold); padding-bottom: 10px;">Trading Guidelines & Winning Strategy</h2>
+            
+            <div style="margin-bottom: 20px;">
+                <h3 style="color: var(--rbi-accent); margin-bottom: 8px;">1. The Core Objective</h3>
+                <p style="margin: 0; color: var(--text-main);">To score points, you must survive for a minimum of <strong>30 simulated days</strong> and outperform the market. The scoring is brutally exponential: achieving a score of 70 requires ~35% ROI, 80 requires ~65% ROI, and 90+ requires an elite ~110% ROI. A 25% portfolio loss instantly drops your score to 0.</p>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <h3 style="color: var(--rbi-accent); margin-bottom: 8px;">2. The Winning Formula (How to Win)</h3>
+                <ul style="color: var(--text-main); padding-left: 20px; margin: 0;">
+                    <li style="margin-bottom: 8px;"><strong>Read the DEPR Intelligence Desk:</strong> The daily briefing predicts the immediate future. If it says Oil is expected to drop 5%, you must understand the ripple effects immediately.</li>
+                    <li style="margin-bottom: 8px;"><strong>Utilize Leverage (MIS) Wisely:</strong> Intraday (MIS) orders give you 5x margin. A 2% market move becomes a 10% portfolio gain. To reach a score of 80+, you <em>must</em> utilize MIS during high-conviction macroeconomic events.</li>
+                    <li style="margin-bottom: 8px;"><strong>Always Use Stop Losses:</strong> Because MIS amplifies losses 5x, a sudden geopolitical shock can wipe you out in seconds. Always set a Stop Loss (SL) to protect your capital.</li>
+                </ul>
+            </div>
+
+            <div style="margin-bottom: 20px; background: #F7FAFC; padding: 15px; border-radius: 8px; border-left: 4px solid var(--rbi-blue);">
+                <h3 style="color: var(--rbi-blue); margin-top: 0; margin-bottom: 10px;">3. The Macro Matrix (Cheat Sheet)</h3>
+                <p style="font-size: 0.9rem; margin-bottom: 10px; color: var(--text-muted);">Use these established elasticities to predict secondary asset movements:</p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.95rem;">
+                    <div>📈 <strong>DXY (USD) Goes UP:</strong></div>
+                    <div>➡️ Gold & Silver Drop, INR Weakens, Nifty Drops</div>
+                    
+                    <div>📈 <strong>Crude Oil Goes UP:</strong></div>
+                    <div>➡️ INR Weakens (CAD expands), Nifty Drops</div>
+                    
+                    <div>📉 <strong>Nifty Goes UP:</strong></div>
+                    <div>➡️ INR Strengthens (FDI inflows)</div>
+                    
+                    <div>⚠️ <strong>War/Risk-Off Event:</strong></div>
+                    <div>➡️ Gold Surges, DXY Surges, Nifty Crashes</div>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <h3 style="color: var(--rbi-accent); margin-bottom: 8px;">4. Import Parity Rule (Crucial)</h3>
+                <p style="margin: 0; color: var(--text-main);">Gold and Silver are priced internationally in USD, but you are trading them in INR. If global Gold drops 2%, but the Rupee depreciates against the Dollar by 2% at the same time, the domestic price of Gold in India will remain <strong>flat</strong>. Trade the <em>Net India Impact</em>, not just the global headline.</p>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="primary-btn" style="width: auto; padding: 10px 30px;" onclick="closeHelpModal()">Acknowledge & Return to Terminal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Canvas for Certificate Generation -->
+    <canvas id="certCanvas" width="1200" height="848" style="display:none;"></canvas>
+
+    <script>
+        // --- System UI / Processing Engine ---
+        let processingAudioCtx;
+        
+        function openHelpModal() {
+            document.getElementById('helpModal').style.display = 'flex';
+        }
+        
+        function closeHelpModal() {
+            document.getElementById('helpModal').style.display = 'none';
+        }
+
+        function playProcessingSound() {
+            try {
+                if (!processingAudioCtx) {
+                    processingAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (processingAudioCtx.state === 'suspended') {
+                    processingAudioCtx.resume();
+                }
+
+                const osc = processingAudioCtx.createOscillator();
+                const gainNode = processingAudioCtx.createGain();
+
+                osc.type = 'square';
+                osc.connect(gainNode);
+                gainNode.connect(processingAudioCtx.destination);
+
+                const now = processingAudioCtx.currentTime;
+                
+                // Synthesize a high-tech "processing data" sound (rapid blips)
+                for (let i = 0; i < 30; i++) {
+                    let time = now + (i * 0.1);
+                    osc.frequency.setValueAtTime(600 + Math.random() * 600, time);
+                    gainNode.gain.setValueAtTime(0.03, time); // Low volume so it's not annoying
+                    gainNode.gain.exponentialRampToValueAtTime(0.0001, time + 0.05);
+                }
+
+                osc.start(now);
+                osc.stop(now + 3);
+            } catch (e) {
+                console.log("Web Audio API not supported or blocked by browser policies.");
+            }
+        }
+
+        function withProcessingDelay(callback, message) {
+            const overlay = document.getElementById('processingOverlay');
+            const fill = document.getElementById('progressBarFill');
+            const text = document.getElementById('processingText');
+            
+            text.innerText = message || 'Processing...';
+            
+            // Reset progress bar instantly
+            fill.style.transition = 'none';
+            fill.style.width = '0%';
+            
+            overlay.style.display = 'flex';
+            
+            // Play Sound
+            playProcessingSound();
+            
+            // Force browser reflow to ensure the transition reset is applied
+            void fill.offsetWidth; 
+            
+            // Start 3-second animation
+            fill.style.transition = 'width 3s linear';
+            fill.style.width = '100%';
+            
+            // Execute actual function after 3 seconds
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                if (callback && typeof callback === 'function') {
+                    callback();
+                }
+            }, 3000);
+        }
+
+
+        // --- Navigation Logic ---
+        let playerName = "";
+
+        function switchView(viewId) {
+            document.querySelectorAll('.view-section').forEach(el => {
+                el.classList.remove('active');
+            });
+            document.getElementById(viewId).classList.add('active');
+            window.scrollTo(0, 0);
+        }
+
+        function switchDashTab(tabId) {
+            // Update tabs
+            document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + tabId).classList.add('active');
+            
+            // Update sections
+            document.querySelectorAll('.dash-section').forEach(el => el.classList.remove('active'));
+            document.getElementById('dash-' + tabId).classList.add('active');
+            
+            if(tabId === 'historical' && !window.chartInitialized) {
+                initChart();
+            }
+        }
+
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') {
+                if (document.getElementById('view-welcome').classList.contains('active')) {
+                    validateAndProceed();
+                }
+            }
+        }
+
+        function validateAndProceed() {
+            const inputName = document.getElementById('playerNameInput').value.trim();
+            if (!inputName) {
+                alert("Please enter your name to proceed. Your name is required for the official evaluation certificate.");
+                return;
+            }
+            playerName = inputName;
+            
+            // Assign random dataset for NEW simulation
+            window.currentScenarioIndex = Math.floor(Math.random() * 20);
+            anchorValuesRecent = { ...macroDatasets[window.currentScenarioIndex] };
+            baseValues = { ...anchorValuesRecent };
+            generateGranularData(); // Regenerate charts for this specific dataset
+            updateChart();
+            
+            withProcessingDelay(goToInstructions, 'Authenticating User & Generating Scenario...');
+        }
+
+        function resumeSession() {
+            if (!window.savedGameState) return;
+            
+            deserializeState(window.savedGameState);
+            generateGranularData(); // Regenerate charts for loaded dataset
+            updateChart();
+            
+            withProcessingDelay(() => {
+                document.getElementById('displayPlayerName').innerText = `Welcome, ${playerName}`;
+                document.getElementById('scenarioDisplay').innerText = `Scenario #${window.currentScenarioIndex + 1}`;
+                switchView('view-dashboard');
+                switchDashTab('trading'); 
+                
+                initBaseValuesUI(); 
+                updateTradingUI();
+                
+                // Set initial date displays based on loaded state
+                document.getElementById('simDateDisplay').innerText = window.simDate.toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'}) + " " + window.simDate.toLocaleTimeString('en-IN', {hour: '2-digit', minute:'2-digit'});
+                document.getElementById('daysElapsedDisplay').innerText = window.daysElapsed;
+                
+                if (!window.liveMarketRunning) {
+                    startLiveMarketEngine(true); // true parameter indicates a Resume
+                    window.liveMarketRunning = true;
+                }
+            }, "Restoring Cloud Database State...");
+        }
+
+        function goToWelcome() {
+            switchView('view-welcome');
+        }
+
+        function goToInstructions() {
+            switchView('view-instructions');
+        }
+
+        async function goToSimulator() {
+            document.getElementById('displayPlayerName').innerText = `Welcome, ${playerName}`;
+            document.getElementById('scenarioDisplay').innerText = `Scenario #${window.currentScenarioIndex + 1}`;
+            switchView('view-dashboard');
+            switchDashTab('simulator');
+            initBaseValuesUI(); 
+            
+            await fetchYesterdaysData(); 
+            
+            // Start the live MCX ticker engine AFTER base values are anchored
+            if (!window.liveMarketRunning) {
+                startLiveMarketEngine(false); // false = New simulation
+                window.liveMarketRunning = true;
+            }
+        }
+
+        // --- Simulator Engine Logic ---
+        const elasticityMatrix = {
+            usd: { usd: 1.0, oil: -0.8, inr: 0.85, gold: -0.65, silver: -0.85, nifty: -1.2 },
+            oil: { usd: -0.1, oil: 1.0, inr: 0.35, gold: 0.15, silver: 0.1, nifty: -0.8 },
+            inr: { usd: 0.1, oil: 0.0, inr: 1.0, gold: 0.0, silver: 0.0, nifty: -1.5 },
+            gold: { usd: -0.15, oil: 0.2, inr: 0.05, gold: 1.0, silver: 1.3, nifty: -0.4 },
+            silver: { usd: -0.1, oil: 0.2, inr: 0.05, gold: 0.7, silver: 1.0, nifty: 0.2 },
+            nifty: { usd: -0.05, oil: 0.05, inr: -0.2, gold: -0.3, silver: 0.4, nifty: 1.0 }
+        };
+
+        const assetNames = {
+            usd: "US Dollar Index (DXY)",
+            oil: "Crude Oil (Brent)",
+            inr: "USD/INR Exchange Rate",
+            gold: "Gold (Domestic Price)",
+            silver: "Silver (Domestic Price)",
+            nifty: "Indian Equities (Nifty)"
+        };
+
+        let baseValues = {
+            usd: 104.50,
+            oil: 82.30,
+            inr: 83.15,
+            gold: 75554.00,  
+            silver: 91630.00,  
+            nifty: 22500.00
+        };
+
+        const assetPrefix = {
+            usd: "", oil: "$", inr: "₹", gold: "₹", silver: "₹", nifty: ""
+        };
+        
+        const assetSuffix = {
+            usd: "", oil: " /bbl", inr: "", gold: " /10g", silver: " /Kg", nifty: ""
+        };
+
+        // GDP Projection Constants (CAGR)
+        // 7% Real GDP Growth + ~4.5% Inflation = ~11.5% Nominal Growth for Equities
+        const projectionRates = {
+            usd: 0.00,       // DXY is cyclical, assumes flat long-term mean
+            oil: 0.01,       // 1% nominal inflation creep for Brent
+            inr: 0.025,      // 2.5% RBI controlled annual depreciation to maintain export competitiveness
+            gold: 0.065,     // 6.5% long term safe haven growth in INR terms
+            silver: 0.075,   // 7.5% industrial beta growth in INR terms
+            nifty: 0.115     // 11.5% nominal corporate earnings growth linked to 7% real GDP
+        };
+
+        // 20 Distinct Macroeconomic Datasets
+        const macroDatasets = [
+            { usd: 104.10, oil: 82.15, inr: 89.85, gold: 76400, silver: 93200, nifty: 24250 }, // 1. Baseline
+            { usd: 107.20, oil: 78.00, inr: 91.20, gold: 71000, silver: 85000, nifty: 23100 }, // 2. Strong Dollar
+            { usd: 100.50, oil: 85.00, inr: 87.50, gold: 78000, silver: 98000, nifty: 25100 }, // 3. Weak Dollar
+            { usd: 105.00, oil: 105.00, inr: 91.50, gold: 77000, silver: 94000, nifty: 22500 }, // 4. Oil Shock
+            { usd: 103.50, oil: 60.00, inr: 88.20, gold: 74000, silver: 89000, nifty: 25800 }, // 5. Oil Crash
+            { usd: 102.80, oil: 80.00, inr: 89.10, gold: 84000, silver: 102000, nifty: 23800 }, // 6. Gold Surge
+            { usd: 103.00, oil: 75.00, inr: 88.50, gold: 73000, silver: 88000, nifty: 26500 }, // 7. Equity Boom
+            { usd: 106.00, oil: 88.00, inr: 90.80, gold: 79000, silver: 91000, nifty: 21500 }, // 8. Equity Bear
+            { usd: 104.50, oil: 68.00, inr: 89.40, gold: 70000, silver: 80000, nifty: 24000 }, // 9. Broad Deflation
+            { usd: 102.00, oil: 98.00, inr: 90.50, gold: 82000, silver: 105000, nifty: 23000 }, // 10. Broad Inflation
+            { usd: 108.00, oil: 72.00, inr: 92.50, gold: 85000, silver: 95000, nifty: 21000 }, // 11. Safe Haven Rush
+            { usd: 99.00, oil: 76.00, inr: 86.50, gold: 75000, silver: 92000, nifty: 27000 }, // 12. Emerging Market Rally
+            { usd: 105.50, oil: 92.00, inr: 91.10, gold: 81000, silver: 96000, nifty: 22800 }, // 13. Stagflation Mini
+            { usd: 101.80, oil: 84.00, inr: 88.90, gold: 74500, silver: 108000, nifty: 25500 }, // 14. Industrial Boom
+            { usd: 106.80, oil: 89.00, inr: 93.00, gold: 83000, silver: 99000, nifty: 20500 }, // 15. INR Crisis
+            { usd: 102.50, oil: 73.00, inr: 87.80, gold: 72000, silver: 86000, nifty: 26200 }, // 16. INR Strength
+            { usd: 104.20, oil: 115.00, inr: 92.80, gold: 86000, silver: 100000, nifty: 21800 }, // 17. Geopolitical Tensions
+            { usd: 103.80, oil: 78.50, inr: 89.10, gold: 73500, silver: 89500, nifty: 27500 }, // 18. Tech Rally
+            { usd: 105.20, oil: 79.00, inr: 90.10, gold: 65000, silver: 72000, nifty: 24800 }, // 19. Metals Crash
+            { usd: 98.50, oil: 65.00, inr: 85.00, gold: 68000, silver: 85000, nifty: 28000 }  // 20. Perfect Storm
+        ];
+
+        // Active Anchor Value (Defaults to baseline, overridden on new game)
+        let anchorValuesRecent = { ...macroDatasets[0] };
+        window.currentScenarioIndex = 0;
+
+        // --- LIVE TRADING EXCHANGE LOGIC ---
+        
+        let livePrices = {};
+        let previousPrices = {};
+        
+        // Fee Constant (0.002%)
+        const FEE_RATE = 0.00002;
+        
+        // Initial Account Setup
+        let account = {
+            cash: 100000.00,
+            position: null, /* Format: { asset, type: 'MIS'/'NRML', qty, entryPrice, marginUsed, exposure, entryFee, tp, sl } */
+            history: []
+        };
+
+        // Evaluation & Time State
+        window.startDate = new Date();
+        window.simDate = new Date();
+        window.lastSimDay = new Date().getDate();
+        window.daysElapsed = 0;
+        window.marketInterval = null;
+
+        const macroEvents = [
+            { title: "Geopolitical Escalation in Middle East", desc: "War fears spike oil prices and send investors fleeing to safe-haven assets.", impact: { oil: 0.08, gold: 0.04, nifty: -0.05, inr: 0.015, usd: 0.01, silver: 0.02 } },
+            { title: "US Federal Reserve Surprise Rate Hike", desc: "The Fed hikes rates to combat sticky inflation. Dollar strengthens globally, pulling capital from EMs.", impact: { usd: 0.03, gold: -0.04, silver: -0.05, nifty: -0.03, inr: 0.012, oil: -0.02 } },
+            { title: "OPEC+ Announces Deep Production Cuts", desc: "Oil supply tightens drastically, widening India's current account deficit and crashing the rupee.", impact: { oil: 0.10, inr: 0.015, nifty: -0.02, usd: 0.0, gold: 0.01, silver: 0.0 } },
+            { title: "Global Cyberattack on Financial Infrastructure", desc: "Markets panic as banking systems freeze. Massive flight to safety assets.", impact: { nifty: -0.07, gold: 0.06, usd: 0.02, silver: 0.01, oil: -0.03, inr: 0.02 } },
+            { title: "India GDP Prints at 8.2% (Massive Beat)", desc: "Foreign portfolio investments flood into Indian equities. Rupee strengthens rapidly.", impact: { nifty: 0.05, inr: -0.015, gold: -0.01, silver: 0.0, oil: 0.0, usd: -0.005 } },
+            { title: "China Announces Aggressive Industrial Stimulus", desc: "Global demand forecasts for industrial metals and energy skyrocket overnight.", impact: { silver: 0.07, oil: 0.04, nifty: 0.01, gold: 0.01, usd: -0.01, inr: 0.0 } },
+            { title: "Peace Treaty Signed in Eastern Europe", desc: "Geopolitical risk premium drops to zero. Commodities cool off heavily, equities rally.", impact: { oil: -0.06, gold: -0.05, silver: -0.03, nifty: 0.04, usd: -0.01, inr: -0.01 } },
+            { title: "Sudden Collapse of Major US Bank", desc: "Contagion fears grip the market. Central banks rush to provide liquidity.", impact: { usd: -0.02, gold: 0.05, silver: 0.04, nifty: -0.04, inr: 0.01, oil: -0.04 } }
+        ];
+
+        const dailyNewsBriefings = [
+            { title: "OPEC+ Unexpectedly Cuts Production", primary: "oil", shock: 5.0, time: "Next 7 Days", reason: "OPEC+ announced a surprise 1M bpd cut to support energy markets. Expect an immediate +5.0% shock to Brent Crude, which will heavily widen India's CAD and pressure the Rupee." },
+            { title: "US Fed Signals Aggressive Rate Hikes", primary: "usd", shock: 3.0, time: "Next 15 Days", reason: "US Inflation remains sticky. The Federal Reserve indicated longer-term restrictive policies. DXY is projected to surge +3.0%, accelerating capital outflows from Indian equities." },
+            { title: "RBI Intervenes to Support Rupee", primary: "inr", shock: -2.0, time: "Intraday to 7 Days", reason: "Aggressive dollar selling by the RBI is expected to appreciate the Rupee by 2.0% (a negative shock to USD/INR). This will lower the landed cost of domestic Gold and Silver." },
+            { title: "Global Risk-Off: Flight to Safety", primary: "gold", shock: 4.0, time: "Next 15 Days", reason: "Rising geopolitical tensions have triggered a massive flight to safe-haven assets. Global Gold is projected up +4.0%, likely dragging Silver alongside it." },
+            { title: "Stellar Tech Earnings Boost Indian Markets", primary: "nifty", shock: 2.5, time: "Next 7 Days", reason: "Major Indian IT firms reported record margins, leading to a projected +2.5% structural re-rating of the Nifty 50 and minor FDI inflows strengthening the Rupee." },
+            { title: "Industrial Metals Plunge on China Data", primary: "silver", shock: -6.0, time: "Intraday", reason: "Weak manufacturing PMI from China points to lower industrial demand globally. Silver is expected to take a heavy -6.0% hit today due to its high industrial beta." },
+            { title: "US Dollar Weakens on Soft Employment Data", primary: "usd", shock: -2.5, time: "Next 7 Days", reason: "A rising US unemployment rate has weakened the DXY by -2.5%. Emerging markets should see a relief rally, with a stronger Rupee and rebounding Nifty 50." }
+        ];
+
+        function renderDailyNews() {
+            // Pick a news item based on days elapsed so it changes strictly daily
+            const newsIndex = window.daysElapsed % dailyNewsBriefings.length;
+            const news = dailyNewsBriefings[newsIndex];
+            
+            document.getElementById('newsHeadline').innerText = news.title;
+            document.getElementById('newsExplanation').innerText = news.reason;
+            document.getElementById('newsTimeframe').innerText = news.time;
+            
+            const grid = document.getElementById('newsImpactGrid');
+            grid.innerHTML = '';
+            
+            // Generate primary asset badge
+            let primaryColorClass = news.shock > 0 ? '#2F855A' : '#C53030';
+            let primaryBgClass = news.shock > 0 ? 'rgba(56, 161, 105, 0.1)' : 'rgba(229, 62, 62, 0.1)';
+            let primarySign = news.shock > 0 ? '+' : '';
+            grid.innerHTML += `
+                <div style="background: ${primaryBgClass}; color: ${primaryColorClass}; border: 1px solid ${primaryColorClass}; padding: 6px 12px; border-radius: 4px; font-weight: bold; font-size: 0.85rem;">
+                    [Primary] ${assetNames[news.primary].split(' ')[0]}: ${primarySign}${news.shock.toFixed(2)}%
+                </div>
+            `;
+
+            // Generate secondary asset badges using strict Deterministic Simulator Matrix Math
+            const impacts = elasticityMatrix[news.primary];
+            for (const [asset, beta] of Object.entries(impacts)) {
+                if (asset === news.primary) continue; 
+                
+                let impactValue = news.shock * beta;
+                
+                // Strict Import Parity Logic exactly mimicking the main simulator
+                if ((asset === 'gold' || asset === 'silver') && (news.primary === 'usd' || news.primary === 'inr' || news.primary === 'oil')) {
+                    let oldVal = baseValues[asset];
+                    let globalImpactValue = impactValue;
+                    let inrImpact = news.primary === 'inr' ? news.shock : (news.shock * elasticityMatrix[news.primary]['inr']);
+                    
+                    let oldGlobalPriceUSD = oldVal / baseValues.inr;
+                    let newGlobalPriceUSD = oldGlobalPriceUSD * (1 + (globalImpactValue / 100));
+                    let newInrRate = baseValues.inr * (1 + (inrImpact / 100));
+                    
+                    let newVal = newGlobalPriceUSD * newInrRate;
+                    impactValue = ((newVal - oldVal) / oldVal) * 100; // Overwrite with true domestic impact
+                }
+
+                let colorClass = impactValue > 0 ? '#2F855A' : (impactValue < 0 ? '#C53030' : '#4A5568');
+                let bgClass = impactValue > 0 ? 'rgba(56, 161, 105, 0.1)' : (impactValue < 0 ? 'rgba(229, 62, 62, 0.1)' : 'rgba(74, 85, 104, 0.1)');
+                let sign = impactValue > 0 ? '+' : '';
+                
+                let shortName = assetNames[asset].split(' ')[0];
+                if (asset === 'usd') shortName = 'DXY';
+                if (asset === 'inr') shortName = 'USD/INR';
+
+                grid.innerHTML += `
+                    <div style="background: ${bgClass}; color: ${colorClass}; border: 1px solid ${colorClass}; padding: 6px 12px; border-radius: 4px; font-weight: bold; font-size: 0.85rem;">
+                        ${shortName}: ${sign}${impactValue.toFixed(2)}%
+                    </div>
+                `;
+            }
+        }
+
+        function triggerMacroEvent() {
+            // Pick a random event
+            const event = macroEvents[Math.floor(Math.random() * macroEvents.length)];
+            
+            // Apply impacts directly to live prices
+            for (const [asset, change] of Object.entries(event.impact)) {
+                if (livePrices[asset]) {
+                    livePrices[asset] = livePrices[asset] * (1 + change);
+                }
+            }
+
+            // Show UI Alert
+            const toast = document.getElementById('eventNotification');
+            document.getElementById('eventText').innerHTML = `<strong>${event.title}:</strong> ${event.desc}`;
+            toast.style.display = 'block';
+            
+            // Hide after 6 seconds
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 6000);
+
+            updateTradingUI();
+        }
+
+        function startLiveMarketEngine(isResume = false) {
+            if (!isResume) {
+                // Completely new setup
+                livePrices = { ...baseValues };
+                previousPrices = { ...baseValues };
+                window.startDate = new Date(); 
+                window.simDate = new Date();
+                window.lastSimDay = window.startDate.getDate();
+                window.daysElapsed = 0;
+                saveGame(); // Trigger initial state save
+            }
+
+            // Initial render of daily news
+            renderDailyNews();
+
+            window.marketInterval = setInterval(() => {
+                // Sync with actual real-world clock instead of artificially advancing
+                window.simDate = new Date();
+                
+                // Calculate real days elapsed since the session started
+                const msPerDay = 1000 * 60 * 60 * 24;
+                window.daysElapsed = Math.floor((window.simDate - window.startDate) / msPerDay);
+                
+                document.getElementById('simDateDisplay').innerText = window.simDate.toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'}) + " " + window.simDate.toLocaleTimeString('en-IN', {hour: '2-digit', minute:'2-digit'});
+                document.getElementById('daysElapsedDisplay').innerText = window.daysElapsed;
+
+                // Event Engine: Intraday probability (~1 major event every 5 minutes of active trading)
+                if (Math.random() < 0.005) {
+                    triggerMacroEvent();
+                } else {
+                    // Normal Random Walk: Intraday volatility (scaled down for 1.5s tick realism)
+                    for (const key of Object.keys(livePrices)) {
+                        previousPrices[key] = livePrices[key];
+                        let volatility = 0.0005; 
+                        let changePercent = (Math.random() * volatility * 2) - volatility;
+                        livePrices[key] = livePrices[key] * (1 + changePercent);
+                    }
+                    updateTradingUI();
+                }
+
+                // Check Automated Stops and Targets
+                if (account.position) {
+                    let cp = livePrices[account.position.asset];
+                    if (account.position.sl !== null && cp <= account.position.sl) {
+                        executeSell('Stop Loss Triggered');
+                    } else if (account.position.tp !== null && cp >= account.position.tp) {
+                        executeSell('Take Profit Triggered');
+                    }
+                }
+
+                // Check Intraday MIS Auto Square-off & Daily Rollover
+                let isLateIntradayCheck = (window.simDate.getHours() === 23 && window.simDate.getMinutes() >= 30);
+                let dayRolloverCheck = window.lastSimDay !== window.simDate.getDate();
+                
+                if (dayRolloverCheck || isLateIntradayCheck) {
+                    if (account.position && account.position.type === 'MIS') {
+                        executeSell('MIS Auto Square-Off');
+                    }
+                    if (dayRolloverCheck) {
+                        window.lastSimDay = window.simDate.getDate();
+                        renderDailyNews(); // Triggers new Intelligence Desk Briefing when day changes
+                        saveGame(); // Auto save on daily rollover
+                    }
+                }
+
+            }, 1500);
+        }
+
+        function evaluatePlayer() {
+            clearInterval(window.marketInterval);
+            
+            let currentPositionValue = 0;
+            if (account.position) {
+                // Value position at CMP net of exit fees
+                let grossValue = account.position.qty * livePrices[account.position.asset];
+                let exitFeeEst = grossValue * FEE_RATE;
+                currentPositionValue = account.position.marginUsed + (grossValue - account.position.exposure) - exitFeeEst;
+            }
+            
+            let netWorth = account.cash + currentPositionValue;
+            let roi = ((netWorth - 100000) / 100000) * 100;
+            
+            let score = 0;
+            let remarks = "";
+            let tier = "";
+            
+            // --- Analytical Engine Variables ---
+            let sellTrades = account.history.filter(h => h.type === 'SELL');
+            let profitableTrades = sellTrades.filter(h => h.pnl > 0).length;
+            let totalTrades = sellTrades.length;
+            let winRate = totalTrades > 0 ? (profitableTrades / totalTrades) * 100 : 0;
+            
+            let slTriggered = account.history.filter(h => h.reason === 'Stop Loss Triggered').length;
+            let tpTriggered = account.history.filter(h => h.reason === 'Take Profit Triggered').length;
+            let totalFees = account.history.reduce((sum, h) => sum + h.fee, 0);
+            
+            let wellHtml = "";
+            let missedHtml = "";
+
+            if (window.daysElapsed < 30) {
+                score = 0;
+                tier = "DISQUALIFIED";
+                remarks = `TERMINATION PENALTY: You only traded for ${window.daysElapsed} real days. A minimum 30-day real-time hold is strictly required by the RBI policy simulator to prove long-term consistency. You must manage risk over a sustained period.`;
+                missedHtml = `<li>Failed to meet the minimum 30-day operational requirement.</li>`;
+                wellHtml = `<li>N/A (Incomplete Dataset)</li>`;
+            } else {
+                // Exponential Dampening Formula
+                if (roi < 0) {
+                    score = Math.max(0, Math.round(50 + (roi * 2)));
+                } else {
+                    score = Math.round(50 + 50 * (1 - Math.exp(-0.015 * roi)));
+                }
+                
+                if (score >= 90) { tier = "LEGENDARY ALPHA"; remarks = "Outstanding macro-economic foresight! Achieving this tier is practically impossible. You have generated god-tier alpha."; }
+                else if (score >= 80) { tier = "EXCEPTIONAL"; remarks = "Outstanding performance! Generating such massive alpha in a month is incredibly rare."; }
+                else if (score >= 70) { tier = "DISTINGUISHED"; remarks = "Excellent portfolio management. You consistently beat the market and utilized leverage flawlessly."; }
+                else if (score >= 50) { tier = "AVERAGE"; remarks = "Acceptable performance. Capital preservation was achieved, but massive outperformance is required for high marks."; }
+                else { tier = "SUB-PAR"; remarks = "Poor risk management. The geopolitical and economic shocks destroyed your portfolio value."; }
+                
+                // Construct "What went well"
+                if (winRate >= 50) wellHtml += `<li>Strong entry/exit timing resulting in a ${winRate.toFixed(1)}% win rate.</li>`;
+                if (tpTriggered > 0) wellHtml += `<li>Successfully executed automated Take-Profit (Target) strategies ${tpTriggered} time(s).</li>`;
+                if (roi > 7) wellHtml += `<li>Vastly outperformed the benchmark 7% annualized GDP growth rate within a single month.</li>`;
+                if (slTriggered > 0) wellHtml += `<li>Demonstrated strict risk mitigation by utilizing Stop Losses ${slTriggered} time(s).</li>`;
+                if (wellHtml === "") wellHtml = `<li>Struggled to establish a dominant positive metric during this period.</li>`;
+
+                // Construct "What was missed"
+                if (totalTrades === 0) missedHtml += `<li>Zero capital deployed. Missed all market opportunities.</li>`;
+                if (winRate < 50 && totalTrades > 0) missedHtml += `<li>Low win rate (${winRate.toFixed(1)}%). Indicates poor reaction to macro intelligence briefs.</li>`;
+                if (slTriggered === 0 && totalTrades > 0) missedHtml += `<li>Failed to utilize Stop Loss mechanisms, exposing capital to uncapped downside risk during macro shocks.</li>`;
+                if (totalFees > (netWorth * 0.05)) missedHtml += `<li>Excessive overtrading. High brokerage/exchange fees (₹${totalFees.toFixed(0)}) severely ate into net profitability.</li>`;
+                if (missedHtml === "") missedHtml = `<li>No glaring structural errors detected in trade execution.</li>`;
+            }
+            
+            // Populate Modal
+            document.getElementById('evalPlayerName').innerText = playerName || "Guest Analyst";
+            document.getElementById('evalDateTime').innerText = new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+            document.getElementById('evalScore').innerText = score + " / 100";
+            document.getElementById('evalTier').innerText = tier;
+            document.getElementById('evalNetWorth').innerText = "₹ " + netWorth.toLocaleString('en-IN', {maximumFractionDigits:2});
+            document.getElementById('evalDays').innerText = window.daysElapsed;
+            
+            const roiEl = document.getElementById('evalROI');
+            roiEl.innerText = (roi > 0 ? "+" : "") + roi.toFixed(2) + "%";
+            roiEl.style.color = roi >= 0 ? "#38A169" : "#E53E3E";
+            
+            document.getElementById('evalWell').innerHTML = wellHtml;
+            document.getElementById('evalMissed').innerHTML = missedHtml;
+            document.getElementById('evalRemarks').innerText = remarks;
+            
+            // Store final score globally for certificate
+            window.finalScore = score;
+            window.finalROI = roi.toFixed(2);
+            
+            // Show Modal
+            document.getElementById('evaluationModal').style.display = 'flex';
+        }
+
+        function downloadCertificate() {
+            const canvas = document.getElementById('certCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Background
+            ctx.fillStyle = '#F0F4F8';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Inner Fill
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(20, 20, canvas.width - 40, canvas.height - 40);
+            
+            // Borders
+            ctx.strokeStyle = '#0A2540'; // rbi-blue
+            ctx.lineWidth = 12;
+            ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
+            
+            ctx.strokeStyle = '#C6A664'; // gold
+            ctx.lineWidth = 4;
+            ctx.strokeRect(36, 36, canvas.width - 72, canvas.height - 72);
+
+            // Watermark / Background Logo text
+            ctx.save();
+            ctx.translate(canvas.width/2, canvas.height/2);
+            ctx.rotate(-Math.PI / 6);
+            ctx.font = "bold 120px 'Arial Narrow', sans-serif";
+            ctx.fillStyle = "rgba(198, 166, 100, 0.05)";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText("TAXILA BUSINESS SCHOOL", 0, 0);
+            ctx.restore();
+
+            // Header
+            ctx.fillStyle = '#0A2540';
+            ctx.font = "bold 32px 'Arial Narrow', sans-serif";
+            ctx.textAlign = 'center';
+            ctx.fillText("DEPARTMENT OF ECONOMIC AND POLICY RESEARCH", canvas.width / 2, 100);
+            
+            ctx.fillStyle = '#718096';
+            ctx.font = "20px 'Arial Narrow', sans-serif";
+            ctx.fillText("IN COLLABORATION WITH TAXILA BUSINESS SCHOOL", canvas.width / 2, 135);
+
+            // Title
+            ctx.fillStyle = '#C6A664';
+            ctx.font = "bold 56px 'Arial Narrow', sans-serif";
+            ctx.fillText("CERTIFICATE OF EXCELLENCE", canvas.width / 2, 230);
+
+            // Body
+            ctx.fillStyle = '#2D3748';
+            ctx.font = "26px 'Arial Narrow', sans-serif";
+            ctx.fillText("This is to certify that", canvas.width / 2, 310);
+            
+            // Name
+            ctx.fillStyle = '#0A2540';
+            ctx.font = "bold 48px 'Arial Narrow', sans-serif";
+            ctx.fillText((playerName || "Guest Analyst").toUpperCase(), canvas.width / 2, 370);
+            
+            // Line
+            ctx.beginPath();
+            ctx.moveTo(300, 390);
+            ctx.lineTo(900, 390);
+            ctx.strokeStyle = '#E2E8F0';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Subtext
+            ctx.fillStyle = '#2D3748';
+            ctx.font = "24px 'Arial Narrow', sans-serif";
+            ctx.fillText("has successfully completed the Advanced Macroeconomic & Cross-Asset Trading Simulation.", canvas.width / 2, 440);
+            
+            // Metrics Box
+            ctx.fillStyle = '#F7FAFC';
+            ctx.fillRect(250, 480, 700, 100);
+            ctx.strokeStyle = '#CBD5E0';
+            ctx.strokeRect(250, 480, 700, 100);
+            
+            ctx.fillStyle = '#0A2540';
+            ctx.font = "bold 28px 'Arial Narrow', sans-serif";
+            ctx.fillText(`Final Evaluation Score: ${window.finalScore} / 100`, canvas.width / 2, 520);
+            ctx.fillStyle = window.finalROI >= 0 ? '#38A169' : '#C53030';
+            ctx.font = "bold 24px 'Arial Narrow', sans-serif";
+            ctx.fillText(`Net Portfolio ROI: ${window.finalROI > 0 ? '+' : ''}${window.finalROI}%`, canvas.width / 2, 555);
+
+            // Date
+            ctx.fillStyle = '#4A5568';
+            ctx.font = "20px 'Arial Narrow', sans-serif";
+            ctx.textAlign = 'left';
+            ctx.fillText(`Date: ${new Date().toLocaleDateString('en-IN')}`, 100, 730);
+            
+            // Signature Block
+            ctx.textAlign = 'right';
+            
+            // Fake Signature Script
+            ctx.font = "italic 40px 'Times New Roman', serif";
+            ctx.fillStyle = '#0A2540';
+            ctx.fillText("Rajat Bohra", 1100, 690);
+            
+            // Line
+            ctx.beginPath();
+            ctx.moveTo(850, 700);
+            ctx.lineTo(1100, 700);
+            ctx.strokeStyle = '#0A2540';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            ctx.font = "bold 20px 'Arial Narrow', sans-serif";
+            ctx.fillStyle = '#2D3748';
+            ctx.fillText("Prof. Rajat Bohra", 1100, 725);
+            ctx.font = "18px 'Arial Narrow', sans-serif";
+            ctx.fillStyle = '#718096';
+            ctx.fillText("Dean, Taxila Business School", 1100, 750);
+
+            // Convert and Download
+            const dataUrl = canvas.toDataURL('image/png');
+            const a = document.createElement('a');
+            a.href = dataUrl;
+            a.download = `Taxila_Macro_Certificate_${playerName.replace(/\s+/g, '_')}.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        function shareOnLinkedIn() {
+            const text = `I just completed the Advanced Macroeconomic Cross-Asset Simulator by Taxila Business School and scored ${window.finalScore}/100 with a Net ROI of ${window.finalROI}%!\n\nThis platform rigorously simulates real-world DXY, Brent Crude, INR, and Equities elasticity with live geopolitical event injections and MCX margin structures.\n\n#MacroEconomics #Trading #TaxilaBusinessSchool #RBI`;
+            const encodedText = encodeURIComponent(text);
+            const linkedinUrl = `https://www.linkedin.com/feed/?shareActive=true&text=${encodedText}`;
+            window.open(linkedinUrl, '_blank', 'width=800,height=600');
+            
+            alert("Tip: Don't forget to attach the Certificate PNG you downloaded to your LinkedIn post!");
+        }
+
+        function updateTradingUI() {
+            // 1. Update Ticker
+            const tickerWrap = document.getElementById('liveTicker');
+            if (tickerWrap) {
+                tickerWrap.innerHTML = '';
+                for (const key of Object.keys(livePrices)) {
+                    let price = livePrices[key];
+                    let prev = previousPrices[key];
+                    let diff = price - prev;
+                    
+                    let colorClass = 'tick-neutral';
+                    let arrow = '';
+                    if (diff > 0) { colorClass = 'tick-up'; arrow = '▲'; }
+                    else if (diff < 0) { colorClass = 'tick-down'; arrow = '▼'; }
+                    
+                    let shortName = assetNames[key].split(' ')[0];
+                    if (key === 'usd') shortName = 'DXY';
+                    if (key === 'inr') shortName = 'USD/INR';
+
+                    let formattedPrice = (key === 'gold' || key === 'silver' || key === 'nifty') ? 
+                                         price.toLocaleString('en-IN', {maximumFractionDigits: 0}) : 
+                                         price.toFixed(2);
+
+                    tickerWrap.innerHTML += `<div class="ticker-item ${colorClass}">${shortName}: ${assetPrefix[key]}${formattedPrice} ${arrow}</div>`;
+                }
+            }
+
+            // 2. Update Portfolio Values
+            let currentPositionValue = 0;
+            let unrealizedPnl = 0;
+            let pnlPercent = 0;
+
+            const posView = document.getElementById('activePositionView');
+
+            if (account.position) {
+                let currentPrice = livePrices[account.position.asset];
+                let grossValue = account.position.qty * currentPrice;
+                let exitFeeEst = grossValue * FEE_RATE;
+                
+                // Net value returned to cash if sold exactly right now
+                currentPositionValue = account.position.marginUsed + (grossValue - account.position.exposure) - exitFeeEst; 
+                
+                let totalCost = account.position.exposure + account.position.entryFee;
+                unrealizedPnl = (grossValue - exitFeeEst) - totalCost;
+                
+                // PnL percentage calculates Return on the actual Cash/Margin blocked.
+                pnlPercent = (unrealizedPnl / account.position.marginUsed) * 100;
+                
+                let pnlClass = unrealizedPnl >= 0 ? 'pnl-positive' : 'pnl-negative';
+                let pnlSign = unrealizedPnl >= 0 ? '+' : '';
+
+                posView.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; font-size: 0.9rem; color: var(--text-muted); margin-bottom: 5px;">
+                        <span>Order Type:</span>
+                        <span style="font-weight: bold; color: var(--rbi-blue);">${account.position.type === 'MIS' ? 'Intraday MIS (5x)' : 'Normal (1x)'}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span style="font-weight: bold; color: var(--text-main);">${assetNames[account.position.asset]}</span>
+                        <span>Qty: ${account.position.qty.toFixed(4)}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.9rem; color: var(--text-muted); margin-bottom: 5px;">
+                        <span>Entry Price:</span>
+                        <span>${assetPrefix[account.position.asset]}${account.position.entryPrice.toLocaleString('en-IN', {maximumFractionDigits: 2})}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.9rem; color: var(--text-muted); margin-bottom: 15px;">
+                        <span>Current Market Price:</span>
+                        <span>${assetPrefix[account.position.asset]}${currentPrice.toLocaleString('en-IN', {maximumFractionDigits: 2})}</span>
+                    </div>
+                    <div style="background: #F7FAFC; padding: 10px; border-radius: 6px; border-left: 4px solid ${unrealizedPnl >= 0 ? '#48BB78' : '#F56565'};">
+                        <div style="font-size: 0.8rem; text-transform: uppercase;">Net Unrealized P&L (Post-Fees)</div>
+                        <div class="value ${pnlClass}" style="font-size: 1.4rem; font-weight: bold;">
+                            ${pnlSign}₹${unrealizedPnl.toLocaleString('en-IN', {maximumFractionDigits: 2})} 
+                            <span style="font-size: 0.9rem;">(${pnlSign}${pnlPercent.toFixed(2)}%)</span>
+                        </div>
+                    </div>
+                `;
+
+                // Update targets block
+                const targetsDiv = document.getElementById('activePositionTargets');
+                if (account.position.sl !== null || account.position.tp !== null) {
+                    targetsDiv.style.display = 'block';
+                    targetsDiv.innerHTML = `
+                        <strong>Active Automated Orders:</strong><br>
+                        ${account.position.tp !== null ? `🎯 Target Profit: ₹${account.position.tp.toLocaleString('en-IN', {maximumFractionDigits:2})}<br>` : ''}
+                        ${account.position.sl !== null ? `🛡️ Stop Loss: ₹${account.position.sl.toLocaleString('en-IN', {maximumFractionDigits:2})}` : ''}
+                    `;
+                } else {
+                    targetsDiv.style.display = 'none';
+                }
+
+                // Show Sell Form, Hide Buy Form
+                document.getElementById('orderFormBuy').style.display = 'none';
+                document.getElementById('orderFormSell').style.display = 'block';
+
+            } else {
+                posView.innerHTML = `<div style="color: var(--text-muted); font-style: italic; padding: 20px 0;">No active positions. Funds are sitting in cash.</div>`;
+                
+                // Show Buy Form, Hide Sell Form
+                document.getElementById('orderFormBuy').style.display = 'block';
+                document.getElementById('orderFormSell').style.display = 'none';
+                updateTradeEst();
+            }
+
+            let totalNetWorth = account.cash + currentPositionValue;
+            document.getElementById('portCash').innerText = `₹ ${account.cash.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('portTotal').innerText = `₹ ${totalNetWorth.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            
+            // Calculate and display Live Score
+            let currentRoi = ((totalNetWorth - 100000) / 100000) * 100;
+            let projScore = 0;
+            
+            if (currentRoi < 0) {
+                projScore = Math.max(0, Math.round(50 + (currentRoi * 2)));
+            } else {
+                // Apply the same brutal exponential curve to live projections
+                projScore = Math.round(50 + 50 * (1 - Math.exp(-0.015 * currentRoi)));
+            }
+            
+            let scoreText = "";
+            if (window.daysElapsed < 30) {
+                scoreText = `<span style="color: #E53E3E;">0</span> <span style="font-size: 0.8em; color: var(--text-muted);">(Proj: ${projScore})</span>`;
+            } else {
+                scoreText = `<span style="color: #38A169;">${projScore}</span> / 100`;
+            }
+            
+            const scoreDisplay = document.getElementById('liveScoreDisplay');
+            if (scoreDisplay) scoreDisplay.innerHTML = scoreText;
+            
+            renderHistory();
+        }
+
+        function updateTradeEst() {
+            if (account.position) return;
+            const asset = document.getElementById('tradeAsset').value;
+            const tradeType = document.getElementById('tradeType').value;
+            const exposure = parseFloat(document.getElementById('tradeAmount').value) || 0;
+            const currentPrice = livePrices[asset];
+            
+            const leverage = tradeType === 'MIS' ? 5 : 1;
+            const marginRequired = exposure / leverage;
+            
+            if (currentPrice > 0) {
+                const qty = exposure / currentPrice;
+                const fee = exposure * FEE_RATE;
+                document.getElementById('tradeEst').innerHTML = `
+                    Margin Required: <b style="color:var(--rbi-blue);">₹${marginRequired.toLocaleString('en-IN', {maximumFractionDigits:2})}</b> <br>
+                    Est. Quantity: <b>${qty.toFixed(4)}</b> ${assetSuffix[asset].replace('/','')} <br> 
+                    Est. Fee: ₹${fee.toFixed(2)}`;
+            }
+        }
+
+        function setMaxCash() {
+            const tradeType = document.getElementById('tradeType').value;
+            const leverage = tradeType === 'MIS' ? 5 : 1;
+            
+            // account.cash = marginRequired + entryFee
+            // account.cash = (exposure / leverage) + (exposure * FEE_RATE)
+            let maxExposure = account.cash / ((1 / leverage) + FEE_RATE);
+            document.getElementById('tradeAmount').value = maxExposure.toFixed(2);
+            updateTradeEst();
+        }
+
+        function executeBuy() {
+            if (account.position) return; 
+            
+            const tradeType = document.getElementById('tradeType').value;
+            const asset = document.getElementById('tradeAsset').value;
+            let exposure = parseFloat(document.getElementById('tradeAmount').value); 
+            let tp = parseFloat(document.getElementById('tradeTP').value);
+            let sl = parseFloat(document.getElementById('tradeSL').value);
+            
+            if (isNaN(exposure) || exposure <= 0) {
+                alert("Please enter a valid trade value.");
+                return;
+            }
+            
+            const leverage = tradeType === 'MIS' ? 5 : 1;
+            let marginRequired = exposure / leverage;
+            let fee = exposure * FEE_RATE;
+            let totalDeduction = marginRequired + fee;
+            
+            // Allow a small rounding buffer for floating point arithmetic
+            if (totalDeduction > account.cash + 0.01) {
+                alert("Insufficient funds to cover margin required + 0.002% fee on exposure. Please click 'Max'.");
+                return;
+            }
+
+            const currentPrice = livePrices[asset];
+            const qty = exposure / currentPrice;
+
+            // Execute
+            account.cash -= totalDeduction;
+            account.position = {
+                asset: asset,
+                type: tradeType,
+                qty: qty,
+                entryPrice: currentPrice,
+                marginUsed: marginRequired,
+                exposure: exposure,
+                entryFee: fee,
+                tp: isNaN(tp) || tp <= 0 ? null : tp,
+                sl: isNaN(sl) || sl <= 0 ? null : sl
+            };
+            
+            // Clear inputs for next time
+            document.getElementById('tradeTP').value = '';
+            document.getElementById('tradeSL').value = '';
+            
+            // Log History
+            account.history.push({
+                date: new Date(window.simDate),
+                type: 'BUY',
+                asset: asset,
+                qty: qty,
+                price: currentPrice,
+                fee: fee,
+                totalFlow: -totalDeduction,
+                pnl: null,
+                reason: 'Manual Order'
+            });
+            
+            updateTradingUI();
+            saveGame(); // Save portfolio updates to DB
+        }
+
+        function executeSell(reason = 'Manual Order') {
+            if (!account.position) return;
+            
+            const currentPrice = livePrices[account.position.asset];
+            const grossProceeds = account.position.qty * currentPrice;
+            const fee = grossProceeds * FEE_RATE;
+            
+            // Net cash returned is original margin + (Gain on exposure) - exit fee
+            const netProceedsToCash = account.position.marginUsed + (grossProceeds - account.position.exposure) - fee;
+            
+            // PnL calculation against Total Cost of exposure
+            const totalCost = account.position.exposure + account.position.entryFee;
+            const pnl = (grossProceeds - fee) - totalCost;
+            
+            // Execute
+            account.cash += netProceedsToCash;
+            
+            // Log History
+            account.history.push({
+                date: new Date(window.simDate),
+                type: 'SELL',
+                asset: account.position.asset,
+                qty: account.position.qty,
+                price: currentPrice,
+                fee: fee,
+                totalFlow: netProceedsToCash,
+                pnl: pnl,
+                reason: reason
+            });
+            
+            account.position = null;
+            
+            // Reset buy form default to new max cash
+            setMaxCash();
+            
+            updateTradingUI();
+            saveGame(); // Save portfolio updates to DB
+        }
+        
+        function renderHistory() {
+            const tbody = document.getElementById('historyTableBody');
+            const tfoot = document.getElementById('historyTableFoot');
+            if (!tbody) return;
+            
+            if (account.history.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 30px; color: var(--text-muted); font-style: italic;">No transactions recorded yet.</td></tr>`;
+                if (tfoot) tfoot.innerHTML = '';
+                return;
+            }
+            
+            tbody.innerHTML = '';
+            
+            // First pass: Calculate Cumulative P&L and Total Amount Invested chronologically
+            let runningPnl = 0;
+            let totalInvested = 0;
+            let historyWithCumulative = account.history.map(record => {
+                if (record.pnl !== null) {
+                    runningPnl += record.pnl;
+                }
+                // Tally all cash deployed in BUY orders
+                if (record.type === 'BUY') {
+                    totalInvested += Math.abs(record.totalFlow);
+                }
+                return { ...record, cumulativePnl: runningPnl };
+            });
+
+            // Render newest transactions first
+            let revHistory = [...historyWithCumulative].reverse();
+            
+            for (let record of revHistory) {
+                let pnlStr = record.pnl !== null 
+                    ? `<span class="${record.pnl >= 0 ? 'pnl-positive' : 'pnl-negative'}" style="font-weight:bold;">${record.pnl >= 0 ? '+' : ''}₹${record.pnl.toLocaleString('en-IN', {maximumFractionDigits:2})}</span>` 
+                    : '<span style="color: #A0AEC0;">-</span>';
+                
+                // Cumulative P&L String
+                let cumPnlStr = `<span class="${record.cumulativePnl >= 0 ? 'pnl-positive' : 'pnl-negative'}" style="font-weight:bold;">${record.cumulativePnl >= 0 ? '+' : ''}₹${record.cumulativePnl.toLocaleString('en-IN', {maximumFractionDigits:2})}</span>`;
+                
+                let typeColor = record.type === 'BUY' ? 'pnl-positive' : 'pnl-negative';
+                let shortAsset = assetNames[record.asset].split(' ')[0];
+                if (record.asset === 'usd') shortAsset = 'DXY';
+                
+                let flowColor = record.totalFlow > 0 ? 'color: #38A169;' : 'color: #E53E3E;';
+                
+                let tr = `
+                    <tr>
+                        <td>${record.date.toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'2-digit'})} <br><span style="font-size:0.75rem; color:#A0AEC0;">${record.date.toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit', second:'2-digit'})}</span></td>
+                        <td><span class="${typeColor}" style="font-weight:bold; padding: 2px 6px; background: rgba(0,0,0,0.05); border-radius: 4px;">${record.type}</span><br><span style="font-size:0.75rem; color: #718096; margin-top:4px; display:inline-block;">${record.reason}</span></td>
+                        <td style="font-weight: 500;">${shortAsset}</td>
+                        <td>${record.qty.toFixed(4)}</td>
+                        <td>₹${record.price.toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
+                        <td style="color: #E53E3E;">-₹${record.fee.toFixed(2)}</td>
+                        <td style="font-weight: bold; ${flowColor}">${record.totalFlow > 0 ? '+' : ''}₹${Math.abs(record.totalFlow).toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
+                        <td>${pnlStr}</td>
+                        <td>${cumPnlStr}</td>
+                    </tr>
+                `;
+                tbody.innerHTML += tr;
+            }
+
+            // Append Total Amount Invested Footer
+            if (tfoot) {
+                tfoot.innerHTML = `
+                    <tr style="background-color: #EDF2F7; border-top: 2px solid #CBD5E0; font-weight: bold;">
+                        <td colspan="6" style="text-align: right; padding: 15px 10px; color: var(--rbi-blue);">TOTAL AMOUNT INVESTED (Gross Margin Deployed):</td>
+                        <td colspan="3" style="color: var(--text-main); padding: 15px 10px;">₹${totalInvested.toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
+                    </tr>
+                `;
+            }
+        }
+
+        function initBaseValuesUI() {
+            const container = document.getElementById('baseValuesForm');
+            container.innerHTML = '';
+            for (const [key, name] of Object.entries(assetNames)) {
+                const shortName = name.split(' ')[0] + (key === 'usd' ? ' (DXY)' : '') + (key === 'nifty' ? ' (Nifty)' : ''); 
+                container.innerHTML += `
+                    <div style="font-size: 0.85rem;">
+                        <label style="font-size: 0.75rem; margin-bottom: 2px;">${shortName}</label>
+                        <input type="number" id="base_${key}" value="${baseValues[key]}" step="any" style="padding: 8px; font-size: 0.9rem;" onchange="updateBaseValues()">
+                    </div>
+                `;
+            }
+        }
+
+        async function fetchYesterdaysData() {
+            const statusEl = document.getElementById('liveDataStatus');
+            statusEl.innerText = "Fetching Live Data...";
+            statusEl.style.color = "#D69E2E";
+
+            // Simulate network latency for API fetch
+            await new Promise(r => setTimeout(r, 800));
+
+            // Calculate "Yesterday"
+            const today = new Date();
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            
+            // Set anchor to a recent 2026 date to prevent large projection drift on base values
+            const anchorDate = new Date('2026-03-01');
+            const daysElapsed = (yesterday - anchorDate) / (1000 * 3600 * 24);
+
+            if (daysElapsed > 0) {
+                // Synthesize live data by compounding the projection rates up to exactly "yesterday"
+                for (const key of Object.keys(baseValues)) {
+                    let rate = projectionRates[key];
+                    let compoundedVal = anchorValuesRecent[key] * Math.pow(1 + rate, daysElapsed / 365.25);
+                    
+                    // Add minor daily market noise (+/- 0.3%) for realism
+                    let noise = compoundedVal * ((Math.random() * 0.006) - 0.003);
+                    
+                    let finalVal = compoundedVal + noise;
+                    // Format appropriately based on asset
+                    if (key === 'nifty' || key === 'gold' || key === 'silver') finalVal = Math.round(finalVal);
+                    else finalVal = parseFloat(finalVal.toFixed(2));
+
+                    baseValues[key] = finalVal;
+                    document.getElementById(`base_${key}`).value = finalVal;
+                }
+            } else {
+                // If the user runs this before or exactly on anchor date, revert to accurate anchors
+                for (const key of Object.keys(baseValues)) {
+                    baseValues[key] = anchorValuesRecent[key];
+                    document.getElementById(`base_${key}`).value = anchorValuesRecent[key];
+                }
+            }
+
+            statusEl.innerText = `Data Synced: ${yesterday.toLocaleDateString('en-IN')}`;
+            statusEl.style.color = "#38A169";
+        }
+
+        function updateBaseValues() {
+            for (const key of Object.keys(baseValues)) {
+                const val = parseFloat(document.getElementById(`base_${key}`).value);
+                if (!isNaN(val)) baseValues[key] = val;
+            }
+            runSimulation();
+        }
+
+        const economicRationales = {
+            usd: "A stronger Dollar triggers global capital flight from emerging markets, seeking safer US yields, sharply depreciating the Rupee. Globally, commodities priced in USD (Oil, Gold, Silver) become more expensive for non-US buyers, suppressing demand and driving their prices down. Indian equities suffer dual headwinds: foreign portfolio outflows and the rising cost of imported inflation.",
+            oil: "As India imports roughly 85% of its crude requirements, a positive oil price shock severely widens the Current Account Deficit (CAD). This creates high demand for USD, depreciating the Rupee. This 'imported inflation' compresses Indian corporate profit margins and forces the RBI to tighten monetary policy, triggering a steep sell-off in domestic equities.",
+            inr: "An isolated Rupee depreciation hurts foreign portfolio returns in dollar terms, triggering FII equity sell-offs. While a weaker INR doesn't move global commodity prices significantly, it acts as a multiplier locally: it significantly raises the landed, domestic cost of imported Oil, Gold, and Silver, exacerbating domestic inflation.",
+            gold: "A surge in global gold usually signals severe macroeconomic distress, rising inflation expectations, or falling real yields. It drags silver up with it (high-beta). While not directly hurting the INR initially, sustained high gold prices widen India's trade deficit due to our high volume of physical gold imports.",
+            silver: "Silver shocks often follow gold but with a heavier industrial beta. A localized silver spike has minimal systemic macro impact on India's broader economy compared to Oil or Gold, but it reflects broader global commodity inflation.",
+            nifty: "A standalone boom in Indian equities reflects strong domestic growth and corporate earnings. This attracts Foreign Direct Investment (FDI) and Portfolio flows, slightly strengthening the INR."
+        };
+
+        function runSimulation() {
+            const primaryAsset = document.getElementById('primaryAsset').value;
+            const shock = parseFloat(document.getElementById('shockValue').value);
+            const resultsDiv = document.getElementById('results');
+            const rationaleText = document.getElementById('rationaleText');
+
+            if (isNaN(shock) || shock === 0) {
+                alert("Please enter a valid, non-zero number for the shock magnitude.");
+                return;
+            }
+
+            resultsDiv.innerHTML = '';
+            rationaleText.innerHTML = `<strong>Context for a ${shock > 0 ? 'surge' : 'drop'} in ${assetNames[primaryAsset]}:</strong> <br><br>` + economicRationales[primaryAsset];
+
+            const impacts = elasticityMatrix[primaryAsset];
+
+            for (const [asset, beta] of Object.entries(impacts)) {
+                if (asset === primaryAsset) continue; 
+
+                let impactValue = shock * beta;
+                let oldVal = baseValues[asset];
+                let newVal = oldVal * (1 + (impactValue / 100));
+                let domesticNote = "";
+                
+                // Special calculation: Domestic Gold/Silver pricing (Import Parity)
+                if ((asset === 'gold' || asset === 'silver') && (primaryAsset === 'usd' || primaryAsset === 'inr' || primaryAsset === 'oil')) {
+                    let globalImpactValue = impactValue;
+                    let inrImpact = primaryAsset === 'inr' ? shock : (shock * elasticityMatrix[primaryAsset]['inr']);
+                    
+                    let oldGlobalPriceUSD = oldVal / baseValues.inr;
+                    let newGlobalPriceUSD = oldGlobalPriceUSD * (1 + (globalImpactValue / 100));
+                    let newInrRate = baseValues.inr * (1 + (inrImpact / 100));
+                    
+                    newVal = newGlobalPriceUSD * newInrRate;
+                    impactValue = ((newVal - oldVal) / oldVal) * 100;
+                    
+                    if (Math.abs(impactValue - globalImpactValue) > 0.1) {
+                        let direction = globalImpactValue > 0 ? '+' : '';
+                        domesticNote = `<div class="parity-note">Global USD Delta: <b>${direction}${globalImpactValue.toFixed(2)}%</b><br><span style="font-size: 0.75rem;">(Adjusted for INR parity)</span></div>`;
+                    }
+                }
+
+                let newValStr = newVal.toLocaleString('en-IN', {maximumFractionDigits: 2});
+                let oldValStr = oldVal.toLocaleString('en-IN', {maximumFractionDigits: 2});
+                
+                let valueStr = `<div style="font-size: 0.95rem; color: #4A5568; margin-top: 5px;">Projected: <b>${assetPrefix[asset]}${newValStr}${assetSuffix[asset]}</b> <br><span style="font-size: 0.8rem;">(Base: ${assetPrefix[asset]}${oldValStr}${assetSuffix[asset]})</span></div>`;
+
+                let colorClass = impactValue > 0 ? 'positive' : (impactValue < 0 ? 'negative' : 'neutral');
+                let textClass = impactValue > 0 ? 'pos-text' : (impactValue < 0 ? 'neg-text' : 'neu-text');
+                let sign = impactValue > 0 ? '+' : '';
+
+                const card = `
+                    <div class="card ${colorClass}">
+                        <div class="card-title">${assetNames[asset]}</div>
+                        <div class="value-display ${textClass}">${sign}${impactValue.toFixed(2)}%</div>
+                        ${valueStr}
+                        ${domesticNote}
+                    </div>
+                `;
+                resultsDiv.innerHTML += card;
+            }
+        }
+
+        // --- Historical Chart Logic ---
+        window.chartInitialized = false;
+        let myChart = null;
+
+        // Representative 3-Year Macro Data (Monthly anchor points calibrated to exact end-2025 reality)
+        const baseMonths = ["Jan-23", "Feb-23", "Mar-23", "Apr-23", "May-23", "Jun-23", "Jul-23", "Aug-23", "Sep-23", "Oct-23", "Nov-23", "Dec-23", 
+                        "Jan-24", "Feb-24", "Mar-24", "Apr-24", "May-24", "Jun-24", "Jul-24", "Aug-24", "Sep-24", "Oct-24", "Nov-24", "Dec-24",
+                        "Jan-25", "Feb-25", "Mar-25", "Apr-25", "May-25", "Jun-25", "Jul-25", "Aug-25", "Sep-25", "Oct-25", "Nov-25", "Dec-25"];
+
+        const baseMonthlyData = {
+            usd: [102.1, 104.8, 102.5, 101.6, 104.3, 102.9, 99.5, 103.6, 106.1, 106.6, 103.5, 101.3, 103.2, 104.1, 104.5, 105.3, 104.6, 105.8, 104.0, 101.3, 100.7, 103.9, 106.5, 105.2, 104.1, 103.8, 104.5, 104.9, 104.2, 105.1, 104.8, 103.5, 102.1, 104.0, 105.5, 104.5],
+            oil: [82.5, 83.1, 79.2, 85.0, 75.5, 74.9, 85.5, 86.8, 95.3, 87.4, 80.8, 77.0, 81.7, 83.6, 87.4, 89.5, 81.6, 85.0, 80.7, 78.8, 71.9, 73.1, 72.5, 71.8, 74.2, 76.5, 79.1, 82.5, 80.0, 78.5, 81.2, 84.0, 86.5, 82.1, 80.5, 82.3],
+            inr: [81.50, 82.80, 82.20, 81.80, 82.60, 82.00, 82.20, 82.70, 83.10, 83.20, 83.30, 83.10, 83.10, 82.90, 83.30, 83.40, 83.30, 83.50, 83.70, 83.90, 83.70, 84.00, 84.40, 84.80, 85.20, 85.60, 86.10, 86.50, 87.00, 87.80, 88.50, 88.90, 89.20, 89.50, 89.60, 89.77],
+            gold: [56800, 57500, 59500, 60400, 61200, 58300, 59200, 59400, 57600, 60800, 62500, 63200, 62800, 62400, 67600, 71500, 72000, 71800, 73500, 71000, 74500, 78500, 77000, 76500, 75500, 75000, 74200, 74800, 75100, 76000, 76200, 75800, 75400, 75500, 75800, 76800],
+            silver: [73000, 68000, 75000, 80000, 76000, 72000, 78000, 76000, 72000, 75000, 80000, 77000, 75000, 74000, 80000, 88000, 98000, 94000, 92000, 96000, 100000, 108000, 98000, 99000, 98000, 97000, 95000, 92000, 90000, 91000, 89000, 88000, 87000, 89000, 90000, 92500],
+            nifty: [17600, 17300, 17350, 18060, 18530, 19180, 19750, 19250, 19630, 19070, 20130, 21730, 21720, 21980, 22320, 22590, 22530, 24010, 24950, 25230, 25810, 24200, 23900, 24100, 24300, 24500, 24800, 25100, 24900, 24700, 24500, 24200, 23800, 23500, 23200, 24100]
+        };
+
+        const granularData = {
+            daily: { rawDates: [], labels: [], data: { usd: [], oil: [], inr: [], gold: [], silver: [], nifty: [] } },
+            weekly: { rawDates: [], labels: [], data: { usd: [], oil: [], inr: [], gold: [], silver: [], nifty: [] } },
+            monthly: { rawDates: [], labels: [], data: { usd: [], oil: [], inr: [], gold: [], silver: [], nifty: [] } },
+            yearly: { rawDates: [], labels: [], data: { usd: [], oil: [], inr: [], gold: [], silver: [], nifty: [] } }
+        };
+
+        // Synthesize granular data with exact date matching
+        function generateGranularData() {
+            // Reset arrays fully to prevent appending on reload
+            granularData.daily = { rawDates: [], labels: [], data: { usd: [], oil: [], inr: [], gold: [], silver: [], nifty: [] } };
+            granularData.weekly = { rawDates: [], labels: [], data: { usd: [], oil: [], inr: [], gold: [], silver: [], nifty: [] } };
+            granularData.monthly = { rawDates: [], labels: [], data: { usd: [], oil: [], inr: [], gold: [], silver: [], nifty: [] } };
+            granularData.yearly = { rawDates: [], labels: [], data: { usd: [], oil: [], inr: [], gold: [], silver: [], nifty: [] } };
+
+            const startTime = new Date(2023, 0, 1).getTime();
+            // Extend End Time for 3-Year Projection (End of 2028)
+            const endTime = new Date(2028, 11, 31).getTime();
+            const anchorTime = new Date(2025, 11, 31).getTime();
+            const dayMs = 24 * 60 * 60 * 1000;
+
+            // Calculate scaling factors so historical base data aligns seamlessly with the randomly selected dataset
+            let scaleFactors = {};
+            Object.keys(anchorValuesRecent).forEach(asset => {
+                scaleFactors[asset] = anchorValuesRecent[asset] / baseMonthlyData[asset][35]; // 35 is index of Dec 2025
+            });
+
+            // 1. Generate Daily (Interpolation + Market Noise + Projection)
+            for (let t = startTime; t <= endTime; t += dayMs) {
+                let d = new Date(t);
+                
+                granularData.daily.rawDates.push(new Date(d));
+                granularData.daily.labels.push(d.toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'2-digit'}));
+
+                if (t <= anchorTime) {
+                    // HISTORICAL DATA LOGIC (2023 - 2025) Scaled to current scenario
+                    let monthIndex = (d.getFullYear() - 2023) * 12 + d.getMonth();
+                    let nextMonthIndex = Math.min(monthIndex + 1, 35);
+                    let daysInMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+                    let progress = (d.getDate() - 1) / daysInMonth;
+
+                    Object.keys(baseMonthlyData).forEach(asset => {
+                        let scaledStartVal = baseMonthlyData[asset][monthIndex] * scaleFactors[asset];
+                        let scaledEndVal = baseMonthlyData[asset][nextMonthIndex] * scaleFactors[asset];
+                        let interpolated = scaledStartVal + (scaledEndVal - scaledStartVal) * progress;
+                        
+                        if (monthIndex === 35 && d.getDate() >= 25) {
+                            interpolated = scaledEndVal; 
+                        }
+                        
+                        let noise = interpolated * ((Math.random() * 0.010) - 0.005);
+                        granularData.daily.data[asset].push(interpolated + noise);
+                    });
+                } else {
+                    // PROJECTION DATA LOGIC (2026 - 2028 based on GDP target)
+                    let daysSinceAnchor = (t - anchorTime) / dayMs;
+                    
+                    Object.keys(anchorValuesRecent).forEach(asset => {
+                        let rate = projectionRates[asset];
+                        // Ensure we use the exact recent anchor as the baseline for future charting
+                        let projectedVal = anchorValuesRecent[asset] * Math.pow(1 + rate, daysSinceAnchor / 365.25);
+                        
+                        // Add slightly more volatility to future projections (+/- 0.8%)
+                        let noise = projectedVal * ((Math.random() * 0.016) - 0.008);
+                        granularData.daily.data[asset].push(projectedVal + noise);
+                    });
+                }
+            }
+
+            // 2. Generate Weekly (Averaging 7-day chunks)
+            for (let i = 0; i < granularData.daily.rawDates.length; i += 7) {
+                let chunkEnd = Math.min(i + 7, granularData.daily.rawDates.length);
+                granularData.weekly.rawDates.push(granularData.daily.rawDates[i]);
+                granularData.weekly.labels.push("Wk of " + granularData.daily.labels[i]);
+                
+                Object.keys(anchorValuesRecent).forEach(asset => {
+                    let sum = 0;
+                    for (let j = i; j < chunkEnd; j++) sum += granularData.daily.data[asset][j];
+                    granularData.weekly.data[asset].push(sum / (chunkEnd - i));
+                });
+            }
+            
+            // 3. Generate Monthly (Sample midpoint of month)
+            for (let i = 0; i < granularData.daily.rawDates.length; i++) {
+                let d = granularData.daily.rawDates[i];
+                if (d.getDate() === 15) { // Grab mid-month representations
+                    granularData.monthly.rawDates.push(new Date(d));
+                    granularData.monthly.labels.push(d.toLocaleDateString('en-IN', {month:'short', year:'numeric'}));
+                    Object.keys(anchorValuesRecent).forEach(asset => {
+                        granularData.monthly.data[asset].push(granularData.daily.data[asset][i]);
+                    });
+                }
+            }
+
+            // 4. Generate Yearly (Averaging whole year)
+            for (let y = 2023; y <= 2028; y++) {
+                granularData.yearly.rawDates.push(new Date(y, 0, 1));
+                granularData.yearly.labels.push(y.toString());
+                
+                Object.keys(anchorValuesRecent).forEach(asset => {
+                    let sum = 0;
+                    let count = 0;
+                    for (let i = 0; i < granularData.daily.rawDates.length; i++) {
+                        if (granularData.daily.rawDates[i].getFullYear() === y) {
+                            sum += granularData.daily.data[asset][i];
+                            count++;
+                        }
+                    }
+                    granularData.yearly.data[asset].push(sum / count);
+                });
+            }
+        }
+        
+        // Execute generator on load
+        generateGranularData();
+
+        const chartColors = {
+            usd: 'rgba(39, 174, 96, 1)',   // Green
+            oil: 'rgba(52, 73, 94, 1)',    // Dark Gray/Black
+            inr: 'rgba(41, 128, 185, 1)',  // Blue
+            gold: 'rgba(241, 196, 15, 1)', // Gold
+            silver: 'rgba(149, 165, 166, 1)', // Silver
+            nifty: 'rgba(142, 68, 173, 1)' // Purple
+        };
+
+        function initChart() {
+            const ctx = document.getElementById('correlationChart').getContext('2d');
+            
+            myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: []
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        tooltip: {
+                            backgroundColor: 'rgba(10, 37, 64, 0.9)',
+                            titleFont: { size: 14 },
+                            bodyFont: { size: 13 },
+                            padding: 12
+                        },
+                        legend: {
+                            position: 'top',
+                            labels: { font: { size: 14, family: "'Segoe UI', sans-serif" } }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { maxTicksLimit: 15 } // Prevent crowding on daily view
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: { display: true, text: 'Axis 1', font: { weight: 'bold' } },
+                            grid: { color: 'rgba(0,0,0,0.05)' }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: { display: true, text: 'Axis 2', font: { weight: 'bold' } },
+                            grid: { drawOnChartArea: false }
+                        }
+                    }
+                }
+            });
+            window.chartInitialized = true;
+            updateChart();
+        }
+        
+        function toggleProjection() {
+            const isChecked = document.getElementById('enableProjection').checked;
+            document.getElementById('endDate').value = isChecked ? '2028-12-31' : '2025-12-31';
+            
+            // Auto switch to monthly/yearly to prevent huge data overload on 6 years of daily data
+            if (isChecked && document.getElementById('chartTimeframe').value === 'daily') {
+                document.getElementById('chartTimeframe').value = 'monthly';
+            }
+            
+            updateChart();
+        }
+
+        function updateChart() {
+            if(!myChart) return;
+            
+            const a1 = document.getElementById('chartAsset1').value;
+            const a2 = document.getElementById('chartAsset2').value;
+            const timeframe = document.getElementById('chartTimeframe').value;
+            const isProjectionEnabled = document.getElementById('enableProjection').checked;
+            
+            // Calendar Filtering Logic
+            const startDateStr = document.getElementById('startDate').value;
+            const endDateStr = document.getElementById('endDate').value;
+            const startDate = startDateStr ? new Date(startDateStr) : new Date('2023-01-01');
+            
+            // Hard stop historical data at 2025 if projection is disabled
+            let maxEndDate = isProjectionEnabled ? new Date('2028-12-31') : new Date('2025-12-31');
+            let endDate = endDateStr ? new Date(endDateStr) : maxEndDate;
+            if (!isProjectionEnabled && endDate > maxEndDate) endDate = maxEndDate;
+
+            const sourceData = granularData[timeframe];
+            let filteredLabels = [];
+            let filteredData1 = [];
+            let filteredData2 = [];
+
+            for (let i = 0; i < sourceData.rawDates.length; i++) {
+                let d = sourceData.rawDates[i];
+                if (d >= startDate && d <= endDate) {
+                    filteredLabels.push(sourceData.labels[i]);
+                    filteredData1.push(sourceData.data[a1][i]);
+                    filteredData2.push(sourceData.data[a2][i]);
+                }
+            }
+
+            // Adjust point radius dynamically based on data density
+            let ptRadius = 3;
+            if(timeframe === 'daily') ptRadius = filteredLabels.length > 90 ? 0 : 2; 
+            if(timeframe === 'weekly') ptRadius = filteredLabels.length > 100 ? 0 : 1;
+            if(timeframe === 'yearly') ptRadius = 8;
+
+            // Optional: Mark the boundary where Projection begins (Jan 2026) visually
+            // In Chart.js we achieve this easily by keeping the core datasets clean.
+            
+            myChart.data.labels = filteredLabels;
+            
+            myChart.data.datasets = [
+                {
+                    label: document.getElementById('chartAsset1').options[document.getElementById('chartAsset1').selectedIndex].text,
+                    data: filteredData1,
+                    borderColor: chartColors[a1],
+                    backgroundColor: chartColors[a1].replace('1)', '0.1)'),
+                    borderWidth: 2.5,
+                    pointRadius: ptRadius,
+                    pointHoverRadius: ptRadius === 0 ? 4 : ptRadius + 2,
+                    yAxisID: 'y',
+                    tension: 0.2,
+                    fill: true
+                },
+                {
+                    label: document.getElementById('chartAsset2').options[document.getElementById('chartAsset2').selectedIndex].text,
+                    data: filteredData2,
+                    borderColor: chartColors[a2],
+                    borderWidth: 2.5,
+                    borderDash: [5, 5],
+                    pointRadius: ptRadius,
+                    pointHoverRadius: ptRadius === 0 ? 4 : ptRadius + 2,
+                    yAxisID: 'y1',
+                    tension: 0.2
+                }
+            ];
+            
+            myChart.options.scales.y.title.text = document.getElementById('chartAsset1').options[document.getElementById('chartAsset1').selectedIndex].text;
+            myChart.options.scales.y1.title.text = document.getElementById('chartAsset2').options[document.getElementById('chartAsset2').selectedIndex].text;
+
+            myChart.update();
+        }
+
+        // --- DATABASE PERSISTENCE LOGIC (Firebase API) ---
+        window.db = null;
+        window.auth = null;
+        window.currentUser = null;
+        window.firebaseAppId = null;
+        window.savedGameState = null;
+
+        async function initDatabase() {
+            try {
+                // Dynamically import modern modular Firebase to avoid interrupting DOM
+                const { initializeApp } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js");
+                const { getAuth, signInWithCustomToken, signInAnonymously } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js");
+                const { getFirestore, doc, setDoc, getDoc } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js");
+
+                const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+                if (!firebaseConfig) {
+                    console.log("Local Dev Mode: No Firebase config injected by platform environment.");
+                    return;
+                }
+
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'rbi-simulator-v2';
+                window.firebaseAppId = appId;
+
+                const app = initializeApp(firebaseConfig);
+                window.auth = getAuth(app);
+                window.db = getFirestore(app);
+                window.firestoreDoc = doc;
+                window.firestoreSetDoc = setDoc;
+                window.firestoreGetDoc = getDoc;
+
+                // Rule 3: Auth Before Query
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(window.auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(window.auth);
+                }
+                
+                window.currentUser = window.auth.currentUser;
+
+                await checkForSave();
+
+            } catch (e) {
+                console.warn("Database initialization skipped or failed.", e);
+            }
+        }
+
+        async function checkForSave() {
+            if (!window.currentUser || !window.db) return;
+            try {
+                // Rule 1: Strict Paths for Private Data
+                const ref = window.firestoreDoc(window.db, 'artifacts', window.firebaseAppId, 'users', window.currentUser.uid, 'saves', 'latest');
+                const snap = await window.firestoreGetDoc(ref);
+                if (snap.exists()) {
+                    window.savedGameState = snap.data();
+                    const resumeDiv = document.getElementById('resumeContainer');
+                    const nameInput = document.getElementById('playerNameInput');
+                    
+                    if (resumeDiv) resumeDiv.style.display = 'block';
+                    if (nameInput) nameInput.value = window.savedGameState.playerName;
+                }
+            } catch (e) {
+                console.error("Load check failed", e);
+            }
+        }
+
+        function serializeState() {
+            let historyCopy = account.history.map(h => ({
+                ...h,
+                date: h.date.toISOString()
+            }));
+
+            return {
+                playerName: playerName,
+                account: { ...account, history: historyCopy },
+                simDate: window.simDate.toISOString(),
+                startDate: window.startDate.toISOString(),
+                lastSimDay: window.lastSimDay,
+                daysElapsed: window.daysElapsed,
+                livePrices: livePrices,
+                previousPrices: previousPrices,
+                baseValues: baseValues,
+                anchorValuesRecent: anchorValuesRecent,
+                currentScenarioIndex: window.currentScenarioIndex
+            };
+        }
+
+        function deserializeState(state) {
+            playerName = state.playerName;
+            
+            let historyCopy = state.account.history.map(h => ({
+                ...h,
+                date: new Date(h.date)
+            }));
+            
+            account = { ...state.account, history: historyCopy };
+            
+            window.simDate = new Date(state.simDate);
+            window.startDate = new Date(state.startDate);
+            window.lastSimDay = state.lastSimDay;
+            window.daysElapsed = state.daysElapsed;
+            livePrices = state.livePrices;
+            previousPrices = state.previousPrices;
+            
+            window.currentScenarioIndex = state.currentScenarioIndex || 0;
+            if (state.anchorValuesRecent) {
+                anchorValuesRecent = state.anchorValuesRecent;
+            }
+            
+            for (let k in state.baseValues) {
+                baseValues[k] = state.baseValues[k];
+            }
+        }
+
+        async function saveGame() {
+            if (!window.currentUser || !window.db) return;
+            const statusEl = document.getElementById('dbStatus');
+            if (statusEl) statusEl.innerText = "Syncing to Cloud...";
+            
+            try {
+                const state = serializeState();
+                const ref = window.firestoreDoc(window.db, 'artifacts', window.firebaseAppId, 'users', window.currentUser.uid, 'saves', 'latest');
+                await window.firestoreSetDoc(ref, state);
+                
+                if (statusEl) {
+                    statusEl.innerText = "Cloud Saved";
+                    setTimeout(() => { if (statusEl.innerText === "Cloud Saved") statusEl.innerText = ""; }, 2500);
+                }
+            } catch (e) {
+                console.error("Save failed", e);
+                if (statusEl) statusEl.innerText = "Cloud Disconnected";
+            }
+        }
+
+        // Initialize Firebase cleanly in background upon boot
+        document.addEventListener('DOMContentLoaded', () => {
+            initDatabase();
+        });
+
+    </script>
+</body>
+</html>
