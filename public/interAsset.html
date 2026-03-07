@@ -2707,70 +2707,19 @@
             myChart.update();
         }
 
-        // --- DATABASE PERSISTENCE LOGIC (Firebase API) ---
-        window.db = null;
-        window.auth = null;
-        window.currentUser = null;
-        window.firebaseAppId = null;
+        // --- API CONFIGURATION & PERSISTENCE LOGIC ---
+        const API_CONFIG = {
+            SAVE_URL: 'https://erp.taxila.in/api/game/interAsset', 
+            LOAD_URL: 'https://erp.taxila.in/api/game/interAsset', 
+            HEADERS: { 'Content-Type': 'application/json' }
+        };
+
+        function getUserId() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get("userId") || "guest";
+        }
+
         window.savedGameState = null;
-
-        async function initDatabase() {
-            try {
-                // Dynamically import modern modular Firebase to avoid interrupting DOM
-                const { initializeApp } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js");
-                const { getAuth, signInWithCustomToken, signInAnonymously } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js");
-                const { getFirestore, doc, setDoc, getDoc } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js");
-
-                const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-                if (!firebaseConfig) {
-                    console.log("Local Dev Mode: No Firebase config injected by platform environment.");
-                    return;
-                }
-
-                const appId = typeof __app_id !== 'undefined' ? __app_id : 'rbi-simulator-v2';
-                window.firebaseAppId = appId;
-
-                const app = initializeApp(firebaseConfig);
-                window.auth = getAuth(app);
-                window.db = getFirestore(app);
-                window.firestoreDoc = doc;
-                window.firestoreSetDoc = setDoc;
-                window.firestoreGetDoc = getDoc;
-
-                // Rule 3: Auth Before Query
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(window.auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(window.auth);
-                }
-                
-                window.currentUser = window.auth.currentUser;
-
-                await checkForSave();
-
-            } catch (e) {
-                console.warn("Database initialization skipped or failed.", e);
-            }
-        }
-
-        async function checkForSave() {
-            if (!window.currentUser || !window.db) return;
-            try {
-                // Rule 1: Strict Paths for Private Data
-                const ref = window.firestoreDoc(window.db, 'artifacts', window.firebaseAppId, 'users', window.currentUser.uid, 'saves', 'latest');
-                const snap = await window.firestoreGetDoc(ref);
-                if (snap.exists()) {
-                    window.savedGameState = snap.data();
-                    const resumeDiv = document.getElementById('resumeContainer');
-                    const nameInput = document.getElementById('playerNameInput');
-                    
-                    if (resumeDiv) resumeDiv.style.display = 'block';
-                    if (nameInput) nameInput.value = window.savedGameState.playerName;
-                }
-            } catch (e) {
-                console.error("Load check failed", e);
-            }
-        }
 
         function serializeState() {
             let historyCopy = account.history.map(h => ({
@@ -2820,29 +2769,72 @@
             }
         }
 
+        function extractGameState(result) {
+            if (!result) return null;
+            if (result.gameState) return result.gameState;
+            if (result.data && result.data.gameState) return result.data.gameState;
+            if (result.data) return result.data;
+            return result;
+        }
+
         async function saveGame() {
-            if (!window.currentUser || !window.db) return;
+            const userId = getUserId();
             const statusEl = document.getElementById('dbStatus');
+            
             if (statusEl) statusEl.innerText = "Syncing to Cloud...";
             
             try {
                 const state = serializeState();
-                const ref = window.firestoreDoc(window.db, 'artifacts', window.firebaseAppId, 'users', window.currentUser.uid, 'saves', 'latest');
-                await window.firestoreSetDoc(ref, state);
                 
+                // REST API Call
+                const response = await fetch(API_CONFIG.SAVE_URL, {
+                    method: 'POST',
+                    headers: API_CONFIG.HEADERS,
+                    body: JSON.stringify({ userId: userId, gameState: state })
+                });
+
+                if (!response.ok) {
+                    console.warn("API Endpoint failed. Saving to local mock storage as fallback.");
+                    localStorage.setItem(`INTERASSET_SAVE_${playerName}`, JSON.stringify(state));
+                }
+
                 if (statusEl) {
                     statusEl.innerText = "Cloud Saved";
                     setTimeout(() => { if (statusEl.innerText === "Cloud Saved") statusEl.innerText = ""; }, 2500);
                 }
             } catch (e) {
                 console.error("Save failed", e);
-                if (statusEl) statusEl.innerText = "Cloud Disconnected";
+                localStorage.setItem(`INTERASSET_SAVE_${playerName}`, JSON.stringify(serializeState()));
+                if (statusEl) statusEl.innerText = "Saved Locally";
             }
         }
 
-        // Initialize Firebase cleanly in background upon boot
-        document.addEventListener('DOMContentLoaded', () => {
-            initDatabase();
+        // Initialize Auto-Load cleanly in background upon boot
+        window.addEventListener('DOMContentLoaded', () => {
+            const userId = getUserId();
+            if (userId && userId !== "guest") {
+                fetch(`${API_CONFIG.LOAD_URL}?userId=${userId}`, { headers: API_CONFIG.HEADERS })
+                .then(res => {
+                    if (res.ok) return res.json();
+                    throw new Error("No existing profile data found.");
+                })
+                .then(result => {
+                    const loadedState = extractGameState(result);
+                    if (loadedState && loadedState.playerName) {
+                        window.savedGameState = loadedState;
+                        
+                        // Show Resume Options on Welcome Screen
+                        const resumeDiv = document.getElementById('resumeContainer');
+                        const nameInput = document.getElementById('playerNameInput');
+                        
+                        if (resumeDiv) resumeDiv.style.display = 'block';
+                        if (nameInput) nameInput.value = loadedState.playerName;
+                    }
+                })
+                .catch(err => {
+                    console.log("No auto-save profile found. Proceeding with fresh game.");
+                });
+            }
         });
 
     </script>

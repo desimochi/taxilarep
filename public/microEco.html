@@ -57,8 +57,9 @@
         .btn-disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); }
         .locked-tab { opacity: 0.4; cursor: not-allowed !important; border: 1px dashed rgba(255,255,255,0.1); }
 
+        /* Manual Styles */
         .manual-container { max-width: 1200px; margin: 0 auto; background: white; color: #1e293b; border-radius: 1.5rem; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); display: flex; }
-        .manual-sidebar { background: var(--rbi-blue); color: white; width: 280px; flex-shrink: 0; }
+        .manual-sidebar { background: var(--rbi-blue); color: white; width: 300px; flex-shrink: 0; }
         .manual-scroll { height: 85vh; overflow-y: auto; padding: 4rem; flex-grow: 1; scroll-behavior: smooth; }
         .strategy-box { border-left: 4px solid var(--rbi-gold); padding: 1.5rem; margin-bottom: 2rem; background: #f8fafc; border-radius: 0 0.5rem 0.5rem 0; }
         
@@ -71,7 +72,7 @@
         }
         #notification.show { transform: translateY(0); }
 
-        .pedagogy-header { border-left: 5px solid var(--rbi-gold); padding-left: 1.5rem; margin: 2rem 0 1rem 0; }
+        .pedagogy-header { border-left: 5px solid var(--rbi-gold); padding-left: 1.5rem; margin: 2.5rem 0 1rem 0; }
         
         .btn-processing {
             background: linear-gradient(90deg, var(--rbi-blue), #1e293b, var(--rbi-blue));
@@ -84,6 +85,7 @@
         .insight-highlight { color: var(--rbi-gold); font-weight: 700; }
 
         .learn-scroll { max-height: 75vh; overflow-y: auto; scroll-behavior: smooth; }
+        .academic-chapter { margin-bottom: 4rem; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 3rem; }
     </style>
 </head>
 <body class="min-h-screen">
@@ -101,7 +103,7 @@
     </div>
 
     <!-- SCREEN 1: Welcome -->
-    <div id="view-welcome" class="view-section active active-flex items-center justify-center min-h-screen p-4 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black text-center">
+    <div id="view-welcome" class="view-section active active-flex items-center justify-center min-h-screen p-4 bg-slate-950 text-center">
         <div class="max-w-2xl w-full glass-card p-12 border-t-8 border-rbi-gold shadow-2xl">
             <h2 class="text-rbi-gold font-black uppercase tracking-[0.4em] mb-4 text-sm">Taxila Business School</h2>
             <h1 class="text-5xl font-black text-white mb-2 uppercase tracking-tighter text-balance leading-tight">Micro-Economic Strategy Terminal</h1>
@@ -109,7 +111,7 @@
             
             <div class="mb-8 text-left max-w-md mx-auto">
                 <label class="block text-[10px] font-black text-slate-500 uppercase mb-2 ml-1 tracking-widest text-center">Lead Analyst Identity Verification</label>
-                <input type="text" id="playerNameInput" placeholder="Enter Full Name for Certificate" class="w-full px-5 py-4 bg-slate-800/50 border border-slate-700 rounded-xl focus:border-rbi-gold outline-none transition-all text-white text-lg font-bold text-center uppercase">
+                <input type="text" id="playerNameInput" placeholder="Enter Full Name for Certificate" class="w-full px-5 py-4 bg-slate-800/50 border border-slate-700 rounded-xl focus:border-rbi-gold outline-none transition-all text-white text-lg font-bold text-center uppercase tracking-wider">
             </div>
 
             <div class="flex flex-col gap-4 max-w-md mx-auto">
@@ -118,12 +120,12 @@
             </div>
             
             <div id="engineStatus" class="mt-8 text-[9px] text-slate-500 uppercase font-black tracking-[0.3em]">
-                Simulation Engine v4.9.21 | Board Certified
+                Simulation Engine v4.9.27 | Secure Assignment Protocol
             </div>
         </div>
     </div>
 
-    <!-- SCREEN 2: Strategic Field Guide (Briefing Hub) -->
+    <!-- SCREEN 2: Strategic Field Guide (Briefing Hub - 1500+ Words) -->
     <div id="view-manual" class="view-section min-h-screen py-8 px-4 bg-slate-950">
         <div class="manual-container flex flex-col md:flex-row">
             <aside class="manual-sidebar p-8 hidden md:block border-r border-white/10 text-white text-center">
@@ -132,17 +134,17 @@
                     <h1 class="text-lg font-black uppercase tracking-tighter">Briefing Hub</h1>
                     <p class="text-[9px] text-rbi-gold font-bold uppercase tracking-widest italic">Taxila Business School</p>
                 </div>
-                <nav class="space-y-6 text-xs font-semibold text-slate-300">
+                <nav class="space-y-6 text-xs font-semibold text-slate-300 text-left">
                     <div class="space-y-2">
                         <p class="text-white opacity-40 uppercase tracking-widest text-[8px]">Academic Foundations</p>
-                        <p class="cursor-pointer hover:text-gold" onclick="document.getElementById('m-importance').scrollIntoView()">• The Choice Science</p>
-                        <p class="cursor-pointer hover:text-gold" onclick="document.getElementById('m-equilibrium').scrollIntoView()">• Dynamic Equilibrium</p>
-                        <p class="cursor-pointer hover:text-gold" onclick="document.getElementById('m-marginalism').scrollIntoView()">• Marginalism (MR=MC)</p>
+                        <p class="cursor-pointer hover:text-gold" onclick="document.getElementById('m-vision').scrollIntoView()">• The Vision of MEST</p>
+                        <p class="cursor-pointer hover:text-gold" onclick="document.getElementById('m-choice').scrollIntoView()">• Choice Under Scarcity</p>
+                        <p class="cursor-pointer hover:text-gold" onclick="document.getElementById('m-marginal').scrollIntoView()">• Calculus of Profit</p>
                     </div>
                     <div class="space-y-2">
                         <p class="text-white opacity-40 uppercase tracking-widest text-[8px]">Industrial Operations</p>
-                        <p class="cursor-pointer hover:text-gold" onclick="document.getElementById('m-scaling').scrollIntoView()">• CAPEX & Scaling</p>
-                        <p class="cursor-pointer hover:text-gold" onclick="document.getElementById('m-shocks').scrollIntoView()">• Managing Shocks</p>
+                        <p class="cursor-pointer hover:text-gold" onclick="document.getElementById('m-scaling').scrollIntoView()">• Scaling & CAPEX</p>
+                        <p class="cursor-pointer hover:text-gold" onclick="document.getElementById('m-gameplay').scrollIntoView()">• Gameplay Mechanics</p>
                         <p class="cursor-pointer hover:text-gold" onclick="document.getElementById('m-outcomes').scrollIntoView()">• 10 Learning Goals</p>
                     </div>
                 </nav>
@@ -150,57 +152,70 @@
             <main class="manual-scroll bg-white text-slate-800">
                 <header class="mb-10 border-b pb-8">
                     <h2 class="text-4xl font-black text-slate-900 mb-2 uppercase tracking-tighter">Strategic Field Guide: Briefing Hub</h2>
-                    <p class="text-xs text-slate-500 font-bold tracking-[0.4em] uppercase italic">Official Certification Syllabus | Taxila Business School</p>
+                    <p class="text-xs text-slate-500 font-bold tracking-[0.4em] uppercase italic text-balance">The Official Certification Syllabus | Academic Year 2024-25</p>
                 </header>
 
-                <div class="space-y-12 text-sm leading-relaxed text-justify">
-                    <section id="m-importance">
-                        <h3 class="text-xl font-black text-slate-900 mb-4 uppercase border-l-4 border-[#C6A664] pl-3 italic">I. Micro-Economics: The Science of Corporate Choice</h3>
-                        <p class="mb-4">Welcome to the <strong>Micro-Economic Strategy Terminal (MEST)</strong>. Micro-economics is often reduced to a study of abstract graphs, but in this terminal, it is the study of <strong>Choice Under Scarcity</strong>. As a Lead Analyst at Taxila Business School, you are managing the reality of a ₹100,000,000 firm. If you produce too much volume ($Q$), inventory costs will bleed your capital. If you price your product ($P$) above market equilibrium, consumers defect to rival Nexus Omega. MEST is the definitive laboratory for mastering the bridge between <strong>Price Theory</strong> and <strong>Corporate Finance</strong>.</p>
+                <div class="space-y-16 text-sm leading-relaxed text-justify">
+                    <!-- Chapter 1: The Vision -->
+                    <section id="m-vision" class="academic-chapter">
+                        <div class="pedagogy-header"><h3 class="text-xl font-black text-slate-900 uppercase tracking-widest underline underline-offset-8 decoration-rbi-gold italic">I. The Vision of MEST: Beyond the Theory</h3></div>
+                        <p>Welcome to the <strong>Micro-Economic Strategy Terminal (MEST)</strong>. At Taxila Business School, we believe that leadership is a derivative of decision-making under pressure. This simulation is designed to bridge the chasm between static textbook theory and the kinetic, stochastic reality of a ₹100,000,000 industrial firm. In traditional academic environments, "Demand" and "Supply" are often perceived as geometric curiosities—lines drawn on a chalkboard that exist in a vacuum of "ceteris paribus."</p>
+                        <p class="mt-4">In MEST, these curves are the living outcome of millions of individual consumer psychological choices and hard-coded physical constraints. You are tasked with a single, high-stakes mission: to act as the <strong>Strategic Lead Analyst</strong> for Firm Alpha. Your firm operates in a luxury industrial market where a single rupee drop in Unit Variable Cost (VC) can translate to millions in bottom-line expansion, and a single pricing error of ₹500 can cause a catastrophic inventory overhang. This is not a game of intuition; it is a game of <strong>Marginal Precision</strong>. This field guide provides the rigorous academic framework you need to move from a Junior Associate to a Strategic Maestro.</p>
                     </section>
 
-                    <section id="m-equilibrium">
-                        <h3 class="text-xl font-black text-slate-900 mb-4 uppercase border-l-4 border-[#C6A664] pl-3 italic">II. Mastering Dynamic Equilibrium</h3>
-                        <p class="mb-4">The market is a moving target influenced by <strong>Macro Income Levels</strong> and <strong>Input Costs</strong>. When income rises, the Demand Curve shifts right (Bullish). Failure to raise prices during a Bullish phase results in "Value Leakage." Conversely, as costs rise, your Supply Curve shifts upward (Cost-Push Inflation). Interacting with the <strong>Theory Hub</strong> for the mandatory 50s develops the intuition required to predict the "Market Floor" before committing capital.</p>
+                    <!-- Chapter 2: Choice Science -->
+                    <section id="m-choice" class="academic-chapter">
+                        <div class="pedagogy-header"><h3 class="text-xl font-black text-slate-900 uppercase tracking-widest underline underline-offset-8 decoration-rbi-gold italic">II. Micro-Economics: The Science of Choice</h3></div>
+                        <p>Micro-economics is the study of how individual actors—consumers and firms—make choices when resources are scarce. Scarce resources in MEST are your <strong>Initial Capital (₹100M)</strong> and your <strong>Industrial Capacity</strong>. Every decision you make has an "Opportunity Cost." If you choose to spend ₹5M on a plant expansion, that is capital that cannot be used for Tech R&D or Marketing OpEx. Your primary duty is to achieve <strong>Equilibrium Synchronization</strong>.</p>
+                        <p class="mt-4">Understanding the intersection of curves is about identifying the "Market Clearance Point." If you produce a batch size ($Q$) that exceeds the current market demand floor (roughly 1,200 units at equilibrium), you incur <strong>Inventory Carrying Costs</strong>. These costs are not merely storage fees; they represent dead capital—capital that is "frozen" in unsold stock and cannot be reinvested. Conversely, if your price ($P$) is even slightly above the competitive threshold set by macro-income levels, consumers will immediately defect to your rival, <strong>Nexus Omega</strong>. This defecting behavior is a direct result of the <strong>Price Elasticity of Substitution</strong>. In high-value industrial markets, brand loyalty is fragile and utility is ruthlessly calculated by the buyer.</p>
                     </section>
 
-                    <section id="m-marginalism">
-                        <h3 class="text-xl font-black text-slate-900 mb-4 uppercase border-l-4 border-[#C6A664] pl-3 italic">III. The Logic of Marginalism: MR = MC</h3>
-                        <p class="mb-4">Profit is maximized only at the point where <strong>Marginal Revenue (MR)</strong> equals <strong>Marginal Cost (MC)</strong>. In Monopoly frameworks, the MR line falls faster than demand, teaching that to sell one more unit, the monopolist must lower the price for <em>all</em> units sold. Analysts who produce purely based on demand volume often find their capital reserve evaporating despite high sales figures.</p>
+                    <!-- Chapter 3: Marginalism -->
+                    <section id="m-marginal" class="academic-chapter">
+                        <div class="pedagogy-header"><h3 class="text-xl font-black text-slate-900 uppercase tracking-widest underline underline-offset-8 decoration-rbi-gold italic">III. The Calculus of Profit: Marginalism (MR = MC)</h3></div>
+                        <p>The foundation of success in MEST is the <strong>Profit Maximization Rule</strong>. Analysts must internalize that Total Revenue is a vanity metric; cycle-net profit is the only reality. The decision to produce the <em>next</em> unit must be governed by a derivative calculation: <strong>Marginal Revenue (MR)</strong> must equal <strong>Marginal Cost (MC)</strong>.</p>
+                        <p class="mt-4">In a <strong>Monopoly Framework</strong>, this calculation is notoriously difficult. As the monopolist, if you wish to sell one more unit, you must lower the price for <em>every</em> unit already sold. This creates the "Marginal Revenue Gap"—where your MR curve falls twice as fast as your price line. This teaches you to restrict quantity intentionally to maintain price strength. If you ignore the MR curve and produce purely based on the total demand volume revealed in the Hub, you will find your capital reserve evaporating. Why? Because the cost to produce that last segment of units was higher than the revenue they generated. In MEST, we call this the <strong>Volume Trap</strong>. To achieve a Maestro rating, you must find the mathematical "Sweet Spot" where the Red Supply curve and the Purple MR curve (visible in Monopoly mode) intersect perfectly.</p>
                     </section>
 
-                    <section id="m-scaling">
-                        <h3 class="text-xl font-black text-slate-900 mb-4 uppercase border-l-4 border-[#C6A664] pl-3 italic">IV. Industrial Scaling & The CAPEX Trap</h3>
-                        <p class="mb-4">You start with a physical production capacity of 100 units. However, the structural market floor is approximately 1,200 units. Every turn you miss demand is nearly ₹9,000,000 in lost potential revenue. Mastering <strong>CAPEX</strong> expansion timing is vital, but over-expanding during a Bearish cycle increases fixed overhead (₹850k/day), risking bankruptcy.</p>
+                    <!-- Chapter 4: Scaling & CAPEX -->
+                    <section id="m-scaling" class="academic-chapter">
+                        <div class="pedagogy-header"><h3 class="text-xl font-black text-slate-900 uppercase tracking-widest underline underline-offset-8 decoration-rbi-gold italic">IV. Industrial Physics: Scaling & The CAPEX Logic</h3></div>
+                        <p>MEST introduces the physical reality of <strong>Industrial Rigidity</strong>. Your firm begins with a physical production limit of only 100 units. However, the structural market floor is approximately 1,200 units. This creates a massive <strong>Supply-Side Bottleneck</strong>. If you price your product at the equilibrium of ₹10,000 with a cost of ₹4,500, every turn that you miss demand is a forfeiture of ₹9,000,000 in daily potential net profit. Over a 30-day cycle, staying at a capacity of 100 is an opportunity cost of nearly ₹270,000,000—nearly three times your starting capital.</p>
+                        <p class="mt-4">Mastering <strong>Capital Expenditure (CAPEX)</strong> is therefore your most vital strategic lever. A ₹5,000,000 investment in plant expansion increases your capacity by +100 units. A successful analyst plans their expansions 3-4 moves in advance, anticipating a "Bullish" income shift. However, over-expanding during a "Bearish" cycle is a bankruptcy trap. Higher capacity increases your <strong>Operating Leverage</strong>—meaning your fixed burn rate (₹850k/day) becomes a greater liability if volume drops. Timing your scaling to match the "Invisible Hand" of market demand is what separates an Analyst from a corporate leader.</p>
                     </section>
 
-                    <section id="m-shocks">
-                        <h3 class="text-xl font-black text-slate-900 mb-4 uppercase border-l-4 border-[#C6A664] pl-3 italic">V. Risk Mitigation: The Black Swan Boycott</h3>
-                        <p class="mb-4">When a <strong>Public Boycott</strong> triggers, demand utility falls by 80%. The winning move is the <strong>Defensive Lockout</strong>: set your Production Batch ($Q$) to zero immediately. Protecting the capital reserve from being bled dry by unsold variable costs is more important than chasing non-existent sales.</p>
+                    <!-- Chapter 5: Gameplay -->
+                    <section id="m-gameplay" class="academic-chapter">
+                        <div class="pedagogy-header"><h3 class="text-xl font-black text-slate-900 uppercase tracking-widest underline underline-offset-8 decoration-rbi-gold italic">V. Gameplay Mechanics: An Operations Walkthrough</h3></div>
+                        <p>Your assignment is split into two distinct phases of professional execution:</p>
+                        <p class="mt-4"><strong>Phase I: Preparation (The Theory Hub)</strong> - This is where the Lead Analyst builds their "Mental Model." You must spend at least 50 seconds in the visualizer, adjusting the sliders to see how the market clearing price ($P$) reacts to Income and Cost shifts. <strong>Interaction Mandate:</strong> You must perform at least 5 practice movements. Stagnant observation is insufficient for Board approval. Use this phase to find the "WTP Floor"—the price point where the market will absorb at least 1,200 units. If Income is at 50%, you will see the floor drop to ₹8,500. Pricing at ₹11,000 in the terminal will then result in zero sales.</p>
+                        <p class="mt-4"><strong>Phase II: Execution (The Combat Terminal)</strong> - Once training is complete, you enter the 30-cycle fiscal year. Each day, you set $P$ and $Q$. <strong>Strict Validation:</strong> The terminal contains a "Regulatory Capacity Lock." You cannot produce more than your physical plant allows. If your capacity is 100, entering 150 for your batch will trigger a <strong>Regulatory Alert</strong> and block the transaction. This models the physical impossibility of over-leveraging non-existent machinery. Once you click "Execute Move," the terminal enters a <strong>Computation Sequence</strong>—visually analyzing rivals and calculating elasticity—simulating the time-cost of corporate data synthesis.</p>
                     </section>
 
-                    <section id="m-outcomes">
-                        <h3 class="text-xl font-black text-slate-900 mb-4 uppercase border-l-4 border-[#C6A664] pl-3 italic text-balance">VI. Top 10 Pedagogical Learning Outcomes</h3>
-                        <div class="bg-slate-50 p-6 rounded-xl border border-slate-200">
-                            <ul class="list-decimal ml-5 space-y-4 font-medium text-slate-800">
-                                <li><strong>Equilibrium Synchronization</strong></li>
-                                <li><strong>Marginal Revenue Mastery</strong></li>
-                                <li><strong>CAPEX Strategy</strong></li>
-                                <li><strong>Price Elasticity (Sensitivity)</strong></li>
-                                <li><strong>Operating Leverage</strong></li>
-                                <li><strong>Tit-for-Tat Game Theory</strong></li>
-                                <li><strong>Macro-Shock Deflection</strong></li>
-                                <li><strong>Supply-Chain Efficiency via R&D</strong></li>
-                                <li><strong>Inventory Psychology</strong></li>
-                                <li><strong>Corporate Performance Analysis (CRI)</strong></li>
+                    <!-- Chapter 6: Outcomes -->
+                    <section id="m-outcomes" class="academic-chapter">
+                        <div class="pedagogy-header"><h3 class="text-xl font-black text-slate-900 uppercase tracking-widest underline underline-offset-8 decoration-rbi-gold italic text-balance">VI. Learnings & Pedagogical Outcomes Summary</h3></div>
+                        <p>By successfully completing this certification at Taxila Business School, you will have mastered the following skills:</p>
+                        <div class="bg-slate-50 p-8 rounded-xl border border-slate-200 mt-6">
+                            <ul class="list-decimal ml-6 space-y-4 font-medium text-slate-800">
+                                <li><strong>Marginal Reasoning:</strong> The ability to ignore sunk costs and focus on the derivative impact of the next decision cycle.</li>
+                                <li><strong>Equilibrium Prediction:</strong> Identifying shifts in consumer utility before committing capital to production batches.</li>
+                                <li><strong>Asset Allocation:</strong> Managing the ROI of CAPEX (Plants) versus OpEx (Marketing) to maximize long-term firm valuation.</li>
+                                <li><strong>Risk Resiliency:</strong> Developing "Bunker Strategies" during Public Boycotts—setting $Q$ to zero to protect liquidity reserves.</li>
+                                <li><strong>Game Theory Heuristics:</strong> Countering "Tit-for-Tat" price undercutting by rivals through the creation of Brand Moats.</li>
+                                <li><strong>Operating Leverage Analytics:</strong> Distinguishing between Fixed Costs (Fixed overhead) and Variable Costs (Marginal production expense).</li>
+                                <li><strong>Supply Chain Optimization:</strong> Using R&D to lower the marginal cost curve and achieve a permanent competitive advantage.</li>
+                                <li><strong>Cross-Price Elasticity:</strong> Quantifying how a ₹100 change in your rival's price affects your own demand volume.</li>
+                                <li><strong>Inventory Turnover Mastery:</strong> Ensuring that produced inventory matches market clearance to minimize holding cost leakage.</li>
+                                <li><strong>Holistic Performance Auditing:</strong> Using the 100-point Corporate Rating Index (CRI) to balance ROI, Volume, and Corporate Survival.</li>
                             </ul>
                         </div>
+                        <p class="mt-8 font-bold text-rbi-gold uppercase text-center tracking-widest">End of Comprehensive Syllabus</p>
                     </section>
                 </div>
 
                 <div class="mt-12 pt-8 border-t flex flex-col items-center gap-4 text-center">
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest underline underline-offset-4">Board Certified Briefing Concluded</p>
-                    <button onclick="proceedToHub()" class="w-full py-5 bg-[#0A2540] text-white rounded-xl font-black text-xl hover:bg-slate-800 transition-all shadow-xl uppercase tracking-tighter">Enter Hub & Begin Readiness Check</button>
+                    <button onclick="proceedToHub()" class="w-full py-6 bg-[#0A2540] text-white rounded-xl font-black text-2xl hover:bg-slate-800 transition-all shadow-xl uppercase tracking-tighter">I Accept & Enter Strategic Hub</button>
                 </div>
             </main>
         </div>
@@ -219,22 +234,23 @@
                     <button onclick="switchTab('terminal')" id="tab-terminal" class="tab-btn px-4 py-2 rounded-md font-bold text-[10px] uppercase text-slate-400 hover:text-white transition-all locked-tab">Combat Terminal</button>
                 </nav>
                 <div class="flex items-center gap-2">
-                    <!-- NEW Save/Load Controls -->
+                    <!-- Save/Load Controls -->
                     <button onclick="executeApiSave()" class="bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-400 px-3 py-2 rounded-lg font-black text-[10px] uppercase border border-indigo-500/30 transition-all">Save</button>
                     <button onclick="openSaveLoadModal('load', false)" class="bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-400 px-3 py-2 rounded-lg font-black text-[10px] uppercase border border-indigo-500/30 transition-all mr-2">Load</button>
-                    
-                    <button onclick="toggleLearnModal(true)" class="bg-sky-600/20 hover:bg-sky-600/40 text-sky-400 px-4 py-2 rounded-lg font-black text-[10px] uppercase border border-sky-500/30">What to Learn?</button>
+
+                    <button onclick="toggleLearnModal(true)" class="bg-sky-600/20 hover:bg-sky-600/40 text-sky-400 px-4 py-2 rounded-lg font-black text-[10px] uppercase border border-sky-500/30 transition-all">What to Learn?</button>
                     <button onclick="location.reload()" class="bg-slate-800 hover:bg-red-600 px-3 py-2 rounded-lg font-bold text-[10px] uppercase transition-colors">Abort</button>
                 </div>
             </div>
         </header>
 
         <main class="max-w-7xl mx-auto p-4 lg:p-6 text-white">
+            <!-- Theory View -->
             <div id="dash-analysis" class="dash-tab active space-y-4">
                 <div id="readiness-bar" class="w-full bg-slate-900/80 p-4 rounded-xl border border-sky-500/30 flex items-center justify-between shadow-2xl">
                     <div class="flex items-center gap-4">
-                        <div class="p-2 bg-sky-500/10 rounded-lg"><svg class="w-6 h-6 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg></div>
-                        <div><p class="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em]">Strategic Readiness Protocol</p><h4 class="text-xs font-bold uppercase"><span id="ready-status-text">Analysing market sensitivities...</span></h4></div>
+                        <div class="p-2 bg-sky-500/10 rounded-lg text-sky-400"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg></div>
+                        <div><p class="text-[9px] font-black text-slate-500 uppercase tracking-widest text-balance">Readiness Requirement</p><h4 class="text-xs font-bold uppercase"><span id="ready-status-text">Analysing market sensitivities...</span></h4></div>
                     </div>
                     <div class="flex gap-8 text-center">
                         <div><p class="text-[8px] font-black text-slate-500 uppercase mb-1">Study</p><p id="ready-timer" class="text-lg font-black text-white tabular-nums">0/50s</p></div>
@@ -245,35 +261,29 @@
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div class="space-y-4">
                         <div class="glass-card p-8 border-l-4 border-sky-500">
-                            <h3 class="font-black border-b border-white/10 pb-4 mb-6 text-sm uppercase">Theory Modelling</h3>
+                            <h3 class="font-black border-b border-white/10 pb-4 mb-6 text-sm uppercase text-sky-400">Theory Hub</h3>
                             <div class="space-y-8">
-                                <div><div class="flex justify-between text-[10px] font-black text-slate-400 uppercase mb-3"><span>Income level</span><span id="val-income" class="text-rbi-gold">100%</span></div><input type="range" id="input-income" min="50" max="150" value="100" class="w-full" oninput="registerPracticeMove(); updateEquilibrium()"></div>
-                                <div><div class="flex justify-between text-[10px] font-black text-slate-400 uppercase mb-3"><span>Production Cost</span><span id="val-cost" class="text-rbi-gold">100%</span></div><input type="range" id="input-cost" min="50" max="150" value="100" class="w-full" oninput="registerPracticeMove(); updateEquilibrium()"></div>
+                                <div><div class="flex justify-between text-[10px] font-black text-slate-400 uppercase mb-3"><span>Income</span><span id="val-income" class="text-rbi-gold">100%</span></div><input type="range" id="input-income" min="50" max="150" value="100" class="w-full" oninput="registerPracticeMove(); updateEquilibrium()"></div>
+                                <div><div class="flex justify-between text-[10px] font-black text-slate-400 uppercase mb-3"><span>Costs</span><span id="val-cost" class="text-rbi-gold">100%</span></div><input type="range" id="input-cost" min="50" max="150" value="100" class="w-full" oninput="registerPracticeMove(); updateEquilibrium()"></div>
                                 <hr class="border-white/5">
-                                <div><label class="text-[10px] font-black text-slate-500 uppercase mb-3 block">Competition</label><select id="marketType" class="w-full p-3 bg-slate-900 border border-slate-700 rounded-xl text-xs font-bold text-white outline-none focus:border-rbi-gold" onchange="registerPracticeMove(); updateEquilibrium()"><option value="perfect">Perfect Competition</option><option value="monopoly">Monopoly</option><option value="oligopoly">Oligopoly</option></select></div>
+                                <div><label class="text-[10px] font-black text-slate-500 uppercase mb-3 block">Competition Framework</label><select id="marketType" class="w-full p-3 bg-slate-900 border border-slate-700 rounded-xl text-xs font-bold text-white outline-none focus:border-rbi-gold" onchange="registerPracticeMove(); updateEquilibrium()"><option value="perfect">Perfect Competition</option><option value="monopoly">Monopoly (Single Firm)</option><option value="oligopoly">Oligopoly (Hard Duopoly)</option></select></div>
                             </div>
                         </div>
-
                         <div id="pedagogy-box" class="glass-card p-6 bg-rbi-gold/5 border border-rbi-gold/20 rounded-xl">
-                            <h4 class="text-[10px] font-black text-rbi-gold uppercase mb-3 tracking-widest flex items-center gap-2">
-                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10.394 2.827a1 1 0 00-.788 0L2.606 6A1 1 0 002 6.938V13.5a1 1 0 00.512.87l6.5 3.5a1 1 0 00.976 0l6.5-3.5a1 1 0 00.512-.87V6.938a1 1 0 00-.606-.911l-6.5-3.2z"></path></svg>
-                                Professor's Analysis
-                            </h4>
-                            <div id="pedagogy-content" class="text-[11px] leading-relaxed text-slate-300 italic">
-                                Initializing academic logic... Adjust a lever to begin the briefing.
-                            </div>
+                            <h4 class="text-[10px] font-black text-rbi-gold uppercase mb-3 tracking-widest italic flex items-center gap-2">Professor's Analysis</h4>
+                            <div id="pedagogy-content" class="text-[11px] leading-relaxed text-slate-300 italic">Adjust a lever to begin the briefing.</div>
                         </div>
                     </div>
-
                     <div class="lg:col-span-2 glass-card p-8 flex flex-col min-h-[500px]">
-                        <div class="flex justify-between items-center mb-6 text-sky-400 font-black text-xs uppercase italic tracking-widest"><span>Live Dynamic Equilibrium</span><div class="flex gap-4"><span class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 bg-sky-500 rounded-sm"></div> Demand</span><span class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 bg-red-500 rounded-sm"></div> Supply</span><span id="mr-legend" class="hidden flex items-center gap-1.5"><div class="w-2.5 h-2.5 bg-purple-500 rounded-sm"></div> MR</span></div></div>
+                        <div class="flex justify-between items-center mb-6 text-sky-400 font-black text-xs uppercase italic"><span>Live Equilibrium Modelling</span><div class="flex gap-4"><span class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 bg-sky-500 rounded-sm"></div> Demand</span><span class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 bg-red-500 rounded-sm"></div> Supply</span><span id="mr-legend" class="hidden flex items-center gap-1.5"><div class="w-2.5 h-2.5 bg-purple-500 rounded-sm"></div> MR</span></div></div>
                         <div class="flex-grow chart-container"><canvas id="marketChart"></canvas></div>
-                        <div class="grid grid-cols-2 gap-6 mt-8 pt-6 border-t border-white/10 text-center text-white"><div><p class="text-[10px] text-slate-500 uppercase font-black">Eq. Price ($P$)</p><p class="text-3xl font-black tabular-nums" id="display-pe">₹0.00</p></div><div><p class="text-[10px] text-slate-500 uppercase font-black">Predicted $Q$</p><p class="text-3xl font-black tabular-nums" id="display-qe">0 Units</p></div></div>
+                        <div class="grid grid-cols-2 gap-6 mt-8 pt-6 border-t border-white/10 text-center text-white"><div><p class="text-[10px] text-slate-500 uppercase font-black mb-1">Predicted Eq. Price</p><p class="text-3xl font-black tabular-nums" id="display-pe">₹0.00</p></div><div><p class="text-[10px] text-slate-500 uppercase font-black mb-1">Predicted Eq. Volume</p><p class="text-3xl font-black tabular-nums" id="display-qe">0 Units</p></div></div>
                     </div>
                 </div>
             </div>
 
-            <div id="dash-terminal" class="dash-tab hidden space-y-4">
+            <!-- Terminal View -->
+            <div id="dash-terminal" class="dash-tab hidden space-y-4 text-white">
                 <div id="forecast-bar" class="w-full bg-slate-900/80 p-4 rounded-xl border border-rbi-gold/30 flex items-center justify-between shadow-2xl transition-all duration-500">
                     <div class="flex items-center gap-4 font-black uppercase text-white">
                         <p class="text-[9px] text-slate-500 tracking-[0.2em]">Market Cycle <span id="forecast-day">1</span></p>
@@ -282,47 +292,46 @@
                 </div>
                 <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
                     <div class="space-y-4">
-                        <div class="bg-slate-900 p-5 rounded-xl border-l-4 border-rbi-gold shadow-2xl relative"><div class="flex justify-between items-center mb-4 border-b border-white/5 pb-2"><p class="text-[10px] font-black text-rbi-gold uppercase">Firm Alpha</p><div class="text-[14px] font-black text-rbi-gold bg-rbi-gold/10 px-2 py-0.5 rounded border border-rbi-gold/20"><span id="player-score">0</span><span class="text-[9px] opacity-50 ml-0.5">/100</span></div></div>
-                            <div class="text-[10px] space-y-2 mono-font"><div class="stat-row"><span>Capital:</span> <span id="game-balance">₹100M</span></div><div class="stat-row"><span>Inventory:</span> <span id="game-stock">0</span></div><div class="stat-row font-bold text-sky-400"><span>Capacity:</span> <span id="game-capacity">100</span></div><div class="stat-row bg-white/5 p-1 rounded font-bold text-terminal-green"><span>Cycle Net:</span> <span id="game-last-net">₹0</span></div></div>
+                        <!-- PLAYER CARD -->
+                        <div class="bg-slate-900 p-5 rounded-xl border-l-4 border-rbi-gold shadow-2xl relative"><div class="flex justify-between items-center mb-4 border-b border-white/5 pb-2"><p class="text-[10px] font-black text-rbi-gold uppercase tracking-widest">Firm Alpha</p><div class="text-[14px] font-black text-rbi-gold bg-rbi-gold/10 px-2 py-0.5 rounded border border-rbi-gold/20"><span id="player-score">0</span><span class="text-[9px] opacity-50 ml-0.5">/100</span></div></div>
+                            <div class="text-[10px] space-y-2 mono-font"><div class="stat-row"><span>Net Capital:</span> <span id="game-balance">₹100M</span></div><div class="stat-row"><span>Inventory:</span> <span id="game-stock">0</span></div><div class="stat-row font-bold text-sky-400"><span>Plant Cap:</span> <span id="game-capacity">100</span></div><div class="stat-row bg-white/5 p-1 rounded font-bold text-terminal-green"><span>Cycle Net:</span> <span id="game-last-net">₹0</span></div></div>
                         </div>
-                        <div id="ai-stats-card" class="bg-slate-900 p-5 rounded-xl border-l-4 border-red-500 shadow-2xl transition-all duration-500 relative"><div class="flex justify-between items-center mb-4 border-b border-white/5 pb-2"><p class="text-[10px] font-black text-red-400 uppercase tracking-widest uppercase">Nexus Omega</p><div class="text-[14px] font-black text-red-400 bg-red-400/10 px-2 py-0.5 rounded border border-red-400/20"><span id="ai-score">0</span><span class="text-[9px] opacity-50 ml-0.5">/100</span></div></div>
-                            <div class="text-[10px] space-y-2 mono-font"><div class="stat-row"><span>Capital:</span> <span id="ai-balance">₹100,000,000</span></div><div class="stat-row font-bold text-red-400"><span>Cycle Net:</span> <span id="ai-last-net">₹0</span></div></div>
+                        <!-- AI DASHBOARD TRANSPARENT -->
+                        <div id="ai-stats-card" class="bg-slate-900 p-5 rounded-xl border-l-4 border-red-500 shadow-2xl relative text-white"><div class="flex justify-between items-center mb-4 border-b border-white/5 pb-2"><p class="text-[10px] font-black text-red-400 uppercase tracking-widest">Nexus Omega</p><div class="text-[14px] font-black text-red-400 bg-red-400/10 px-2 py-0.5 rounded border border-red-400/20"><span id="ai-score">0</span><span class="text-[9px] opacity-50 ml-0.5">/100</span></div></div>
+                            <div class="text-[10px] space-y-2 mono-font"><div class="stat-row"><span>Net Capital:</span> <span id="ai-balance">₹100,000,000</span></div><div class="stat-row"><span>Inventory:</span> <span id="ai-stock">0</span></div><div class="stat-row font-bold text-sky-400"><span>Plant Cap:</span> <span id="ai-capacity">1500</span></div><div class="stat-row bg-white/5 p-1 rounded font-bold text-red-400"><span>Cycle Net:</span> <span id="ai-last-net">₹0</span></div></div>
                         </div>
                     </div>
                     <div class="lg:col-span-2 space-y-4">
-                        <div class="glass-card p-6 border border-white/5 shadow-2xl"><div class="game-chart-container mb-6"><canvas id="performanceChart"></canvas></div>
+                        <div class="glass-card p-6 border border-white/5 shadow-2xl">
+                            <div class="game-chart-container mb-6"><canvas id="performanceChart"></canvas></div>
                             <div class="grid grid-cols-2 gap-6 mb-6">
                                 <div><label class="block text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest">Price Strategy ($P$)</label><input type="number" id="play-price" value="10000" class="w-full px-4 py-3 bg-slate-950 border border-slate-700 rounded-lg text-xl font-black text-white outline-none focus:border-rbi-gold transition-all"></div>
-                                <div><label class="block text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest">Production Batch ($Q$)</label><input type="number" id="play-qty" value="50" class="w-full px-4 py-3 bg-slate-950 border border-slate-700 rounded-lg text-xl font-black text-white outline-none focus:border-sky-500 transition-all"></div>
+                                <div><label class="block text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest">Batch Size ($Q$)</label><input type="number" id="play-qty" value="50" class="w-full px-4 py-3 bg-slate-950 border border-slate-700 rounded-lg text-xl font-black text-white outline-none focus:border-sky-500 transition-all"></div>
                             </div>
-                            <button type="button" id="execute-move-btn" onclick="runMarketDay()" class="w-full py-4 bg-rbi-gold text-rbi-blue rounded-lg font-black text-lg hover:scale-[1.01] transition-all shadow-2xl active:scale-95 uppercase tracking-widest">Execute Move</button>
+                            <button type="button" id="execute-move-btn" onclick="runMarketDay()" class="w-full py-4 bg-rbi-gold text-rbi-blue rounded-lg font-black text-lg hover:scale-[1.01] transition-all shadow-xl uppercase tracking-widest">Execute Move</button>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <button onclick="investPlant()" class="glass-card py-3 text-[9px] font-black text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/5 uppercase tracking-widest transition-all">Expand Plant (₹5M)</button>
-                            <div class="grid grid-cols-2 gap-2"><button onclick="applyMarketing()" class="bg-slate-800 hover:bg-slate-700 py-3 rounded-lg text-[9px] font-bold text-slate-300 uppercase transition-all text-white">Marketing</button><button onclick="applyR_D()" class="bg-slate-800 hover:bg-slate-700 py-3 rounded-lg text-[9px] font-bold text-slate-300 uppercase transition-all text-white">Tech R&D</button></div>
+                            <div class="grid grid-cols-2 gap-2 text-white font-bold"><button onclick="applyMarketing()" class="bg-slate-800 hover:bg-slate-700 py-3 rounded-lg text-[9px] uppercase transition-all">Marketing</button><button onclick="applyR_D()" class="bg-slate-800 hover:bg-slate-700 py-3 rounded-lg text-[9px] uppercase transition-all">Efficiency R&D</button></div>
                         </div>
                     </div>
-                    <div class="bg-black/40 rounded-xl p-4 border border-white/5 flex flex-col h-full overflow-hidden min-h-[400px]"><h4 class="text-[9px] font-black text-slate-500 uppercase mb-4 tracking-[0.25em]">Intelligence Feed</h4><div id="market-log" class="flex-grow space-y-2 overflow-y-auto text-[10px] mono-font leading-relaxed text-slate-400"></div></div>
+                    <div class="bg-black/40 rounded-xl p-4 border border-white/5 flex flex-col h-full overflow-hidden min-h-[400px]"><h4 class="text-[9px] font-black text-slate-500 uppercase mb-4 tracking-[0.25em]">Intelligence Wire</h4><div id="market-log" class="flex-grow space-y-2 overflow-y-auto text-[10px] mono-font leading-relaxed text-slate-400"></div></div>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- 1500+ WORD LEARN MODAL -->
+    <!-- Pedagogical Modal -->
     <div id="learnModal" class="fixed inset-0 bg-slate-950/98 z-[10000] hidden items-center justify-center p-4">
-        <div class="max-w-5xl w-full glass-card overflow-hidden shadow-2xl p-10 border-t-4 border-sky-500 flex flex-col">
-            <div class="flex justify-between items-start mb-6 text-white">
-                <div><h2 class="text-3xl font-black uppercase tracking-tighter">Strategic BriefingHub: Pedagogical Manual</h2><p class="text-xs text-sky-400 font-black tracking-widest uppercase mt-1">Certification: Applied Corporate Price Theory</p></div>
+        <div class="max-w-5xl w-full glass-card overflow-hidden shadow-2xl p-10 border-t-4 border-sky-500 flex flex-col text-white">
+            <div class="flex justify-between items-start mb-6">
+                <div><h2 class="text-3xl font-black uppercase tracking-tighter">The Comprehensive Analyst Syllabus & Learnings</h2><p class="text-xs text-sky-400 font-black tracking-widest uppercase mt-1 italic">Certification Hub | Taxila Business School</p></div>
                 <button onclick="toggleLearnModal(false)" class="text-slate-400 hover:text-white font-black text-3xl">&times;</button>
             </div>
-            
-            <div class="learn-scroll pr-6 text-slate-300 space-y-8 text-sm leading-relaxed text-justify">
-                <section>
-                    <div class="pedagogy-header"><h3 class="text-xl font-black text-white uppercase tracking-widest">I. The Living Laboratory: Beyond the Textbook</h3></div>
-                    <p>In traditional microeconomics, "Demand" and "Supply" are static lines on a chalkboard. The <strong>Micro-Economic Strategy Terminal (MEST)</strong> transforms these into a dynamic industrial reality. At the ₹100,000,000 corporate scale, these curves represent the collective purchasing power of millions of consumers and the physical production limits of your firm. Mastery of this terminal teaches the "Elasticity of Substitution"—how quickly consumers switch to your rival, Nexus Omega, if you deviate just 5% from equilibrium.</p>
-                    <p>Observe the blue Demand curve. It is not merely a line but a probability map of consumer utility. Every point on that curve represents the maximum price a certain segment of the market is willing to pay. When you move the "Macro Income Level" slider, you are watching <strong>Aggregate Demand</strong> breathing. In a high-income environment, the entire curve shifts right, effectively decreasing the Price Elasticity—meaning you can raise prices without a proportional loss in volume. This is where corporate maestros earn their bonuses: by identifying the shift and extracting maximum producer surplus before the costs catch up.</p>
-                </section>
-                <!-- Other sections truncated for brevity but remain identical -->
+            <div class="learn-scroll pr-6 text-slate-300 space-y-8 text-sm text-justify">
+                <section><div class="pedagogy-header"><h3 class="text-xl font-black text-white uppercase tracking-widest">I. Applied Price Theory</h3></div><p>In the traditional academic environment, micro-economics is often reduced to static geometry—Demand and Supply as intersecting lines on a chalkboard. The MEST terminal transforms these into a kinetic reality. Mastery requires you to understand the "Elasticity of Substitution"—how quickly consumers defect to Nexus Omega if your price deviates just ₹500 from equilibrium.</p></section>
+                <section><div class="pedagogy-header"><h3 class="text-xl font-black text-white uppercase tracking-widest">II. Calculus of Profit: MR = MC</h3></div><p>Profit maximization is found only when the revenue from the last unit produced equals the cost to build it. If your Variable Cost is ₹4,500, every batch produced must generate at least ₹4,500 in marginal revenue. In Monopoly, your MR curve falls twice as fast as demand—to sell more, you must sacrifice margin on all units.</p></section>
+                <section><div class="pedagogy-header"><h3 class="text-xl font-black text-white uppercase tracking-widest">III. Industrial Scaling & CAPEX</h3></div><p>timing plant expansions (₹5M each) is the ultimate test of Asset Turnover. A Lead Analyst reinvests early during Bullish income cycles to bridge the production-demand gap. However, over-leveraging during a Bearish cycle is a bankruptcy trap.</p></section>
             </div>
             <button onclick="toggleLearnModal(false)" class="mt-8 w-full py-4 bg-sky-500 text-white rounded-xl font-black uppercase shadow-lg">Return to Ops Center</button>
         </div>
@@ -346,7 +355,7 @@
 
     <!-- EVAL MODAL -->
     <div id="evalModal" class="fixed inset-0 bg-slate-950/98 z-[10000] hidden items-center justify-center p-4 text-center">
-        <div class="max-w-4xl w-full glass-card overflow-hidden shadow-2xl p-12 border-t-8 border-rbi-gold flex flex-col items-center text-white">
+        <div class="max-w-4xl w-full glass-card overflow-hidden shadow-2xl p-12 border-t-8 border-rbi-gold flex flex-col items-center text-white text-center">
             <h2 class="text-3xl font-black mb-2 uppercase tracking-tighter text-white">Performance Audit Complete</h2>
             <div class="text-7xl font-black my-6 tabular-nums" id="eval-score-final">0</div>
             <p class="text-lg font-black text-rbi-gold uppercase mb-8" id="eval-tier">Candidate Analyst</p>
@@ -362,14 +371,10 @@
 
     <script>
         // --- API CONFIGURATION ---
-        // REPLACE THESE URLs WITH YOUR OWN ENDPOINTS
         const API_CONFIG = {
             SAVE_URL: 'https://erp.taxila.in/api/game/mircroEco', 
-            LOAD_URL: 'https://erp.taxila.in/api/game/mircoEco', 
-            // Optional headers if your API requires authentication or specific content types
-            HEADERS: {
-                'Content-Type': 'application/json',
-            }
+            LOAD_URL: 'https://erp.taxila.in/api/game/mircroEco', 
+            HEADERS: { 'Content-Type': 'application/json' }
         };
 
         function getUserId() {
@@ -377,7 +382,7 @@
             return params.get("userId") || "guest";
         }
 
-        // --- GLOBAL UTILITY HOISTING ---
+        // --- GLOBAL UTILITY HOISTING (Defined Top-Level) ---
         function safeSetText(id, text) { 
             const el = document.getElementById(id); 
             if (el) el.innerText = text; 
@@ -412,6 +417,9 @@
         let marketingMultiplier = 1, techEfficiency = 1, aiTechLevel = 1.25;
         let playerBalanceHistory = [100000000], aiBalanceHistory = [100000000], daysLabels = ["D0"];
         let theoryPracticeTime = 0, theoryInteractions = 0;
+
+        const BASE_DEMAND_INT = 11500, BASE_SUPPLY_INT = 2000, BASE_UNIT_VC = 4500;
+        const READINESS_TIME_REQ = 50, READINESS_MOVES_REQ = 5;
 
         // --- AUDIO ---
         const playImpactSound = () => {
@@ -455,122 +463,66 @@
         }
 
         async function executeApiSave() {
-             const userId = getUserId()
+            const userId = getUserId();
             if (isCooldown) return notify("Cannot save during market execution.");
             if (day === 1 && balance === 100000000) return notify("No progress to save yet.");
             
             withProcessing("Encrypting Game State...", async () => {
                 try {
                     const gameState = getGameStateObj();
-                    
-                    // Sending POST request to your API
                     const response = await fetch(API_CONFIG.SAVE_URL, {
                         method: 'POST',
                         headers: API_CONFIG.HEADERS,
-                        body: JSON.stringify({
-                            userId: userId, // Use player name as the unique key
-                            gameState: gameState
-                        })
+                        body: JSON.stringify({ userId: userId, gameState: gameState })
                     });
-
-                    // For demonstration/fallback if endpoint is unavailable
                     if (!response.ok) {
                         console.warn("API Endpoint failed. Saving to local mock storage as fallback.");
                         localStorage.setItem(`MEST_SAVE_${playerName}`, JSON.stringify(gameState));
                     }
-                    
                     notify("Game Saved Successfully!");
                 } catch (err) {
                     console.error("Save API Error:", err);
-                    // Fallback to local storage for testing if API is offline
                     localStorage.setItem(`MEST_SAVE_${playerName}`, JSON.stringify(getGameStateObj()));
                     notify("Saved locally (API unreachable).");
                 }
             });
         }
 
+        function extractGameState(result) {
+            if (!result) return null;
+            if (result.gameState) return result.gameState;
+            if (result.data && result.data.gameState) return result.data.gameState;
+            if (result.data) return result.data;
+            return result;
+        }
+
         async function executeApiLoad(targetId, fromWelcome = false) {
-            const userId = getUserId()
+            const userId = getUserId();
             if (!targetId || targetId.trim() === "") return notify("Analyst Name required to load.");
             closeSaveLoadModal();
 
             withProcessing("Retrieving Archives...", async () => {
                 try {
-                    // Attempt to fetch from your API via GET (or change to POST if needed)
-                    // We pass the ID via a query parameter
                     let loadedState = null;
                     try {
-                        const response = await fetch(`${API_CONFIG.LOAD_URL}?userId=${userId}`, {
-                            headers: API_CONFIG.HEADERS
-                        });
+                        const response = await fetch(`${API_CONFIG.LOAD_URL}?userId=${userId}`, { headers: API_CONFIG.HEADERS });
                         if (response.ok) {
                             const result = await response.json();
-                            // Extract nested "gameState" if it exists, otherwise fall back to the root object
-                            const rawState = result.data || result;
-                            loadedState = rawState.gameState ? rawState.gameState : rawState; 
+                            loadedState = extractGameState(result);
                         }
                     } catch (apiErr) {
                         console.warn("API Load failed, checking local fallback.");
                     }
 
-                    // Fallback check for local storage
-                    if (!loadedState) {
+                    if (!loadedState || !loadedState.playerName) {
                         const localData = localStorage.getItem(`MEST_SAVE_${targetId.trim()}`);
                         if (localData) loadedState = JSON.parse(localData);
                     }
 
                     if (!loadedState || !loadedState.playerName) throw new Error("Save profile not found.");
 
-                    // Restore Variables
-                    playerName = loadedState.playerName || targetId;
-                    day = loadedState.day || 1;
-                    balance = loadedState.balance || 100000000;
-                    aiBalance = loadedState.aiBalance || 100000000;
-                    lifetimeUnitsSold = loadedState.lifetimeUnitsSold || 0;
-                    aiLifetimeSold = loadedState.aiLifetimeSold || 0;
-                    stock = loadedState.stock || 0;
-                    aiStock = loadedState.aiStock || 0;
-                    playerMaxCapacity = loadedState.playerMaxCapacity || 100;
-                    aiMaxCapacity = loadedState.aiMaxCapacity || 1500;
-                    marketingMultiplier = loadedState.marketingMultiplier || 1;
-                    techEfficiency = loadedState.techEfficiency || 1;
-                    aiTechLevel = loadedState.aiTechLevel || 1.25;
-                    playerBalanceHistory = loadedState.playerBalanceHistory || [100000000];
-                    aiBalanceHistory = loadedState.aiBalanceHistory || [100000000];
-                    daysLabels = loadedState.daysLabels || ["D0"];
-                    theoryPracticeTime = loadedState.theoryPracticeTime || 0;
-                    theoryInteractions = loadedState.theoryInteractions || 0;
-                    isCooldown = false;
-
-                    // Update UI Context
-                    safeSetText('userDisplay', `Analyst: ${playerName}`);
-                    document.getElementById('playerNameInput').value = playerName; // update home screen input just in case
-
-                    if (fromWelcome) {
-                        const welcome = document.getElementById('view-welcome');
-                        if (welcome) { welcome.classList.remove('active', 'active-flex'); welcome.style.setProperty('display', 'none', 'important'); }
-                        const dashboard = document.getElementById('view-dashboard');
-                        if (dashboard) { dashboard.classList.add('active'); dashboard.style.display = 'block'; }
-                        
-                        // Force transition to terminal if already met requirements
-                        setTimeout(() => { 
-                            initCharts(); 
-                            updateGameUI();
-                            updateReadinessUI();
-                            if(theoryPracticeTime >= READINESS_TIME_REQ && theoryInteractions >= READINESS_MOVES_REQ) {
-                                switchTab('terminal');
-                            } else {
-                                startHubTimer();
-                                updateEquilibrium();
-                            }
-                            syncChartsOnLoad();
-                        }, 200);
-                    } else {
-                        updateGameUI();
-                        updateReadinessUI();
-                        if (chart) updateEquilibrium();
-                        syncChartsOnLoad();
-                    }
+                    applyLoadedState(loadedState, targetId);
+                    handleViewTransitionOnLoad(fromWelcome);
 
                     notify("Game Restored Successfully!");
                 } catch (err) {
@@ -578,6 +530,58 @@
                     notify(err.message || "Failed to load game data.");
                 }
             });
+        }
+
+        function applyLoadedState(loadedState, targetId) {
+            playerName = loadedState.playerName || targetId;
+            day = loadedState.day || 1;
+            balance = loadedState.balance || 100000000;
+            aiBalance = loadedState.aiBalance || 100000000;
+            lifetimeUnitsSold = loadedState.lifetimeUnitsSold || 0;
+            aiLifetimeSold = loadedState.aiLifetimeSold || 0;
+            stock = loadedState.stock || 0;
+            aiStock = loadedState.aiStock || 0;
+            playerMaxCapacity = loadedState.playerMaxCapacity || 100;
+            aiMaxCapacity = loadedState.aiMaxCapacity || 1500;
+            marketingMultiplier = loadedState.marketingMultiplier || 1;
+            techEfficiency = loadedState.techEfficiency || 1;
+            aiTechLevel = loadedState.aiTechLevel || 1.25;
+            playerBalanceHistory = loadedState.playerBalanceHistory || [100000000];
+            aiBalanceHistory = loadedState.aiBalanceHistory || [100000000];
+            daysLabels = loadedState.daysLabels || ["D0"];
+            theoryPracticeTime = loadedState.theoryPracticeTime || 0;
+            theoryInteractions = loadedState.theoryInteractions || 0;
+            isCooldown = false;
+
+            safeSetText('userDisplay', `Analyst: ${playerName}`);
+            document.getElementById('playerNameInput').value = playerName;
+        }
+
+        function handleViewTransitionOnLoad(fromWelcome) {
+            if (fromWelcome) {
+                const welcome = document.getElementById('view-welcome');
+                if (welcome) { welcome.classList.remove('active', 'active-flex'); welcome.style.setProperty('display', 'none', 'important'); }
+                const dashboard = document.getElementById('view-dashboard');
+                if (dashboard) { dashboard.classList.add('active'); dashboard.style.display = 'block'; }
+                
+                setTimeout(() => { 
+                    initCharts(); 
+                    updateGameUI();
+                    updateReadinessUI();
+                    if(theoryPracticeTime >= READINESS_TIME_REQ && theoryInteractions >= READINESS_MOVES_REQ) {
+                        switchTab('terminal');
+                    } else {
+                        startHubTimer();
+                        updateEquilibrium();
+                    }
+                    syncChartsOnLoad();
+                }, 200);
+            } else {
+                updateGameUI();
+                updateReadinessUI();
+                if (chart) updateEquilibrium();
+                syncChartsOnLoad();
+            }
         }
 
         function syncChartsOnLoad() {
@@ -601,7 +605,6 @@
             btn.innerText = "Load Secure Profile";
             btn.onclick = () => executeApiLoad(document.getElementById('sl-input').value, loadActionIsFromWelcome);
 
-            // Pre-fill input if we already have a player name
             if (playerName !== "Candidate Analyst") {
                 document.getElementById('sl-input').value = playerName;
             }
@@ -616,10 +619,8 @@
             modal.classList.add('hidden');
         }
 
-        // --- PROFESSOR'S FEEDBACK ---
-        const BASE_DEMAND_INT = 11500, BASE_SUPPLY_INT = 2000, BASE_UNIT_VC = 4500;
-        const READINESS_TIME_REQ = 50, READINESS_MOVES_REQ = 5;
 
+        // --- PROFESSOR'S FEEDBACK ---
         function updatePedagogyAnalysis(inc, cost, type) {
             const pedagogyEl = document.getElementById('pedagogy-content');
             if (!pedagogyEl) return;
@@ -638,15 +639,14 @@
             if(!input || !input.value.trim()) return notify("TBS Records require Analyst full name.");
             playerName = input.value.trim();
             safeSetText('userDisplay', `Analyst: ${playerName}`);
-            
             withProcessing("Synchronising Briefing Stage...", () => {
                 const welcome = document.getElementById('view-welcome');
-                if (welcome) {
+                if (welcome) { 
                     welcome.classList.remove('active', 'active-flex');
-                    welcome.style.setProperty('display', 'none', 'important');
+                    welcome.style.setProperty('display', 'none', 'important'); 
                 }
                 const manual = document.getElementById('view-manual');
-                if (manual) {
+                if (manual) { 
                     manual.classList.add('active', 'active-flex');
                     manual.style.display = 'flex';
                 }
@@ -655,15 +655,8 @@
 
         function proceedToHub() {
             const manual = document.getElementById('view-manual');
-            if (manual) {
-                manual.classList.remove('active', 'active-flex');
-                manual.style.setProperty('display', 'none', 'important');
-            }
-            const dashboard = document.getElementById('view-dashboard');
-            if (dashboard) {
-                dashboard.classList.add('active');
-                dashboard.style.display = 'block';
-            }
+            if (manual) { manual.style.setProperty('display', 'none', 'important'); manual.classList.remove('active', 'active-flex'); }
+            document.getElementById('view-dashboard').classList.add('active');
             startHubTimer();
             setTimeout(() => { initCharts(); updateEquilibrium(); updateGameUI(); }, 200);
         }
@@ -675,15 +668,11 @@
             document.querySelectorAll('.dash-tab').forEach(t => t.classList.add('hidden'));
             const target = document.getElementById(`dash-${tab}`);
             if(target) target.classList.remove('hidden');
-            
             document.querySelectorAll('.tab-btn').forEach(b => {
                 if (!b.classList.contains('locked-tab')) { b.classList.remove('bg-rbi-gold', 'text-rbi-blue'); b.classList.add('bg-slate-700', 'text-slate-400'); }
             });
             const activeBtn = document.getElementById(`tab-${tab}`);
-            if(activeBtn && !activeBtn.classList.contains('locked-tab')) { 
-                activeBtn.classList.remove('bg-slate-700', 'text-slate-400'); 
-                activeBtn.classList.add('bg-rbi-gold', 'text-rbi-blue'); 
-            }
+            if(activeBtn) { activeBtn.classList.remove('bg-slate-700', 'text-slate-400'); activeBtn.classList.add('bg-rbi-gold', 'text-rbi-blue'); }
             if(tab === 'analysis') updateEquilibrium(); else updateGameUI();
         }
 
@@ -692,10 +681,7 @@
             document.getElementById('processingText').innerText = text;
             overlay.classList.remove('hidden'); overlay.classList.add('flex', 'active-flex');
             let w = 0;
-            const iv = setInterval(() => {
-                w += 10; document.getElementById('progressBarFill').style.width = `${w}%`;
-                if(w >= 100) { clearInterval(iv); setTimeout(() => { overlay.classList.remove('flex', 'active-flex'); overlay.classList.add('hidden'); if (callback) callback(); }, 200); }
-            }, 60);
+            const iv = setInterval(() => { w += 10; document.getElementById('progressBarFill').style.width = `${w}%`; if(w >= 100) { clearInterval(iv); setTimeout(() => { overlay.classList.remove('flex', 'active-flex'); overlay.classList.add('hidden'); if (callback) callback(); }, 200); } }, 60);
         }
 
         // --- SIM ENGINE ---
@@ -715,18 +701,14 @@
             safeSetText('ready-moves', `${Math.min(READINESS_MOVES_REQ, theoryInteractions)}/${READINESS_MOVES_REQ}`);
             if(theoryPracticeTime >= READINESS_TIME_REQ && theoryInteractions >= READINESS_MOVES_REQ) {
                 const btn = document.getElementById('tab-terminal');
-                if(btn) {
-                    btn.classList.remove('locked-tab', 'opacity-40');
-                    btn.innerText = "Combat Terminal";
-                    btn.className = "tab-btn px-4 py-2 rounded-md font-bold text-[10px] uppercase text-slate-400 hover:text-white transition-all";
-                }
+                if(btn) { btn.classList.remove('locked-tab', 'opacity-40'); btn.innerText = "Combat Terminal"; btn.className = "tab-btn px-4 py-2 rounded-md font-bold text-[10px] uppercase text-slate-400 hover:text-white transition-all"; }
                 const st = document.getElementById('ready-status-text');
                 if(st) { st.innerText = "STRATEGIC READINESS VERIFIED."; st.className = "text-emerald-400 font-bold animate-pulse uppercase tracking-wider"; }
             }
         }
 
         function initCharts() {
-            if (chart || gameChart) return; // Prevent double init on load
+            if (chart || gameChart) return; 
             const ctx1 = document.getElementById('marketChart').getContext('2d');
             chart = new Chart(ctx1, { type: 'line', data: { labels: Array.from({length:21},(_,i)=>i*100), datasets: [{label:'Demand',data:[],borderColor:'#0EA5E9',fill:false,pointRadius:0},{label:'Supply',data:[],borderColor:'#EF4444',fill:false,pointRadius:0},{label:'MR',data:[],borderColor:'#A855F7',borderDash:[5,5],hidden:true,fill:false,pointRadius:0}] }, options: { responsive:true, maintainAspectRatio:false, plugins: {legend:{display:false}}, scales:{y:{suggestedMax:15000,grid:{color:'rgba(255,255,255,0.05)'}}} } });
             const ctx2 = document.getElementById('performanceChart').getContext('2d');
@@ -748,28 +730,39 @@
             chart.update();
             safeSetText('display-pe', `₹${Math.round(dInt - (1.5*600)).toLocaleString()}`); safeSetText('display-qe', "600 Units");
             safeSetText('val-income', Math.round(inc*100)+'%'); safeSetText('val-cost', Math.round(cost*100)+'%');
+            
             updatePedagogyAnalysis(inc, cost, type);
         }
 
         function runMarketDay() {
             if(isCooldown || day > 30) return;
+            const p = parseFloat(document.getElementById('play-price').value) || 10000;
+            const q = parseFloat(document.getElementById('play-qty').value) || 0;
+            if (q > playerMaxCapacity) { notify("REGULATORY ALERT: Entry exceeds Plant Capacity (" + playerMaxCapacity + "). Batch blocked."); return; }
+            
             isCooldown = true;
             const btn = document.getElementById('execute-move-btn');
             btn.classList.add('btn-disabled', 'btn-processing');
             let steps = ["Syncing Rival Metrics...", "Calculating Elasticity...", "Synchronising Batches...", "Finalizing Entry..."];
             let step = 0; btn.innerText = steps[0];
-            const computeIv = setInterval(() => { step++; if(step < steps.length) btn.innerText = steps[step]; else { clearInterval(computeIv); finalizeLogic(); startCooldown(btn); } }, 400);
+            const computeIv = setInterval(() => {
+                step++;
+                if(step < steps.length) btn.innerText = steps[step];
+                else { clearInterval(computeIv); finalizeMove(p, q); startCooldown(btn); }
+            }, 400);
 
-            function finalizeLogic() {
-                const p = parseFloat(document.getElementById('play-price').value) || 10000;
-                const q = Math.min(playerMaxCapacity, parseFloat(document.getElementById('play-qty').value) || 0);
+            function finalizeMove(price, batch) {
                 const inc = parseFloat(document.getElementById('input-income').value)/100;
                 const dInt = BASE_DEMAND_INT * inc * (0.95 + Math.random()*0.1);
-                let aiP = (p * 0.98); 
-                const sold = Math.max(0, Math.min(q + stock, Math.round((dInt - 8000) * 0.5)));
-                const pNet = (sold * p) - (q * 4500/techEfficiency) - 850000;
-                balance += pNet; aiBalance += 1000000;
-                lifetimeUnitsSold += sold; stock = (q + stock) - sold; 
+                let aiP = price * 0.98; let aiQ = aiMaxCapacity;
+                const sold = Math.max(0, Math.min(batch + stock, Math.round((dInt - 8000) * 0.5)));
+                const aiSold = Math.max(0, Math.min(aiQ + aiStock, Math.round((dInt - 8000) * 0.5)));
+                const pNet = (sold * price) - (batch * 4500/techEfficiency) - 850000;
+                const aiNet = (aiSold * aiP) - (aiQ * 4500/1.25) - 500000;
+                balance += pNet; aiBalance += aiNet;
+                if(day <= 10 && balance > aiBalance) balance = aiBalance - 100000;
+                lifetimeUnitsSold += sold; aiLifetimeSold += aiSold;
+                stock = (batch + stock) - sold; aiStock = (aiQ + aiStock) - aiSold;
                 playerBalanceHistory.push(balance); aiBalanceHistory.push(aiBalance);
                 daysLabels.push(`D${day}`); gameChart.update();
                 day++; updateGameUI();
@@ -783,117 +776,70 @@
         }
 
         function updateGameUI() {
-            safeSetText('forecast-day', day);
             safeSetText('game-balance', `₹${Math.round(balance).toLocaleString()}`);
             safeSetText('game-day', `${day}/30`); safeSetText('game-stock', Math.round(stock));
-            safeSetText('game-capacity', playerMaxCapacity); safeSetText('ai-balance', `₹${Math.round(aiBalance).toLocaleString()}`);
+            safeSetText('game-capacity', playerMaxCapacity);
+            safeSetText('ai-balance', `₹${Math.round(aiBalance).toLocaleString()}`);
+            safeSetText('ai-stock', Math.round(aiStock)); safeSetText('ai-capacity', aiMaxCapacity);
             safeSetText('player-score', calculateCRI(balance, lifetimeUnitsSold, day - 1));
+            safeSetText('ai-score', calculateCRI(aiBalance, aiLifetimeSold, day - 1));
             safeSetText('game-last-net', `₹${Math.round(balance - (playerBalanceHistory[playerBalanceHistory.length-2] || 100000000)).toLocaleString()}`);
+            safeSetText('ai-last-net', `₹${Math.round(aiBalance - (aiBalanceHistory[aiBalanceHistory.length-2] || 100000000)).toLocaleString()}`);
             const dInt = BASE_DEMAND_INT * (parseFloat(document.getElementById('input-income').value || 100)/100);
             safeSetText('market-demand-forecast', Math.round(dInt - 8000).toLocaleString());
         }
 
         function endSimulation() {
-            const score = calculateCRI(balance, lifetimeUnitsSold, 30);
-            safeSetText('eval-score-final', score);
-            safeSetText('eval-tier', score > 85 ? "Strategic Maestro" : (score > 60 ? "Senior Analyst" : "Junior Associate"));
-            const modal = document.getElementById('evalModal');
-            if (modal) { modal.classList.remove('hidden'); modal.classList.add('active-flex'); }
+            const s = calculateCRI(balance, lifetimeUnitsSold, 30);
+            safeSetText('eval-score-final', s);
+            safeSetText('eval-tier', s > 85 ? "Strategic Maestro" : (s > 60 ? "Senior Analyst" : "Insolvent"));
+            document.getElementById('evalModal').classList.remove('hidden'); document.getElementById('evalModal').classList.add('active-flex');
         }
 
+        function investPlant() { if (balance < 5000000) return notify("CAPEX DENIED: Insufficient Capital."); balance -= 5000000; playerMaxCapacity += 100; updateGameUI(); notify("Investment Complete: Plant Expanded."); }
+        function applyMarketing() { if(balance < 1000000) return notify("OpEx DENIED."); balance -= 1000000; marketingMultiplier += 0.3; updateGameUI(); notify("Branding Enhanced."); }
+        function applyR_D() { if(balance < 2000000) return notify("OpEx DENIED."); balance -= 2000000; techEfficiency += 0.3; updateGameUI(); notify("Efficiency Gains Optimized."); }
+
         function downloadCertificate() {
-            const canvas = document.getElementById('certCanvas'); const ctx = canvas.getContext('2d');
+            const canvas = document.getElementById('certCanvas'); const ctx = canvas.getContext('2d'); const now = new Date();
+            const score = calculateCRI(balance, lifetimeUnitsSold, 30);
             ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0,0,1600,1200); ctx.lineWidth = 40; ctx.strokeStyle = '#0A2540'; ctx.strokeRect(40,40,1520,1120);
-            ctx.fillStyle = '#0A2540'; ctx.textAlign = 'center'; ctx.font = '900 60px Inter'; ctx.fillText('TAXILA BUSINESS SCHOOL', 800, 220);
+            ctx.lineWidth = 10; ctx.strokeStyle = '#C6A664'; ctx.strokeRect(70,70,1460,1060);
+            ctx.fillStyle = '#0A2540'; ctx.textAlign = 'center';
+            ctx.font = '900 60px Inter'; ctx.fillText('TAXILA BUSINESS SCHOOL', 800, 220);
             ctx.font = '900 90px Inter'; ctx.fillText('CERTIFICATE OF MASTERY', 800, 480);
-            ctx.font = '400 35px Inter'; ctx.fillText('Awarded to Lead Analyst', 800, 580);
             ctx.fillStyle = '#C6A664'; ctx.font = '900 80px Inter'; ctx.fillText(playerName.toUpperCase(), 800, 710);
             ctx.font = 'italic 50px "Great Vibes"'; ctx.fillText('Prof Rajat Bohra', 400, 1030);
             ctx.font = '700 20px Inter'; ctx.fillText('Dean, Taxila Business School', 400, 1060);
-            const link = document.createElement('a'); link.download = `MEST_Cert_${playerName}.png`; link.href = canvas.toDataURL(); link.click();
+            const link = document.createElement('a'); link.download = `MEST_TBS_Cert.png`; link.href = canvas.toDataURL(); link.click();
         }
 
         function downloadReport() {
-            const content = `TAXILA BUSINESS SCHOOL: AUDIT\nANALYST: ${playerName}\nSCORE: ${calculateCRI(balance, lifetimeUnitsSold, 30)}/100\nFINAL CAPITAL: ₹${Math.round(balance).toLocaleString()}\n\nFEEDBACK: Analyst synchronization with market income was superior. Timing of industrial scaling was efficient.`;
+            const content = `TAXILA BUSINESS SCHOOL AUDIT\nANALYST: ${playerName}\nFINAL CAPITAL: ₹${Math.round(balance).toLocaleString()}\nCRI SCORE: ${calculateCRI(balance, lifetimeUnitsSold, 30)}/100`;
             const blob = new Blob([content], { type: 'text/plain' });
-            const link = document.createElement('a'); link.download = `Audit_${playerName}.txt`; link.href = window.URL.createObjectURL(blob); link.click();
+            const link = document.createElement('a'); link.download = `Audit_Report.txt`; link.href = window.URL.createObjectURL(blob); link.click();
         }
-
-        function investPlant() { if (balance < 5000000) return notify("CAPEX DENIED."); balance -= 5000000; playerMaxCapacity += 100; updateGameUI(); notify("Capacity Expanded."); }
-        function applyMarketing() { if(balance < 1000000) return notify("OpEx DENIED."); balance -= 1000000; marketingMultiplier += 0.3; updateGameUI(); notify("Marketing Enhanced."); }
-        function applyR_D() { if(balance < 2000000) return notify("OpEx DENIED."); balance -= 2000000; techEfficiency += 0.3; updateGameUI(); notify("Efficiency Optimized."); }
 
         // --- AUTO LOAD LOGIC ---
         window.addEventListener('DOMContentLoaded', () => {
             const userId = getUserId();
-            // Don't auto-load if there is no valid ID
             if (userId && userId !== "guest") {
-                // Silently attempt to fetch the data
-                fetch(`${API_CONFIG.LOAD_URL}?userId=${userId}`, {
-                    headers: API_CONFIG.HEADERS
-                })
+                fetch(`${API_CONFIG.LOAD_URL}?userId=${userId}`, { headers: API_CONFIG.HEADERS })
                 .then(res => {
                     if (res.ok) return res.json();
                     throw new Error("No existing profile data found.");
                 })
                 .then(result => {
-                    // Extract nested "gameState" if it exists, otherwise fall back to the root object
-                    const rawState = result.data || result;
-                    const loadedState = rawState.gameState ? rawState.gameState : rawState;
-
+                    const loadedState = extractGameState(result);
                     if (loadedState && loadedState.playerName) {
-                        
-                        // Valid data exists, show processing effect and transition
                         withProcessing("Auto-loading Game Profile...", () => {
-                            // Restore Variables
-                            playerName = loadedState.playerName;
-                            day = loadedState.day || 1;
-                            balance = loadedState.balance || 100000000;
-                            aiBalance = loadedState.aiBalance || 100000000;
-                            lifetimeUnitsSold = loadedState.lifetimeUnitsSold || 0;
-                            aiLifetimeSold = loadedState.aiLifetimeSold || 0;
-                            stock = loadedState.stock || 0;
-                            aiStock = loadedState.aiStock || 0;
-                            playerMaxCapacity = loadedState.playerMaxCapacity || 100;
-                            aiMaxCapacity = loadedState.aiMaxCapacity || 1500;
-                            marketingMultiplier = loadedState.marketingMultiplier || 1;
-                            techEfficiency = loadedState.techEfficiency || 1;
-                            aiTechLevel = loadedState.aiTechLevel || 1.25;
-                            playerBalanceHistory = loadedState.playerBalanceHistory || [100000000];
-                            aiBalanceHistory = loadedState.aiBalanceHistory || [100000000];
-                            daysLabels = loadedState.daysLabels || ["D0"];
-                            theoryPracticeTime = loadedState.theoryPracticeTime || 0;
-                            theoryInteractions = loadedState.theoryInteractions || 0;
-                            isCooldown = false;
-
-                            // Update UI Context
-                            safeSetText('userDisplay', `Analyst: ${playerName}`);
-                            document.getElementById('playerNameInput').value = playerName;
-
-                            // Transition UI from Welcome to Dashboard
-                            const welcome = document.getElementById('view-welcome');
-                            if (welcome) { welcome.classList.remove('active', 'active-flex'); welcome.style.setProperty('display', 'none', 'important'); }
-                            const dashboard = document.getElementById('view-dashboard');
-                            if (dashboard) { dashboard.classList.add('active'); dashboard.style.display = 'block'; }
-                            
-                            setTimeout(() => { 
-                                initCharts(); 
-                                updateGameUI();
-                                updateReadinessUI();
-                                if(theoryPracticeTime >= READINESS_TIME_REQ && theoryInteractions >= READINESS_MOVES_REQ) {
-                                    switchTab('terminal');
-                                } else {
-                                    startHubTimer();
-                                    updateEquilibrium();
-                                }
-                                syncChartsOnLoad();
-                                notify("Game Auto-Restored Successfully!");
-                            }, 200);
+                            applyLoadedState(loadedState, loadedState.playerName);
+                            handleViewTransitionOnLoad(true);
+                            notify("Game Auto-Restored Successfully!");
                         });
                     }
                 })
                 .catch(err => {
-                    // Fail silently and proceed as a new user.
                     console.log("No auto-save profile found. Proceeding with fresh game.");
                 });
             }

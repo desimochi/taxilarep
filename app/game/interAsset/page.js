@@ -14,11 +14,11 @@ export default function HtmlPage() {
   return (
     <div className="w-full h-screen py-8 bg-[#334155] px-8">
      <div className="max-w-7xl mx-auto flex justify-between mb-3">
-<Link href="/game/mircoEco/how-to-play" className="bg-green-100 text-green-700 px-4 py-1 rounded-sm flex items-center gap-1"> <Award /> Player Manual</Link>
-            <Link href="/game/mircoEco/leaderboard" className="bg-green-100 text-green-700 px-4 py-1 rounded-sm flex items-center gap-1"> <Award /> See LeaderBoard</Link>
+<Link href="/game/interAsset/how-to-play" className="bg-green-100 text-green-700 px-4 py-1 rounded-sm flex items-center gap-1"> <Award /> Player Manual</Link>
+            <Link href="/game/interAsset/leaderboard" className="bg-green-100 text-green-700 px-4 py-1 rounded-sm flex items-center gap-1"> <Award /> See LeaderBoard</Link>
         </div>
       <iframe
-        src={`/microEco.html?userId=${encodedState}&name=${encodedStateName}`}
+        src={`/interAsset.html?userId=${encodedState}&name=${encodedStateName}`}
         className="w-full h-full border-none"
       />
     </div>
