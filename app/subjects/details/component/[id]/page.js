@@ -23,7 +23,7 @@ export default function Page(){
     const[editDetails, setEditDetails] = useState(false)
     const [additionalData, setAdditionalData] = useState([])
     const [selectedId, setSelectedId] = useState(null)
-    const hasview = hasPermission(("b22e5de9bd04a4792a9c285e08ee07a9d66ac8129ab7fdc9d789e9174e647506"))
+    const hasview = true
     const hasedit = hasPermission(("2f72526b4e3a64b84edd665637d72cdf5b00b0711640ab62061b5756fd8f16fe"))
       useEffect(() => {
         const fetchClassData = async () => {

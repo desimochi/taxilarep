@@ -9,7 +9,6 @@ import FullWidthLoader from "@/components/Loaader";
 import Link from "next/link";
 import DOMPurify from "dompurify";
 import BackButton from "@/components/ui/Backbutton";
-import VideoAssignmentPage from "@/components/VideoEPGDM";
 
 export default function Page() {
   const { id } = useParams();
@@ -143,7 +142,7 @@ export default function Page() {
                       </Link>
                     ) : (
                       <Link
-                        href={`/student/subject/component/${comp.id}`}
+                        href={`/subjects/details/component/${comp.id}`}
                         className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded"
                       >
                         View
