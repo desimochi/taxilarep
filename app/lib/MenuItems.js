@@ -192,7 +192,10 @@ export const menuItems = [
     { label: "Events", icon: <CalendarIcon className="h-5 w-5" />, path: "/events" },
     { label: "Simulation Guides", icon: <DocumentIcon className="h-5 w-5" />, path: "/game-guides" },
     {label : "Simulations", icon: <Gamepad className="h-5 w-5" />,  hasSubMenu:true,  subMenu : [
+            {label : "Startup ", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Startup Simulation",  icon: <Gamepad className="h-5 w-5" />, path:"/game/simulation"},
+            {label:"Start UP CAP-1",  icon: <Gamepad className="h-5 w-5" />, path:"/game/startup-cap"},
+          ]},
              {label:"Guesstimation",  icon: <Gamepad className="h-5 w-5" />, path:"/game/guesstimations"},
             {label : "Finance", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
                {label:"Accouting Cycle",  icon: <CalendarCheck2Icon className="h-5 w-5" />, path:"/game/accounting-cycle"},
@@ -230,6 +233,7 @@ export const menuItems = [
             {label:"Airthniti",  icon: <CalendarCheck2Icon className="h-5 w-5" />, path:"/game/airthniti"},
             {label:"Micro Economics Strategy Terminal",  icon: <CalendarCheck2Icon className="h-5 w-5" />, path:"/game/mircoEco"},
             {label:"INTER-ASSET CORRELATION- MACRO-ECONOMICS",  icon: <CalendarCheck2Icon className="h-5 w-5" />, path:"/game/interAsset"},
+            {label:"Price War -1",  icon: <CalendarCheck2Icon className="h-5 w-5" />, path:"/game/price-ware"},
           ]},
             {label : "Consumer Behaviour", icon: <Calculator className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Hyper-Competitive Consumer Simulation",  icon: <CalendarCheck2Icon className="h-5 w-5" />, path:"/game/consumer-behaviour"},
@@ -272,7 +276,10 @@ export const menuItems = [
     { label: "Fee Management", icon: <IndianRupee className="h-5 w-5" />, path: "/student/fees" },
      { label: "Taxila Curreny", icon: <IndianRupee className="h-5 w-5" />, path: "/taxila-currency/wallet" },
     {label : "Simulations", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
-            {label:"Startup Simluation",  icon: <Gamepad className="h-5 w-5" />, path:"/game/simulation"},
+            {label : "Startup ", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
+            {label:"Startup Simulation",  icon: <Gamepad className="h-5 w-5" />, path:"/game/simulation"},
+            {label:"Start UP CAP-1",  icon: <Gamepad className="h-5 w-5" />, path:"/game/startup-cap"},
+          ]},
              {label:"Guesstimation",  icon: <Gamepad className="h-5 w-5" />, path:"/game/guesstimations"},
             {label : "Finance", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
                           {label:"Accouting Cycle",  icon: <CalendarCheck2Icon className="h-5 w-5" />, path:"/game/accounting-cycle"},
@@ -306,6 +313,7 @@ export const menuItems = [
             {label:"Airthniti",  icon: <CalendarCheck2Icon className="h-5 w-5" />, path:"/game/airthniti"},
              {label:"Micro Economics Strategy Terminal",  icon: <CalendarCheck2Icon className="h-5 w-5" />, path:"/game/mircoEco"},
              {label:"INTER-ASSET CORRELATION- MACRO-ECONOMICS",  icon: <CalendarCheck2Icon className="h-5 w-5" />, path:"/game/interAsset"},
+             {label:"Price War -1",  icon: <CalendarCheck2Icon className="h-5 w-5" />, path:"/game/price-ware"},
           ]},
           {label : "Strategy", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Taxila Capital Quest",  icon: <Gamepad className="h-5 w-5" />, path:"/game/quest"},
@@ -360,7 +368,10 @@ export const menuItems = [
         { label: "Designation", path: "/admin/designation" },
         { label: "All Employee", path: "/all-employee" },
         {label : "Simulations", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
-            {label:"Startup Simluation",  icon: <Gamepad className="h-5 w-5" />, path:"/game/simulation"},
+            {label : "Startup ", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
+            {label:"Startup Simulation",  icon: <Gamepad className="h-5 w-5" />, path:"/game/simulation"},
+            {label:"Start UP CAP-1",  icon: <Gamepad className="h-5 w-5" />, path:"/game/startup-cap"},
+          ]},
              {label:"Guesstimation",  icon: <Gamepad className="h-5 w-5" />, path:"/game/guesstimations"},
             {label : "Finance", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
                           {label:"Accouting Cycle",  icon: <CalendarCheck2Icon className="h-5 w-5" />, path:"/game/accounting-cycle"},
@@ -407,6 +418,7 @@ export const menuItems = [
             {label:"Airthniti",  icon: <CalendarCheck2Icon className="h-5 w-5" />, path:"/game/airthniti"},
              {label:"Micro Economics Strategy Terminal",  icon: <CalendarCheck2Icon className="h-5 w-5" />, path:"/game/mircoEco"},
              {label:"INTER-ASSET CORRELATION- MACRO-ECONOMICS",  icon: <CalendarCheck2Icon className="h-5 w-5" />, path:"/game/interAsset"},
+             {label:"Price War -1",  icon: <CalendarCheck2Icon className="h-5 w-5" />, path:"/game/price-ware"},
           ]},
             {label:"Interview",  icon: <WholeWord className="h-5 w-5" />, path:"/game/interview-preparation"},
            {label:"Wordify",  icon: <Gamepad className="h-5 w-5" />, path:"/game/wordfy"},
@@ -429,7 +441,10 @@ export const menuItems = [
   export const Staff = [
     { label: "Task Manager", icon: <WorkflowIcon className="h-5 w-5" />, path: "/staff/task-manager" },
     {label : "Simulations", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
-            {label:"Startup Simluation",  icon: <Gamepad className="h-5 w-5" />, path:"/game/simulation"},
+            {label : "Startup ", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
+            {label:"Startup Simulation",  icon: <Gamepad className="h-5 w-5" />, path:"/game/simulation"},
+            {label:"Start UP CAP-1",  icon: <Gamepad className="h-5 w-5" />, path:"/game/startup-cap"},
+          ]},
              {label:"Guesstimation",  icon: <Gamepad className="h-5 w-5" />, path:"/game/guesstimations"},
             {label : "Finance", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
                           {label:"Accouting Cycle",  icon: <CalendarCheck2Icon className="h-5 w-5" />, path:"/game/accounting-cycle"},
@@ -481,6 +496,7 @@ export const menuItems = [
             {label:"Airthniti",  icon: <CalendarCheck2Icon className="h-5 w-5" />, path:"/game/airthniti"},
              {label:"Micro Economics Strategy Terminal",  icon: <CalendarCheck2Icon className="h-5 w-5" />, path:"/game/mircoEco"},
              {label:"INTER-ASSET CORRELATION- MACRO-ECONOMICS",  icon: <CalendarCheck2Icon className="h-5 w-5" />, path:"/game/interAsset"},
+             {label:"Price War -1",  icon: <CalendarCheck2Icon className="h-5 w-5" />, path:"/game/price-ware"},
           ]},
             {label:"Interview",  icon: <WholeWord className="h-5 w-5" />, path:"/game/interview-preparation"},
            {label:"Wordify",  icon: <Gamepad className="h-5 w-5" />, path:"/game/wordfy"},
@@ -506,7 +522,11 @@ export const EPGDMAdmin = [
     { label: "Events", icon: <CalendarIcon className="h-5 w-5" />, path: "/events" },
     { label: "Game Guides", icon: <DocumentIcon className="h-5 w-5" />, path: "/game-guides" },
     {label : "Simulations", icon: <Gamepad className="h-5 w-5" />,  hasSubMenu:true,  subMenu : [
+      {label : "Startup ", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Startup Simulation",  icon: <Gamepad className="h-5 w-5" />, path:"/game/simulation"},
+            {label:"Start UP CAP-1",  icon: <Gamepad className="h-5 w-5" />, path:"/game/startup-cap"},
+          ]},
+            
              {label:"Guesstimation",  icon: <Gamepad className="h-5 w-5" />, path:"/game/guesstimations"},
             {label : "Finance", icon: <Gamepad className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
                {label:"Accouting Cycle",  icon: <CalendarCheck2Icon className="h-5 w-5" />, path:"/game/accounting-cycle"},
@@ -543,6 +563,7 @@ export const EPGDMAdmin = [
             {label:"Airthniti",  icon: <CalendarCheck2Icon className="h-5 w-5" />, path:"/game/airthniti"},
              {label:"Micro Economics Strategy Terminal",  icon: <CalendarCheck2Icon className="h-5 w-5" />, path:"/game/mircoEco"},
              {label:"INTER-ASSET CORRELATION- MACRO-ECONOMICS",  icon: <CalendarCheck2Icon className="h-5 w-5" />, path:"/game/interAsset"},
+             {label:"Price War -1",  icon: <CalendarCheck2Icon className="h-5 w-5" />, path:"/game/price-ware"},
           ]},
             {label : "Consumer Behaviour", icon: <Calculator className="h-5 w-5" />, hasSubMenu:true,  subMenu : [
             {label:"Hyper-Competitive Consumer Simulation",  icon: <CalendarCheck2Icon className="h-5 w-5" />, path:"/game/consumer-behaviour"},

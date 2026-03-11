@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>START-UP CAP-1</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 400;
+            font-size: 1.05rem;
+        }
+        
+        /* Custom animations & Effects */
+        .fade-in {
+            animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes slideUpFade {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .hidden-section {
+            display: none !important;
+        }
+        
+        input[type="number"], input[type="text"] {
+            font-weight: 500;
+            font-family: 'Barlow Condensed', sans-serif;
+        }
+        
+        .btn-next {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 1rem;
+            font-weight: 600;
+            font-size: 1.25rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            cursor: pointer;
+            box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-next::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; width: 50%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transform: skewX(-20deg);
+            animation: shine 3s infinite;
+        }
+        
+        @keyframes shine {
+            0% { left: -100%; }
+            20% { left: 200%; }
+            100% { left: 200%; }
+        }
+
+        .btn-next:hover { 
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px -5px rgba(16, 185, 129, 0.5);
+        }
+
+        /* Glassmorphism utility */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        /* Processing Spinner */
+        .spinner {
+            width: 50px; height: 50px;
+            border: 5px solid rgba(255,255,255,0.2);
+            border-top: 5px solid #10b981;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Notification Toast */
+        #notification {
+            position: fixed; bottom: 20px; right: 20px; 
+            background: #1e293b; color: white;
+            padding: 15px 25px; border-radius: 12px; 
+            border-left: 4px solid #10b981;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3); 
+            transform: translateY(200%);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            z-index: 10000; font-size: 1.1rem; font-weight: 600;
+        }
+        #notification.show { transform: translateY(0); }
+        
+        /* Overlays */
+        #processingOverlay, #saveLoadOverlay {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: rgba(15, 23, 42, 0.85);
+            display: none; justify-content: center; align-items: center;
+            z-index: 6000; backdrop-filter: blur(10px); padding: 20px; flex-direction: column; text-align: center;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 bg-fixed py-8 px-4 sm:px-6 lg:px-8 text-gray-900 tracking-tight">
+
+    <!-- Notification -->
+    <div id="notification">Notification message</div>
+    
+    <!-- Processing Overlay -->
+    <div id="processingOverlay">
+        <div class="spinner"></div>
+        <h2 class="text-white text-3xl font-bold tracking-widest mt-2" id="processingText">SYNCING ARCHIVES...</h2>
+    </div>
+
+    <!-- Save/Load Modal Overlay -->
+    <div id="saveLoadOverlay">
+        <div class="glass-card p-8 rounded-3xl max-w-sm w-full text-center shadow-2xl">
+            <h3 class="text-3xl font-bold text-indigo-900 mb-2">Load Simulation</h3>
+            <p class="text-slate-500 mb-6 text-lg">Retrieve your cap table progress.</p>
+            <div class="text-left mb-6">
+                <label class="block text-base font-bold text-gray-700 uppercase mb-2">Founder Name (Save ID)</label>
+                <input type="text" id="sl-input" class="w-full p-4 border-2 border-indigo-100 rounded-xl focus:outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-400/20 text-xl shadow-inner bg-white/80" placeholder="E.g. Jane Doe">
+            </div>
+            <div class="flex gap-3">
+                <button id="sl-action-btn" class="flex-[2] bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold py-3 px-4 rounded-xl hover:shadow-lg hover:-translate-y-1 transition-all w-full text-xl">Load Profile</button>
+                <button class="flex-1 bg-gray-200 text-gray-700 font-bold py-3 px-4 rounded-xl hover:bg-gray-300 transition-all text-xl" onclick="closeSaveLoadModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Timer UI (Hidden initially) -->
+    <div id="timer_display_container" class="hidden-section fixed top-4 right-4 z-50 glass-card px-4 py-2 rounded-xl shadow-lg border-2 border-indigo-200 flex items-center space-x-6">
+        <div class="flex items-center space-x-2">
+            <span class="text-xl">⏱️</span>
+            <span id="timer_display" class="text-2xl font-bold text-indigo-700 tracking-widest font-mono">30:00</span>
+        </div>
+        <div class="flex items-center space-x-2 border-l-2 border-indigo-100 pl-6">
+            <span class="text-xl">⭐</span>
+            <span id="live_score_display" class="text-2xl font-bold text-emerald-600 tracking-widest font-mono">0</span>
+        </div>
+    </div>
+
+    <!-- SCREEN 1: Welcome -->
+    <div id="screen_welcome" class="max-w-md mx-auto mt-20 glass-card p-10 rounded-3xl shadow-2xl text-center fade-in relative overflow-hidden">
+        <div class="absolute -top-10 -right-10 w-32 h-32 bg-purple-300 rounded-full mix-blend-multiply filter blur-2xl opacity-50 animate-blob"></div>
+        <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-indigo-300 rounded-full mix-blend-multiply filter blur-2xl opacity-50 animate-blob animation-delay-2000"></div>
+        
+        <div class="mb-8 relative z-10">
+            <h1 class="text-5xl font-bold tracking-tighter mb-2 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">START-UP CAP-1</h1>
+            <p class="text-xl text-slate-500 mt-2">Created at <span class="font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">Taxila Business School</span></p>
+        </div>
+        
+        <div class="space-y-5 text-left relative z-10">
+            <div>
+                <label for="player_name" class="block text-lg font-medium text-gray-700">Enter your name:</label>
+                <input type="text" id="player_name" placeholder="E.g., John Doe" 
+                    class="w-full p-4 border-2 border-purple-100 rounded-xl focus:outline-none focus:border-purple-400 focus:ring-4 focus:ring-purple-400/20 bg-white/50 transition-all text-xl shadow-inner mt-1">
+                <p id="name_error" class="text-pink-500 text-base font-medium hidden-section mt-1">Please enter your name.</p>
+            </div>
+            
+            <div>
+                <label for="startup_name" class="block text-lg font-medium text-gray-700">Enter your Startup's name:</label>
+                <input type="text" id="startup_name" placeholder="E.g., TechNova" 
+                    class="w-full p-4 border-2 border-purple-100 rounded-xl focus:outline-none focus:border-purple-400 focus:ring-4 focus:ring-purple-400/20 bg-white/50 transition-all text-xl shadow-inner mt-1">
+                <p id="startup_error" class="text-pink-500 text-base font-medium hidden-section mt-1">Please enter your startup's name.</p>
+            </div>
+
+            <button onclick="goToInstructions()" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-4 rounded-xl hover:shadow-lg hover:shadow-purple-500/30 transform hover:-translate-y-1 transition-all duration-300 text-xl mt-6">
+                Continue →
+            </button>
+            <button onclick="openSaveLoadModal(true)" class="w-full bg-white text-indigo-600 font-bold py-3 rounded-xl hover:bg-indigo-50 border-2 border-indigo-100 shadow-sm transition-all duration-300 text-xl mt-3">
+                Load Existing Game 💾
+            </button>
+        </div>
+    </div>
+
+    <!-- SCREEN 2: Instructions -->
+    <div id="screen_instructions" class="hidden-section max-w-2xl mx-auto mt-10 glass-card p-10 rounded-3xl shadow-2xl fade-in">
+        <h2 class="text-4xl font-bold text-gray-800 mb-6 border-b-2 border-purple-100 pb-4">Welcome, <span id="display_name" class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600"></span>! 👋</h2>
+        
+        <div class="mb-8">
+            <h3 class="text-2xl font-bold text-indigo-900 mb-4 flex items-center"><span class="bg-indigo-100 text-indigo-600 p-2 rounded-lg mr-3">🎯</span> Learning Outcomes & Objectives</h3>
+            <ul class="list-none space-y-3 text-gray-700 text-lg">
+                <li class="flex items-start"><span class="text-purple-500 mr-2 mt-1">✦</span> Understand the dilutive impact of sequential investment rounds on founder ownership.</li>
+                <li class="flex items-start"><span class="text-purple-500 mr-2 mt-1">✦</span> Master calculations for Post-Money valuation and Investor equity percentages.</li>
+                <li class="flex items-start"><span class="text-purple-500 mr-2 mt-1">✦</span> Analyze how creating an ESOP (Employee Stock Ownership Plan) pool affects the cap table.</li>
+                <li class="flex items-start"><span class="text-purple-500 mr-2 mt-1">✦</span> Determine the final payout distributions during an acquisition exit scenario.</li>
+            </ul>
+        </div>
+
+        <div class="mb-8">
+            <h3 class="text-2xl font-bold text-indigo-900 mb-4 flex items-center"><span class="bg-indigo-100 text-indigo-600 p-2 rounded-lg mr-3">🎮</span> Gameplay & Instructions</h3>
+            <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-2xl border border-blue-100 text-indigo-900 space-y-3 text-lg shadow-inner">
+                <p><strong class="text-blue-700">1.</strong> You will act as the founder of a startup named <strong class="bg-white px-2 py-1 rounded shadow-sm text-green-600" id="display_startup_name"></strong>.</p>
+                <p><strong class="text-blue-700">2.</strong> You have been assigned a <strong>randomized unique dataset</strong> for your playthrough.</p>
+                <p><strong class="text-blue-700">3.</strong> A green checkmark (<span class="text-green-500 font-bold bg-green-100 px-2 py-0.5 rounded">✓</span>) confirms correct answers. A red cross (<span class="text-red-500 font-bold bg-red-100 px-2 py-0.5 rounded">✗</span>) means try again. <em>(Round to 1 decimal place if needed)</em></p>
+                <p><strong class="text-blue-700">4.</strong> Once all answers in a section are correct, a vibrant <strong>"Next Step"</strong> button will appear.</p>
+            </div>
+        </div>
+
+        <div class="mb-8">
+            <h3 class="text-2xl font-bold text-red-900 mb-4 flex items-center"><span class="bg-red-100 text-red-600 p-2 rounded-lg mr-3">💯</span> Evaluation & Scoring Rules</h3>
+            <div class="bg-gradient-to-br from-red-50 to-orange-50 p-6 rounded-2xl border border-red-100 text-red-900 space-y-3 text-lg shadow-inner">
+                <p><strong class="text-red-700">Base Score:</strong> Starts at 0, earn up to 100 Marks.</p>
+                <p><strong class="text-red-700">Max Time:</strong> 30 Minutes.</p>
+                <p><strong class="text-red-700">Time Penalty:</strong> After 20 minutes, 1 mark is deducted for every extra minute.</p>
+            </div>
+        </div>
+
+        <button onclick="startSimulation()" class="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white font-bold py-4 rounded-xl hover:shadow-xl hover:shadow-indigo-500/40 transform hover:-translate-y-1 transition-all duration-300 text-2xl">
+            🚀 Start Simulation
+        </button>
+    </div>
+
+    <!-- SCREEN 3: The Main App Container -->
+    <div class="max-w-4xl mx-auto space-y-6 hidden-section pb-10" id="app-container">
+        
+        <!-- Header -->
+        <div class="text-center glass-card p-5 rounded-2xl shadow-lg fade-in relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
+            
+            <!-- Save/Load Header Actions -->
+            <div class="absolute top-4 right-4 flex gap-2 z-20">
+                <button onclick="executeApiSave()" class="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 font-bold py-1.5 px-3 rounded-lg text-sm transition-colors shadow-sm">Save</button>
+                <button onclick="openSaveLoadModal(false)" class="bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50 font-bold py-1.5 px-3 rounded-lg text-sm transition-colors shadow-sm">Load</button>
+            </div>
+
+            <h1 class="text-3xl font-bold text-slate-900 tracking-tight mt-4">🌱 <span id="ui_header_startup"></span> Cap Table</h1>
+            <h2 class="text-lg text-purple-600 font-medium mt-1">(START-UP CAP-1)</h2>
+            <div class="flex justify-center gap-6 pt-3 text-base text-gray-600 border-t border-gray-200/60 mt-3">
+                <p><span class="font-bold text-gray-800 bg-gray-100 px-3 py-1 rounded-md">Founder: <span id="sim_player_name" class="text-indigo-600"></span></span></p>
+            </div>
+        </div>
+
+        <!-- Day 0 Table Container -->
+        <div id="table_day0" class="fade-in shadow-xl rounded-xl"></div>
+
+        <!-- ROUND 1 -->
+        <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white overflow-hidden fade-in">
+            <div class="bg-gradient-to-r from-cyan-500 to-blue-600 text-white p-4 relative overflow-hidden">
+                <div class="absolute top-0 right-0 opacity-10 transform translate-x-1/4 -translate-y-1/4">
+                    <svg width="100" height="100" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 22h20L12 2z"/></svg>
+                </div>
+                <h2 class="text-2xl font-bold text-center">Round 1 — Angel Investment 👼</h2>
+                <div class="flex justify-center gap-4 mt-2 text-sm">
+                    <span class="bg-white/20 px-3 py-1 rounded-full font-medium shadow-sm backdrop-blur-md">Investment: <span id="ui_r1_inv"></span> Cr</span>
+                    <span class="bg-white/20 px-3 py-1 rounded-full font-medium shadow-sm backdrop-blur-md">Pre-money: <span id="ui_r1_pre"></span> Cr</span>
+                </div>
+            </div>
+            
+            <div class="p-5 space-y-4">
+                <div class="space-y-3" id="r1_inputs">
+                    <h3 class="font-bold text-lg text-slate-800 border-b-2 border-gray-100 pb-1 mb-2">Calculations Required:</h3>
+                    <!-- Injected Inputs -->
+                </div>
+                
+                <div id="wrapper_next_r1" class="hidden-section mt-4">
+                    <button onclick="proceedToR2()" class="btn-next !text-lg !py-3 !rounded-lg">Next Step: Finalize Round 1 & View Table →</button>
+                </div>
+
+                <div id="table_r1" class="hidden-section fade-in mt-4 shadow-xl rounded-xl"></div>
+            </div>
+        </div>
+
+        <!-- ROUND 2 -->
+        <div id="section_r2" class="hidden-section fade-in bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white overflow-hidden">
+            <div class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-4 relative">
+                 <div class="absolute top-0 right-0 opacity-10 transform translate-x-1/4 -translate-y-1/4">
+                    <svg width="100" height="100" fill="currentColor" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="4"/></svg>
+                </div>
+                <h2 class="text-2xl font-bold text-center">Round 2 — VC Round 💼</h2>
+                <div class="flex justify-center gap-4 mt-2 text-sm">
+                    <span class="bg-white/20 px-3 py-1 rounded-full font-medium shadow-sm backdrop-blur-md">Investment: <span id="ui_r2_inv"></span> Cr</span>
+                    <span class="bg-white/20 px-3 py-1 rounded-full font-medium shadow-sm backdrop-blur-md">Pre-money: <span id="ui_r2_pre"></span> Cr</span>
+                </div>
+                <div class="mt-3 flex justify-center">
+                    <p class="text-center text-yellow-100 font-bold text-sm bg-white/10 px-4 py-1.5 rounded-lg backdrop-blur-md border border-white/20 inline-block shadow-inner">⚠️ Create a 10% ESOP pool BEFORE the investment</p>
+                </div>
+            </div>
+            
+            <div class="p-5 space-y-4">
+                <!-- Step 1: ESOP -->
+                <h3 class="font-bold text-lg text-slate-800 border-b-2 border-gray-100 pb-1 mb-2">Step 1: Create ESOP Pool</h3>
+                <div class="space-y-3" id="r2_esop_inputs"></div>
+                
+                <div id="wrapper_next_r2_esop" class="hidden-section mt-4">
+                    <button onclick="proceedToR2VC()" class="btn-next !text-lg !py-3 !rounded-lg" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); box-shadow: 0 5px 15px -3px rgba(99, 102, 241, 0.4);">Next Step: Confirm ESOP Pool →</button>
+                </div>
+                
+                <div id="table_r2_esop" class="hidden-section fade-in py-4 shadow-xl rounded-xl"></div>
+
+                <!-- Step 2: VC Round -->
+                <div id="section_r2_vc" class="hidden-section fade-in space-y-4 pt-4 border-t-2 border-gray-100">
+                    <h3 class="font-bold text-lg text-slate-800 mb-2">Step 2: Calculate VC Investment</h3>
+                    <div id="r2_vc_inputs" class="space-y-3"></div>
+                    
+                    <div id="wrapper_next_r2" class="hidden-section mt-4">
+                        <button onclick="proceedToR3()" class="btn-next !text-lg !py-3 !rounded-lg" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); box-shadow: 0 5px 15px -3px rgba(139, 92, 246, 0.4);">Next Step: Finalize Round 2 & View Table →</button>
+                    </div>
+                </div>
+
+                <div id="table_r2" class="hidden-section fade-in mt-4 shadow-xl rounded-xl"></div>
+            </div>
+        </div>
+
+        <!-- ROUND 3 -->
+        <div id="section_r3" class="hidden-section fade-in bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white overflow-hidden">
+            <div class="bg-gradient-to-r from-fuchsia-500 to-pink-600 text-white p-4 relative">
+                 <div class="absolute top-0 right-0 opacity-10 transform translate-x-1/4 -translate-y-1/4">
+                    <svg width="100" height="100" fill="currentColor" viewBox="0 0 24 24"><polygon points="12,2 22,22 2,22"/></svg>
+                </div>
+                <h2 class="text-2xl font-bold text-center">Round 3 — Series B 🚀</h2>
+                <div class="flex justify-center gap-4 mt-2 text-sm">
+                    <span class="bg-white/20 px-3 py-1 rounded-full font-medium shadow-sm backdrop-blur-md">Investment: <span id="ui_r3_inv"></span> Cr</span>
+                    <span class="bg-white/20 px-3 py-1 rounded-full font-medium shadow-sm backdrop-blur-md">Pre-money: <span id="ui_r3_pre"></span> Cr</span>
+                </div>
+            </div>
+            <div class="p-5 space-y-4">
+                <h3 class="font-bold text-lg text-slate-800 border-b-2 border-gray-100 pb-1 mb-2">Calculations Required:</h3>
+                <div class="space-y-3" id="r3_inputs"></div>
+                
+                <div id="wrapper_next_r3" class="hidden-section mt-4">
+                    <button onclick="proceedToSummary()" class="btn-next !text-lg !py-3 !rounded-lg" style="background: linear-gradient(135deg, #ec4899 0%, #db2777 100%); box-shadow: 0 5px 15px -3px rgba(236, 72, 153, 0.4);">Next Step: Finalize Round 3 & View Table →</button>
+                </div>
+
+                <div id="table_r3" class="hidden-section fade-in mt-4 shadow-xl rounded-xl"></div>
+            </div>
+        </div>
+
+        <!-- SUMMARY & EXIT -->
+        <div id="section_summary" class="hidden-section fade-in bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white overflow-hidden">
+            <div class="bg-gradient-to-r from-teal-500 to-emerald-600 text-white p-4 relative">
+                <h2 class="text-2xl font-bold text-center">Founder Ownership Summary & Exit 💰</h2>
+            </div>
+            <div class="p-5 space-y-6">
+                <!-- Summary -->
+                <div class="bg-gradient-to-br from-teal-50 to-emerald-50 p-5 rounded-xl border border-teal-100 shadow-inner">
+                    <h3 class="font-bold text-teal-900 text-xl mb-4 flex items-center"><span class="bg-teal-200 p-1.5 rounded-lg mr-2">📊</span> Founder Summary</h3>
+                    <div id="summ_inputs" class="space-y-3"></div>
+                    
+                    <div id="wrapper_next_summ" class="hidden-section mt-4">
+                        <button onclick="proceedToExit()" class="btn-next !text-lg !py-3 !rounded-lg">Next Step: View Exit Scenario →</button>
+                    </div>
+
+                    <div id="summ_msg" class="hidden-section fade-in text-base text-teal-900 bg-white p-4 rounded-xl mt-4 border border-teal-200 shadow-sm relative overflow-hidden">
+                        <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-teal-400 to-emerald-500"></div>
+                        <p class="mb-1">Founders started with <strong class="text-teal-700">100%</strong> of the company.</p>
+                        <p class="mb-1">After 3 rounds of dilution, they retained <strong class="text-teal-700">~<span id="ui_summ_final_pct"></span>%</strong>.</p>
+                        <p>Valuation grew massively from <strong class="text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded"><span id="ui_summ_pre"></span> Cr to <span id="ui_summ_post"></span> Cr</strong>.</p>
+                    </div>
+                </div>
+
+                <!-- Exit -->
+                <div id="section_exit" class="hidden-section fade-in space-y-5 pt-4 border-t-2 border-gray-100">
+                    <div class="text-center mb-5 bg-gradient-to-b from-gray-50 to-gray-100 p-5 rounded-xl border border-gray-200 shadow-sm relative">
+                        <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-white px-3 py-0.5 rounded-full border border-gray-200 shadow-sm text-xs font-bold text-gray-500 uppercase tracking-wider">The Final Event</div>
+                        <h3 class="text-2xl font-bold text-slate-800">Exit Scenario (Acquisition)</h3>
+                        <p class="text-slate-600 text-lg mt-2"><span id="ui_exit_startup" class="font-bold"></span> is acquired for: <span class="text-white font-bold bg-gradient-to-r from-green-500 to-emerald-600 px-3 py-1.5 rounded-lg shadow-sm inline-block transform hover:scale-105 transition-transform cursor-default"><span id="ui_exit_val"></span> Cr</span></p>
+                        <p class="text-sm text-gray-500 mt-2 italic">*Assuming standard pro-rata distribution without liquidation preferences.</p>
+                    </div>
+
+                    <h4 class="font-bold text-gray-800 text-lg mb-4 pl-2 border-l-4 border-emerald-500">Calculate Final Exit Distribution (in Cr):</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="exit_inputs"></div>
+
+                    <div id="exit_success_msg" class="hidden-section fade-in relative overflow-hidden bg-gradient-to-br from-green-400 to-emerald-600 text-white p-6 rounded-2xl text-center mt-6 shadow-xl">
+                        <div class="absolute top-0 right-0 w-48 h-48 bg-white opacity-10 rounded-full blur-2xl transform translate-x-1/2 -translate-y-1/2"></div>
+                        <div class="absolute bottom-0 left-0 w-48 h-48 bg-white opacity-10 rounded-full blur-2xl transform -translate-x-1/2 translate-y-1/2"></div>
+                        
+                        <h3 class="text-3xl font-bold mb-3 drop-shadow-md">Simulation Complete! 🎉</h3>
+                        <p class="text-xl font-medium drop-shadow-sm">Congratulations, <span class="font-bold text-yellow-300" id="final_name_display"></span>!</p>
+                        <p class="text-lg mt-2 text-green-50">You successfully scaled <span id="ui_success_startup" class="font-bold"></span>.</p>
+                        <div class="mt-5 bg-white/20 backdrop-blur-md inline-block px-6 py-4 rounded-xl border border-white/40 shadow-lg transform hover:scale-105 transition-transform duration-300">
+                            <p class="text-lg font-bold">The Founders exit with <br><span class="text-4xl font-black text-yellow-300 mt-1 inline-block drop-shadow-lg"><span id="ui_final_exit"></span> Cr</span>!</p>
+                        </div>
+                        
+                        <div class="mt-8 bg-white text-slate-800 p-6 rounded-2xl shadow-inner text-left">
+                            <h4 class="text-2xl font-bold border-b pb-2 mb-4">Performance Scorecard</h4>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-lg font-medium">Earned Base Score</span>
+                                <span class="font-bold text-xl text-green-600" id="score_base">100</span>
+                            </div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-lg font-medium">Time Taken</span>
+                                <span class="font-bold text-xl" id="score_time_taken"></span>
+                            </div>
+                            <div class="flex justify-between items-center mb-2 text-red-500">
+                                <span class="text-lg font-medium">Time Penalty (>20 mins)</span>
+                                <span class="font-bold text-xl" id="score_time_penalty"></span>
+                            </div>
+                            <div class="flex justify-between items-center border-t border-gray-200 pt-4">
+                                <span class="text-2xl font-bold">Final Score</span>
+                                <span class="text-4xl font-black text-indigo-600" id="score_final"></span>
+                            </div>
+                        </div>
+
+                        <div class="mt-8 bg-gradient-to-r from-indigo-50 to-blue-50 p-6 rounded-2xl shadow-inner border border-indigo-100">
+                            <h4 class="text-2xl font-bold text-indigo-900 mb-2">🎓 Claim Your Certificate</h4>
+                            <p class="text-indigo-700 mb-6 text-lg">Download your official completion certificate and share your success on LinkedIn to show off your new Cap Table skills!</p>
+                            
+                            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                                <button onclick="downloadCertificate()" class="flex items-center justify-center bg-indigo-600 text-white font-bold py-3 px-6 rounded-xl hover:bg-indigo-700 hover:shadow-lg transition-all transform hover:-translate-y-1">
+                                    <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                    Download Certificate (.png)
+                                </button>
+                                <button onclick="shareOnLinkedIn()" class="flex items-center justify-center bg-[#0077b5] text-white font-bold py-3 px-6 rounded-xl hover:bg-[#005e93] hover:shadow-lg transition-all transform hover:-translate-y-1">
+                                    <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                                    Share on LinkedIn
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Application Logic -->
+    <script>
+        // --- API CONFIGURATION ---
+        const API_CONFIG = {
+            SAVE_URL: 'https://erp.taxila.in/api/game/startupCap', 
+            LOAD_URL: 'https://erp.taxila.in/api/game/startupCap', 
+            HEADERS: { 'Content-Type': 'application/json' }
+        };
+
+        function getUserId() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get("userId") || "guest";
+        }
+
+        function notify(msg) {
+            const n = document.getElementById('notification');
+            if(!n) return;
+            n.innerText = msg; n.classList.add('show');
+            setTimeout(() => n.classList.remove('show'), 3500);
+        }
+
+        function showProcessing(callback, customText = "SYNCING ARCHIVES...") {
+            const overlay = document.getElementById('processingOverlay');
+            const textEl = document.getElementById('processingText');
+            if (textEl) textEl.innerText = customText;
+            overlay.style.display = 'flex';
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                if (callback) callback();
+            }, 2000);
+        }
+
+        let loadActionIsFromWelcome = false;
+        function openSaveLoadModal(fromWelcome = false) {
+            loadActionIsFromWelcome = fromWelcome;
+            const modal = document.getElementById('saveLoadOverlay');
+            const btn = document.getElementById('sl-action-btn');
+            const input = document.getElementById('sl-input');
+            
+            btn.onclick = () => executeApiLoad(input.value, loadActionIsFromWelcome);
+            if (playerName && playerName.trim() !== "") {
+                input.value = playerName;
+            }
+            modal.style.display = 'flex';
+        }
+
+        function closeSaveLoadModal() {
+            document.getElementById('saveLoadOverlay').style.display = 'none';
+        }
+
+        // --- 25 Randomized Datasets ---
+        const datasets = [
+            { id: 1, r1Inv: 2, r1Pre: 8, r2Esop: 10, r2Inv: 10, r2Pre: 40, r3Inv: 30, r3Pre: 120, exitVal: 500 },
+            { id: 2, r1Inv: 3, r1Pre: 12, r2Esop: 10, r2Inv: 15, r2Pre: 60, r3Inv: 40, r3Pre: 160, exitVal: 800 },
+            { id: 3, r1Inv: 1, r1Pre: 4, r2Esop: 10, r2Inv: 5, r2Pre: 20, r3Inv: 15, r3Pre: 60, exitVal: 300 },
+            { id: 4, r1Inv: 2.5, r1Pre: 7.5, r2Esop: 10, r2Inv: 12, r2Pre: 48, r3Inv: 35, r3Pre: 140, exitVal: 700 },
+            { id: 5, r1Inv: 4, r1Pre: 16, r2Esop: 10, r2Inv: 20, r2Pre: 80, r3Inv: 50, r3Pre: 200, exitVal: 1000 },
+            { id: 6, r1Inv: 5, r1Pre: 20, r2Esop: 10, r2Inv: 25, r2Pre: 100, r3Inv: 60, r3Pre: 240, exitVal: 1200 },
+            { id: 7, r1Inv: 1.5, r1Pre: 6, r2Esop: 10, r2Inv: 8, r2Pre: 32, r3Inv: 20, r3Pre: 80, exitVal: 400 },
+            { id: 8, r1Inv: 2, r1Pre: 6, r2Esop: 10, r2Inv: 10, r2Pre: 30, r3Inv: 25, r3Pre: 75, exitVal: 450 },
+            { id: 9, r1Inv: 3, r1Pre: 9, r2Esop: 10, r2Inv: 12, r2Pre: 36, r3Inv: 30, r3Pre: 90, exitVal: 550 },
+            { id: 10, r1Inv: 4, r1Pre: 12, r2Esop: 10, r2Inv: 15, r2Pre: 45, r3Inv: 40, r3Pre: 120, exitVal: 650 },
+            { id: 11, r1Inv: 1, r1Pre: 3, r2Esop: 10, r2Inv: 5, r2Pre: 15, r3Inv: 15, r3Pre: 45, exitVal: 250 },
+            { id: 12, r1Inv: 2.5, r1Pre: 10, r2Esop: 10, r2Inv: 10, r2Pre: 50, r3Inv: 30, r3Pre: 150, exitVal: 600 },
+            { id: 13, r1Inv: 3.5, r1Pre: 14, r2Esop: 10, r2Inv: 18, r2Pre: 72, r3Inv: 45, r3Pre: 180, exitVal: 900 },
+            { id: 14, r1Inv: 2, r1Pre: 10, r2Esop: 10, r2Inv: 8, r2Pre: 40, r3Inv: 20, r3Pre: 100, exitVal: 500 },
+            { id: 15, r1Inv: 4, r1Pre: 20, r2Esop: 10, r2Inv: 20, r2Pre: 100, r3Inv: 50, r3Pre: 250, exitVal: 1100 },
+            { id: 16, r1Inv: 1.5, r1Pre: 4.5, r2Esop: 10, r2Inv: 6, r2Pre: 24, r3Inv: 18, r3Pre: 72, exitVal: 350 },
+            { id: 17, r1Inv: 5, r1Pre: 15, r2Esop: 10, r2Inv: 20, r2Pre: 60, r3Inv: 50, r3Pre: 150, exitVal: 850 },
+            { id: 18, r1Inv: 2.5, r1Pre: 12.5, r2Esop: 10, r2Inv: 15, r2Pre: 75, r3Inv: 35, r3Pre: 175, exitVal: 750 },
+            { id: 19, r1Inv: 3, r1Pre: 15, r2Esop: 10, r2Inv: 10, r2Pre: 50, r3Inv: 25, r3Pre: 125, exitVal: 600 },
+            { id: 20, r1Inv: 1, r1Pre: 5, r2Esop: 10, r2Inv: 4, r2Pre: 20, r3Inv: 12, r3Pre: 60, exitVal: 300 },
+            { id: 21, r1Inv: 2, r1Pre: 14, r2Esop: 10, r2Inv: 10, r2Pre: 70, r3Inv: 30, r3Pre: 210, exitVal: 800 },
+            { id: 22, r1Inv: 4, r1Pre: 8, r2Esop: 10, r2Inv: 16, r2Pre: 32, r3Inv: 40, r3Pre: 80, exitVal: 400 },
+            { id: 23, r1Inv: 3.5, r1Pre: 10.5, r2Esop: 10, r2Inv: 14, r2Pre: 42, r3Inv: 35, r3Pre: 105, exitVal: 550 },
+            { id: 24, r1Inv: 5, r1Pre: 25, r2Esop: 10, r2Inv: 25, r2Pre: 125, r3Inv: 60, r3Pre: 300, exitVal: 1500 },
+            { id: 25, r1Inv: 1.5, r1Pre: 7.5, r2Esop: 10, r2Inv: 5, r2Pre: 25, r3Inv: 15, r3Pre: 75, exitVal: 400 }
+        ];
+
+        let ds; // Current dataset
+        let correctAnswers = {};
+        let tableData = {};
+        let playerName = "";
+        let startupName = "";
+
+        // Scoring & Timer variables
+        let timeLeft = 1800; // 30 minutes in seconds
+        let timerId = null;
+        let simulationComplete = false;
+
+        const icons = {
+            check: `<div class="bg-green-100 p-1 rounded-full"><svg class="text-green-600 w-5 h-5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg></div>`,
+            cross: `<div class="bg-red-100 p-1 rounded-full"><svg class="text-red-600 w-5 h-5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg></div>`
+        };
+
+        // --- SAVE AND LOAD API LOGIC ---
+        function getGameStateObj() {
+            const inputValues = {};
+            for(let key in correctAnswers) {
+                const el = document.getElementById(key);
+                if(el) inputValues[key] = el.value;
+            }
+
+            const sectionsToTrack = [
+                'table_r1', 'section_r2', 'table_r2_esop', 'section_r2_vc',
+                'table_r2', 'section_r3', 'table_r3', 'section_summary',
+                'summ_msg', 'section_exit', 'exit_success_msg',
+                'wrapper_next_r1', 'wrapper_next_r2_esop', 'wrapper_next_r2',
+                'wrapper_next_r3', 'wrapper_next_summ'
+            ];
+            const visibleSections = sectionsToTrack.filter(id => {
+                const el = document.getElementById(id);
+                return el && !el.classList.contains('hidden-section');
+            });
+
+            return {
+                playerName, startupName, ds, 
+                timeLeft, simulationComplete, 
+                inputValues, visibleSections
+            };
+        }
+
+        async function executeApiSave() {
+            const userId = getUserId();
+            if (!ds) return notify("No active game to save.");
+            
+            showProcessing(async () => {
+                try {
+                    const gameState = getGameStateObj();
+                    const response = await fetch(API_CONFIG.SAVE_URL, {
+                        method: 'POST',
+                        headers: API_CONFIG.HEADERS,
+                        body: JSON.stringify({ userId: userId, gameState: gameState })
+                    });
+                    if (!response.ok) {
+                        console.warn("API Endpoint failed. Saving to local mock storage as fallback.");
+                        localStorage.setItem(`STARTUP_CAP_SAVE_${playerName}`, JSON.stringify(gameState));
+                    }
+                    notify("Game Saved Successfully!");
+                } catch (err) {
+                    console.error("Save API Error:", err);
+                    localStorage.setItem(`STARTUP_CAP_SAVE_${playerName}`, JSON.stringify(getGameStateObj()));
+                    notify("Saved locally (API unreachable).");
+                }
+            }, "ENCRYPTING GAME STATE...");
+        }
+
+        function extractGameState(result) {
+            if (!result) return null;
+            if (result.gameState) return result.gameState;
+            if (result.data && result.data.gameState) return result.data.gameState;
+            if (result.data) return result.data;
+            return result;
+        }
+
+        async function executeApiLoad(targetId, fromWelcome = false) {
+            const userId = getUserId();
+            if (!targetId || targetId.trim() === "") return notify("Founder Name required to load.");
+            closeSaveLoadModal();
+
+            showProcessing(async () => {
+                try {
+                    let loadedState = null;
+                    try {
+                        const response = await fetch(`${API_CONFIG.LOAD_URL}?userId=${userId}`, { headers: API_CONFIG.HEADERS });
+                        if (response.ok) {
+                            const result = await response.json();
+                            loadedState = extractGameState(result);
+                        }
+                    } catch (apiErr) {
+                        console.warn("API Load failed, checking local fallback.");
+                    }
+
+                    if (!loadedState || !loadedState.playerName) {
+                        const localData = localStorage.getItem(`STARTUP_CAP_SAVE_${targetId.trim()}`);
+                        if (localData) loadedState = JSON.parse(localData);
+                    }
+
+                    if (!loadedState || !loadedState.playerName) throw new Error("Save profile not found.");
+
+                    applyLoadedState(loadedState);
+                    handleViewTransitionOnLoad(fromWelcome);
+
+                    notify("Game Restored Successfully!");
+                } catch (err) {
+                    console.error("Load Error:", err);
+                    notify(err.message || "Failed to load game data.");
+                }
+            }, "RETRIEVING ARCHIVES...");
+        }
+
+        function applyLoadedState(state) {
+            playerName = state.playerName || "Founder";
+            startupName = state.startupName || "Startup";
+            timeLeft = state.timeLeft || 1800;
+            simulationComplete = state.simulationComplete || false;
+
+            document.getElementById('player_name').value = playerName;
+            document.getElementById('startup_name').value = startupName;
+            
+            document.getElementById('display_name').innerText = playerName;
+            document.getElementById('sim_player_name').innerText = playerName;
+            document.getElementById('final_name_display').innerText = playerName;
+            document.getElementById('display_startup_name').innerText = startupName;
+            document.getElementById('ui_header_startup').innerText = startupName;
+            document.getElementById('ui_exit_startup').innerText = startupName;
+            document.getElementById('ui_success_startup').innerText = startupName;
+
+            // Re-setup with the saved dataset to regenerate tables
+            setupSimulationData(state.ds);
+
+            // Restore Inputs & trigger valid check
+            if(state.inputValues) {
+                for(let key in state.inputValues) {
+                    const el = document.getElementById(key);
+                    if(el && state.inputValues[key] !== '') {
+                        el.value = state.inputValues[key];
+                        handleInput(key); 
+                    }
+                }
+            }
+
+            // Unhide exactly what was visible
+            if(state.visibleSections) {
+                state.visibleSections.forEach(id => {
+                    const el = document.getElementById(id);
+                    if(el) el.classList.remove('hidden-section');
+                });
+            }
+
+            if(simulationComplete) {
+                calculateFinalScore();
+            }
+        }
+
+        function handleViewTransitionOnLoad(fromWelcome) {
+            if (fromWelcome) {
+                document.getElementById('screen_welcome').classList.add('hidden-section');
+                document.getElementById('screen_instructions').classList.add('hidden-section');
+                document.getElementById('app-container').classList.remove('hidden-section');
+                if(!simulationComplete) startTimer();
+                else document.getElementById('timer_display_container').classList.add('hidden-section');
+                setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50);
+            } else {
+                if(timerId) clearInterval(timerId);
+                if(!simulationComplete) startTimer();
+                else document.getElementById('timer_display_container').classList.add('hidden-section');
+            }
+        }
+
+        // Auto load listener
+        window.addEventListener('DOMContentLoaded', () => {
+            const userId = getUserId();
+            if (userId && userId !== "guest") {
+                fetch(`${API_CONFIG.LOAD_URL}?userId=${userId}`, { headers: API_CONFIG.HEADERS })
+                .then(res => {
+                    if (res.ok) return res.json();
+                    throw new Error("No existing profile data found.");
+                })
+                .then(result => {
+                    const loadedState = extractGameState(result);
+                    if (loadedState && loadedState.playerName) {
+                        showProcessing(() => {
+                            applyLoadedState(loadedState);
+                            handleViewTransitionOnLoad(true);
+                            notify("Game Auto-Restored Successfully!");
+                        }, "AUTO-LOADING PROFILE...");
+                    }
+                })
+                .catch(err => {
+                    console.log("No auto-save profile found. Proceeding with fresh game.");
+                });
+            }
+        });
+
+
+        // Screen Navigation
+        function goToInstructions() {
+            const nameInput = document.getElementById('player_name').value.trim();
+            const startupInput = document.getElementById('startup_name').value.trim();
+            
+            let hasError = false;
+
+            if(nameInput === "") {
+                document.getElementById('name_error').classList.remove('hidden-section');
+                hasError = true;
+            } else {
+                document.getElementById('name_error').classList.add('hidden-section');
+            }
+
+            if(startupInput === "") {
+                document.getElementById('startup_error').classList.remove('hidden-section');
+                hasError = true;
+            } else {
+                document.getElementById('startup_error').classList.add('hidden-section');
+            }
+
+            if(hasError) return;
+
+            playerName = nameInput;
+            startupName = startupInput;
+
+            document.getElementById('display_name').innerText = playerName;
+            document.getElementById('sim_player_name').innerText = playerName;
+            document.getElementById('final_name_display').innerText = playerName;
+
+            // Apply custom startup name
+            document.getElementById('display_startup_name').innerText = startupName;
+            document.getElementById('ui_header_startup').innerText = startupName;
+            document.getElementById('ui_exit_startup').innerText = startupName;
+            document.getElementById('ui_success_startup').innerText = startupName;
+            
+            document.getElementById('screen_welcome').classList.add('hidden-section');
+            document.getElementById('screen_instructions').classList.remove('hidden-section');
+        }
+
+        function startSimulation() {
+            document.getElementById('screen_instructions').classList.add('hidden-section');
+            document.getElementById('app-container').classList.remove('hidden-section');
+            setupSimulationData();
+            startTimer();
+            setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50);
+        }
+
+        function updateLiveScore() {
+            if (!correctAnswers || Object.keys(correctAnswers).length === 0) return { baseScore: 0, timePenalty: 0, hintPenalty: 0, currentScore: 0 };
+            
+            let correctCount = 0;
+            const totalInputs = Object.keys(correctAnswers).length;
+            
+            for (let key in correctAnswers) {
+                const el = document.getElementById(key);
+                if (el && checkValue(key, el.value) === true) {
+                    correctCount++;
+                }
+            }
+            
+            let baseScore = Math.round((correctCount / totalInputs) * 100);
+
+            const timeTakenSecs = 1800 - timeLeft;
+            const timeTakenMins = Math.floor(timeTakenSecs / 60);
+            const displaySecs = timeTakenSecs % 60;
+            
+            let timePenalty = 0;
+            // After 20 mins, deduct 1 mark per minute
+            if (timeTakenMins >= 20) {
+                timePenalty = timeTakenMins - 19;
+                if (timeTakenMins === 20 && displaySecs === 0) timePenalty = 0;
+            }
+            if (timePenalty > 10) timePenalty = 10;
+            if (timePenalty < 0) timePenalty = 0;
+            
+            let currentScore = baseScore - timePenalty;
+            if (currentScore < 0) currentScore = 0;
+            
+            document.getElementById('live_score_display').innerText = currentScore;
+            return { baseScore, timePenalty, currentScore };
+        }
+
+        function startTimer() {
+            document.getElementById('timer_display_container').classList.remove('hidden-section');
+            updateTimerUI();
+            updateLiveScore();
+            timerId = setInterval(() => {
+                timeLeft--;
+                updateTimerUI();
+                updateLiveScore();
+                if (timeLeft <= 0) {
+                    clearInterval(timerId);
+                    handleTimeUp();
+                }
+            }, 1000);
+        }
+
+        function updateTimerUI() {
+            const mins = Math.floor(timeLeft / 60);
+            const secs = timeLeft % 60;
+            const timeStr = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            const timerEl = document.getElementById('timer_display');
+            timerEl.innerText = timeStr;
+            
+            // Warning color when under 10 minutes (after 20 mins elapsed)
+            if (timeLeft <= 600) {
+                timerEl.classList.remove('text-indigo-700');
+                timerEl.classList.add('text-red-600');
+                if (timeLeft <= 60) timerEl.classList.add('animate-pulse');
+            }
+        }
+
+        function handleTimeUp() {
+            if(simulationComplete) return;
+            alert("Time's Up! You have reached the 30-minute limit.");
+            evaluateProgress();
+        }
+
+        function setupSimulationData(loadedDs = null) {
+            if (loadedDs) {
+                ds = loadedDs;
+            } else {
+                // Randomly select one of the 25 datasets
+                const randomIndex = Math.floor(Math.random() * datasets.length);
+                ds = datasets[randomIndex];
+            }
+            console.log("Selected Dataset:", ds.id);
+
+            // Compute values
+            const initialShares = 10000;
+
+            const r1Post = ds.r1Pre + ds.r1Inv;
+            const r1OwnPct = (ds.r1Inv / r1Post) * 100;
+            const r1Shares = Math.round((r1OwnPct / (100 - r1OwnPct)) * initialShares);
+            const totalR1 = initialShares + r1Shares;
+
+            const r2EsopShares = Math.round((ds.r2Esop / (100 - ds.r2Esop)) * totalR1);
+            const totalR2Pre = totalR1 + r2EsopShares;
+
+            const r2Post = ds.r2Pre + ds.r2Inv;
+            const r2OwnPct = (ds.r2Inv / r2Post) * 100;
+            const r2VcShares = Math.round((r2OwnPct / (100 - r2OwnPct)) * totalR2Pre);
+            const totalR2 = totalR2Pre + r2VcShares;
+
+            const r3Post = ds.r3Pre + ds.r3Inv;
+            const r3OwnPct = (ds.r3Inv / r3Post) * 100;
+            const r3Shares = Math.round((r3OwnPct / (100 - r3OwnPct)) * totalR2);
+            const totalR3 = totalR2 + r3Shares;
+
+            const fPct = (initialShares / totalR3) * 100;
+            const angPct = (r1Shares / totalR3) * 100;
+            const esopPct = (r2EsopShares / totalR3) * 100;
+            const vcaPct = (r2VcShares / totalR3) * 100;
+            const vcbPct = (r3Shares / totalR3) * 100;
+            
+            const exitFounderVal = ds.exitVal * (fPct/100);
+
+            // Map correct answers
+            correctAnswers = {
+                r1_postMoney: r1Post,
+                r1_ownership: r1OwnPct,
+                r1_shares: r1Shares,
+                r2_esop: r2EsopShares,
+                r2_ownership: r2OwnPct,
+                r2_vcShares: r2VcShares,
+                r3_postMoney: r3Post,
+                r3_ownership: r3OwnPct,
+                r3_shares: r3Shares,
+                summ_shares: initialShares,
+                summ_pct: fPct,
+                exit_founder: exitFounderVal,
+                exit_angel: ds.exitVal * (angPct/100),
+                exit_esop: ds.exitVal * (esopPct/100),
+                exit_vca: ds.exitVal * (vcaPct/100),
+                exit_vcb: ds.exitVal * (vcbPct/100)
+            };
+
+            // Map dynamic table data
+            tableData = {
+                r1: [
+                    { name: 'Founder A', shares: 4000, pct: ((4000/totalR1)*100).toFixed(2) },
+                    { name: 'Founder B', shares: 3000, pct: ((3000/totalR1)*100).toFixed(2) },
+                    { name: 'Founder C', shares: 3000, pct: ((3000/totalR1)*100).toFixed(2) },
+                    { name: 'Angel Investor', shares: r1Shares, pct: ((r1Shares/totalR1)*100).toFixed(2) }
+                ],
+                r1Total: totalR1,
+                r2Esop: [
+                    { name: 'Founder A', shares: 4000, pct: ((4000/totalR2Pre)*100).toFixed(2) },
+                    { name: 'Founder B', shares: 3000, pct: ((3000/totalR2Pre)*100).toFixed(2) },
+                    { name: 'Founder C', shares: 3000, pct: ((3000/totalR2Pre)*100).toFixed(2) },
+                    { name: 'Angel', shares: r1Shares, pct: ((r1Shares/totalR2Pre)*100).toFixed(2) },
+                    { name: 'ESOP Pool', shares: r2EsopShares, pct: ((r2EsopShares/totalR2Pre)*100).toFixed(2) }
+                ],
+                r2EsopTotal: totalR2Pre,
+                r2: [
+                    { name: 'Founder A', shares: 4000, pct: ((4000/totalR2)*100).toFixed(2) },
+                    { name: 'Founder B', shares: 3000, pct: ((3000/totalR2)*100).toFixed(2) },
+                    { name: 'Founder C', shares: 3000, pct: ((3000/totalR2)*100).toFixed(2) },
+                    { name: 'Angel', shares: r1Shares, pct: ((r1Shares/totalR2)*100).toFixed(2) },
+                    { name: 'ESOP Pool', shares: r2EsopShares, pct: ((r2EsopShares/totalR2)*100).toFixed(2) },
+                    { name: 'VC (Series A)', shares: r2VcShares, pct: ((r2VcShares/totalR2)*100).toFixed(2) }
+                ],
+                r2Total: totalR2,
+                r3: [
+                    { name: 'Founder A', shares: 4000, pct: ((4000/totalR3)*100).toFixed(2) },
+                    { name: 'Founder B', shares: 3000, pct: ((3000/totalR3)*100).toFixed(2) },
+                    { name: 'Founder C', shares: 3000, pct: ((3000/totalR3)*100).toFixed(2) },
+                    { name: 'Angel', shares: r1Shares, pct: ((r1Shares/totalR3)*100).toFixed(2) },
+                    { name: 'ESOP Pool', shares: r2EsopShares, pct: ((r2EsopShares/totalR3)*100).toFixed(2) },
+                    { name: 'VC Series A', shares: r2VcShares, pct: ((r2VcShares/totalR3)*100).toFixed(2) },
+                    { name: 'VC Series B', shares: r3Shares, pct: ((r3Shares/totalR3)*100).toFixed(2) }
+                ],
+                r3Total: totalR3
+            };
+
+            // Inject basic UI text elements
+            document.getElementById('ui_r1_inv').innerText = ds.r1Inv;
+            document.getElementById('ui_r1_pre').innerText = ds.r1Pre;
+            document.getElementById('ui_r2_inv').innerText = ds.r2Inv;
+            document.getElementById('ui_r2_pre').innerText = ds.r2Pre;
+            document.getElementById('ui_r3_inv').innerText = ds.r3Inv;
+            document.getElementById('ui_r3_pre').innerText = ds.r3Pre;
+            document.getElementById('ui_summ_pre').innerText = ds.r1Pre;
+            document.getElementById('ui_summ_post').innerText = r3Post;
+            document.getElementById('ui_summ_final_pct').innerText = fPct.toFixed(1);
+            document.getElementById('ui_exit_val').innerText = ds.exitVal;
+            document.getElementById('ui_final_exit').innerText = exitFounderVal.toFixed(1);
+
+            // Setup Tables & Inputs
+            renderTable('table_day0', 'Initial Cap Table (Day 0)', [
+                { name: 'Founder A', shares: 4000, pct: '40.00' },
+                { name: 'Founder B', shares: 3000, pct: '30.00' },
+                { name: 'Founder C', shares: 3000, pct: '30.00' }
+            ], 10000, '100');
+
+            renderDynamicInputs(totalR1, totalR2Pre, totalR2, totalR3, fPct, angPct, esopPct, vcaPct, vcbPct);
+        }
+
+        function renderDynamicInputs(tR1, tR2Pre, tR2, tR3, fPct, angPct, esopPct, vcaPct, vcbPct) {
+            document.getElementById('r1_inputs').innerHTML = 
+                generateInputHTML('r1_postMoney', '1. Post-Money Valuation', 'Cr', 'Formula: Post-money = Pre-money + Investment') +
+                generateInputHTML('r1_ownership', '2. Investor Ownership', '%', 'Formula: Investor % = Investment / Post-money') +
+                generateInputHTML('r1_shares', '3. Share Calculation', 'shares', `Formula: X / (10,000 + X) = ${correctAnswers.r1_ownership.toFixed(2)}%`);
+
+            document.getElementById('r2_esop_inputs').innerHTML = 
+                generateInputHTML('r2_esop', 'ESOP Pool Shares', 'shares', `Formula: Y / (${tR1.toLocaleString()} + Y) = 10%`);
+
+            document.getElementById('r2_vc_inputs').innerHTML = 
+                generateInputHTML('r2_ownership', '1. VC Ownership', '%', `Formula: VC % = ${ds.r2Inv} / (${ds.r2Pre} + ${ds.r2Inv})`) +
+                generateInputHTML('r2_vcShares', '2. Calculate VC Shares', 'shares', `Formula: Z / (${tR2Pre.toLocaleString()} + Z) = ${correctAnswers.r2_ownership.toFixed(2)}%`);
+
+            document.getElementById('r3_inputs').innerHTML = 
+                generateInputHTML('r3_postMoney', '1. Post-Money Valuation', 'Cr') +
+                generateInputHTML('r3_ownership', '2. Investor Ownership', '%') +
+                generateInputHTML('r3_shares', '3. Shares Issued', 'shares', `Formula: W / (${tR2.toLocaleString()} + W) = ${correctAnswers.r3_ownership.toFixed(2)}%`);
+
+            document.getElementById('summ_inputs').innerHTML = 
+                generateInputHTML('summ_shares', 'Combined Founders Shares', 'shares', 'Sum of Founder A, B & C shares') +
+                generateInputHTML('summ_pct', 'Final Ownership %', '%', `Founders Total Shares / ${tR3.toLocaleString()}`);
+
+            document.getElementById('exit_inputs').innerHTML = 
+                generateInputHTML('exit_founder', `Founders (${fPct.toFixed(2)}%)`, 'Cr') +
+                generateInputHTML('exit_angel', `Angel (${angPct.toFixed(2)}%)`, 'Cr') +
+                generateInputHTML('exit_esop', `ESOP (${esopPct.toFixed(2)}%)`, 'Cr') +
+                generateInputHTML('exit_vca', `VC Series A (${vcaPct.toFixed(2)}%)`, 'Cr') +
+                generateInputHTML('exit_vcb', `VC Series B (${vcbPct.toFixed(2)}%)`, 'Cr');
+        }
+
+        function generateInputHTML(id, label, suffix, hint = '') {
+            return `
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md mb-3 transition-all duration-300 group" id="wrapper_${id}">
+                    <div class="mb-2 sm:mb-0 pr-4 flex-1">
+                        <span class="font-bold text-gray-800 block text-lg group-hover:text-blue-600 transition-colors">${label}</span>
+                        ${hint ? `<span class="text-sm text-gray-500 mt-1 block bg-gray-50 p-1.5 rounded-lg border border-gray-100">${hint}</span>` : ''}
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <input type="number" step="any" id="${id}" placeholder="0" oninput="handleInput('${id}')"
+                            class="w-32 p-2 border-2 border-gray-200 rounded-lg text-right text-lg focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 bg-gray-50 hover:bg-white transition-all shadow-inner">
+                        <span class="text-gray-400 font-bold w-10 text-lg">${suffix}</span>
+                        <div class="w-8 flex justify-center items-center" id="icon_${id}"></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderTable(containerId, title, data, totalShares, totalPct) {
+            const colors = ['bg-white', 'bg-slate-50'];
+            const rows = data.map((r, i) => `
+                <tr class="${colors[i % 2]} border-b border-gray-100 hover:bg-blue-50/50 transition-colors">
+                    <td class="px-4 py-2 font-bold text-gray-700 text-base flex items-center"><div class="w-1.5 h-1.5 rounded-full bg-blue-400 mr-2"></div>${r.name}</td>
+                    <td class="px-4 py-2 text-right font-semibold text-base">${r.shares.toLocaleString()}</td>
+                    <td class="px-4 py-2 text-right font-bold text-base text-blue-600 bg-blue-50/30">${r.pct}%</td>
+                </tr>
+            `).join('');
+
+            const html = `
+                <div class="overflow-hidden rounded-xl border border-gray-200 shadow-lg bg-white relative">
+                    <div class="bg-gradient-to-r from-slate-800 to-slate-700 text-white p-3 text-center font-bold text-xl tracking-wide shadow-sm relative z-10">${title}</div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-gray-600">
+                            <thead class="text-sm uppercase bg-slate-100 border-b-2 border-slate-200 font-bold text-slate-500 tracking-wider">
+                                <tr>
+                                    <th class="px-4 py-3">Shareholder</th>
+                                    <th class="px-4 py-3 text-right">Shares</th>
+                                    <th class="px-4 py-3 text-right">Ownership %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${rows}
+                                <tr class="bg-gradient-to-r from-slate-100 to-slate-200 font-bold border-t-2 border-slate-300 text-slate-900 text-lg">
+                                    <td class="px-4 py-3">Total</td>
+                                    <td class="px-4 py-3 text-right">${totalShares.toLocaleString()}</td>
+                                    <td class="px-4 py-3 text-right text-blue-700">${totalPct}%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            document.getElementById(containerId).innerHTML = html;
+        }
+
+        // Logic & Validation
+        function checkValue(id, val) {
+            if (val === '') return null;
+            const numVal = parseFloat(val);
+            const correctVal = correctAnswers[id];
+            const diff = Math.abs(numVal - correctVal);
+            
+            // Allow larger margins for big integers (shares) vs percentages/crores
+            if (id.includes('shares') || id.includes('esop') || id.includes('vcShares') || id.includes('summ_shares')) {
+                return diff <= 5; 
+            }
+            return diff <= 0.25; 
+        }
+
+        function isCorrect(id) {
+            return checkValue(id, document.getElementById(id).value) === true;
+        }
+
+        function handleInput(id) {
+            const val = document.getElementById(id).value;
+            const status = checkValue(id, val);
+            const inputEl = document.getElementById(id);
+            const iconEl = document.getElementById('icon_' + id);
+            const wrapperEl = document.getElementById('wrapper_' + id);
+
+            if (status === null) {
+                inputEl.className = 'w-32 p-2 border-2 border-gray-200 rounded-lg text-right text-lg focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 bg-gray-50 hover:bg-white transition-all shadow-inner';
+                wrapperEl.className = 'flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md mb-3 transition-all duration-300 group';
+                iconEl.innerHTML = '';
+            } else if (status === true) {
+                inputEl.className = 'w-32 p-2 border-2 border-green-500 bg-green-50 rounded-lg text-right text-lg text-green-900 font-bold focus:outline-none shadow-[0_0_10px_rgba(34,197,94,0.2)] transition-all';
+                wrapperEl.className = 'flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-gradient-to-r from-green-50/50 to-emerald-50/50 rounded-xl border-2 border-green-200 mb-3 transition-all duration-300 transform scale-[1.01]';
+                iconEl.innerHTML = icons.check;
+            } else {
+                inputEl.className = 'w-32 p-2 border-2 border-red-400 bg-red-50 rounded-lg text-right text-lg text-red-900 font-bold focus:outline-none focus:ring-2 focus:ring-red-400/20 transition-all shadow-inner';
+                wrapperEl.className = 'flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-red-50/30 rounded-xl border border-red-200 mb-3 transition-all duration-300';
+                iconEl.innerHTML = icons.cross;
+            }
+
+            evaluateProgress();
+        }
+
+        function showNextButton(wrapperId) {
+            const btnWrapper = document.getElementById(wrapperId);
+            if(btnWrapper.classList.contains('hidden-section')) {
+                btnWrapper.classList.remove('hidden-section');
+                setTimeout(() => btnWrapper.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+            }
+        }
+
+        // Determine if NEXT STEP buttons should be shown
+        function evaluateProgress() {
+            updateLiveScore(); // Refresh score on every input
+
+            if (isCorrect('r1_postMoney') && isCorrect('r1_ownership') && isCorrect('r1_shares')) {
+                if(document.getElementById('table_r1').classList.contains('hidden-section')) showNextButton('wrapper_next_r1');
+            }
+
+            if (isCorrect('r2_esop')) {
+                if(document.getElementById('table_r2_esop').classList.contains('hidden-section')) showNextButton('wrapper_next_r2_esop');
+            }
+
+            if (isCorrect('r2_esop') && isCorrect('r2_ownership') && isCorrect('r2_vcShares')) {
+                if(document.getElementById('table_r2').classList.contains('hidden-section')) showNextButton('wrapper_next_r2');
+            }
+
+            if (isCorrect('r3_postMoney') && isCorrect('r3_ownership') && isCorrect('r3_shares')) {
+                if(document.getElementById('table_r3').classList.contains('hidden-section')) showNextButton('wrapper_next_r3');
+            }
+
+            if (isCorrect('summ_shares') && isCorrect('summ_pct')) {
+                if(document.getElementById('section_exit').classList.contains('hidden-section')) showNextButton('wrapper_next_summ');
+            }
+
+            if (isCorrect('exit_founder') && isCorrect('exit_angel') && isCorrect('exit_esop') && isCorrect('exit_vca') && isCorrect('exit_vcb')) {
+                const successMsg = document.getElementById('exit_success_msg');
+                if(successMsg.classList.contains('hidden-section')) {
+                    successMsg.classList.remove('hidden-section');
+                    if (!simulationComplete) {
+                        simulationComplete = true;
+                        if(timerId) clearInterval(timerId);
+                        document.getElementById('timer_display_container').classList.add('hidden-section');
+                        calculateFinalScore();
+                    }
+                    setTimeout(() => successMsg.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+                }
+            }
+        }
+
+        function calculateFinalScore() {
+            const scores = updateLiveScore();
+            const timeTakenSecs = 1800 - timeLeft;
+            const timeTakenMins = Math.floor(timeTakenSecs / 60);
+            const displaySecs = timeTakenSecs % 60;
+            
+            document.getElementById('score_base').innerText = scores.baseScore;
+            document.getElementById('score_time_taken').innerText = `${timeTakenMins}m ${displaySecs}s`;
+            document.getElementById('score_time_penalty').innerText = `-${scores.timePenalty}`;
+            document.getElementById('score_final').innerText = scores.currentScore;
+        }
+
+        // --- Certificate & LinkedIn Logic ---
+        function generateCertificateCanvas(name, score) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1000;
+            canvas.height = 700;
+            const ctx = canvas.getContext('2d');
+
+            // Background
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, '#f8fafc');
+            gradient.addColorStop(1, '#e2e8f0');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Outer Border
+            ctx.strokeStyle = '#4f46e5';
+            ctx.lineWidth = 15;
+            ctx.strokeRect(30, 30, canvas.width - 60, canvas.height - 60);
+
+            // Inner Border
+            ctx.strokeStyle = '#cbd5e1';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(50, 50, canvas.width - 100, canvas.height - 100);
+
+            // Corner Decorations
+            ctx.fillStyle = '#4f46e5';
+            const corners = [[30,30], [canvas.width-30,30], [30,canvas.height-30], [canvas.width-30,canvas.height-30]];
+            corners.forEach(c => {
+                ctx.beginPath();
+                ctx.arc(c[0], c[1], 15, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Title
+            ctx.fillStyle = '#1e293b';
+            ctx.font = 'bold 50px "Georgia", serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('CERTIFICATE OF ACHIEVEMENT', canvas.width / 2, 140);
+
+            // Subtitle
+            ctx.fillStyle = '#64748b';
+            ctx.font = 'italic 24px "Georgia", serif';
+            ctx.fillText('Awarded by Taxila Business School', canvas.width / 2, 180);
+
+            // Body
+            ctx.fillStyle = '#334155';
+            ctx.font = '28px "Arial", sans-serif';
+            ctx.fillText('This is to certify that', canvas.width / 2, 280);
+
+            // Name
+            ctx.fillStyle = '#4f46e5';
+            ctx.font = 'bold 56px "Arial", sans-serif';
+            ctx.fillText(name.toUpperCase(), canvas.width / 2, 350);
+
+            // Achievement Text
+            ctx.fillStyle = '#334155';
+            ctx.font = '24px "Arial", sans-serif';
+            ctx.fillText('has successfully mastered Cap Table mathematics and completed the', canvas.width / 2, 420);
+            
+            ctx.font = 'bold 32px "Arial", sans-serif';
+            ctx.fillStyle = '#0f172a';
+            ctx.fillText('START-UP CAP-1 Simulation', canvas.width / 2, 470);
+
+            // Score
+            ctx.font = '24px "Arial", sans-serif';
+            ctx.fillStyle = '#059669'; // Emerald green
+            ctx.fillText(`with a final performance score of ${score} / 100`, canvas.width / 2, 520);
+
+            // Signatures Section
+            ctx.textAlign = 'center';
+            
+            // Draw Signature Line
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2 - 150, 620);
+            ctx.lineTo(canvas.width / 2 + 150, 620);
+            ctx.strokeStyle = '#94a3b8';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Pseudo-signature style
+            ctx.fillStyle = '#1e293b';
+            ctx.font = 'italic 36px "Brush Script MT", "Segoe Script", cursive';
+            ctx.fillText('Rajat Bohra', canvas.width / 2, 605);
+
+            // Signatory Name
+            ctx.fillStyle = '#475569';
+            ctx.font = 'bold 20px "Arial", sans-serif';
+            ctx.fillText('Prof. Rajat Bohra', canvas.width / 2, 645);
+            ctx.font = '18px "Arial", sans-serif';
+            ctx.fillText('Dean, Taxila Business School', canvas.width / 2, 670);
+
+            return canvas.toDataURL('image/png');
+        }
+
+        function downloadCertificate() {
+            const finalScore = document.getElementById('score_final').innerText;
+            const dataUrl = generateCertificateCanvas(playerName, finalScore);
+            const a = document.createElement('a');
+            a.href = dataUrl;
+            a.download = `${playerName.replace(/\s+/g, '_')}_Taxila_CapTable_Certificate.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        function shareOnLinkedIn() {
+            const text = encodeURIComponent(`I just conquered the START-UP CAP-1 Simulation designed by Taxila Business School! 🚀\n\nI successfully grew ${startupName} through Angel and VC funding rounds, managed ESOP pools, and mastered Cap Table dilution mechanics.\n\n#TaxilaBusinessSchool #Startup #VentureCapital #CapTable #Finance`);
+            const url = `https://www.linkedin.com/feed/?shareActive=true&text=${text}`;
+            window.open(url, '_blank');
+        }
+
+        // Next Step Button Actions
+        function proceedToR2() {
+            document.getElementById('wrapper_next_r1').classList.add('hidden-section');
+            document.getElementById('table_r1').classList.remove('hidden-section');
+            renderTable('table_r1', 'Updated Cap Table (After Angel Round)', tableData.r1, tableData.r1Total, '100');
+            const nextSec = document.getElementById('section_r2');
+            nextSec.classList.remove('hidden-section');
+            setTimeout(() => nextSec.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+        }
+
+        function proceedToR2VC() {
+            document.getElementById('wrapper_next_r2_esop').classList.add('hidden-section');
+            document.getElementById('table_r2_esop').classList.remove('hidden-section');
+            renderTable('table_r2_esop', 'Cap Table After ESOP Creation', tableData.r2Esop, tableData.r2EsopTotal, '100');
+            const nextSec = document.getElementById('section_r2_vc');
+            nextSec.classList.remove('hidden-section');
+            setTimeout(() => nextSec.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+        }
+
+        function proceedToR3() {
+            document.getElementById('wrapper_next_r2').classList.add('hidden-section');
+            document.getElementById('table_r2').classList.remove('hidden-section');
+            renderTable('table_r2', 'Cap Table After Series A', tableData.r2, tableData.r2Total, '100');
+            const nextSec = document.getElementById('section_r3');
+            nextSec.classList.remove('hidden-section');
+            setTimeout(() => nextSec.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+        }
+
+        function proceedToSummary() {
+            document.getElementById('wrapper_next_r3').classList.add('hidden-section');
+            document.getElementById('table_r3').classList.remove('hidden-section');
+            renderTable('table_r3', 'Final Cap Table After Series B', tableData.r3, tableData.r3Total, '100');
+            const nextSec = document.getElementById('section_summary');
+            nextSec.classList.remove('hidden-section');
+            setTimeout(() => nextSec.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+        }
+
+        function proceedToExit() {
+            document.getElementById('wrapper_next_summ').classList.add('hidden-section');
+            document.getElementById('summ_msg').classList.remove('hidden-section');
+            const nextSec = document.getElementById('section_exit');
+            nextSec.classList.remove('hidden-section');
+            setTimeout(() => nextSec.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+        }
+    </script>
+</body>
+</html>

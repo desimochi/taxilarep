@@ -111,6 +111,16 @@ const PDFViewer = () => {
       name: 'Mirco Eco Faculty guide',
       url: '/mircoECo.docx', // File should be at public/manual.pdf
       description: 'Faculty Guide for MircoEco '
+    },
+    {
+      name: 'Price War Faculty guide',
+      url: '/priceWar.docx', // File should be at public/manual.pdf
+      description: 'Faculty Guide for Price War '
+    },
+    {
+      name: ' Start Up CAP-1 Faculty guide',
+      url: '/startuupcap.pdf', // File should be at public/manual.pdf
+      description: 'Faculty Guide for Start Up CAP-1 '
     }
   ];
 
