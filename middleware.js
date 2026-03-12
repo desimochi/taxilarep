@@ -40,21 +40,22 @@ const facultyPaths = [
 
 export function middleware(req) {
   const { nextUrl, cookies } = req;
-  const { cookies, nextUrl } = req;
-  const userCookie = cookies.get("new_user");
   const urlPath = nextUrl.pathname;
-  if (!userCookie && urlPath !== "/login" || urlPath === "/privacy-policy") {
+  const userCookie = cookies.get("new_user");
+
+  // 🔐 If user not logged in
+  if (!userCookie && urlPath !== "/login" && urlPath !== "/privacy-policy") {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
-  // Prevent logged-in users from accessing login again
+  // 🔐 If logged in prevent login page
   if (userCookie && urlPath === "/login") {
-    return NextResponse.redirect(new URL("/", req.url)); // Change "/" to your dashboard or homepage
-  // If user not logged in → redirect to login
-  if (!userCookie && nextUrl.pathname !== "/login") {
-    return NextResponse.redirect(new URL("/login", req.url));
+    return NextResponse.redirect(new URL("/", req.url));
   }
 
+  if (!userCookie) {
+    return NextResponse.next();
+  }
 
   try {
     const userData = JSON.parse(userCookie.value);
@@ -62,71 +63,50 @@ export function middleware(req) {
     const employeeType = userData?.employee_type;
     const userType = userData?.user_type;
 
-
-    // ✅ Admin role has full access
+    // ✅ Admin → Full access
     if (Array.isArray(roles) && roles.includes("admin")) {
-      console.log("Admin access granted");
       return NextResponse.next();
     }
 
-    // ✅ Teaching faculty role
+    // 👨‍🏫 Faculty Access
     if (employeeType === "Teaching") {
       const isAllowed = facultyPaths.some(
         (path) => urlPath === path || urlPath.startsWith(path + "/")
       );
-      console.log("Faculty Access Allowed:", isAllowed);
+
       if (!isAllowed) {
         return NextResponse.redirect(new URL("/unauthorized", req.url));
       }
+
       return NextResponse.next();
     }
 
-    // ✅ Student access
+    // 🎓 Student Access
     if (userType === "STUDENT") {
       const isAllowed =
         studentAllowedPaths.some((path) => urlPath.startsWith(path)) ||
         urlPath.startsWith("/student/subject/details/");
-      console.log("Student Access Allowed:", isAllowed);
 
       if (!isAllowed) {
         return NextResponse.redirect(new URL("/unauthorized", req.url));
       }
+
       return NextResponse.next();
     }
 
-    // ✅ Fallback: no access to student/faculty areas
+    // 🚫 Fallback
     if (urlPath.startsWith("/faculty") || urlPath.startsWith("/student")) {
       return NextResponse.redirect(new URL("/admin", req.url));
     }
 
   } catch (error) {
-    console.error("Error parsing user cookie:", error);
+    console.error("Cookie parse error:", error);
     return NextResponse.redirect(new URL("/login", req.url));
-  // If logged in → prevent accessing login page
-  if (userCookie && nextUrl.pathname === "/login") {
-    return NextResponse.redirect(new URL("/", req.url));
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: [
-    "/faculty/:path*",
-    "/admin",
-    "/dashboard",
-    "/settings",
-    "/profile/:path*",
-    "/subjects/:path*",
-    "/student/:path*",
-    "/notice/:path*",
-    "/course/:path*",
-    "/see/events",
-    "/fail-student",
-    "/question-paper/:path*",
-    "/attendance/class-attendance",
-    "/accounts/:path*",
-  ],
-};
   matcher: ["/((?!_next|favicon.ico).*)"],
 };
