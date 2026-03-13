@@ -45,15 +45,23 @@ export default function LoginPage() {
       const data = await response.json();
       if(response.status===400){
         setError(data.message)
-      }
-      if (response.ok) {
-        // Save tokens
-        saveTokens(data.data.access_token, data.data.refresh_token);
+ saveTokens(data.data.access_token, data.data.refresh_token);
         savePermission(data.data.permission_list)
         const date = new Date();
 date.setFullYear(date.getFullYear() + 1)
-        Cookies.set("new_user", JSON.stringify(data.data.user), { expires: date, path: "/", secure: true,
-          sameSite: "Lax" });
+        const user = {
+  id: data.data.user.id,
+  role_name: data.data.user.role_name,
+  employee_type: data.data.user.employee_type,
+  user_type: data.data.user.user_type
+};
+console
+Cookies.set("new_user", JSON.stringify(user), {
+  expires: date,
+  path: "/",
+  sameSite: "Lax",
+  secure: process.env.NODE_ENV === "production"
+});
   
         // ✅ Wait for state to update before reloading
         await new Promise((resolve) => {
@@ -66,6 +74,10 @@ date.setFullYear(date.getFullYear() + 1)
         } else{
 router.replace("/");
         }
+      }
+      if (response.ok) {
+        // Save tokens
+       
          // Redirect to home page
       } else {
         
