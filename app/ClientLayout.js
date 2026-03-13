@@ -28,6 +28,7 @@ function Layout({ children }) {
   useEffect(() => {
     const isNoLayoutRoute = noLayoutRoutes.includes(pathname);
     const userCookie = Cookies.get("user");
+    console.log(userCookie)
     const token = localStorage.getItem("accessToken");
     // If it's a no-layout route, just render the children without a check
     if (isNoLayoutRoute) {

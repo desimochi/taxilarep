@@ -25,7 +25,7 @@ import {
 
 const Sidebar = ({ collapsed, toggleSidebar, role, type, batch }) => {
   const pathname = usePathname();
-  console.log(batch)
+  console.log(role)
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openMenus, setOpenMenus] = useState({});
 
