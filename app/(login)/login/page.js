@@ -36,47 +36,50 @@ export default function LoginPage() {
     const password = formData.get("password");
   
     try {
-      const response = await fetch(`${API_BASE_URL}login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }), // Use the lowercase 'username'
-      });
-  
-      const data = await response.json();
-      if(response.status===400){
-        setError(data.message)
-saveTokens(data.data.access_token, data.data.refresh_token);
-        savePermission(data.data.permission_list)
-        const date = new Date();
-date.setFullYear(date.getFullYear() + 1)
-        Cookies.set("new_user", JSON.stringify(data.data.user), { expires: date, path: "/", secure: true,
-          sameSite: "Lax" });
-  
-        // ✅ Wait for state to update before reloading
-        await new Promise((resolve) => {
-          updateState(data.data.user);
-          resolve();
-        });
-        if(data.data.user.role_name?.includes("admin"))
-        {
-          router.replace("/admin/dashboard")
-        } else{
-router.replace("/");
-        }
-         // Redirect to home page
-      }
-      if (response.ok) {
-        // Save tokens
-        
-      } else {
-        
-        setLoading(false)
-      }
-    } catch (error) {
-      setError("An unexpected error occurred.");
-      setLoading(false);
-    } finally {
-    }
+  const response = await fetch(`${API_BASE_URL}login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password }),
+  });
+
+  const data = await response.json();
+
+  // ❌ Error case
+  if (!response.ok) {
+    setError(data.message || "Login failed");
+    setLoading(false);
+    return;
+  }
+
+  // ✅ Success case
+  saveTokens(data.data.access_token, data.data.refresh_token);
+  savePermission(data.data.permission_list);
+
+  const date = new Date();
+  date.setFullYear(date.getFullYear() + 1);
+
+  Cookies.set("new_user", JSON.stringify(data.data.user), {
+    expires: date,
+    path: "/",
+    secure: true,
+    sameSite: "Lax",
+  });
+
+  // Update state
+  updateState(data.data.user);
+
+  // Redirect
+  if (data.data.user.role_name?.includes("admin")) {
+    router.replace("/admin/dashboard");
+  } else {
+    router.replace("/");
+  }
+
+} catch (error) {
+  setError("An unexpected error occurred.");
+} finally {
+  setLoading(false);
+}
   }
   
   
