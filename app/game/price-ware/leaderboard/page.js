@@ -56,7 +56,7 @@ export default function Leaderboard() {
 
           <tbody>
 
-            {players.slice(0,10).map((player) => {
+            {players.slice(0,50).map((player) => {
 
               const isCurrentUser = player.userId === currentUserId;
 
