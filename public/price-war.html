@@ -536,7 +536,7 @@
             <div style="font-size: 0.6rem; text-transform: uppercase; color: #999;">Final P/L Position</div>
             <div class="stat-val" id="finalPL" style="font-size:2rem; color:var(--danger);">₹0</div>
         </div>
-        <button class="btn" onclick="location.reload()">Reset Session</button>
+        <button class="btn" onclick="resetSession()">Reset Session</button>
     </div>
 </div>
 
@@ -851,6 +851,25 @@
         document.getElementById('perfGrade').innerText = `(${grade})`;
     }
 
+
+    function resetSession() {
+    const userId = getUserId();
+
+    // clear local saved games
+    Object.keys(localStorage).forEach(key => {
+        if (key.startsWith("PRICE_WAR_SAVE_")) {
+            localStorage.removeItem(key);
+        }
+    });
+
+    // optional: clear session storage too
+    sessionStorage.clear();
+
+    // reload clean page
+    window.location.href = window.location.pathname + "?userId=" + userId;
+    }
+
+    
     // --- GAME FLOW LOGIC ---
     function startSimWithProcessing() {
         const input = document.getElementById('execNameInput').value.trim();
