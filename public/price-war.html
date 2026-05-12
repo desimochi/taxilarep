@@ -570,7 +570,7 @@
             </div>
         </div>
 
-        <button class="btn" style="margin-top: 15px; background: #eee; color: #444;" onclick="location.reload()">Reset Session</button>
+        <button class="btn" style="margin-top: 15px; background: #eee; color: #444;" onclick="resetSession()">Reset Session</button>
     </div>
 </div>
 
@@ -852,23 +852,33 @@
     }
 
 
-    function resetSession() {
+ async function resetSession() {
     const userId = getUserId();
 
-    // clear local saved games
+    // Clear local storage
     Object.keys(localStorage).forEach(key => {
         if (key.startsWith("PRICE_WAR_SAVE_")) {
             localStorage.removeItem(key);
         }
     });
-
-    // optional: clear session storage too
     sessionStorage.clear();
 
-    // reload clean page
-    window.location.href = window.location.pathname + "?userId=" + userId;
+    // Clear MongoDB save so auto-load doesn't restore it
+    try {
+        await fetch(
+            `${API_CONFIG.SAVE_URL}?userId=${userId}`,
+            {
+                method: 'DELETE',
+                headers: API_CONFIG.HEADERS
+            }
+        );
+    } catch(e) {
+        console.warn("Could not clear server save:", e);
     }
 
+    // Reload to fresh welcome screen
+    window.location.href = window.location.pathname + "?userId=" + userId;
+}
     
     // --- GAME FLOW LOGIC ---
     function startSimWithProcessing() {
