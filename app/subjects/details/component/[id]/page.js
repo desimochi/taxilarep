@@ -20,11 +20,65 @@ export default function Page(){
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState(null)
     const [submission, setSubmission] = useState(false)
+    const [deleteLoading, setDeleteLoading] = useState(false)
     const[editDetails, setEditDetails] = useState(false)
     const [additionalData, setAdditionalData] = useState([])
     const [selectedId, setSelectedId] = useState(null)
     const hasview = true
     const hasedit = hasPermission(("2f72526b4e3a64b84edd665637d72cdf5b00b0711640ab62061b5756fd8f16fe"))
+
+    const handleDeleteComponent = async () => {
+      if (!window.confirm('Delete this component? It will be hidden from the list but not removed from the database.')) {
+        return;
+      }
+      try {
+        setDeleteLoading(true);
+        const response = await authFetch(`component-viewset/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        if (!response.ok) {
+          const data = await response.json().catch(() => ({}));
+          throw new Error(data.message || 'Failed to delete component');
+        }
+        const subjectId = typeof students?.subject_mapping === 'object' ? students?.subject_mapping?.id : students?.subject_mapping;
+        if (subjectId) {
+          router.push(`/subjects/details/${subjectId}`);
+        } else {
+          router.back();
+        }
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setDeleteLoading(false);
+      }
+    };
+
+    const handleDeleteSubcomponent = async (subId) => {
+      if (!window.confirm('Delete this subcomponent?')) return;
+      try {
+        setDeleteLoading(true);
+        const response = await authFetch(`sub-component-item/${subId}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        if (!response.ok) {
+          const data = await response.json().catch(() => ({}));
+          throw new Error(data.message || 'Failed to delete subcomponent');
+        }
+        // remove deleted subcomponent from UI
+        setAdditionalData((prev) => prev.filter((s) => s.id !== subId));
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setDeleteLoading(false);
+      }
+    };
+
       useEffect(() => {
         const fetchClassData = async () => {
             try {
@@ -150,7 +204,17 @@ export default function Page(){
                             </p>
                         </div>
                         </div>
-                       {hasedit && <Link href={`/exam-components/edit-component?componentID=${students?.id}`} className="bg-red-700 text-center mt-4 sm:mt-0 text-white py-1.5 px-8 rounded-sm shadow-lg">Edit Component</Link>}
+                       {hasedit && <div className="flex flex-col sm:flex-row gap-3">
+                        <Link href={`/exam-components/edit-component?componentID=${students?.id}`} className="bg-red-700 text-center mt-4 sm:mt-0 text-white py-1.5 px-8 rounded-sm shadow-lg">Edit Component</Link>
+                        <button
+                          type="button"
+                          disabled={deleteLoading}
+                          onClick={handleDeleteComponent}
+                          className="bg-gray-700 text-center mt-4 sm:mt-0 text-white py-1.5 px-8 rounded-sm shadow-lg hover:bg-gray-900 disabled:opacity-50"
+                        >
+                          {deleteLoading ? 'Deleting...' : 'Delete Component'}
+                        </button>
+                       </div>}
                     </div>
                     <hr className=" border  border-spacing-y-0.5 mt-6"/>
                 </div>
@@ -217,7 +281,16 @@ export default function Page(){
               <div key={subcomp.id} className="border p-4 rounded-sm">
                 <div className="flex justify-between items-center">
                 <h5 className="mt-3 font-bold">{subcomp.name}</h5>
-                <span className=" flex gap-1 items-center text-sm text-red-600 underline"><EyeIcon className="h-4 w-4"/><Link href={`/subjects/details/component/sub-component/${subcomp.id}`}>See Details</Link></span>
+                <div className="flex gap-2 items-center">
+                  <span className=" flex gap-1 items-center text-sm text-red-600 underline"><EyeIcon className="h-4 w-4"/><Link href={`/subjects/details/component/sub-component/${subcomp.id}`}>See Details</Link></span>
+                  <button
+                    onClick={() => handleDeleteSubcomponent(subcomp.id)}
+                    disabled={deleteLoading}
+                    className="text-sm bg-gray-700 text-white px-2 py-1 rounded-sm"
+                  >
+                    Delete
+                  </button>
+                </div>
                 </div>
                     
                 <hr className="border border-b-2 border-red-600 w-12 mt-1" />
