@@ -80,6 +80,7 @@ export default function LeaderboardPage() {
 
   const columns = [
     { key: "name", label: "Name" },
+    { key: "email", label: "Email" },
     { key: "gdp", label: "GDP" },
     { key: "approval", label: "Approval" },
     { key: "sensex", label: "Sensex" },
@@ -127,6 +128,7 @@ export default function LeaderboardPage() {
                 >
                   <td className="p-3  font-bold">#{i + 1}</td>
                   <td className="p-3 ">{row?.name || "Unknown"}</td>
+                  <td className="p-3 ">{row?.email || "-"}</td>
                   <td className="p-3 ">{row.gdp?.toFixed(2) ?? "-"}</td>
                   <td className="p-3 ">{row.approval?.toFixed(2) ?? "-"}</td>
                   <td className="p-3 ">{row.sensex?.toFixed(2) ?? "-"}</td>
@@ -139,7 +141,7 @@ export default function LeaderboardPage() {
               ))
             ) : (
               <tr className="bg-white/10 backdrop-blur-sm text-gray-100 text-sm text-center">
-                <td className="p-3" colSpan={8}>
+                <td className="p-3" colSpan={9}>
                   No Data Available
                 </td>
               </tr>

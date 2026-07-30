@@ -45,7 +45,7 @@ export async function GET(req) {
 
 export async function POST(req) {
   try {
-    const { userId, name, gameState } = await req.json();
+    const { userId, name, email, gameState } = await req.json();
     if (!userId || !gameState) {
       return new Response(JSON.stringify({ error: "Missing userId or gameState" }), {
         status: 400,
@@ -60,7 +60,7 @@ export async function POST(req) {
 
     await collection.updateOne(
       { userId },
-      { $set: { gameState, userId, name, updatedAt: new Date() } },
+      { $set: { gameState, userId, name, email, updatedAt: new Date() } },
       { upsert: true }
     );
 

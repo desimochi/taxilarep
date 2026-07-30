@@ -9,6 +9,7 @@ export default function HtmlPage() {
      const {state} =  useContext(GlobalContext)
      const encodedState = encodeURIComponent(JSON.stringify(state.id));
       const encodedStateName = encodeURIComponent(JSON.stringify(state.name));
+      const encodedStateEmail = encodeURIComponent(JSON.stringify(state.email));
      console.log(encodedState)
   return (
     <div className="w-full h-screen bg-gray-900 py-8">
@@ -18,7 +19,7 @@ export default function HtmlPage() {
             <Link href="/game/airthniti/leaderboard" className="bg-green-100 text-green-700 px-4 py-1 rounded-sm flex items-center gap-1"> <Award /> See LeaderBoard</Link>
         </div>
       <iframe
-        src={`/airth.html?userId=${encodedState}&name=${encodedStateName}`}
+         src={`/airth.html?userId=${encodedState}&name=${encodedStateName}&email=${encodedStateEmail}`}
         className="w-full h-full border-none"
       />
     </div>

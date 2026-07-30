@@ -10,6 +10,7 @@ export async function GET() {
       .find({})
       .project({
         name: 1,
+        email: 1,
         updatedAt: 1,
         "gameState.gameState.gdp": 1,
         "gameState.gameState.publicApproval": 1,
@@ -24,6 +25,7 @@ export async function GET() {
       .map((u) => ({
         id: u._id.toString(),
         name: u.name,
+        email: u.email || "-",
         gdp: u?.gameState?.gameState?.gdp || 0,
         approval: u?.gameState?.gameState?.publicApproval || 0,
         sensex: u?.gameState?.gameState?.sensex || 0,

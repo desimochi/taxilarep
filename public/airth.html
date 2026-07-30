@@ -135,7 +135,7 @@
         let activeEvents = [];
         let playerName = "Guest";
         
-        const API_URL = 'https://erp.taxila.in/api/game/arthniti'; // Use a specific endpoint for this game
+        const API_URL = window.location.origin + '/api/game/arthniti'; // Use a specific endpoint for this game
         
         // --- API-based Database Functions (Copied/Adapted from project.html logic) ---
         function getUserId() {
@@ -143,11 +143,17 @@
             const params = new URLSearchParams(window.location.search);
             return params.get("userId") || "guest";
         }
+         
+        function getEmail() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get("email") || "";
+        }
         
         async function saveGame() {
             if (gameState.gameEnded) return;
 
             const userId = getUserId();
+            const email = getEmail();
             const stateToSave = {
                 gameState: { ...gameState },
             };
@@ -156,7 +162,7 @@
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId: userId, name: playerName, gameState: stateToSave })
+                    body: JSON.stringify({ userId: userId, name: playerName,email: email, gameState: stateToSave })
                 });
                 
                 if (response.ok) {
