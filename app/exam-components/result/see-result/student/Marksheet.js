@@ -112,7 +112,7 @@ export default function Marksheet({
             <strong>EXAMINATION:</strong> {examPeriod}
           </p>
           <p>
-            <strong>TERM:</strong> {term}
+            {term}
           </p>
           <p>
            {term_period}
