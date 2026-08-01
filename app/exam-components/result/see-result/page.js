@@ -9,6 +9,7 @@ import Marksheet from "./Marksheet";
 
 export default function Page() {
     const [term, setTerm] = useState([]);
+    const [selectedTermName, setSelectedTermName] = useState("");
     const [loading, setLoading] = useState(false);
     const [modal, setModal] = useState(false)
     const [termperiod, setTermPeriod] = useState("")
@@ -54,14 +55,36 @@ export default function Page() {
         fetchData();
     }, []);
 
+    function formatTermName(rawName) {
+        if (!rawName) return "";
+        
+        // Handles both "Term1" and "Sem-1" patterns
+        const match = rawName.match(/^([A-Za-z]+)[-]?(\d+)$/);
+        
+        if (match) {
+            const word = match[1];   // "Term" or "Sem"
+            const number = match[2]; // "1", "2", etc.
+            return `${word}: ${number}`;
+        }
+        
+        // If pattern doesn't match, return as-is
+        return rawName;
+    }
+
+
     // Handle form data changes
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({
-            ...formData,
-            [name]: value,
-        });
-    };
+    const { name, value } = e.target;
+    setFormData({
+        ...formData,
+        [name]: value,
+    });
+
+    if (name === "term") {
+        const selected = term.find(t => String(t.id) === String(value));
+        setSelectedTermName(selected ? formatTermName(selected.name) : "");
+    }
+};
 
     // Handle form submission
     const handleSubmit = async (e) => {
@@ -117,7 +140,7 @@ export default function Page() {
        {modal && (
   <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center mt-24">
     <div className="bg-white rounded-xl shadow-lg p-6 max-w-7xl w-full relative">
-      <Marksheet data={result} specialisation={specialisation}  type={formData.type} cgpa={cgpa} gpa={gpa} term_period={termperiod} examPeriod={examPeriod} sr={sr} term={formData.term} father_name={fname} name={sname} enroll = {formData.enrollment_number} />
+      <Marksheet data={result} specialisation={specialisation}  type={formData.type} cgpa={cgpa} gpa={gpa} term_period={termperiod} examPeriod={examPeriod} sr={sr} term={selectedTermName} father_name={fname} name={sname} enroll = {formData.enrollment_number} />
 
       {/* Close button */}
       <button

@@ -126,7 +126,7 @@ const totalCredit = data.reduce((sum, item) => sum + Number(item.credit || 0), 0
             <strong>EXAMINATION:</strong> {examPeriod}
           </p>
           <p>
-           <strong>TERM:</strong> {term} - {formatType(type)}
+           <strong></strong> {term} - {formatType(type)}
           </p>
           <p>
            {term_period}
