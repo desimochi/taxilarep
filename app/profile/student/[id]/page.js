@@ -297,6 +297,23 @@ export default function StudentDetailPage() {
                     </div>
                     <div className="p-4 space-y-3">
                         <EditableField 
+                            label="First Name" 
+                            name="first_name" 
+                            value={student.first_name}
+                            required
+                        />
+                        <EditableField 
+                            label="Middle Name" 
+                            name="middle_name" 
+                            value={student.middle_name}
+                        />
+                        <EditableField 
+                            label="Last Name" 
+                            name="last_name" 
+                            value={student.last_name}
+                            required
+                        />
+                        <EditableField 
                             label="Enrollment Number" 
                             name="enrollment_number" 
                             value={student.enrollment_number}
