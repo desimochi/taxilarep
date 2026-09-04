@@ -219,7 +219,7 @@ const [activePopup, setActivePopup] = useState(null);
         <td className="px-4 py-3 font-semibold">Final Report</td>
         <td className="px-4 py-3 text-center">
           {finalReport ? (
-             <a href={`https://taxila.in/media/${finalReport}`} target="_blank" className="text-green-700 underline">View File</a>
+             <a href={`https://taxila.in/${finalReport}`} target="_blank" className="text-green-700 underline">View File</a>
           ) : (
             <span className="text-red-600 text-xs">Not Uploaded</span>
           )}
