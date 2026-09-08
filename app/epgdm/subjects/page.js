@@ -26,11 +26,11 @@ export default function AssignedSubject({}){
      const [searchTerm, setSearchTerm] = useState("");
     useEffect(() => {
     const fetchCourses = async () => {
-    
+
       setLoading(true)
       try {
         const [response] = await Promise.all([
-          await authFetch(`subject-mapping-viewset?course=${2}`)
+          await authFetch(`subject-mapping-viewset?course=${2}&page=${currentPage}`)
       ])
 
         if (!response.ok) {
@@ -39,6 +39,7 @@ export default function AssignedSubject({}){
 
         const data = await response.json()
         setAssignedSub(data.data);
+        setTotalPages(data.extra?.total || 1);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -47,8 +48,7 @@ export default function AssignedSubject({}){
     };
 
     fetchCourses();
-  }, [currentPage]);
-
+    }, [currentPage]);
 
     return(
         <>
