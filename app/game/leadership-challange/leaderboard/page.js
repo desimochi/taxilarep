@@ -49,6 +49,7 @@ function formatTime(seconds) {
             <tr className="bg-white/30 backdrop-blur-sm text-yellow-300 border-b-1 border-yellow-100 ">
               <th className="p-3 ">Rank</th>
               <th className="p-3 ">Name</th>
+              <th className="p-3 ">Leadership Score</th>
               <th className="p-3 ">Valuation</th>
               <th className="p-3 ">Quality</th>
               <th className="p-3 ">Profit</th>
@@ -65,11 +66,12 @@ function formatTime(seconds) {
               >
                 <td className="p-3  font-bold">#{i + 1}</td>
                 <td className="p-3 ">{row?.name}</td>
-                <td className="p-3 ">{row.valuation || "-"}</td>
-                <td className="p-3 ">{row.quality}</td>
-                <td className="p-3 ">{row.profit}</td>
-                <td className="p-3 ">{row.marketShare}</td>
-                <td className="p-3 ">{row.brandReputation}</td>
+                <td className="p-3 ">{row.leadershipScore ? Number(row.leadershipScore).toFixed(2) : "-"}</td>
+                <td className="p-3 ">{row.valuation ? Number(row.valuation).toFixed(2) : "-"}</td>
+                <td className="p-3 ">{row.quality ? Number(row.quality).toFixed(2) : "-"}</td>
+                <td className="p-3 ">{row.profit ? Number(row.profit).toFixed(2) : "-"}</td>
+                <td className="p-3 ">{row.marketShare ? Number(row.marketShare).toFixed(2) : "-"}</td>
+                <td className="p-3 ">{row.brandReputation ? Number(row.brandReputation).toFixed(2) : "-"}</td>
                 <td className="p-3   text-gray-500">
                   {row.updatedAt ? new Date(row.updatedAt).toLocaleString() : "-"}
                 </td>

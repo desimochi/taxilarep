@@ -19,6 +19,7 @@ export async function GET() {
         userId: user.userId,
         name: user.name,
         ceo: player.ceo || user.gameState?.ceoName || "CEO",
+        leadershipScore: user.leadershipScore || 0,
         valuation: player.valuation || 0,
         profit: player.profit || 0,
         marketShare: player.marketShare || 0,
@@ -28,8 +29,8 @@ export async function GET() {
       };
     });
 
-    // Sort leaderboard by valuation (or any metric you want)
-    leaderboard.sort((a, b) => b.valuation - a.valuation);
+    // Sort leaderboard by Leadership Score, the simulation's actual success metric
+    leaderboard.sort((a, b) => b.leadershipScore - a.leadershipScore);
 
     return Response.json({
       success: true,

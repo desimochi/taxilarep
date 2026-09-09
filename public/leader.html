@@ -435,7 +435,7 @@
 
     let gameState = {};
     let saveGameId = null;
-    const API_ENDPOINT = 'http://localhost:3000/api/game/leader'; // Replace with your actual API endpoint
+    const API_ENDPOINT = '/api/game/leader'; // Replace with your actual API endpoint
 
     function showApiMessage(message, type) {
         const msgEl = DOMElements.apiMessage;
@@ -666,26 +666,11 @@
             <div class="action-item"> <p>Issue Shares ($M): <input type="number" id="issue-amount" value="10" step="5"> <button class="action-btn" id="issue-shares-btn" ${sharesAvailableToIssue <= 0 ? 'disabled' : ''}>Issue</button></p></div>
             <div class="action-item"><h4>Outstanding Loans</h4><ul>${outstandingLoansHTML || "<li>None</li>"}</ul></div>`;
         
-        document.getElementById('price-input').addEventListener('change', (e) => {
-            setPrice(e.target.value);
-        });
-        document.getElementById('take-loan-btn').addEventListener('click', () => {
-            takeLoan();
-        });
-        document.getElementById('repay-debt-btn').addEventListener('click', () => {
-            repayDebt();
-        });
-        document.getElementById('buyback-shares-btn').addEventListener('click', () => {
-            buybackShares();
-        });
-        document.getElementById('issue-shares-btn').addEventListener('click', () => {
-            issueShares();
-        });
+        document.getElementById('price-input').addEventListener('change', (e) => setPrice(e.target.value));
         document.getElementById('take-loan-btn').addEventListener('click', takeLoan);
         document.getElementById('repay-debt-btn').addEventListener('click', repayDebt);
         document.getElementById('buyback-shares-btn').addEventListener('click', buybackShares);
         document.getElementById('issue-shares-btn').addEventListener('click', issueShares);
-        document.getElementById('price-input').addEventListener('change', (e) => setPrice(e.target.value));
 
     }
 
@@ -1188,10 +1173,13 @@
         else if (p.debt > p.valuation) reason = `Crippling Debt! Your debt has exceeded the company's entire valuation.`
         else if (gameState.year > 10) reason = `You have successfully completed a 10-year tenure as CEO!`;
 
-        if (reason) {
+            if (reason) {
             DOMElements.gameOver.message.textContent = reason;
             DOMElements.gameOver.title.textContent = (gameState.year > 10) ? "Successful Tenure!" : "Forced Resignation";
             DOMElements.gameOver.metrics.innerHTML = `Final Leadership Score: <span>${calculateLeadershipScore(p).toFixed(0)} / 100</span><br>Final Valuation: <span>$${p.valuation.toFixed(0)}M</span><br>Peak Stock Price: <span>$${p.stock.toFixed(2)}</span><br>Final Market Share: <span>${p.marketShare.toFixed(1)}%</span>`;
+            gameState.gameOver = true;
+            gameState.gameOverReason = reason;
+            saveGame();
             switchScreen('gameOver');
             return true;
         }
@@ -1217,7 +1205,7 @@ function getUserId() {
             const response = await fetch(saveUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({userId:userId, name:username, gameState:gameState})
+                body: JSON.stringify({userId:userId, name:username, gameState:gameState, leadershipScore: calculateLeadershipScore(gameState.player)})
             });
 
             if (response.ok) {
