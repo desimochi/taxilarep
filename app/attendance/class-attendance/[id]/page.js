@@ -221,18 +221,38 @@ export default function Page() {
                                     {isCEPresent && <td className="px-6 py-4">
                                     <input
       type="number"
-      step="0.5"
+      step="0.05"
       min="0"
-      max="5"
+      max="10"
       value={
         studentData.find(s => s.id === student.id)?.ce_marks ?? ''
+    } 
+
+onChange={(e) => {
+    const marks = e.target.value;
+
+    if (marks === '') {
+        handleCeMarksChange(student.id, '');
+        return;
     }
-    onChange={(e) => {
-        const marks = e.target.value;
-        if (marks === '' || (parseFloat(marks) <= 5 && (parseFloat(marks) * 10) % 5 === 0)) {
-            handleCeMarksChange(student.id, marks === '' ? '' : parseFloat(marks));
-        }
-    }}
+
+    let value = parseFloat(marks);
+
+    if (isNaN(value)) return;
+
+    // Don't allow negative marks
+    if (value < 0) return;
+
+    // Don't allow marks above 10
+    if (value > 10) return;
+
+    // Round to maximum 2 decimal places
+    value = Math.round(value * 100) / 100;
+
+    handleCeMarksChange(student.id, value);
+}
+
+}
       className="border border-gray-500 px-3 py-2 rounded"
       disabled ={
         studentData.find((s) => s.id === student.id)?.is_persent === false

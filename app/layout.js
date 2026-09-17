@@ -26,7 +26,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body
-        className={` ${geistSans.variable} ${mulish.className} antialiased font-sans `}
+        className={`${geistSans.variable} ${mulish.className} antialiased font-sans`}
       > <Toaster
           position="top-right"
           reverseOrder={false}
