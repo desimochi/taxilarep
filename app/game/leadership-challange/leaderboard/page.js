@@ -66,7 +66,7 @@ function formatTime(seconds) {
               >
                 <td className="p-3  font-bold">#{i + 1}</td>
                 <td className="p-3 ">{row?.name}</td>
-                <td className="p-3 ">{row.leadershipScore ? Number(row.leadershipScore).toFixed(2) : "-"}</td>
+                <td className="p-3"> {row.leadershipScore !== undefined && row.leadershipScore !== null ? Number(row.leadershipScore).toFixed(2) : "-"} </td>
                 <td className="p-3 ">{row.valuation ? Number(row.valuation).toFixed(2) : "-"}</td>
                 <td className="p-3 ">{row.quality ? Number(row.quality).toFixed(2) : "-"}</td>
                 <td className="p-3 ">{row.profit ? Number(row.profit).toFixed(2) : "-"}</td>
