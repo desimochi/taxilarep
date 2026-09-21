@@ -290,7 +290,7 @@
                     body: JSON.stringify({ userId: userId, name: state.playerName, gameState: stateToSave })
                 });
                 if (response.ok) {
-                    console.log("Game saved successfully.");
+                    console.log("Game saved successfully."); 
                 } else {
                     console.error("Failed to save game:", response.statusText);
                 }

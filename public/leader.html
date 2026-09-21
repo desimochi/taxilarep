@@ -474,8 +474,9 @@
     function init() {
         DOMElements.startGameBtn.addEventListener('click', startNewGame);
         DOMElements.restartGameBtn.addEventListener('click', () => { 
+            DOMElements.playerNameInput.value = "";
             switchScreen('welcome');
-            loadLatestGame();
+            DOMElements.savedGamesList.innerHTML = `<p>Enter your name to begin a new simulation.</p>`;
         });
         DOMElements.saveGameBtns.forEach(btn => btn.addEventListener('click', saveGame));
         DOMElements.endPhaseBtn.addEventListener('click', runYearEnd);
@@ -518,6 +519,7 @@
         };
         saveGameId = null; // Reset save game ID for a new session
         addToLog(`CEO ${gameState.ceoName} takes command.`);
+        saveGame(); // Immediately overwrite the previous saved game/score for this user
         startYear();
     }
 
@@ -1226,9 +1228,10 @@ function getUserId() {
     try {
         const response = await fetch(loadUrl);
         const data = await response.json();
-        
-        // This check now correctly handles a single game object.
-        if (data && Object.keys(data).length > 0) {
+
+        // Only resume a saved game if one exists AND it has not already ended.
+        // A finished/game-over simulation should never be auto-resumed.
+        if (data && data.gameState && Object.keys(data.gameState).length > 0 && !data.gameState.gameOver) {
             gameState = data.gameState;
             saveGameId = data.id;
             addToLog(`Loaded simulation for CEO ${gameState.ceoName}.`);
@@ -1243,17 +1246,19 @@ function getUserId() {
             }
             DOMElements.savedGamesList.innerHTML = `<p>Resuming simulation for <strong>${gameState.ceoName}</strong>...</p>`;
             showApiMessage('Game loaded successfully!', 'success');
+        } else if (data && data.gameState && data.gameState.gameOver) {
+            // Previous simulation already ended - never auto-resume it.
+            switchScreen('welcome');
+            DOMElements.savedGamesList.innerHTML = `<p>Your last simulation has ended. Enter your name to start a new one!</p>`;
         } else {
-            // The API returned an empty object, indicating no saved game
-            showApiMessage('No saved game found. Starting a new simulation.', 'info');
+            // No saved game at all
+            switchScreen('welcome');
             DOMElements.savedGamesList.innerHTML = `<p>No saved simulations found. Start a new game!</p>`;
-            startNewGameAfterLoad();
         }
     } catch (error) {
         console.error('Load games failed:', error);
-        DOMElements.savedGamesList.innerHTML = '<p>Network error or invalid API endpoint.</p>';
-        showApiMessage('Network error or invalid API endpoint. Starting a new simulation.', 'error');
-        startNewGameAfterLoad();
+        switchScreen('welcome');
+        DOMElements.savedGamesList.innerHTML = '<p>Network error. Please enter your name to start a new simulation.</p>';
     }
 }
     
