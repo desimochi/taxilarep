@@ -138,17 +138,18 @@ export default function Page(){
     }));
   };
 
-  const handleSubmit = async () => {
+ const handleSubmit = async () => {
+    // Fallback to 0 if inputs are empty to avoid sending NaN
     const payload = {
       batch: parseInt(data.selected.batch, 10),
       term: parseInt(data.selected.term, 10),
       course: [parseInt(data.selected.course, 10)],
       specialization: [parseInt(data.selected.specialization, 10)],
-      subject: parseInt(data.selected.subject, 10), // Sending only one subject as an integer
+      subject: parseInt(data.selected.subject, 10),
       faculty: parseInt(data.selected.faculty, 10),
-      total_classes: parseInt(data.selected.total_classes, 10),
-      weightage_external: parseInt(data.selected.weightage_external, 10),
-      weightage_internal: parseInt(data.selected.weightage_internal, 10),
+      total_classes: parseInt(data.selected.total_classes, 10) || 0,
+      weightage_external: parseInt(data.selected.weightage_external, 10) || 0,
+      weightage_internal: parseInt(data.selected.weightage_internal, 10) || 0,
       type: data.selected.type,
     };
 
@@ -159,8 +160,8 @@ export default function Page(){
         body: JSON.stringify(payload),
       });
 
-      const data = await response.json();
-  
+      const resData = await response.json();
+
       if (response.ok) {
         setMessage("Subject Assigned successfully");
         setShowToast(true);
@@ -170,13 +171,16 @@ export default function Page(){
           window.location.href = "/course/subject-manager";
         }, 2000);
       } else {
-        if (data.message) {
+        // Safe check for array vs string in response message
+        if (Array.isArray(resData.message)) {
           const errorMessages = {};
-          data.message.forEach((error) => {
+          resData.message.forEach((error) => {
             const [field, msg] = error.split(": ");
             errorMessages[field] = msg;
           });
           setErrors(errorMessages);
+        } else if (typeof resData.message === "string") {
+          alert(resData.message);
         } else {
           setMessage("Something went wrong.");
           setShowToast(true);
@@ -186,7 +190,6 @@ export default function Page(){
       alert(error.message);
     }
   };
-
   return (
     <div className="px-5 py-4">
       {showToast && <Toast message={message} />}
