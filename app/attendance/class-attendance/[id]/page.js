@@ -208,8 +208,7 @@ export default function Page() {
                                                     type="radio"
                                                     name={`attendance-${student.id}`}
                                                     value="absent"
-                                                    checked={
-                                                        studentData.find((s) => s.id === student.id)?.is_persent === false
+                                                    checked={studentData.find((s) => s.id === student.id)?.is_persent === false
                                                       }
                                                       onChange={() => handleAttendanceChange(student.id, false)}
                                                     className="accent-red-800"

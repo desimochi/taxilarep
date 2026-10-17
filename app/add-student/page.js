@@ -129,7 +129,6 @@ async function handleSubmit() {
     const requiredFields = [
         "email",
         "first_name",
-        "last_name",
         "date_of_birth",
         "contact_number",
         "gender"
