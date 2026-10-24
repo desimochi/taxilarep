@@ -20,13 +20,12 @@ export default function Marksheet({
   term_period,
   examPeriod,
 }) {
-  console.log(type)
+  console.log(type);
   const printRef = useRef(null);
-const [qrUrl, setQrUrl] = useState("");
-;
- useEffect(() => {
+  const [qrUrl, setQrUrl] = useState("");
+  useEffect(() => {
     const verifyUrl = `https://taxila.in/marksheet?enrollement=${encodeURIComponent(
-      enroll
+      enroll,
     )}&type=${encodeURIComponent(type)}&term=${encodeURIComponent(term)}`;
 
     QRCode.toDataURL(verifyUrl, { width: 180, margin: 2 })
@@ -46,7 +45,7 @@ const [qrUrl, setQrUrl] = useState("");
       scale: 2,
       useCORS: true,
       // Pass the font URL to html2canvas to ensure it loads the CSS/font
-      allowTaint: true, 
+      allowTaint: true,
     });
     const imgData = canvas.toDataURL("image/png");
 
@@ -73,25 +72,32 @@ const [qrUrl, setQrUrl] = useState("");
 
   // Define the font family name for the CSS
   const fontName = "Century Gothic";
-function formatType(type) {
-  if (!type) return "";
-  return type.charAt(0).toUpperCase() + type.slice(1);
-}
-  // IMPORTANT: This is a placeholder for a CDN. 
+  function formatType(type) {
+    if (!type) return "";
+    return type.charAt(0).toUpperCase() + type.slice(1);
+  }
+  // IMPORTANT: This is a placeholder for a CDN.
   // You must replace this with the actual URL where your licensed Century Gothic font is hosted.
-  const centuryGothicCdn = "https://fonts.cdnfonts.com/css/century-gothic-paneuropean";
-const totalCredit = data.reduce((sum, item) => sum + Number(item.credit || 0), 0);
+  const centuryGothicCdn =
+    "https://fonts.cdnfonts.com/css/century-gothic-paneuropean";
+  const totalCredit = data.reduce(
+    (sum, item) => sum + Number(item.credit || 0),
+    0,
+  );
 
   return (
-    <div className="p-8 max-h-screen overflow-scroll h-fit" style={{ fontFamily: `'${fontName}', sans-serif` }}>
+    <div
+      className="p-8 max-h-screen overflow-scroll h-fit"
+      style={{ fontFamily: `'${fontName}', sans-serif` }}
+    >
       {/* 1. Inject the CDN link directly into the component's rendered output. 
         This is a less common but valid approach for isolated component styling/resources.
         In a Next.js App Router, using the <head> of the root layout is usually better, 
         but this ensures the CDN link is present when the component renders.
       */}
-      <link 
-        rel="stylesheet" 
-        href={centuryGothicCdn} 
+      <link
+        rel="stylesheet"
+        href={centuryGothicCdn}
         media="print" // Use media="print" to ensure the link is considered when printing/converting
       />
 
@@ -100,7 +106,8 @@ const totalCredit = data.reduce((sum, item) => sum + Number(item.credit || 0), 0
       */}
       <style jsx global>{`
         /* This style is a fallback/helper, the CDN link above is the primary source */
-        body, .MarksheetContainer { 
+        body,
+        .MarksheetContainer {
           font-family: "${fontName}", sans-serif !important;
         }
       `}</style>
@@ -116,24 +123,21 @@ const totalCredit = data.reduce((sum, item) => sum + Number(item.credit || 0), 0
         ref={printRef}
         className=" p-8 pt-48 text-xl  bg-white text-black leading-relaxed MarksheetContainer flex flex-col justify-center px-24"
       >
-        <div className="flex justify-end mt-4">
+        <div className="flex justify-end mt-2">
           <p>
             <strong>Sr. No.:</strong> {sr}
           </p>
         </div>
-<div className="flex flex-col items-center justify-center space-y-2 mt-20 ">
-  <p>
+        <div className="flex flex-col items-center justify-center space-y-2 mt-12 ">
+          <p>
             <strong>EXAMINATION:</strong> {examPeriod}
           </p>
           <p>
-           <strong></strong> {term} - {formatType(type)}
+            <strong></strong> {term} - {formatType(type)}
           </p>
-          <p>
-           {term_period}
-          </p>
-</div>
+          <p>{term_period}</p>
+        </div>
         <div className="mt-4 space-y-2">
-          
           <p>
             <strong>Enrollment No:</strong> {enroll}
           </p>
@@ -143,20 +147,22 @@ const totalCredit = data.reduce((sum, item) => sum + Number(item.credit || 0), 0
           <p>
             <strong>Father's Name:</strong> Mr. {father_name}
           </p>
-          {specialisation && <p>
-            <strong>Specialization:</strong> {specialisation}
-          </p>}
+          {specialisation && (
+            <p>
+              <strong>Specialization:</strong> {specialisation}
+            </p>
+          )}
         </div>
 
-        <table className="w-full mt-6 border border-collapse text-xl">
+        <table className="w-full mt-2 mb- 2 border border-collapse text-xl">
           <thead>
             <tr className="bg-gray-100 font-semibold">
-              <th className="border px-2 py-2">Sr. No.</th>
-              <th className="border px-2 py-2">Course Code</th>
-              <th className="border px-2 py-2">Course Name</th>
-              <th className="border px-2 py-2">Course Credit</th>
-              <th className="border px-2 py-2">Marks</th>
-              <th className="border px-2 py-2">Grade</th>
+              <th className="border px-2 py-1">Sr. No.</th>
+              <th className="border px-2 py-1">Course Code</th>
+              <th className="border px-2 py-1">Course Name</th>
+              <th className="border px-2 py-1">Course Credit</th>
+              <th className="border px-2 py-1">Marks</th>
+              <th className="border px-2 py-1">Grade</th>
             </tr>
           </thead>
           <tbody>
@@ -169,31 +175,42 @@ const totalCredit = data.reduce((sum, item) => sum + Number(item.credit || 0), 0
                 <td className="border px-2 py-2">{item.subject_name}</td>
                 <td className="border px-2 py-2 text-center">{item.credit}</td>
                 <td className="border px-2 py-2 text-center">
-                  {type==='resit-1'? item.total_marks : item.scaled_total_marks}
+                  {type === "resit-1"
+                    ? item.total_marks
+                    : item.scaled_total_marks}
                 </td>
                 <td className="border px-2 py-2 text-center">{item.grade}</td>
               </tr>
             ))}
           </tbody>
         </table>
-<div className="flex justify-between items-center">
-  <div>
-        <div className="mt-4 font-semibold text-xl">
-          <p>Total Credit: {totalCredit}</p>
-          <p>Grade Point Average (GPA): {gpa}</p>
-          <p>Cumulative Grade Point Average (CGPA): {cgpa}</p>
-        </div>
+        <div className="flex items-center justify-between w-full gap-4 mt-20">
+        
+          <div className="w-[55%] mt-4 font-semibold text-xl">
+            <p>Total Credit: {totalCredit}</p>
+            <p>Grade Point Average (GPA): {gpa}</p>
+            <p>Cumulative Grade Point Average (CGPA): {cgpa}</p>
+          </div>
 
-         <div>
-          <p className="font-semibold mt-16">Examination Controller</p>
-          <p>Date of Issue: {formattedDate}</p>
+         
+          <div className="w-[30%] text-left">
+            <p className="font-semibold">Examination Controller</p>
+            <p>Date of Issue:</p>
+            <p>{formattedDate}</p>
           </div>
-      </div>
-      {qrUrl && (
-          <div className="mt-12 flex flex-col items-center">
-            <img src={qrUrl} alt="QR Code" width={80} height={80} />
+
+         
+          <div className="w-[15%] flex justify-center">
+            {qrUrl && (
+              <img
+                src={qrUrl}
+                alt="QR Code"
+                width={80}
+                height={80}
+                className="object-contain"
+              />
+            )}
           </div>
-        )}        
         </div>
       </div>
     </div>
