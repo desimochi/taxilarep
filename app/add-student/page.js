@@ -70,7 +70,7 @@ export default function Page(){
         const classData = await classRes.json();
         const subData = await subRes.json();
 
-        // Only update state if the data is different
+       
         setBatch((prev) => (JSON.stringify(prev) !== JSON.stringify(classData.data) ? classData.data : prev));
         setCourse((prev) => (JSON.stringify(prev) !== JSON.stringify(subData.data) ? subData.data : prev));
       } catch (error) {
@@ -129,17 +129,18 @@ async function handleSubmit() {
     const requiredFields = [
         "email",
         "first_name",
+        "last_name",
         "date_of_birth",
         "contact_number",
         "gender"
     ];
 
-    // Check if any required field is empty
+    // Check if any required field is empty.....
     for (let field of requiredFields) {
         if (!formdata[field]) {
             setMessage(`Please fill out the ${field.replace("_", " ")} field.`);
             setShowToast(true);
-            return; // Stop form submission if any required field is empty
+            return; // Stop form submission if any required field is empty......
         }
     }
 
