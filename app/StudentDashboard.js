@@ -354,9 +354,18 @@ function makeStudentModel({
   const currentTerm = termsById.get(String(currentTermId))?.name ||
     (currentTermId ? String(currentTermId) : "");
   const profileSpecialization = profile.specialization || appUser?.specialization;
-  const specialization = Array.isArray(profileSpecialization)
-    ? profileSpecialization.map((item) => item?.name || item).filter(Boolean).join(", ")
-    : profileSpecialization?.name || profileSpecialization || "";
+  const profileSpecText = Array.isArray(profileSpecialization)
+  ? profileSpecialization.map((item) => item?.name || item).filter(Boolean).join(", ")
+  : profileSpecialization?.name || profileSpecialization || "";
+
+const specNames = new Set();
+for (const row of attendanceRows) {
+  for (const spec of asArray(row?.subject_mapping?.specialization)) {
+    if (spec?.name) specNames.add(spec.name);
+  }
+}
+const nonCore = Array.from(specNames).filter((n) => n.trim().toLowerCase() !== "core");
+const specialization = profileSpecText || (nonCore.length ? nonCore.join(" & ") : Array.from(specNames).join(", "));
 
   return {
     name: currentUserName,
